@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Indian Rivers Quiz</title>
+<title>Interactive Quiz Pro with Summary</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   body { 
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
@@ -16,20 +17,51 @@
   .quiz-container { 
     background-color: white; 
     border-radius: 12px; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
     padding: 25px; 
     max-width: 600px; 
     width: 100%; 
+    position: relative;
+    overflow: hidden;
   }
-  h2 { color: #1c1e21; font-size: 1.25em; margin-top: 0; line-height: 1.4;}
+  h2 { color: #1c1e21; font-size: 1.3em; margin-top: 10px; line-height: 1.4;}
+  
+  /* Progress Bar */
+  .progress-container {
+    width: 100%;
+    background-color: #e4e6eb;
+    border-radius: 5px;
+    height: 8px;
+    margin-bottom: 20px;
+  }
+  .progress-bar {
+    height: 10px;
+    background-color: #1a73e8;
+    border-radius: 5px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
   .header-info { 
     display: flex; 
     justify-content: space-between; 
+    align-items: center;
     margin-bottom: 15px; 
     color: #606770; 
-    font-size: 0.95em; 
-    font-weight: 600;
+    font-size: 1em; 
+    font-weight: bold;
   }
+  
+  .timer {
+    background-color: #ffebe5;
+    color: #d93025;
+    padding: 5px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
   .option { 
     background-color: #f0f2f5; 
     border: 2px solid transparent; 
@@ -40,53 +72,102 @@
     border-radius: 8px; 
     cursor: pointer; 
     font-size: 1em; 
+    font-weight: 500;
     transition: all 0.2s ease; 
     color: #1c1e21;
   }
-  .option:hover { background-color: #e4e6eb; }
-  .correct { background-color: #e6f4ea; color: #137333; border: 2px solid #137333; }
-  .wrong { background-color: #fce8e6; color: #c5221f; border: 2px solid #c5221f; }
+  .option:hover:not(:disabled) { background-color: #e4e6eb; transform: translateY(-2px); }
+  
+  .correct { background-color: #e6f4ea; color: #137333; border: 2px solid #137333; animation: pop 0.3s ease; }
+  .wrong { background-color: #fce8e6; color: #c5221f; border: 2px solid #c5221f; animation: shake 0.4s ease; }
+  
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
   .btn { 
     background-color: #1a73e8; 
     color: white; 
     border: none; 
-    padding: 12px 20px; 
+    padding: 14px 20px; 
     border-radius: 8px; 
     cursor: pointer; 
-    font-size: 1.05em; 
+    font-size: 1.1em; 
     font-weight: bold;
     display: none; 
     margin-top: 15px; 
     width: 100%;
+    box-shadow: 0 4px 6px rgba(26, 115, 232, 0.3);
+    transition: background-color 0.2s;
   }
   .btn:hover { background-color: #1557b0; }
   .score-box { text-align: center; display: none; padding: 20px 0;}
-  #retryBtn { display: inline-block; background-color: #1877f2; margin-top: 20px; width: auto; padding: 12px 30px;}
+  #retryBtn { display: inline-block; background-color: #34a853; margin-top: 15px; width: auto; padding: 12px 30px; box-shadow: 0 4px 6px rgba(52, 168, 83, 0.3);}
+
+  /* Summary Section Styles */
+  .summary-container {
+    margin-top: 25px;
+    text-align: left;
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 15px;
+    border: 1px solid #e4e6eb;
+    border-radius: 8px;
+    background: #fafafa;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .summary-item {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+  }
+  .summary-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .s-q { font-weight: bold; color: #1c1e21; margin-bottom: 8px; font-size: 0.95em; line-height: 1.3;}
+  .s-correct { color: #137333; font-size: 0.95em; margin-bottom: 4px;}
+  .s-wrong { color: #c5221f; font-size: 0.95em; margin-bottom: 4px;}
+  .s-true-ans { color: #1a73e8; font-size: 0.95em; font-weight: bold; margin-top: 4px; background: #e8f0fe; display: inline-block; padding: 3px 8px; border-radius: 4px;}
 </style>
 </head>
 <body>
 <div class="quiz-container">
   <div id="quiz">
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
     <div class="header-info">
-        <span id="q-count">Question 1/50</span>
-        <span id="score-tracker">Score: 0</span>
+        <span id="q-count">प्र 1/50</span>
+        <span class="timer">⏱ <span id="time">15</span>s</span>
+        <span id="score-tracker">⭐ 0</span>
     </div>
     <h2 id="question">Loading...</h2>
     <div id="options"></div>
-    <button id="nextBtn" class="btn" onclick="nextQuestion()">अगला प्रश्न</button>
+    <button id="nextBtn" class="btn" onclick="nextQuestion()">अगला प्रश्न ➔</button>
   </div>
   
   <div id="scoreBox" class="score-box">
-    <h2>क्विज़ समाप्त! 🎉</h2>
-    <p style="color: #606770; margin-bottom: 10px;">आपका अंतिम स्कोर:</p>
-    <p id="finalScore" style="font-size: 2.5em; font-weight: bold; color: #1a73e8; margin: 0;"></p>
-    <button id="retryBtn" class="btn" onclick="retryQuiz()">फिर से प्रयास करें (Retry) 🔄</button>
+    <h1 style="font-size: 3em; margin: 0;">🏆</h1>
+    <h2 style="margin-bottom: 5px;">शानदार प्रदर्शन!</h2>
+    <p id="finalScore" style="font-size: 2.5em; font-weight: bold; color: #1a73e8; margin: 10px 0;"></p>
+    
+    <div id="summaryBox" class="summary-container"></div>
+
+    <button id="retryBtn" class="btn" onclick="retryQuiz()">फिर से खेलें 🔄</button>
   </div>
 </div>
 
 <script>
+// यहाँ अपने पूरे 50 सवालों का डेटा (quizData) पेस्ट करें। 
 const quizData = [
-  { q: "भारत की सबसे लंबी नदी कौन सी है?", options: ["ब्रह्मपुत्र", "गंगा", "गोदावरी", "यमुना"], ans: 1 },
+    { q: "भारत की सबसे लंबी नदी कौन सी है?", options: ["ब्रह्मपुत्र", "गंगा", "गोदावरी", "यमुना"], ans: 1 },
   { q: "गंगा नदी का उद्गम स्थल कौन सा है?", options: ["मानसरोवर", "गंगोत्री हिमनद", "यमुनोत्री", "अमरकंटक"], ans: 1 },
   { q: "तिब्बत में ब्रह्मपुत्र नदी को किस नाम से जाना जाता है?", options: ["सांगपो (Tsangpo)", "पद्मा", "मेघना", "दिहांग"], ans: 0 },
   { q: "'दक्षिण गंगा' (Dakshin Ganga) के नाम से किस नदी को जाना जाता है?", options: ["कावेरी", "कृष्णा", "महानदी", "गोदावरी"], ans: 3 },
@@ -136,11 +217,14 @@ const quizData = [
   { q: "सिंधु जल संधि (1960) के अनुसार भारत किन तीन नदियों के पानी का पूरी तरह से उपयोग कर सकता है?", options: ["सिंधु, झेलम, चिनाब", "रावी, व्यास, सतलुज", "सिंधु, रावी, व्यास", "झेलम, चिनाब, रावी"], ans: 1 },
   { q: "हुगली नदी के किनारे कौन सा प्रमुख शहर बसा है?", options: ["कोलकाता", "चेन्नई", "मुंबई", "विशाखापत्तनम"], ans: 0 },
   { q: "बांग्लादेश में गंगा नदी को किस नाम से पुकारा जाता है?", options: ["मेघना", "पद्मा", "जमुना", "सांगपो"], ans: 1 }
-];
+];];
 
 let currentQuiz = 0;
 let score = 0;
 let answered = false;
+let timeLeft = 15;
+let timerInterval;
+let userAnswers = []; // Array to store summary data
 
 const questionEl = document.getElementById("question");
 const optionsEl = document.getElementById("options");
@@ -150,14 +234,60 @@ const scoreBox = document.getElementById("scoreBox");
 const finalScore = document.getElementById("finalScore");
 const qCount = document.getElementById("q-count");
 const scoreTracker = document.getElementById("score-tracker");
+const timeEl = document.getElementById("time");
+const progressBar = document.getElementById("progressBar");
+const summaryBox = document.getElementById("summaryBox");
+
+function startTimer() {
+  timeLeft = 15;
+  timeEl.innerText = timeLeft;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timeEl.innerText = timeLeft;
+    if(timeLeft <= 0) {
+      clearInterval(timerInterval);
+      handleTimeOut();
+    }
+  }, 1000);
+}
+
+function handleTimeOut() {
+  if(answered) return;
+  answered = true;
+  const correctAns = quizData[currentQuiz].ans;
+  const allBtns = optionsEl.querySelectorAll(".option");
+  
+  allBtns[correctAns].classList.add("correct");
+  allBtns.forEach(b => {
+      b.disabled = true;
+      b.style.cursor = "default";
+      b.style.opacity = "0.7";
+  });
+  
+  // Record Timeout Answer
+  userAnswers.push({
+      q: quizData[currentQuiz].q,
+      selected: "समय समाप्त ⏱",
+      correct: quizData[currentQuiz].options[correctAns],
+      isCorrect: false
+  });
+
+  nextBtn.style.display = "block";
+  checkQuizEnd();
+}
 
 function loadQuiz() {
   answered = false;
   nextBtn.style.display = "none";
   const currentData = quizData[currentQuiz];
+  
+  const progressPercent = ((currentQuiz) / quizData.length) * 100;
+  progressBar.style.width = progressPercent + "%";
+  
   questionEl.innerText = currentData.q;
-  qCount.innerText = "प्रश्न " + (currentQuiz + 1) + " / " + quizData.length;
-  scoreTracker.innerText = "स्कोर: " + score;
+  qCount.innerText = "प्र " + (currentQuiz + 1) + " / " + quizData.length;
+  scoreTracker.innerText = "⭐ " + score;
   optionsEl.innerHTML = "";
   
   currentData.options.forEach((opt, index) => {
@@ -167,27 +297,48 @@ function loadQuiz() {
     btn.onclick = () => selectOption(index, btn);
     optionsEl.appendChild(btn);
   });
+  
+  startTimer();
 }
 
 function selectOption(index, btn) {
   if(answered) return;
   answered = true;
+  clearInterval(timerInterval); 
+  
   const correctAns = quizData[currentQuiz].ans;
   const allBtns = optionsEl.querySelectorAll(".option");
+  const isCorrect = index === correctAns;
   
-  if(index === correctAns) {
+  if(isCorrect) {
     btn.classList.add("correct");
     score++;
-    scoreTracker.innerText = "स्कोर: " + score;
+    scoreTracker.innerText = "⭐ " + score;
   } else {
     btn.classList.add("wrong");
     allBtns[correctAns].classList.add("correct");
   }
+
+  // Record Answer for Summary
+  userAnswers.push({
+      q: quizData[currentQuiz].q,
+      selected: quizData[currentQuiz].options[index],
+      correct: quizData[currentQuiz].options[correctAns],
+      isCorrect: isCorrect
+  });
   
-  allBtns.forEach(b => b.style.cursor = "default");
+  allBtns.forEach(b => {
+      b.disabled = true; 
+      b.style.cursor = "default";
+  });
+  
   nextBtn.style.display = "block";
-  if(currentQuiz === quizData.length - 1) {
-      nextBtn.innerText = "रिजल्ट देखें";
+  checkQuizEnd();
+}
+
+function checkQuizEnd() {
+    if(currentQuiz === quizData.length - 1) {
+      nextBtn.innerText = "रिजल्ट देखें 🏆";
   }
 }
 
@@ -203,15 +354,39 @@ function nextQuestion() {
 function showScore() {
   quizDiv.style.display = "none";
   scoreBox.style.display = "block";
+  progressBar.style.width = "100%";
   finalScore.innerText = score + " / " + quizData.length;
+  
+  // Generate Summary HTML
+  let summaryHTML = "<h3 style='text-align:center; margin-top:0; color:#1c1e21;'>उत्तरों की समीक्षा (Review)</h3>";
+  userAnswers.forEach((ans, i) => {
+      summaryHTML += `<div class="summary-item">
+          <div class="s-q">Q${i+1}. ${ans.q}</div>
+          ${ans.isCorrect
+              ? `<div class="s-correct">✅ आपका उत्तर: ${ans.selected}</div>`
+              : `<div class="s-wrong">❌ आपका उत्तर: ${ans.selected}</div>
+                 <div class="s-true-ans">👉 सही उत्तर: ${ans.correct}</div>`
+          }
+      </div>`;
+  });
+  summaryBox.innerHTML = summaryHTML;
+
+  // Trigger Confetti Effect
+  confetti({
+    particleCount: 150,
+    spread: 80,
+    origin: { y: 0.6 },
+    colors: ['#1a73e8', '#34a853', '#fbbc04', '#ea4335']
+  });
 }
 
 function retryQuiz() {
   currentQuiz = 0;
   score = 0;
+  userAnswers = []; // Reset summary data on retry
   quizDiv.style.display = "block";
   scoreBox.style.display = "none";
-  nextBtn.innerText = "अगला प्रश्न";
+  nextBtn.innerText = "अगला प्रश्न ➔";
   loadQuiz();
 }
 
