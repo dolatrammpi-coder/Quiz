@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>वस्तुनिष्ठ करेंट अफेयर्स (100 MCQ)</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+  body { 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #f4f6f9; 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    justify-content: center; 
+  }
+  .quiz-container { 
+    background-color: white; 
+    border-radius: 12px; 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
+    padding: 25px; 
+    max-width: 700px; 
+    width: 100%; 
+    position: relative;
+  }
+  .top-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 15px;
+  }
+  .back-btn {
+    text-decoration: none;
+    color: #1a73e8;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-right: 15px;
+    padding: 8px 15px;
+    background: #e8f0fe;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .back-btn:hover { background: #d2e3fc; }
+  h1.quiz-title { margin: 0; color: #1c1e21; font-size: 1.4em; }
+
+  h2 { color: #2c3e50; font-size: 1.15em; margin-top: 10px; line-height: 1.5; font-weight: 600;}
+  
+  .progress-container {
+    width: 100%;
+    background-color: #e4e6eb;
+    border-radius: 5px;
+    height: 8px;
+    margin-bottom: 20px;
+  }
+  .progress-bar {
+    height: 10px;
+    background-color: #1a73e8;
+    border-radius: 5px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .header-info { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 15px; 
+    color: #606770; 
+    font-size: 1em; 
+    font-weight: bold;
+  }
+  
+  .timer {
+    background-color: #ffebe5;
+    color: #d93025;
+    padding: 5px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .option { 
+    background-color: #f8f9fa; 
+    border: 2px solid #e9ecef; 
+    padding: 12px 15px; 
+    width: 100%; 
+    text-align: left; 
+    margin-bottom: 8px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 1em; 
+    font-weight: 500;
+    transition: all 0.2s ease; 
+    color: #1c1e21;
+  }
+  .option:hover:not(:disabled) { background-color: #e8f0fe; border-color: #1a73e8; transform: translateY(-2px); }
+  
+  .correct { background-color: #e6f4ea !important; color: #137333 !important; border: 2px solid #137333 !important; animation: pop 0.3s ease; }
+  .wrong { background-color: #fce8e6 !important; color: #c5221f !important; border: 2px solid #c5221f !important; animation: shake 0.4s ease; }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%, 75% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+  }
+  @keyframes pop {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  .btn { 
+    background-color: #1a73e8; 
+    color: white; 
+    border: none; 
+    padding: 14px 20px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 1.1em; 
+    font-weight: bold;
+    display: block; 
+    margin-top: 15px; 
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(26, 115, 232, 0.3);
+    transition: background-color 0.2s;
+  }
+  .btn:hover { background-color: #1557b0; }
+  .score-box { text-align: center; display: none; padding: 20px 0;}
+  #retryBtn { display: inline-block; background-color: #34a853; margin-top: 15px; width: auto; padding: 12px 30px;}
+
+  /* Question Palette Styles */
+  .palette-title {
+    margin-top: 25px;
+    font-size: 0.9em;
+    color: #606770;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .palette-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 2px solid #e4e6eb;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .palette-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    font-weight: bold;
+    color: #333;
+    font-size: 0.9em;
+    transition: all 0.2s;
+  }
+  .palette-btn:hover { background: #f0f2f5; }
+  
+  .palette-btn.current { border: 2px solid #1a73e8; background: #e8f0fe; color: #1a73e8; transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .palette-btn.answered-correct { background: #e6f4ea; color: #137333; border-color: #137333; }
+  .palette-btn.answered-wrong { background: #fce8e6; color: #c5221f; border-color: #c5221f; }
+  .palette-btn.timeout { background: #fef7e0; color: #b06000; border-color: #fbbc04; }
+
+  .summary-container { margin-top: 25px; text-align: left; max-height: 400px; overflow-y: auto; padding: 15px; border: 1px solid #e4e6eb; border-radius: 8px; background: #fafafa; }
+  .summary-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
+  .summary-item:last-child { border-bottom: none; }
+  .s-q { font-weight: bold; color: #1c1e21; margin-bottom: 8px; font-size: 0.95em;}
+  .s-correct { color: #137333; font-size: 0.95em; margin-bottom: 4px;}
+  .s-wrong { color: #c5221f; font-size: 0.95em; margin-bottom: 4px;}
+  .s-true-ans { color: #1a73e8; font-size: 0.95em; font-weight: bold; display: inline-block; padding: 3px 8px; background: #e8f0fe; border-radius: 4px;}
+</style>
+</head>
+<body>
+<div class="quiz-container">
+  <div class="top-bar">
+    <a href="index.html" class="back-btn">⬅️ वापस</a>
+    <h1 class="quiz-title">📝 वस्तुनिष्ठ करेंट अफेयर्स (1-100)</h1>
+  </div>
+
+  <div id="quiz">
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="header-info">
+        <span id="q-count">प्र 1/100</span>
+        <span class="timer">⏱ <span id="time">20</span>s</span>
+        <span id="score-tracker">⭐ 0</span>
+    </div>
+    <h2 id="question">Loading...</h2>
+    <div id="options"></div>
+    
+    <button id="nextBtn" class="btn" onclick="nextQuestion()">अगला प्रश्न ➔</button>
+
+    <div class="palette-title">📊 प्रश्न नेविगेशन (Question Palette)</div>
+    <div id="palette" class="palette-container"></div>
+  </div>
+  
+  <div id="scoreBox" class="score-box">
+    <h1 style="font-size: 3em; margin: 0;">🏆</h1>
+    <h2>शानदार प्रदर्शन!</h2>
+    <p id="finalScore" style="font-size: 2.5em; font-weight: bold; color: #1a73e8; margin: 10px 0;"></p>
+    <div id="summaryBox" class="summary-container"></div>
+    <button id="retryBtn" class="btn" onclick="retryQuiz()">फिर से अभ्यास करें 🔄</button>
+  </div>
+</div>
+
+<script>
+// Data extracted from the 4 uploaded images
+const rawData = [
+  ["हाल ही में भारत-सेशेल्स के बीच किस नाम से 10वाँ संयुक्त सैन्य अभ्यास आयोजित किया गया?", "वज्र प्रहार", "धर्म गार्जियन", "लामितिये 2026", "ऑपरेशन संकल्प", 2],
+  ["16 वर्ष से कम आयु के बच्चों के लिए सोशल मीडिया के उपयोग पर प्रतिबंध लगाने का प्रस्ताव पेश करने वाला देश का पहला राज्य कौन है?", "कर्नाटक", "केरल", "तमिलनाडु", "महाराष्ट्र", 0],
+  ["केंद्र सरकार ने पश्चिम एशिया (ईरान-इजराइल) तनाव को देखते हुए किस वस्तु की निर्बाध उपलब्धता सुनिश्चित करने के लिए आवश्यक वस्तु अधिनियम लागू किया है?", "पेट्रोल", "डीजल", "रसोई गैस", "चीनी", 3],
+  ["हाल ही में उत्तर प्रदेश सरकार ने ग्रामीण परिवारों को हाई-स्पीड इंटरनेट उपलब्ध कराने के लिए किस नाम से एक परियोजना की शुरुआत की है?", "प्रोजेक्ट फाइबर", "प्रोजेक्ट गंगा", "ग्राम नेट योजना", "डिजिटल ग्राम", 0],
+  ["हाल ही में भारतीय और जापानी सेनाओं के बीच 7वाँ वार्षिक संयुक्त सैन्य अभ्यास 'धर्म गार्जियन' कहाँ पर आयोजित किया गया?", "चौबटिया, उत्तराखंड", "बकलोह, हिमाचल प्रदेश", "उमरोई, मेघालय", "पुणे, महाराष्ट्र", 0],
+  ["पुरुष T-20 वर्ल्ड कप 2026 में 'प्लेयर ऑफ द टूर्नामेंट' से किसे सम्मानित किया गया था?", "विराट कोहली", "जसप्रीत बुमराह", "संजू सैमसन", "सूर्यकुमार यादव", 1],
+  ["अहमदाबाद में किस देश ने न्यूजीलैंड को 96 रनों से हराकर लगातार दूसरी बार ICC पुरुष टी20 विश्व कप 2026 का खिताब जीता?", "ऑस्ट्रेलिया", "इंग्लैंड", "द० अफ्रीका", "भारत", 3],
+  ["अयातुल्ला अली खामेनेई की हत्या के बाद ईरान का नया सर्वोच्च नेता किसे चुना गया है?", "हसन रूहानी", "मोजतबा खामेनेई", "इब्राहिम रईसी", "महमूद अहमदीनेजाद", 1],
+  ["भारतीय रेलवे ने कार्यस्थल पर यौन उत्पीड़न की शिकायत दर्ज कराने के उद्देश्य से महिला कर्मचारियों के लिए किस नाम से एक ऐप लॉन्च किया है?", "सुरक्षा", "हिम्मत", "SHINE", "जागृति", 2],
+  ["2026 के संसदीय चुनावों में नेपाल में पहली बार किस पार्टी ने बहुमत हासिल किया है?", "नेपाली कांग्रेस (NC)", "सीपीएन (यूएमएल)", "राष्ट्रीय स्वतंत्र पार्टी (RSP)", "माओवादी केंद्र", 0],
+  ["किस राज्य को पहला 'खेलो इंडिया ट्राइबल गेम्स 2026 (KITG)' का मेजबानी सौंपा गया है?", "झारखंड", "ओडिशा", "छत्तीसगढ़", "मध्य प्रदेश", 1],
+  ["भारत और अमेरिका की थल सेनाओं के बीच 16वाँ संयुक्त अभ्यास 'वज्र प्रहार' का आयोजन कहाँ पर किया गया?", "चौबटिया, उत्तराखंड", "बकलोह, हिमाचल प्रदेश", "पोखरण, राजस्थान", "जैसलमेर, राजस्थान", 1],
+  ["हाल ही में किस राज्य सरकार ने गिरती प्रजनन दर को देखते हुए दूसरे या तीसरे बच्चे के माता-पिता बनने वाले दंपतियों के लिए वित्तीय प्रोत्साहन की घोषणा की है?", "तेलंगाना", "आंध्र प्रदेश", "केरल", "सिक्किम", 0],
+  ["हाल ही में केंद्रीय मंत्री सर्बानंद सोनोवाल ने किस नदी पर देश के पहले नदी-आधारित प्रकाशस्तंभों की आधारशिला रखी?", "गंगा नदी", "ब्रह्मपुत्र नदी", "यमुना नदी", "गोदावरी नदी", 1],
+  ["हाल ही में जनगणना-2027 के लिए किस नाम से दो शुभंकरों (mascots) का अनावरण किया गया?", "उन्नति और विश्वास", "प्रगति और विकास", "भारत और भारती", "जनगणना और जनभागीदारी", 0],
+  ["पश्चिमी एशिया में बढ़ते तनाव को देखते हुए भारतीय नौसेना ने मानवीय सहायता और आपदा राहत (HADR) के लिए कौन-सा अभियान शुरू किया है?", "ऑपरेशन राहत", "ऑपरेशन मदद", "ऑपरेशन संकल्प", "ऑपरेशन समुद्र सेतु", 2],
+  ["हाल ही में अमेरिका के किस विश्वविद्यालय में महात्मा गांधी की पहली प्रतिमा का अनावरण किया गया?", "हार्वर्ड विश्वविद्यालय", "स्टैनफोर्ड विश्वविद्यालय", "मोंटाना विश्वविद्यालय", "येल विश्वविद्यालय", 0],
+  ["हाल ही में ब्रिटेन ने 16वीं शताब्दी की किस संत की कांस्य प्रतिमा भारत को वापस सौंप दी है?", "संत तिरुवल्लुवर", "संत तिरुमंगई अलवर", "संत कबीर", "संत रविदास", 1],
+  ["किस राज्य के जीआई-टैग प्राप्त 'कार्बी आंगलोंग अदरक' का पहली बार लंदन को निर्यात किया गया है?", "असम", "मेघालय", "मणिपुर", "सिक्किम", 0],
+  ["प्रधानमंत्री नरेंद्र मोदी द्वारा 14 साल तक की लड़कियों के लिए मुफ्त HPV टीकाकरण अभियान की शुरुआत कहाँ से की गई?", "जयपुर", "अजमेर", "वाराणसी", "गांधीनगर", 2],
+  ["हाल ही में राजस्थान सरकार ने राज्य के किन तीन प्रमुख स्थानों के नाम बदलने की घोषणा की है?", "जयपुर को गुलाबी नगर, जोधपुर को सूर्य नगरी और उदयपुर को झीलों की नगरी", "माउंट आबू को आबू राज, कमान को कामवन और जहाजपुर को यज्ञपुर", "अजमेर को अजयमेरु, भरतपुर को लोहागढ़ और बीकानेर को जांगल प्रदेश", "उपरोक्त में से कोई नहीं", 1],
+  ["हाल ही में भारतीय नौसेना ने चेन्नई में किस तीसरा एंटी-सबमरीन वारफेयर शैलो वाटर क्राफ्ट को अपनी सेवा में शामिल किया है?", "INS अर्नाला", "INS एंड्रोथ", "INS अंजदीप", "INS अमीनी", 1],
+  ["राष्ट्रपति द्रौपदी मुर्मू जैसलमेर में किस स्वदेशी हेलीकॉप्टर में उड़ान भरने वाली पहली भारतीय राष्ट्रपति बनीं?", "ध्रुव", "रुद्र", "प्रचंड", "चेतक", 2],
+  ["पाकिस्तान ने आतंकवाद के खिलाफ 'ऑपरेशन अज़्म-ए-इस्तेहकाम' नाम से एक सैन्य अभियान शुरू किया है, इसके पहले कौन सा अभियान था?", "ऑपरेशन अज़्म-ए-हक", "ऑपरेशन गजब-ए-हक", "ऑपरेशन क्लीन", "ऑपरेशन ضرب-ए-अज़्ब", 1],
+  ["हाल ही में केंद्र सरकार ने किस नाम से तीन श्रेणियों (वायु, जल, भूमि) के लिए देश के पहले परिणाम-आधारित राष्ट्रीय पर्यावरण पुरस्कार की घोषणा की है?", "ग्रीन प्राइज", "इको प्राइज", "जीरो प्राइज", "प्रकृति पुरस्कार", 0],
+  ["किस राज्य सरकार ने केंद्रीय 'पीएम श्री' योजना की तर्ज पर राज्य में 'मुख्यमंत्री श्री स्कूल' योजना आरंभ की है?", "राजस्थान", "हरियाणा", "उत्तर प्रदेश", "मध्य प्रदेश", 3],
+  ["प्रधानमंत्री नरेंद्र मोदी किस देश की संसद (नेसेट) को संबोधित करने वाले पहले भारतीय प्रधानमंत्री बने हैं?", "ईरान की संसद", "इजरायल की संसद", "मिस्र की संसद", "यूएई की संसद", 1],
+  ["हाल ही में रिकार्ड 74 देशों की बहुपक्षीय नौसेना अभ्यास 'मिलन 2026' के 13वें संस्करण का आयोजन कहाँ किया गया?", "गोवा", "कोच्चि", "विशाखापत्तनम", "मुंबई", 2],
+  ["जम्मू और कश्मीर ने 8 बार की किस चैंपियन को हराकर पहली बार रणजी ट्रॉफी 2025-26 का खिताब जीता है?", "मुंबई", "कर्नाटक", "दिल्ली", "तमिलनाडु", 1],
+  ["हाल ही में किस भारतीय हवाई अड्डे ने लगातार दूसरे वर्ष 'एयरसक्यू बेस्ट अराइवल्स अवार्ड' जीता है?", "दिल्ली अंतर्राष्ट्रीय हवाई अड्डा", "मुंबई अंतर्राष्ट्रीय हवाई अड्डा", "मंगलुरु अंतर्राष्ट्रीय हवाई अड्डा", "बेंगलुरु अंतर्राष्ट्रीय हवाई अड्डा", 3],
+  ["हाल ही में भारतीय सेना की दक्षिणी कमान ने हाई-टेक युद्धाभ्यास 'अग्नि वर्षा' का सफल आयोजन कहाँ पर किया?", "जैसलमेर, राजस्थान", "पोखरण, राजस्थान", "बबीना, उत्तर प्रदेश", "सूरतगढ़, राजस्थान", 1],
+  ["FSSAI ने किस रेलवे जोन के पाँच स्टेशनों को 'ईट राइट स्टेशन' प्रमाणन प्रदान किया है?", "मध्य रेलवे", "पूर्वोत्तर सीमांत रेलवे", "पूर्वोत्तर रेलवे", "पूर्व मध्य रेलवे", 1],
+  ["हाल ही में झारखंड सरकार ने वित्त वर्ष 2026-27 के लिए किस नाम से 1.58 लाख करोड़ रुपये का बजट पेश किया?", "झारखंड उन्नति बजट", "हमीन कर बजट", "अबुआ दिशोम बजट", "प्रगतिशील झारखंड बजट", 2],
+  ["किस राज्य सरकार ने बालिकाओं को 18 वर्ष पूरे होने पर 1.5 लाख रुपये देने के लिए 'रानी दुर्गावती योजना' घोषित की है?", "मध्य प्रदेश", "छत्तीसगढ़", "झारखंड", "ओडिशा", 0],
+  ["प्रधानमंत्री नरेंद्र मोदी की अध्यक्षता में 'सेवा तीर्थ' (नया PMO) में हुई पहली बैठक में किस राज्य का नाम बदलने के प्रस्ताव को मंजूरी दी गई?", "असम", "मणिपुर", "केरल", "प. बंगाल", 2],
+  ["किस राज्य सरकार ने सीमा पार बहने वाली इच्छामती और जलंगी नदियों के कायाकल्प के लिए GIZ के साथ समझौता किया है?", "बिहार", "प. बंगाल", "असम", "त्रिपुरा", 1],
+  ["हाल ही में राष्ट्रपति भवन के केंद्रीय प्रांगण में सी. राजगोपालाचारी के सम्मान में किस उत्सव के दौरान उनकी प्रतिमा का अनावरण किया गया?", "गांधी उत्सव", "नेहरू उत्सव", "राजाजी उत्सव", "पटेल उत्सव", 2],
+  ["हाल ही में गृह मंत्रालय ने भारत की किस पहली व्यापक राष्ट्रीय आतंकवाद-विरोधी नीति और रणनीति का अनावरण किया?", "सुरक्षा (SURAKSHA)", "कवच (KAVACH)", "प्रहार (PRAHAR)", "वज्र (VAJRA)", 2],
+  ["वसई (महाराष्ट्र) के पापड़ी गांव में स्थित 475 साल पुराने किस गिरजाघर को यूनेस्को एशिया-प्रशांत मेरिट अवार्ड मिला?", "सेंट थॉमस कैथेड्रल", "आवर लेडी ऑफ ग्रेस कैथेड्रल", "माउंट मैरी चर्च", "सेंट फ्रांसिस जेवियर कैथेड्रल", 1],
+  ["79वें BAFTA 2026 में सर्वश्रेष्ठ बाल और पारिवारिक फिल्म श्रेणी जीतने वाली पहली भारतीय फिल्म कौन बनी?", "द लास्ट फिल्म शो", "बोंग", "स्लमडॉग मिलियनेयर", "लाइफ ऑफ पाई", 1],
+  ["किस देश ने मिलान-कॉर्टिना (इटली) शीतकालीन ओलंपिक 2026 में सबसे अधिक स्वर्ण पदक जीतने का रिकॉर्ड बनाया है?", "जर्मनी", "अमेरिका", "नॉर्वे", "कनाडा", 2],
+  ["हाल ही में जेपी नड्डा ने कसौली स्थित केंद्रीय अनुसंधान संस्थान में स्वदेशी रूप से निर्मित किस वैक्सीन का शुभारंभ किया?", "कोवैक्सीन", "टेटनस और वयस्क डिप्थीरिया (Td)", "स्पुतनिक V", "जाइकोव-डी", 1],
+  ["नई दिल्ली में आयोजित 'इंडिया AI इम्पैक्ट समिट 2026' का थीम क्या था?", "AI फॉर ऑल", "AI फॉर बिलियन", "सर्वजन हिताय, सर्वजन सुखाय", "रिस्पॉन्सिबल AI", 0],
+  ["हाल ही में अमित शाह ने वाइब्रेंट विलेज प्रोग्राम-II (VVP-II) कहाँ पर लॉन्च किया?", "लेह (लद्दाख)", "किबिथू (अरुणाचल प्रदेश)", "नाथनपुर (असम)", "माणा (उत्तराखंड)", 2],
+  ["NIELIT ने आंध्र प्रदेश सरकार के साथ मिलकर भारत का पहला क्वांटम और AI विश्वविद्यालय कहाँ स्थापित करने के लिए समझौता किया?", "विशाखापत्तनम", "तिरुपति", "अमरावती", "विजयवाड़ा", 2],
+  ["किस राज्य ने मध्य प्रदेश और कर्नाटक के बाद आधिकारिक तौर पर स्वयं को 'नक्सल मुक्त राज्य' घोषित किया है?", "झारखंड", "बिहार", "ओडिशा", "छत्तीसगढ़", 1],
+  ["APEDA ने तमिलनाडु के सलेम से कनाडा के लिए GI टैग वाले किस उत्पाद की पहली खेप निर्यात की?", "कांचीपुरम सिल्क", "सलेम साबूदाना", "मदुरै मल्ली", "तंजावुर पेंटिंग", 1],
+  ["RBI द्वारा जारी 'Handbook of Statistics on Indian States' के अनुसार भारत का सबसे अमीर राज्य कौन है?", "महाराष्ट्र", "तमिलनाडु", "गुजरात", "कर्नाटक", 0],
+  ["इंडिया AI इम्पैक्ट समिट के दौरान IIT Kanpur ने प्रतियोगी परीक्षाओं के लिए कौन-सा AI-सक्षम पोर्टल लॉन्च किया?", "साथी (SATHEE)", "मित्र (MITRA)", "गुरु (GURU)", "सारथी (SARATHI)", 0],
+  ["प्रधानमंत्री नरेंद्र मोदी ने फ्रांस सरकार के सहयोग से विमानन और रक्षा क्षेत्र के लिए राष्ट्रीय उत्कृष्टता केंद्र (NCoE) की स्थापना किस शहर में करने की घोषणा की?", "बेंगलुरु", "हैदराबाद", "कानपुर", "पुणे", 1],
+  ["प्रधानमंत्री नरेंद्र मोदी ने 'इंडिया एआई इम्पैक्ट समिट 2026' में कृत्रिम बुद्धिमत्ता शासन के लिए किस विजन का अनावरण किया?", "AI4ALL विजन", "BHARAT AI विजन", "MANAV विजन", "DIGITAL INDIA विजन", 1],
+  ["50वें मातृश्री अवार्ड से किसे सम्मानित किया गया है?", "स्मृति ईरानी", "रेखा गुप्ता", "निर्मला सीतारमण", "ममता बनर्जी", 1],
+  ["हाल ही में भारत-फ्रांस एआई हेल्थ कैंपस का उद्घाटन कहाँ किया गया?", "AIIMS, नई दिल्ली", "JIPMER, पुडुचेरी", "PGI, चंडीगढ़", "AIIMS, भोपाल", 1],
+  ["हाल ही में राष्ट्रपति द्रौपदी मुर्मू ने 74 देशों की भागीदारी वाले इंटरनेशनल फ्लीट रिव्यू 2026 का अवलोकन कहाँ किया?", "मुंबई", "कोच्चि", "विशाखापत्तनम", "चेन्नई", 2],
+  ["FCI और विश्व खाद्य कार्यक्रम (WFP) के बीच वैश्विक भूख से निपटने के लिए कितने वर्षों का समझौता (MoU) हस्ताक्षरित हुआ?", "3 वर्ष", "5 वर्ष", "7 वर्ष", "10 वर्ष", 1],
+  ["केंद्रीय कृषि मंत्री शिवराज सिंह चौहान ने जयपुर में किसानों के लिए एआई-आधारित किस डिजिटल प्लेटफॉर्म का शुभारंभ किया?", "किसान मित्र", "कृषि सारथी", "भारत विस्तार", "अन्नदाता कनेक्ट", 0],
+  ["भारत इलेक्ट्रॉनिक्स लिमिटेड (BEL) ने फ्रांस की किस कंपनी के साथ हैमर मिसाइल के उत्पादन के लिए समझौता किया?", "डसॉल्ट एविएशन", "थेल्स ग्रुप", "सफरान", "एयरबस", 2],
+  ["केंद्रीय स्वास्थ्य मंत्री जेपी नड्डा ने इंडिया एआई इम्पैक्ट समिट में कौन-सी दो राष्ट्रीय स्वास्थ्य पहल शुरू की हैं?", "SWASTH और AROGYA", "SAHI और BODH", "AYUSH और JEEVAN", "SEHAT और NIDAAN", 1],
+  ["प्रधानमंत्री नरेंद्र मोदी और फ्रांस के राष्ट्रपति इमैनुएल मैक्रों ने टाटा-एयरबस H125 हेलीकॉप्टर असेंबली लाइन का उद्घाटन कहाँ किया?", "बेंगलुरु (कर्नाटक)", "बेलगावी (कर्नाटक)", "हैदराबाद (तेलंगाना)", "नासिक (महाराष्ट्र)", 0],
+  ["मिसामारी (असम) में 13वाँ भारत-किर्गिस्तान संयुक्त आतंकवाद विरोधी सैन्य अभ्यास किस नाम से आयोजित किया गया?", "प्रबल दोस्ती", "खंजर-XIII", "हरीमऊ शक्ति", "युद्ध अभ्यास", 1],
+  ["बीबीसी इमर्जिंग प्लेयर ऑफ द ईयर 2025 पुरस्कार से किसे सम्मानित किया गया?", "आर प्रज्ञानंदा", "दिव्या देशमुख", "शेफाली वर्मा", "अंतिम पंघाल", 1],
+  ["बीबीसी इंडियन स्पोर्ट्सवुमन ऑफ द ईयर 2025 पुरस्कार से किसे सम्मानित किया गया?", "पीवी सिंधु", "स्मृति मंधाना", "मीराबाई चानू", "विनेश फोगाट", 1],
+  ["राष्ट्रपति द्रौपदी मुर्मू ने संथाली भाषा की किस लिपि के शताब्दी समारोह का उद्घाटन किया?", "देवनागरी लिपि", "ओल चिकी लिपि", "ब्राह्मी लिपि", "शारदा लिपि", 1],
+  ["प्रधानमंत्री नरेंद्र मोदी ने पीयर-टू-पीयर (P2P) बिजली व्यापार को बढ़ावा देने के लिए कौन-सा ऐप लॉन्च किया?", "PowerXchange", "BijliConnect", "UrjaSetu", "GridLink", 2],
+  ["प्रधानमंत्री नरेंद्र मोदी ने 'सेवा तीर्थ' (नया PMO) में कार्यभार संभालने के बाद अपने पहले निर्णय के रूप में किस योजना को मंजूरी दी?", "पीएम किसान योजना", "पीएम राहत योजना", "पीएम जन आरोग्य योजना", "पीएम सुरक्षा बीमा योजना", 1],
+  ["हाल ही में प्रधानमंत्री द्वारा उद्घाटन किया गया 'कुमार भास्कर वर्मन सेतु' किस नदी पर स्थित है?", "गंगा नदी", "ब्रह्मपुत्र नदी", "यमुना नदी", "गोदावरी नदी", 1],
+  ["हेनले इंडेक्स द्वारा जारी दुनिया के सबसे शक्तिशाली पासपोर्ट 2026 की सूची में भारत का रैंक क्या है?", "80वाँ", "75वाँ", "85वाँ", "70वाँ", 0],
+  ["बांग्लादेश चुनाव में तारिक रहमान की अगुवाई वाली किस पार्टी ने प्रचंड जीत हासिल की है?", "अवामी लीग", "बांग्लादेश नेशनलिस्ट पार्टी (BNP)", "जातीय पार्टी", "जमात-ए-इस्लामी", 1],
+  ["WHO ने हैदराबाद स्थित किस कंपनी द्वारा निर्मित नोवल ओरल पोलियो वैक्सीन टाइप 2 (nOPV2) को मंजूरी दी है?", "भारत बायोटेक", "सीरम इंस्टीट्यूट ऑफ इंडिया", "Biological E. Limited (BE)", "जाइडस कैडिला", 2],
+  ["जर्मनी के नूरेमबर्ग में आयोजित जैविक उत्पादों के विश्व व्यापार मेले 'बायोफैच 2026' में 'कंट्री ऑफ द ईयर' किसे नामित किया गया?", "जर्मनी", "भारत", "फ्रांस", "ब्राज़ील", 1],
+  ["किस देश ने WhatsApp, YouTube, Instagram और Facebook जैसे अंतरराष्ट्रीय सोशल मीडिया प्लेटफॉर्म को ब्लॉक कर दिया है?", "चीन", "ईरान", "रूस", "उत्तर कोरिया", 1],
+  ["भारत और किर्गिस्तान के बीच 13वें संयुक्त आतंकवाद-विरोधी सैन्य अभ्यास 'खंजर-XIII' का आयोजन कहाँ किया गया?", "चौबटिया, उत्तराखंड", "पोखरण, राजस्थान", "मिसामारी, असम", "बकलोह, हिमाचल प्रदेश", 2],
+  ["जर्मनी के नूरेमबर्ग में आयोजित 'बायोफैच 2026' में किस देश को 'कंट्री ऑफ द ईयर' से सम्मानित किया गया?", "जर्मनी", "भारत", "फ्रांस", "ब्राज़ील", 1],
+  ["'वैश्विक नेटवर्क रेडीनेस इंडेक्स 2025' में भारत को 127 देशों की सूची में कौन-सा स्थान प्राप्त हुआ है?", "38वाँ", "45वाँ", "51वाँ", "55वाँ", 1],
+  ["किस राज्य ने अपने पहले आर्थिक सर्वेक्षण 2025-26 में राज्य को 1 ट्रिलियन डॉलर की अर्थव्यवस्था बनाने की योजना प्रस्तुत की है?", "गुजरात", "महाराष्ट्र", "उत्तर प्रदेश", "कर्नाटक", 1],
+  ["SAFF अंडर-19 महिला चैम्पियनशिप का खिताब भारत ने किस देश को हराकर जीता?", "नेपाल", "बांग्लादेश", "श्रीलंका", "मालदीव", 1],
+  ["झारखंड सरकार ने हाल ही में किस वन्यजीव अभयारण्य में जंगल सफारी का शुभारंभ किया है?", "दलमा वन्यजीव अभयारण्य", "पलामू वन्यजीव अभयारण्य", "हजारीबाग वन्यजीव अभयारण्य", "बेतला राष्ट्रीय उद्यान", 0],
+  ["केंद्रीय कृषि मंत्री शिवराज सिंह चौहान ने 'राष्ट्रव्यापी दलहन आत्मनिर्भरता मिशन' का शुभारंभ कहाँ से किया?", "इंदौर, मध्य प्रदेश", "वाराणसी, उत्तर प्रदेश", "सीहोर, मध्य प्रदेश", "पटना, बिहार", 2],
+  ["हाल ही में संयुक्त राज्य अमेरिका ने भारत द्वारा रूसी तेल खरीदने के कारण लगाए गए अतिरिक्त शुल्क को कितना प्रतिशत हटाने की घोषणा की है?", "10%", "15%", "20%", "25%", 2],
+  ["केरल के बाद 'बर्ड एटलस' जारी करने वाला भारत का दूसरा राज्य कौन बना है?", "कर्नाटक", "तमिलनाडु", "महाराष्ट्र", "गोवा", 2],
+  ["100% बीमा कवरेज हासिल करने वाला देश का पहला जिला कौन है?", "अलवर (राजस्थान)", "इंदौर (मध्य प्रदेश)", "सूरत (गुजरात)", "पुणे (महाराष्ट्र)", 0],
+  ["आंध्र प्रदेश सरकार ने 'क्वांटम वैली परियोजना' का शुभारंभ किस शहर में किया है?", "विशाखापत्तनम", "अमरावती", "कुरनूल", "तिरुपति", 0],
+  ["मिलानो-कॉर्टिना 2026 शीतकालीन ओलंपिक के लिए भारत का मशाल वाहक (torchbearer) किसे बनाया गया है?", "नीरज चोपड़ा", "अभिनव बिंद्रा", "पी.वी. सिंधु", "मैरी कॉम", 1],
+  ["भारत ने छठी बार अंडर-19 वनडे क्रिकेट विश्व कप का खिताब किस देश को हराकर जीता?", "ऑस्ट्रेलिया", "पाकिस्तान", "इंग्लैंड", "दक्षिण अफ्रीका", 2],
+  ["पश्चिम बंगाल सरकार ने 'लक्ष्मी भंडार' योजना के तहत दी जाने वाली मासिक वित्तीय सहायता में कितनी राशि की वृद्धि की है?", "₹ 250", "₹ 500", "₹ 750", "₹ 1000", 1],
+  ["हाल ही में उन्नत ड्रोन-रोधी प्रणाली तैनात करने वाला भारत का पहला बंदरगाह कौन बन गया है?", "कांडला पोर्ट", "जवाहरलाल नेहरू पोर्ट", "पारादीप पोर्ट", "वी.ओ. चिदंबरनार पोर्ट", 3],
+  ["दुबई में विश्व सरकार शिखर सम्मेलन के दौरान 'ग्लोबल टीचर प्राइज 2026' से किसे सम्मानित किया गया है?", "आनंद कुमार", "रुबल नागी", "विकास दिव्यकीर्ति", "खान सर", 1],
+  ["विमेंस प्रीमियर लीग (WPL) 2026 के फाइनल में रॉयल चैलेंजर्स बेंगलुरु (RCB) ने किस टीम को हराकर लगातार दूसरी बार खिताब जीता?", "मुंबई इंडियंस", "दिल्ली कैपिटल्स", "यूपी वॉरियर्स", "गुजरात जायंट्स", 1],
+  ["केंद्रीय गृह मंत्री अमित शाह द्वारा शुरू किए गए भारत के पहले सहकारी आधारित राइड-हेलिंग प्लेटफॉर्म का क्या नाम है?", "सहकार यात्रा", "भारत टैक्सी", "जनसफर", "आत्मनिर्भर राइड", 2],
+  ["पश्चिम बंगाल सरकार ने बेरोजगार युवाओं के लिए किस नई योजना की घोषणा की है?", "युवा शक्ति", "बांग्ला युवा साथी", "कर्मभूमि", "उन्नति बांग्ला", 1],
+  ["ग्लोबल फायरपावर द्वारा जारी 2026 की मिलिट्री स्ट्रेंथ रैंकिंग में भारत का स्थान क्या है?", "दूसरा", "तीसरा", "चौथा", "पाँचवाँ", 2],
+  ["हाल ही में भारत सरकार ने भगवान बुद्ध का कौन-सा पवित्र अवशेष अंतर्राष्ट्रीय प्रदर्शनी के लिए श्रीलंका के गंगारामया मंदिर भेजा है?", "कपिलवस्तु अवशेष", "सारनाथ अवशेष", "देवनीमोरी अवशेष", "वैशाली अवशेष", 0],
+  ["4 फरवरी 2026 को मणिपुर के 13वें मुख्यमंत्री के रूप में किसने शपथ ली?", "एन. बीरेन सिंह", "युमनाम खेमचंद सिंह", "नेमचा किपगेन", "टी.एच. विश्वजीत सिंह", 1],
+  ["यूरोपीय विमानन कंपनी एयरबस ने भारत में अपना नया उत्कृष्टता केंद्र कहाँ खोला है?", "IIT बॉम्बे", "IISC बेंगलुरु", "गति शक्ति विश्वविद्यालय", "IIT मद्रास", 1],
+  ["ऑस्ट्रेलियन ओपन 2026 का पुरुष एकल खिताब कार्लोस अल्काराज ने किसे हराकर जीता है?", "राफेल नडाल", "डेनियल मेदवेदेव", "नोवाक जोकोविच", "अलेक्जेंडर ज्वेरेव", 2],
+  ["हाल ही में AIIMS, नई दिल्ली ने किस IIT के साथ मिलकर 'टेली-रोबोटिक अल्ट्रासाउंड सिस्टम' विकसित किया है?", "IIT बॉम्बे", "IIT मद्रास", "IIT कानपुर", "IIT दिल्ली", 3],
+  ["हाल ही में रक्षा मंत्रालय ने किस रक्षा उपक्रम को 'मिनीरत्न' श्रेणी-I का दर्जा प्रदान किया है?", "हिंदुस्तान एयरोनॉटिक्स लिमिटेड (HAL)", "भारत इलेक्ट्रॉनिक्स लिमिटेड (BEL)", "यंत्र इंडिया लिमिटेड (YIL)", "भारत डायनामिक्स लिमिटेड (BDL)", 2],
+  ["पहली बार 'वैश्विक बिग कैट शिखर सम्मेलन' की मेजबानी किस देश को सौंपी गई है?", "दक्षिण अफ्रीका", "ब्राज़ील", "भारत", "केन्या", 2],
+  ["68वें ग्रैमी पुरस्कार समारोह में किसे उनके स्पोकन-वर्ड एल्बम 'मेडिटेशंस' के लिए पहली बार ग्रैमी पुरस्कार मिला?", "बराक ओबामा", "दलाई लामा", "मलाला यूसुफजई", "पोप फ्रांसिस", 1],
+  ["भारत का केंद्रीय बजट 2026-27, संसदीय इतिहास में पहली बार किस दिन पेश किया गया?", "सोमवार", "शनिवार", "रविवार", "शुक्रवार", 2]
+];
+
+let userState = new Array(rawData.length).fill(null); 
+let currentQuiz = 0;
+let score = 0;
+let timeLeft = 20; 
+let timerInterval;
+
+const questionEl = document.getElementById("question");
+const optionsEl = document.getElementById("options");
+const nextBtn = document.getElementById("nextBtn");
+const quizDiv = document.getElementById("quiz");
+const scoreBox = document.getElementById("scoreBox");
+const finalScore = document.getElementById("finalScore");
+const qCount = document.getElementById("q-count");
+const scoreTracker = document.getElementById("score-tracker");
+const timeEl = document.getElementById("time");
+const progressBar = document.getElementById("progressBar");
+const paletteEl = document.getElementById("palette");
+const summaryBox = document.getElementById("summaryBox");
+
+function initPalette() {
+  paletteEl.innerHTML = "";
+  for(let i = 0; i < rawData.length; i++) {
+    const btn = document.createElement("button");
+    btn.innerText = i + 1;
+    btn.classList.add("palette-btn");
+    btn.id = "pal-btn-" + i;
+    btn.onclick = () => goToQuestion(i);
+    paletteEl.appendChild(btn);
+  }
+}
+
+function updatePaletteUI() {
+  const allPalBtns = document.querySelectorAll(".palette-btn");
+  allPalBtns.forEach((btn, index) => {
+    btn.classList.remove("current", "answered-correct", "answered-wrong", "timeout");
+    
+    if(userState[index]) {
+      if(userState[index].status === "timeout") {
+        btn.classList.add("timeout");
+      } else if(userState[index].isCorrect) {
+        btn.classList.add("answered-correct");
+      } else {
+        btn.classList.add("answered-wrong");
+      }
+    }
+    if(index === currentQuiz) btn.classList.add("current");
+  });
+}
+
+function goToQuestion(index) {
+  currentQuiz = index;
+  loadQuiz();
+}
+
+function startTimer() {
+  timeLeft = 20;
+  timeEl.innerText = timeLeft;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timeEl.innerText = timeLeft;
+    if(timeLeft <= 0) {
+      clearInterval(timerInterval);
+      handleTimeOut();
+    }
+  }, 1000);
+}
+
+function handleTimeOut() {
+  clearInterval(timerInterval);
+  timeEl.innerText = "Time Out";
+  
+  const correctAns = rawData[currentQuiz][5];
+  const allBtns = optionsEl.querySelectorAll(".option");
+  
+  allBtns[correctAns].classList.add("correct");
+  allBtns.forEach(b => { b.disabled = true; b.style.cursor = "default"; b.style.opacity = "0.7"; });
+  
+  userState[currentQuiz] = {
+      status: "timeout",
+      selected: "समय समाप्त ⏱",
+      correct: rawData[currentQuiz][correctAns + 1],
+      isCorrect: false
+  };
+
+  updatePaletteUI();
+  nextBtn.style.display = "block";
+  checkQuizEnd();
+}
+
+function loadQuiz() {
+  clearInterval(timerInterval);
+  nextBtn.style.display = "none";
+  
+  const currentData = rawData[currentQuiz];
+  const progressPercent = ((currentQuiz) / rawData.length) * 100;
+  progressBar.style.width = progressPercent + "%";
+  
+  questionEl.innerText = currentData[0];
+  qCount.innerText = "प्र " + (currentQuiz + 1) + " / " + rawData.length;
+  scoreTracker.innerText = "⭐ " + score;
+  optionsEl.innerHTML = "";
+  
+  const state = userState[currentQuiz];
+  const optionsList = [currentData[1], currentData[2], currentData[3], currentData[4]];
+
+  optionsList.forEach((opt, index) => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.classList.add("option");
+    
+    if(state) {
+        btn.disabled = true;
+        btn.style.cursor = "default";
+        if(state.status === "timeout" && index === currentData[5]) {
+           btn.classList.add("correct");
+           btn.style.opacity = "0.7";
+        }
+        else if (state.status === "answered") {
+           if(index === currentData[5]) btn.classList.add("correct");
+           if(index === state.selectedIndex && !state.isCorrect) btn.classList.add("wrong");
+        }
+    } else {
+        btn.onclick = () => selectOption(index, btn);
+    }
+    optionsEl.appendChild(btn);
+  });
+
+  updatePaletteUI();
+  if(state) {
+      timeEl.innerText = state.status === "timeout" ? "Out" : "Done";
+      nextBtn.style.display = "block";
+      checkQuizEnd();
+  } else {
+      startTimer();
+  }
+}
+
+function selectOption(index, btn) {
+  clearInterval(timerInterval); 
+  
+  const correctAns = rawData[currentQuiz][5];
+  const allBtns = optionsEl.querySelectorAll(".option");
+  const isCorrect = index === correctAns;
+  
+  if(isCorrect) {
+    btn.classList.add("correct");
+    score++;
+    scoreTracker.innerText = "⭐ " + score;
+  } else {
+    btn.classList.add("wrong");
+    allBtns[correctAns].classList.add("correct");
+  }
+
+  userState[currentQuiz] = {
+      status: "answered",
+      selectedIndex: index,
+      selected: rawData[currentQuiz][index + 1],
+      correct: rawData[currentQuiz][correctAns + 1],
+      isCorrect: isCorrect
+  };
+  
+  allBtns.forEach(b => { b.disabled = true; b.style.cursor = "default"; });
+  updatePaletteUI();
+  nextBtn.style.display = "block";
+  checkQuizEnd();
+}
+
+function checkQuizEnd() {
+    const allAnswered = userState.every(state => state !== null);
+    if(allAnswered || currentQuiz === rawData.length - 1) { 
+        nextBtn.innerText = allAnswered ? "रिजल्ट देखें 🏆" : "अगला प्रश्न ➔";
+    }
+}
+
+function nextQuestion() {
+  const allAnswered = userState.every(state => state !== null);
+  if(allAnswered && currentQuiz === rawData.length - 1) {
+      showScore();
+      return;
+  }
+  if(currentQuiz < rawData.length - 1) { 
+      currentQuiz++; loadQuiz(); 
+  } else { showScore(); }
+}
+
+function showScore() {
+  quizDiv.style.display = "none";
+  scoreBox.style.display = "block";
+  progressBar.style.width = "100%";
+  finalScore.innerText = score + " / " + rawData.length;
+  
+  let summaryHTML = "<h3 style='text-align:center; margin-top:0; color:#1c1e21;'>उत्तरों की समीक्षा (Review)</h3>";
+  userState.forEach((ans, i) => {
+      if(!ans) return; 
+      summaryHTML += `<div class="summary-item">
+          <div class="s-q">Q${i+1}. ${rawData[i][0]}</div>
+          ${ans.isCorrect
+              ? `<div class="s-correct">✅ आपका उत्तर: ${ans.selected}</div>`
+              : `<div class="s-wrong">❌ आपका उत्तर: ${ans.selected}</div>
+                 <div class="s-true-ans">👉 सही उत्तर: ${ans.correct}</div>`
+          }
+      </div>`;
+  });
+  summaryBox.innerHTML = summaryHTML;
+  confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#1a73e8', '#34a853', '#fbbc04', '#ea4335'] });
+}
+
+function retryQuiz() {
+  currentQuiz = 0; score = 0; 
+  userState = new Array(rawData.length).fill(null); 
+  quizDiv.style.display = "block"; scoreBox.style.display = "none";
+  nextBtn.innerText = "अगला प्रश्न ➔";
+  initPalette(); loadQuiz();
+}
+
+initPalette(); loadQuiz();
+</script>
+</body>
+</html>
