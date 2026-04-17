@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indian Rivers Quiz</title>
+<style>
+  body { 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #f0f2f5; 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    justify-content: center; 
+  }
+  .quiz-container { 
+    background-color: white; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    padding: 25px; 
+    max-width: 600px; 
+    width: 100%; 
+  }
+  h2 { color: #1c1e21; font-size: 1.25em; margin-top: 0; line-height: 1.4;}
+  .header-info { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 15px; 
+    color: #606770; 
+    font-size: 0.95em; 
+    font-weight: 600;
+  }
+  .option { 
+    background-color: #f0f2f5; 
+    border: 2px solid transparent; 
+    padding: 15px; 
+    width: 100%; 
+    text-align: left; 
+    margin-bottom: 10px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 1em; 
+    transition: all 0.2s ease; 
+    color: #1c1e21;
+  }
+  .option:hover { background-color: #e4e6eb; }
+  .correct { background-color: #e6f4ea; color: #137333; border: 2px solid #137333; }
+  .wrong { background-color: #fce8e6; color: #c5221f; border: 2px solid #c5221f; }
+  .btn { 
+    background-color: #1a73e8; 
+    color: white; 
+    border: none; 
+    padding: 12px 20px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 1.05em; 
+    font-weight: bold;
+    display: none; 
+    margin-top: 15px; 
+    width: 100%;
+  }
+  .btn:hover { background-color: #1557b0; }
+  .score-box { text-align: center; display: none; padding: 20px 0;}
+  #retryBtn { display: inline-block; background-color: #1877f2; margin-top: 20px; width: auto; padding: 12px 30px;}
+</style>
+</head>
+<body>
+<div class="quiz-container">
+  <div id="quiz">
+    <div class="header-info">
+        <span id="q-count">Question 1/50</span>
+        <span id="score-tracker">Score: 0</span>
+    </div>
+    <h2 id="question">Loading...</h2>
+    <div id="options"></div>
+    <button id="nextBtn" class="btn" onclick="nextQuestion()">अगला प्रश्न</button>
+  </div>
+  
+  <div id="scoreBox" class="score-box">
+    <h2>क्विज़ समाप्त! 🎉</h2>
+    <p style="color: #606770; margin-bottom: 10px;">आपका अंतिम स्कोर:</p>
+    <p id="finalScore" style="font-size: 2.5em; font-weight: bold; color: #1a73e8; margin: 0;"></p>
+    <button id="retryBtn" class="btn" onclick="retryQuiz()">फिर से प्रयास करें (Retry) 🔄</button>
+  </div>
+</div>
+
+<script>
+const quizData = [
+  { q: "भारत की सबसे लंबी नदी कौन सी है?", options: ["ब्रह्मपुत्र", "गंगा", "गोदावरी", "यमुना"], ans: 1 },
+  { q: "गंगा नदी का उद्गम स्थल कौन सा है?", options: ["मानसरोवर", "गंगोत्री हिमनद", "यमुनोत्री", "अमरकंटक"], ans: 1 },
+  { q: "तिब्बत में ब्रह्मपुत्र नदी को किस नाम से जाना जाता है?", options: ["सांगपो (Tsangpo)", "पद्मा", "मेघना", "दिहांग"], ans: 0 },
+  { q: "'दक्षिण गंगा' (Dakshin Ganga) के नाम से किस नदी को जाना जाता है?", options: ["कावेरी", "कृष्णा", "महानदी", "गोदावरी"], ans: 3 },
+  { q: "इनमें से कौन सी नदी डेल्टा नहीं बनाती, बल्कि एश्चुअरी (Estuary) बनाती है?", options: ["नर्मदा", "गंगा", "गोदावरी", "महानदी"], ans: 0 },
+  { q: "नर्मदा नदी का उद्गम स्थल कहाँ है?", options: ["महाबलेश्वर", "त्रयंबकेश्वर", "अमरकंटक की पहाड़ियाँ", "ब्रह्मगिरि"], ans: 2 },
+  { q: "इनमें से कौन सी नदी कर्क रेखा (Tropic of Cancer) को दो बार काटती है?", options: ["नर्मदा", "माही", "ताप्ती", "चंबल"], ans: 1 },
+  { q: "बिहार का शोक (Sorrow of Bihar) किस नदी को कहा जाता है?", options: ["कोसी", "दामोदर", "गंडक", "सोन"], ans: 0 },
+  { q: "बंगाल का शोक (Sorrow of Bengal) किस नदी को कहा जाता था?", options: ["हुगली", "ब्रह्मपुत्र", "तीस्ता", "दामोदर"], ans: 3 },
+  { q: "भागीरथी और अलकनंदा नदियाँ कहाँ मिलकर 'गंगा' का निर्माण करती हैं?", options: ["रुद्रप्रयाग", "देवप्रयाग", "कर्णप्रयाग", "विष्णुप्रयाग"], ans: 1 },
+  { q: "भारत की सबसे लंबी सहायक नदी (Tributary) कौन सी है?", options: ["सोन", "चंबल", "यमुना", "कोसी"], ans: 2 },
+  { q: "विश्व का सबसे बड़ा नदी द्वीप 'माजुली' किस नदी पर स्थित है?", options: ["गंगा", "ब्रह्मपुत्र", "गोदावरी", "सिंधु"], ans: 1 },
+  { q: "प्रसिद्ध शहर 'अयोध्या' किस नदी के तट पर स्थित है?", options: ["सरयू", "यमुना", "गंगा", "गोमती"], ans: 0 },
+  { q: "उज्जैन का प्रसिद्ध महाकालेश्वर मंदिर किस नदी के किनारे स्थित है?", options: ["नर्मदा", "क्षिप्रा", "चंबल", "ताप्ती"], ans: 1 },
+  { q: "सिंधु नदी की कौन सी सहायक नदी पूरी तरह से भारत में बहती है?", options: ["झेलम", "चिनाब", "व्यास", "रावी"], ans: 2 },
+  { q: "श्रीनगर किस नदी के तट पर बसा है?", options: ["झेलम", "सिंधु", "सतलुज", "चिनाब"], ans: 0 },
+  { q: "सूरत शहर किस नदी के किनारे स्थित है?", options: ["नर्मदा", "ताप्ती", "माही", "साबरमती"], ans: 1 },
+  { q: "लखनऊ शहर किस नदी के तट पर है?", options: ["गंगा", "गोमती", "यमुना", "सरयू"], ans: 1 },
+  { q: "अहमदाबाद शहर किस नदी के किनारे बसा है?", options: ["साबरमती", "नर्मदा", "ताप्ती", "लूनी"], ans: 0 },
+  { q: "भाखड़ा-नांगल बांध किस नदी पर बनाया गया है?", options: ["व्यास", "सतलुज", "रावी", "चिनाब"], ans: 1 },
+  { q: "हीराकुंड बांध (भारत का सबसे लंबा बांध) किस नदी पर स्थित है?", options: ["गोदावरी", "कृष्णा", "महानदी", "कावेरी"], ans: 2 },
+  { q: "नागार्जुन सागर बांध किस नदी पर बना है?", options: ["कावेरी", "कृष्णा", "तुंगभद्रा", "पेन्नार"], ans: 1 },
+  { q: "सरदार सरोवर बांध किस नदी पर स्थित है?", options: ["ताप्ती", "चंबल", "माही", "नर्मदा"], ans: 3 },
+  { q: "भारत का सबसे ऊँचा बांध 'टिहरी बांध' किस नदी पर स्थित है?", options: ["अलकनंदा", "भागीरथी", "मंदाकिनी", "यमुना"], ans: 1 },
+  { q: "जोग जलप्रपात (Jog Falls) किस नदी पर स्थित है?", options: ["कावेरी", "शरावती", "नर्मदा", "पेरियार"], ans: 1 },
+  { q: "शिवसमुद्रम जलप्रपात किस नदी द्वारा बनाया गया है?", options: ["कृष्णा", "कावेरी", "गोदावरी", "महानदी"], ans: 1 },
+  { q: "गोदावरी नदी का उद्गम स्थल कौन सा है?", options: ["त्रयंबकेश्वर (नासिक)", "महाबलेश्वर", "अमरकंटक", "ब्रह्मगिरि"], ans: 0 },
+  { q: "कृष्णा नदी का उद्गम कहाँ से होता है?", options: ["महाबलेश्वर", "नासिक", "कुर्ग", "मुलताई"], ans: 0 },
+  { q: "कावेरी नदी का उद्गम स्थल कौन सा है?", options: ["त्रयंबकेश्वर", "महाबलेश्वर", "ब्रह्मगिरि पहाड़ियाँ", "अन्नामलाई"], ans: 2 },
+  { q: "लूनी नदी जो थार मरुस्थल की प्रमुख नदी है, कहाँ जाकर समाप्त होती है?", options: ["अरब सागर", "खंभात की खाड़ी", "कच्छ के रण (Rann of Kutch)", "बंगाल की खाड़ी"], ans: 2 },
+  { q: "इनमें से कौन सी नदी रिफ्ट वैली (भ्रंश घाटी) से होकर बहती है?", options: ["नर्मदा", "गंगा", "ब्रह्मपुत्र", "कृष्णा"], ans: 0 },
+  { q: "नर्मदा की जुड़वाँ (Twin) किस नदी को कहा जाता है?", options: ["लूनी", "ताप्ती", "माही", "साबरमती"], ans: 1 },
+  { q: "सोन नदी का उद्गम स्थल कहाँ है?", options: ["अमरकंटक", "विंध्य पर्वत", "अरावली", "छोटानागपुर"], ans: 0 },
+  { q: "चंबल नदी का उद्गम कहाँ से होता है?", options: ["जानापाव पहाड़ियाँ (म.प्र.)", "अरावली", "विंध्य", "सतपुड़ा"], ans: 0 },
+  { q: "यमुना नदी गंगा में कहाँ मिलती है?", options: ["कानपुर", "वाराणसी", "प्रयागराज (इलाहाबाद)", "पटना"], ans: 2 },
+  { q: "सोन नदी गंगा में किस स्थान के पास मिलती है?", options: ["प्रयागराज", "पटना", "कानपुर", "हरिद्वार"], ans: 1 },
+  { q: "भारत और नेपाल के बीच कौन सी नदी सीमा बनाती है?", options: ["काली नदी", "कोसी", "गंडक", "तीस्ता"], ans: 0 },
+  { q: "सतलुज नदी का उद्गम कहाँ से होता है?", options: ["रोहतांग दर्रा", "राक्षस ताल (तिब्बत)", "मानसरोवर", "गंगोत्री"], ans: 1 },
+  { q: "झेलम नदी का उद्गम कहाँ से होता है?", options: ["वेरीनाग झरना (कश्मीर)", "रोहतांग दर्रा", "बारालाचा दर्रा", "कैलाश पर्वत"], ans: 0 },
+  { q: "इनमें से कौन सी नदी पश्चिम की ओर बहने वाली (West flowing) नदी नहीं है?", options: ["नर्मदा", "ताप्ती", "गोदावरी", "माही"], ans: 2 },
+  { q: "किस नदी को 'नमक की नदी' (Salt River) भी कहा जाता है?", options: ["माही", "लूनी", "साबरमती", "घग्गर"], ans: 1 },
+  { q: "राष्ट्रीय जलमार्ग-1 (NW-1) किस नदी पर स्थित है?", options: ["ब्रह्मपुत्र", "गंगा", "गोदावरी", "कृष्णा"], ans: 1 },
+  { q: "गुवाहाटी और डिब्रूगढ़ शहर किस नदी के किनारे स्थित हैं?", options: ["तीस्ता", "हुगली", "ब्रह्मपुत्र", "पद्मा"], ans: 2 },
+  { q: "बेतवा नदी का उद्गम कहाँ से होता है?", options: ["विंध्य पर्वत श्रृंखला", "अरावली", "सतपुड़ा", "पश्चिमी घाट"], ans: 0 },
+  { q: "कौन सी नदी अपने मार्ग बदलने के लिए सबसे अधिक प्रसिद्ध है?", options: ["गंगा", "यमुना", "ब्रह्मपुत्र", "कोसी"], ans: 3 },
+  { q: "कटक (उड़ीसा) शहर किस नदी के किनारे बसा है?", options: ["ब्राह्मणी", "बैतरणी", "महानदी", "स्वर्णरेखा"], ans: 2 },
+  { q: "इनमें से कौन सी नदी उत्तर भारत और दक्षिण भारत के बीच प्राकृतिक विभाजक मानी जाती है?", options: ["नर्मदा", "गंगा", "कृष्णा", "कावेरी"], ans: 0 },
+  { q: "सिंधु जल संधि (1960) के अनुसार भारत किन तीन नदियों के पानी का पूरी तरह से उपयोग कर सकता है?", options: ["सिंधु, झेलम, चिनाब", "रावी, व्यास, सतलुज", "सिंधु, रावी, व्यास", "झेलम, चिनाब, रावी"], ans: 1 },
+  { q: "हुगली नदी के किनारे कौन सा प्रमुख शहर बसा है?", options: ["कोलकाता", "चेन्नई", "मुंबई", "विशाखापत्तनम"], ans: 0 },
+  { q: "बांग्लादेश में गंगा नदी को किस नाम से पुकारा जाता है?", options: ["मेघना", "पद्मा", "जमुना", "सांगपो"], ans: 1 }
+];
+
+let currentQuiz = 0;
+let score = 0;
+let answered = false;
+
+const questionEl = document.getElementById("question");
+const optionsEl = document.getElementById("options");
+const nextBtn = document.getElementById("nextBtn");
+const quizDiv = document.getElementById("quiz");
+const scoreBox = document.getElementById("scoreBox");
+const finalScore = document.getElementById("finalScore");
+const qCount = document.getElementById("q-count");
+const scoreTracker = document.getElementById("score-tracker");
+
+function loadQuiz() {
+  answered = false;
+  nextBtn.style.display = "none";
+  const currentData = quizData[currentQuiz];
+  questionEl.innerText = currentData.q;
+  qCount.innerText = "प्रश्न " + (currentQuiz + 1) + " / " + quizData.length;
+  scoreTracker.innerText = "स्कोर: " + score;
+  optionsEl.innerHTML = "";
+  
+  currentData.options.forEach((opt, index) => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.classList.add("option");
+    btn.onclick = () => selectOption(index, btn);
+    optionsEl.appendChild(btn);
+  });
+}
+
+function selectOption(index, btn) {
+  if(answered) return;
+  answered = true;
+  const correctAns = quizData[currentQuiz].ans;
+  const allBtns = optionsEl.querySelectorAll(".option");
+  
+  if(index === correctAns) {
+    btn.classList.add("correct");
+    score++;
+    scoreTracker.innerText = "स्कोर: " + score;
+  } else {
+    btn.classList.add("wrong");
+    allBtns[correctAns].classList.add("correct");
+  }
+  
+  allBtns.forEach(b => b.style.cursor = "default");
+  nextBtn.style.display = "block";
+  if(currentQuiz === quizData.length - 1) {
+      nextBtn.innerText = "रिजल्ट देखें";
+  }
+}
+
+function nextQuestion() {
+  currentQuiz++;
+  if(currentQuiz < quizData.length) {
+    loadQuiz();
+  } else {
+    showScore();
+  }
+}
+
+function showScore() {
+  quizDiv.style.display = "none";
+  scoreBox.style.display = "block";
+  finalScore.innerText = score + " / " + quizData.length;
+}
+
+function retryQuiz() {
+  currentQuiz = 0;
+  score = 0;
+  quizDiv.style.display = "block";
+  scoreBox.style.display = "none";
+  nextBtn.innerText = "अगला प्रश्न";
+  loadQuiz();
+}
+
+// Initialize quiz
+loadQuiz();
+</script>
+</body>
+</html>
