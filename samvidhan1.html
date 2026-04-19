@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>संविधान का विकास- Advanced Mock Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Changed to flex-start for summary scrolling */
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .options li:not(.disabled):hover {
+            background-color: #e9ecef;
+        }
+        .options li.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+        }
+        .options li.wrong {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+        .options li.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .pagination-wrapper {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .page-num {
+            background-color: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .page-num:hover {
+            background-color: #ddd;
+        }
+        .page-num.active {
+            box-shadow: 0 0 0 2px #000 inset; /* Black border inside to show current */
+        }
+        .page-num.answered-correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .page-num.answered-wrong {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        #result-text {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+            min-height: 24px;
+        }
+        
+        /* Summary Styles */
+        .summary-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .summary-correct {
+            border-left: 5px solid #28a745;
+        }
+        .summary-wrong {
+            border-left: 5px solid #dc3545;
+        }
+        .summary-unattempted {
+            border-left: 5px solid #ffc107;
+        }
+        .summary-item p { margin: 5px 0; font-size: 15px; }
+        .score-board {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quiz-main-container">
+    <div class="header">
+        <h2 id="quiz-title">महत्वपूर्ण दिवस एवं थीम - सम्पूर्ण टेस्ट</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">62</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    
+    <ul class="options" id="options-list"></ul>
+
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें और रिजल्ट देखें</button>
+
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;">
+    </div>
+
+<script>
+    const originalQuestions = [
+        // ---------- भारत का संवैधानिक विकास (Image 1 & Top of Image 2) ----------
+        {
+            question: "भारतीय संविधान के ऐतिहासिक विकास का काल कब से प्रारम्भ माना जाता है?",
+            options: ["1600 ई. से", "1757 ई. से", "1773 ई. से", "1858 ई. से"],
+            answer: "1600 ई. से"
+        },
+        {
+            question: "रेगुलेटिंग ऐक्ट कब पारित किया गया?",
+            options: ["1773 ई. में", "1784 ई. में", "1793 ई. में", "1813 ई. में"],
+            answer: "1773 ई. में"
+        },
+        {
+            question: "सर्वप्रथम उच्चतम न्यायालय की स्थापना का प्रावधान किस अधिनियम के द्वारा किया गया?",
+            options: ["पिट्स इंडिया एक्ट 1784", "रेगुलेटिंग ऐक्ट 1773 द्वारा", "चार्टर एक्ट 1813", "भारत सरकार अधिनियम 1858"],
+            answer: "रेगुलेटिंग ऐक्ट 1773 द्वारा"
+        },
+        {
+            question: "किस अधिनियम द्वारा भारत के गवर्नर जनरल को अध्यादेश जारी करने की शक्ति प्रदान की गयी?",
+            options: ["भारतीय परिषद् अधिनियम, 1892", "भारतीय परिषद् अधिनियम, 1861", "भारत सरकार अधिनियम, 1909", "भारत सरकार अधिनियम, 1919"],
+            answer: "भारतीय परिषद् अधिनियम, 1861"
+        },
+        {
+            question: "भारत के गवर्नर जनरल को किस ऐक्ट के द्वारा अपनी समिति के निर्णय को अस्वीकार करने का अधिकार मिला?",
+            options: ["1784 का पिट्स इंडिया एक्ट", "1786 का एमेण्डमेन्ट ऐक्ट", "1793 का चार्टर एक्ट", "1813 का चार्टर एक्ट"],
+            answer: "1786 का एमेण्डमेन्ट ऐक्ट"
+        },
+        {
+            question: "भारत के लिए 'सेक्रेटरी ऑफ स्टेट' की नियुक्ति किस अधिनियम के अन्तर्गत की गयी?",
+            options: ["भारत सरकार अधिनियम, 1858", "भारतीय परिषद् अधिनियम, 1861", "चार्टर एक्ट, 1853", "मार्ले-मिंटो सुधार, 1909"],
+            answer: "भारत सरकार अधिनियम, 1858"
+        },
+        {
+            question: "किस अधिनियम के अधीन अप्रत्यक्ष निर्वाचन के सिद्धांत को मान्यता दी गयी?",
+            options: ["भारतीय परिषद् अधिनियम, 1892", "भारतीय परिषद् अधिनियम, 1909", "भारत शासन अधिनियम, 1919", "भारत शासन अधिनियम, 1935"],
+            answer: "भारतीय परिषद् अधिनियम, 1892"
+        },
+        {
+            question: "द्वैध-शासन की प्रांतों में पद्धति का प्रारंभ कब किया गया?",
+            options: ["1909 ई. में", "1919 ई. में", "1935 ई. में", "1947 ई. में"],
+            answer: "1919 ई. में"
+        },
+        {
+            question: "विधायी कार्यों को प्रशासनिक कार्यों से पृथक् करने की व्यवस्था किस चार्टर ऐक्ट के द्वारा की गयी?",
+            options: ["चार्टर ऐक्ट, 1833", "चार्टर ऐक्ट, 1853", "भारत सरकार अधिनियम, 1858", "भारतीय परिषद् अधिनियम, 1861"],
+            answer: "चार्टर ऐक्ट, 1853"
+        },
+        {
+            question: "भारत में ईस्ट इंडिया कम्पनी के शासन को किस अधिनियम के द्वारा समाप्त किया गया?",
+            options: ["चार्टर एक्ट 1853", "भारत सरकार अधिनियम, 1858", "भारतीय परिषद् अधिनियम 1861", "महारानी की घोषणा 1876"],
+            answer: "भारत सरकार अधिनियम, 1858"
+        },
+        {
+            question: "'मिंटो-मार्ले सुधार' किस अधिनियम को कहा जाता है?",
+            options: ["भारतीय परिषद् अधिनियम, 1892", "भारतीय परिषद् अधिनियम, 1909", "भारत शासन अधिनियम, 1919", "भारत शासन अधिनियम, 1935"],
+            answer: "भारतीय परिषद् अधिनियम, 1909"
+        },
+        {
+            question: "'मिंटो-मार्ले सुधार बिल' किस वर्ष में पारित किया गया?",
+            options: ["1905 ई. में", "1909 ई. में", "1911 ई. में", "1919 ई. में"],
+            answer: "1909 ई. में"
+        },
+        {
+            question: "महारानी विक्टोरिया को भारत की साम्राज्ञी कब नियुक्त किया गया?",
+            options: ["1858 ई. को", "1876 ई. को", "1877 ई. को", "1885 ई. को"],
+            answer: "1877 ई. को"
+        },
+        {
+            question: "मिन्टो-मार्ले सुधार का उद्देश्य क्या था?",
+            options: ["पूर्ण स्वतंत्रता", "प्रांतीय स्वायत्तता", "पृथक निर्वाचन प्रणाली", "द्वैध शासन की स्थापना"],
+            answer: "पृथक निर्वाचन प्रणाली"
+        },
+        {
+            question: "मुसलमानों के लिए अतिरिक्त निर्वाचक मण्डल प्रारम्भ में किसके द्वारा लाया गया था?",
+            options: ["क्रिप्स मिशन, 1942", "मॉन्टेग्यू-चेम्सफोर्ड सुधार, 1919", "मिन्टो-मार्ले सुधार, 1909", "भारत सरकार अधिनियम, 1935"],
+            answer: "मिन्टो-मार्ले सुधार, 1909"
+        },
+        {
+            question: "मॉन्टेग्यू-चेम्स फोर्ड सुधार में प्रावधानों का क्या सार था?",
+            options: ["प्रांतों में दोहरा शासन", "राज्यों की स्वायत्तता", "हिंदू-मुस्लिम हेतु अलग निर्वाचन", "राज्यपालों को वीटो शक्ति"],
+            answer: "प्रांतों में दोहरा शासन"
+        },
+        {
+            question: "किस अधिनियम को मोंटेग्यु चेम्सफोर्ड सुधार के नाम से जाना जाता है?",
+            options: ["भारतीय परिषद् अधिनियम, 1909", "भारत शासन अधिनियम, 1919", "भारत शासन अधिनियम, 1935", "स्वतंत्रता अधिनियम, 1947"],
+            answer: "भारत शासन अधिनियम, 1919"
+        },
+        {
+            question: "भारत में संघीय व्यवस्था के लिए किस अधिनियम में पहली बार उल्लेख किया गया?",
+            options: ["भारत सरकार अधिनियम, 1919", "भारत सरकार अधिनियम, 1935", "क्रिप्स मिशन, 1942", "कैबिनेट मिशन, 1946"],
+            answer: "भारत सरकार अधिनियम, 1935"
+        },
+        {
+            question: "किस अधिनियम के तहत अखिल भारतीय महासंघ स्थापित करने का प्रावधान शामिल किया गया था?",
+            options: ["अगस्त प्रस्ताव, 1940", "भारत सरकार अधिनियम, 1919", "भारत सरकार अधिनियम, 1935", "कैबिनेट मिशन योजना, 1946"],
+            answer: "भारत सरकार अधिनियम, 1935"
+        },
+        {
+            question: "भारत शासन अधिनियम, 1935 द्वारा स्थापित संघ में अवशिष्ट शक्तियाँ किसे दी गई थी?",
+            options: ["प्रांतीय विधानमंडलों को", "संघीय विधानमंडल को", "गवर्नर जनरल को", "प्रांतीय गवर्नरों को"],
+            answer: "गवर्नर जनरल को"
+        },
+        {
+            question: "किस अधिनियम के तहत प्रत्यक्ष निर्वाचन सिद्धांत को मान्यता दी गयी?",
+            options: ["भारतीय परिषद् अधिनियम, 1892", "भारतीय परिषद् अधिनियम, 1909", "भारत सरकार अधिनियम, 1919", "भारत सरकार अधिनियम, 1935"],
+            answer: "भारत सरकार अधिनियम, 1919"
+        },
+        {
+            question: "सर्वप्रथम संविधान सभा के गठन का आश्वासन किस प्रस्ताव द्वारा दिया गया था?",
+            options: ["अगस्त प्रस्ताव", "क्रिप्स योजना", "कैबिनेट मिशन योजना", "वेवेल योजना"],
+            answer: "क्रिप्स योजना"
+        },
+        {
+            question: "भारत सरकार द्वारा 'अगस्त प्रस्ताव' कब पारित किया गया?",
+            options: ["8 अगस्त, 1940 ई. में", "9 अगस्त, 1942 ई. में", "8 अगस्त, 1942 ई. में", "15 अगस्त, 1940 ई. में"],
+            answer: "8 अगस्त, 1940 ई. में"
+        },
+        {
+            question: "राजगोपालाचारी फार्मूला कब प्रस्तुत किया गया?",
+            options: ["10 जुलाई, 1944 को", "14 जून, 1945 को", "24 मार्च, 1946 को", "16 अगस्त, 1946 को"],
+            answer: "10 जुलाई, 1944 को"
+        },
+        {
+            question: "अधिशासी परिषद के गठन का प्रस्ताव किस योजना के अंतर्गत दिया गया?",
+            options: ["क्रिप्स योजना के", "कैबिनेट मिशन के", "माउंटबेटन योजना के", "वेवेल योजना के"],
+            answer: "वेवेल योजना के"
+        },
+        {
+            question: "'कैबिनेट मिशन' की तीन सदस्य कौन-कौन थे?",
+            options: ["लॉर्ड माउंटबेटन, क्रिप्स, क्लीमेंट एटली", "पैथिक लारेंस, स्टेफोर्ड क्रिप्स, ए. वी. अलेक्जेंडर", "लॉर्ड लिनलिथगो, पैथिक लारेंस, ए. वी. अलेक्जेंडर", "साइमन, क्रिप्स, अलेक्जेंडर"],
+            answer: "पैथिक लारेंस, स्टेफोर्ड क्रिप्स, ए. वी. अलेक्जेंडर"
+        },
+        {
+            question: "1909 के इण्डियन कौंसिल एक्ट में किस बात की व्यवस्था की गयी थी?",
+            options: ["द्वैध शासन प्रणाली की", "संघीय व्यवस्था की", "साम्प्रदायिक प्रतिनिधित्व की", "प्रांतीय स्वायत्तता की"],
+            answer: "साम्प्रदायिक प्रतिनिधित्व की"
+        },
+        {
+            question: "वी. आर. अम्बेदकर और महात्मा गाँधी के मध्य 1932 में हस्ताक्षरित पूना समझौता में प्रावधान था?",
+            options: ["हरिजनों के लिए पृथक निर्वाचन क्षेत्र", "हरिजनों के लिए आरक्षण एवं संयुक्त निर्वाचन क्षेत्र", "भारत के लिए डोमिनियन स्थिति", "मुसलमानों के लिए पृथक निर्वाचन"],
+            answer: "हरिजनों के लिए आरक्षण एवं संयुक्त निर्वाचन क्षेत्र"
+        },
+        {
+            question: "भारतीयों को वर्ष 1947 में सार्वभौम सत्ता सौंपने की योजना किस नाम से जानी गयी?",
+            options: ["डूरंड योजना", "मिंटो-मार्ले योजना", "माउण्टबेटन योजना", "वेवेल योजना"],
+            answer: "माउण्टबेटन योजना"
+        },
+        {
+            question: "भारत की आजादी के समय इंग्लैंड में किस पार्टी की सरकार थी?",
+            options: ["कंजरवेटिव पार्टी", "लेबर पार्टी", "लिबरल पार्टी", "सोशलिस्ट पार्टी"],
+            answer: "लेबर पार्टी"
+        },
+        {
+            question: "किस अधिनियम ने केन्द्र में द्वैध शासन प्रणाली को स्थापित किया?",
+            options: ["भारत सरकार अधिनियम, 1919", "भारत सरकार अधिनियम, 1935", "भारतीय परिषद् अधिनियम, 1909", "भारत स्वतंत्रता अधिनियम, 1947"],
+            answer: "भारत सरकार अधिनियम, 1935"
+        },
+
+        // ---------- संविधान सभा (Image 2 Bottom Half) ----------
+        {
+            question: "'भारतीय संविधान भारतीयों की इच्छानुसार होगा', किसके द्वारा यह कथन व्यक्त किया गया है?",
+            options: ["पं. जवाहरलाल नेहरू द्वारा", "महात्मा गाँधी द्वारा", "डॉ. बी. आर. अम्बेडकर द्वारा", "बाल गंगाधर तिलक द्वारा"],
+            answer: "महात्मा गाँधी द्वारा"
+        },
+        {
+            question: "किसके द्वारा ब्रिटिश सरकार से मांग की गई कि भारतीय संविधान के निर्माण के लिए संविधान सभा का गठन किया जाय?",
+            options: ["महात्मा गांधी द्वारा", "जवाहरलाल नेहरू द्वारा", "मोतीलाल नेहरू द्वारा", "एम. एन. राय द्वारा"],
+            answer: "मोतीलाल नेहरू द्वारा"
+        },
+        {
+            question: "संविधान सभा के विचार का औपचारिक रूप से प्रतिपादन किसके द्वारा किया गया?",
+            options: ["बी. एन. राव द्वारा", "एम. एन. राय द्वारा", "मोतीलाल नेहरू द्वारा", "डॉ. राजेन्द्र प्रसाद द्वारा"],
+            answer: "एम. एन. राय द्वारा"
+        },
+        {
+            question: "संविधान सभा को किसने मूर्त रूप प्रदान किया?",
+            options: ["महात्मा गांधी ने", "एम. एन. राय ने", "जवाहरलाल नेहरू ने", "वल्लभभाई पटेल ने"],
+            answer: "जवाहरलाल नेहरू ने"
+        },
+        {
+            question: "कांग्रेस ने किस वर्ष संविधान के निर्माण की माँग को लेकर प्रस्ताव पारित किया था?",
+            options: ["1928 ई. में", "1931 ई. में", "1936 ई. में", "1940 ई. में"],
+            answer: "1936 ई. में"
+        },
+        {
+            question: "किस व्यक्ति ने 1938 ई. में व्यस्क मताधिकार के आधार पर संविधान सभा के गठन की माँग की?",
+            options: ["सुभाष चंद्र बोस ने", "जवाहरलाल नेहरू ने", "महात्मा गांधी ने", "सरदार पटेल ने"],
+            answer: "जवाहरलाल नेहरू ने"
+        },
+        {
+            question: "किस योजना के तहत वर्ष 1942 में यह स्वीकार किया गया कि भारत में एक निर्वाचित संविधान सभा का गठन होगा, जो युद्धोपरांत संविधान का निर्माण करेगी?",
+            options: ["कैबिनेट मिशन योजना", "वेवेल योजना", "क्रिप्स योजना", "माउंटबेटन योजना"],
+            answer: "क्रिप्स योजना"
+        },
+        {
+            question: "संविधान सभा के गठन की मांग सर्वप्रथम 1895 ई. में किसके द्वारा प्रस्तुत की गई?",
+            options: ["महात्मा गांधी द्वारा", "एनी बेसेंट द्वारा", "बाल गंगाधर तिलक द्वारा", "गोपाल कृष्ण गोखले द्वारा"],
+            answer: "बाल गंगाधर तिलक द्वारा"
+        },
+        {
+            question: "भारत की संविधान सभा गठित करने का आधार क्या था?",
+            options: ["भारतीय स्वतंत्रता अधिनियम 1947", "कैबिनेट मिशन प्लान, 1946", "क्रिप्स मिशन 1942", "भारतीय राष्ट्रीय कांग्रेस का प्रस्ताव"],
+            answer: "कैबिनेट मिशन प्लान, 1946"
+        },
+        {
+            question: "वर्ष 1936 में भारतीय राष्ट्रीय कांग्रेस द्वारा संविधान सभा के गठन की मांग कहाँ पर हुए अधिवेशन में रखी गई?",
+            options: ["फैजपुर के", "लाहौर के", "लखनऊ के", "कराची के"],
+            answer: "लखनऊ के"
+        },
+        {
+            question: "कैबिनेट मिशन योजना के अनुसार संविधान सभा में कुल कितने सदस्य होने थे?",
+            options: ["389", "292", "296", "395"],
+            answer: "389"
+        }
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; 
+    let isCurrentAnswered = false;
+
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function initQuiz() {
+        questions = shuffleArray(originalQuestions);
+        questions.forEach(q => q.options = shuffleArray(q.options));
+        
+        document.getElementById('total-q-num').innerText = questions.length;
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+        const qData = questions[currentQuestionIndex];
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        qData.options.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                // अगर पहले से उत्तर दिया है, तो सही-गलत दिखाएं
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
+        
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        const correctAns = questions[currentQuestionIndex].answer;
+        const allLis = document.getElementById('options-list').querySelectorAll('li');
+        const resultText = document.getElementById('result-text');
+
+        // विकल्पों को डिसेबल करें और सही-गलत हाइलाइट करें
+        allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
+            if (li.innerText === correctAns) {
+                li.classList.add('correct');
+            }
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) {
+                li.classList.add('wrong');
+            }
+        });
+
+        if (selectedOpt === correctAns) {
+            resultText.innerText = "✅ सही उत्तर!";
+            resultText.style.color = "green";
+        } else {
+            resultText.innerText = "❌ गलत उत्तर!";
+            resultText.style.color = "red";
+        }
+        
+        updatePaginationHighlight();
+
+        // 1.5 सेकंड बाद अपने आप अगले प्रश्न पर जाएँ
+        setTimeout(() => {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showSummary();
+            }
+        }, 1500000);
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+
+        questions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.id = `page-${index}`;
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            if (userAnswers[index]) {
+                if (userAnswers[index] === questions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+    }
+
+    // समरी (रिजल्ट) दिखाने का फंक्शन
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम (Summary)</h2></div>`;
+        
+        let listHTML = '';
+        questions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया (Unattempted)'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / ${questions.length}</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से टेस्ट दें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); // सबसे ऊपर स्क्रॉल करें
+    }
+
+    window.onload = initQuiz;
+
+</script>
+
+</body>
+</html>
