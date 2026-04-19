@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>महत्वपूर्ण दिवस एवं थीम - Complete Mock Test</title>
+    <title>महत्वपूर्ण दिवस एवं थीम - Advanced Mock Test</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
         
@@ -15,7 +15,7 @@
             padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Changed to flex-start for summary scrolling */
             min-height: 100vh;
         }
         .quiz-container {
@@ -26,6 +26,8 @@
             max-width: 700px;
             padding: 30px;
             box-sizing: border-box;
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
         .header {
             text-align: center;
@@ -52,23 +54,22 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .options li:hover {
+        .options li:not(.disabled):hover {
             background-color: #e9ecef;
         }
-        .options li.selected {
-            background-color: #d1ecf1;
-            border-color: #bee5eb;
-            color: #0c5460;
-        }
         .options li.correct {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
         }
         .options li.wrong {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+        .options li.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
         }
         .navigation {
             display: flex;
@@ -91,6 +92,15 @@
         button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
         }
         .pagination-wrapper {
             margin-top: 30px;
@@ -123,26 +133,59 @@
             background-color: #ddd;
         }
         .page-num.active {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
+            box-shadow: 0 0 0 2px #000 inset; /* Black border inside to show current */
         }
-        .page-num.answered {
+        .page-num.answered-correct {
             background-color: #28a745;
             color: white;
             border-color: #28a745;
+        }
+        .page-num.answered-wrong {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
         }
         #result-text {
             margin-top: 15px;
             font-weight: bold;
             text-align: center;
             font-size: 16px;
+            min-height: 24px;
+        }
+        
+        /* Summary Styles */
+        .summary-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .summary-correct {
+            border-left: 5px solid #28a745;
+        }
+        .summary-wrong {
+            border-left: 5px solid #dc3545;
+        }
+        .summary-unattempted {
+            border-left: 5px solid #ffc107;
+        }
+        .summary-item p { margin: 5px 0; font-size: 15px; }
+        .score-board {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
 
-<div class="quiz-container">
+<div class="quiz-container" id="quiz-main-container">
     <div class="header">
         <h2 id="quiz-title">महत्वपूर्ण दिवस एवं थीम - सम्पूर्ण टेस्ट</h2>
         <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">62</span></p>
@@ -156,14 +199,18 @@
 
     <div class="navigation">
         <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
-        <button id="check-btn" onclick="checkAnswer()">उत्तर जाँचें</button>
         <button id="next-btn" onclick="nextQuestion()">अगला</button>
     </div>
+
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें और रिजल्ट देखें</button>
 
     <div class="pagination-wrapper">
         <div class="pagination" id="pagination-container"></div>
     </div>
 </div>
+
+<div class="quiz-container" id="summary-container" style="display: none;">
+    </div>
 
 <script>
     const originalQuestions = [
@@ -223,7 +270,7 @@
         { question: "8 जून 2025 'विश्व महासागर दिवस' की थीम क्या है?", options: ["महासागर और जीवन", "वंडर : सस्टेनिंग व्हाट सस्टेन्स अस", "प्लास्टिक मुक्त महासागर", "महासागरों को बचाना"], answer: "वंडर : सस्टेनिंग व्हाट सस्टेन्स अस" },
         { question: "7 जून 2025 'विश्व खाद्य सुरक्षा दिवस' की थीम क्या है?", options: ["खाद्य मानक जीवन बचाते हैं", "सुरक्षित भोजन, बेहतर स्वास्थ्य", "खाद्य सुरक्षा : क्रियाशील विज्ञान", "सुरक्षित खाद्य सामग्री"], answer: "खाद्य सुरक्षा : क्रियाशील विज्ञान" },
         { question: "5 जून 2025 'विश्व पर्यावरण दिवस' की थीम क्या है?", options: ["बीट प्लास्टिक पॉल्यूशन", "प्लास्टिक प्रदूषण को हराओं", "स्वच्छ पर्यावरण, स्वस्थ जीवन", "पेड़ लगाओ, पर्यावरण बचाओ"], answer: "प्लास्टिक प्रदूषण को हराओं" },
-        { question: "31 मई 2025 'विश्व तंबाकू निषेध दिवस' की थीम क्या है?", options: ["हमें भोजन की आवश्यकता है, तंबाकू की नहीं", "उज्ज्वल उत्पाद काले इरादे : अपील को उजागर करना", "तंबाकू हमारे पर्यावरण के लिए खतरा", "तंबाकू छोड़ें, जीवन चुनें"], answer: "उज्ज्वल उत्पाद काले इरादे : अपील को उजागर करना" },
+        { question: "31 मई 2025 'विश्व तंबाकू निषेध दिवस' की थीम क्या है?", options: ["हमें भोजन की आवश्यकता ক্ষমতায় हैं, तंबाकू की नहीं", "उज्ज्वल उत्पाद काले इरादे : अपील को उजागर करना", "तंबाकू हमारे पर्यावरण के लिए खतरा", "तंबाकू छोड़ें, जीवन चुनें"], answer: "उज्ज्वल उत्पाद काले इरादे : अपील को उजागर करना" },
         { question: "22 मई 2025 'अंतर्राष्ट्रीय जैव विविधता दिवस' की थीम क्या है?", options: ["समझौते से कार्रवाई तक", "सभी जीवन के लिए एक साझा भविष्य का निर्माण", "प्रकृति के साथ सामंजस्य और सतत विकास", "पारिस्थितिकी तंत्र की बहाली"], answer: "प्रकृति के साथ सामंजस्य और सतत विकास" },
         { question: "11 मई 2025 'राष्ट्रीय प्रौद्योगिकी दिवस' की थीम क्या है?", options: ["प्रौद्योगिकी और सतत विकास", "नवाचार के माध्यम से टिकाऊ भविष्य को सशक्त बनाना", "डिजिटल इंडिया और तकनीक", "विज्ञान और प्रौद्योगिकी का भविष्य"], answer: "नवाचार के माध्यम से टिकाऊ भविष्य को सशक्त बनाना" },
         { question: "8 मई 2025 'विश्व रेडक्रॉस दिवस' की थीम क्या है?", options: ["हम जो कुछ भी करते हैं वह दिल से आता है", "मानवता को जीवित रखना", "रेडक्रॉस और समाज", "संकट में सहायता"], answer: "मानवता को जीवित रखना" },
@@ -237,8 +284,8 @@
     let questions = [];
     let currentQuestionIndex = 0;
     let userAnswers = {}; 
+    let isCurrentAnswered = false;
 
-    // शफ़ल फंक्शन 
     function shuffleArray(array) {
         let newArray = [...array];
         for (let i = newArray.length - 1; i > 0; i--) {
@@ -250,7 +297,6 @@
 
     function initQuiz() {
         questions = shuffleArray(originalQuestions);
-        // विकल्पों को भी शफ़ल करें
         questions.forEach(q => q.options = shuffleArray(q.options));
         
         document.getElementById('total-q-num').innerText = questions.length;
@@ -259,6 +305,7 @@
     }
 
     function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
         const qText = document.getElementById('question-text');
         const optionsList = document.getElementById('options-list');
         const resultText = document.getElementById('result-text');
@@ -272,10 +319,17 @@
         qData.options.forEach((opt) => {
             const li = document.createElement('li');
             li.innerText = opt;
-            li.onclick = () => selectOption(opt, li);
             
-            if (userAnswers[currentQuestionIndex] === opt) {
-                li.classList.add('selected');
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                // अगर पहले से उत्तर दिया है, तो सही-गलत दिखाएं
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
             }
             optionsList.appendChild(li);
         });
@@ -285,35 +339,27 @@
     }
 
     function selectOption(selectedOpt, liElement) {
-        const allLis = document.getElementById('options-list').querySelectorAll('li');
-        allLis.forEach(li => li.classList.remove('selected', 'correct', 'wrong'));
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
         
-        liElement.classList.add('selected');
         userAnswers[currentQuestionIndex] = selectedOpt;
-        document.getElementById('result-text').innerText = ''; 
-    }
-
-    function checkAnswer() {
-        if (!userAnswers[currentQuestionIndex]) {
-            alert("कृपया पहले एक विकल्प चुनें!");
-            return;
-        }
-
-        const selectedAns = userAnswers[currentQuestionIndex];
         const correctAns = questions[currentQuestionIndex].answer;
         const allLis = document.getElementById('options-list').querySelectorAll('li');
         const resultText = document.getElementById('result-text');
 
+        // विकल्पों को डिसेबल करें और सही-गलत हाइलाइट करें
         allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
             if (li.innerText === correctAns) {
                 li.classList.add('correct');
             }
-            if (li.innerText === selectedAns && selectedAns !== correctAns) {
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) {
                 li.classList.add('wrong');
             }
         });
 
-        if (selectedAns === correctAns) {
+        if (selectedOpt === correctAns) {
             resultText.innerText = "✅ सही उत्तर!";
             resultText.style.color = "green";
         } else {
@@ -321,8 +367,17 @@
             resultText.style.color = "red";
         }
         
-        const pageBlock = document.getElementById(`page-${currentQuestionIndex}`);
-        pageBlock.classList.add('answered');
+        updatePaginationHighlight();
+
+        // 1.5 सेकंड बाद अपने आप अगले प्रश्न पर जाएँ
+        setTimeout(() => {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showSummary();
+            }
+        }, 1500);
     }
 
     function nextQuestion() {
@@ -360,14 +415,19 @@
     function updatePaginationHighlight() {
         const pages = document.querySelectorAll('.page-num');
         pages.forEach((page, index) => {
-            page.classList.remove('active');
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            
             if (index === currentQuestionIndex) {
                 page.classList.add('active');
-                // Scroll into view if needed
                 page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-            if(userAnswers[index]){
-               page.classList.add('answered'); 
+            
+            if (userAnswers[index]) {
+                if (userAnswers[index] === questions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
             }
         });
     }
@@ -375,6 +435,49 @@
     function updateButtons() {
         document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
         document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+    }
+
+    // समरी (रिजल्ट) दिखाने का फंक्शन
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम (Summary)</h2></div>`;
+        
+        let listHTML = '';
+        questions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया (Unattempted)'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / ${questions.length}</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से टेस्ट दें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); // सबसे ऊपर स्क्रॉल करें
     }
 
     window.onload = initQuiz;
