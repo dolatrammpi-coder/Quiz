@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>संविधान के भाग, स्रोत एवं विशेषताएँ - Mock Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        /* बैक बटन CSS */
+        .back-to-home {
+            display: inline-block;
+            margin-bottom: 15px;
+            text-decoration: none;
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .back-to-home:hover {
+            background-color: #5a6268;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .options li:not(.disabled):hover {
+            background-color: #e9ecef;
+        }
+        .options li.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+        }
+        .options li.wrong {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+        .options li.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .pagination-wrapper {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .page-num {
+            background-color: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .page-num:hover {
+            background-color: #ddd;
+        }
+        .page-num.active {
+            box-shadow: 0 0 0 2px #000 inset;
+        }
+        .page-num.answered-correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .page-num.answered-wrong {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        #result-text {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+            min-height: 24px;
+        }
+        
+        .summary-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .summary-correct { border-left: 5px solid #28a745; }
+        .summary-wrong { border-left: 5px solid #dc3545; }
+        .summary-unattempted { border-left: 5px solid #ffc107; }
+        .summary-item p { margin: 5px 0; font-size: 15px; }
+        .score-board {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quiz-main-container">
+    <a href="polity.html" class="back-to-home">⬅ वापस जाएँ (Polity)</a>
+
+    <div class="header">
+        <h2 id="quiz-title">संविधान के भाग, स्रोत एवं विशेषताएँ</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">73</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    
+    <ul class="options" id="options-list"></ul>
+
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें और रिजल्ट देखें</button>
+
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;">
+</div>
+
+<script>
+    const originalQuestions = [
+        // ---------- संविधान के भाग ----------
+        { question: "संविधान के किस भाग में अस्थायी संक्रमणकालीन और विशेष उपबंधों का प्रावधान है?", options: ["भाग 18 में", "भाग 19 में", "भाग 20 में", "भाग 21 में"], answer: "भाग 21 में" },
+        { question: "भारतीय संविधान के किस भाग में पंचायती राज से सम्बन्धित प्रावधान है?", options: ["भाग 8 में", "भाग 9 में", "भाग 9 (क) में", "भाग 10 में"], answer: "भाग 9 में" },
+        { question: "भारतीय संविधान के किस भाग में नगरपालिकाओं से सम्बन्धित प्रावधान है?", options: ["भाग 9 में", "भाग 9 (क) में", "भाग 9 (ख) में", "भाग 10 में"], answer: "भाग 9 (क) में" },
+        { question: "संविधान के किस भाग में नीति निर्देशक तत्वों का उल्लेख किया गया है?", options: ["भाग तीन में", "चतुर्थ भाग में", "भाग 4 (क) में", "भाग 5 में"], answer: "चतुर्थ भाग में" },
+        { question: "संविधान के भाग-1 में वर्णन है?", options: ["नागरिकता", "मूल अधिकार", "संघ और उसका राज्य क्षेत्र", "राज्य"], answer: "संघ और उसका राज्य क्षेत्र" },
+        { question: "संविधान के किस भाग में मूल अधिकार का उल्लेख मिलता है?", options: ["भाग दो में", "भाग तीन में", "भाग चार में", "भाग पांच में"], answer: "भाग तीन में" },
+        { question: "संविधान के किस भाग में मूल कर्तव्यों का उल्लेख मिलता है?", options: ["भाग 3", "भाग 4", "भाग 4 (क)", "भाग 5 (क)"], answer: "भाग 4 (क)" },
+        { question: "संविधान के किस भाग में नागरिकता का उल्लेख है?", options: ["भाग-1 में", "भाग-2 में", "भाग-3 में", "भाग-4 में"], answer: "भाग-2 में" },
+        { question: "संघीय कार्यपालिका की व्याख्या संविधान के किस भाग में की गई है?", options: ["भाग-4 में", "भाग-5 में", "भाग-6 में", "भाग-7 में"], answer: "भाग-5 में" },
+        { question: "भारत के संविधान का भाग-8 किससे संबंधित है?", options: ["राज्यों से", "पंचायतों से", "केन्द्रशासित प्रदेशों से", "नगरपालिकाओं से"], answer: "केन्द्रशासित प्रदेशों से" },
+
+        // ---------- भारतीय संविधान के प्रमुख भाग एवं अनुच्छेद ----------
+        { question: "'नागरिकता' का वर्णन संविधान के किन अनुच्छेदों में किया गया है?", options: ["अनुच्छेद 1 से 4", "अनुच्छेद 5 से 11", "अनुच्छेद 12 से 35", "अनुच्छेद 36 से 51"], answer: "अनुच्छेद 5 से 11" },
+        { question: "'मौलिक अधिकार' (भाग-3) का वर्णन किन अनुच्छेदों में है?", options: ["अनुच्छेद 5 से 11", "अनुच्छेद 12 से 35", "अनुच्छेद 36 से 51", "अनुच्छेद 52 से 151"], answer: "अनुच्छेद 12 से 35" },
+        { question: "'नीति-निर्देशक तत्व' किन अनुच्छेदों में दिए गए हैं?", options: ["अनुच्छेद 12 से 35", "अनुच्छेद 36 से 51", "अनुच्छेद 51 (क)", "अनुच्छेद 52 से 151"], answer: "अनुच्छेद 36 से 51" },
+        { question: "'मूल कर्तव्य' (भाग 4 क) किस अनुच्छेद में है?", options: ["अनुच्छेद 36", "अनुच्छेद 50", "अनुच्छेद 51", "अनुच्छेद 51 (क)"], answer: "अनुच्छेद 51 (क)" },
+        { question: "'संघ' (भाग-5) का विस्तार किन अनुच्छेदों तक है?", options: ["अनुच्छेद 52 से 151", "अनुच्छेद 152 से 237", "अनुच्छेद 239 से 242", "अनुच्छेद 245 से 263"], answer: "अनुच्छेद 52 से 151" },
+        { question: "'पंचायतें' (भाग-9) का वर्णन किन अनुच्छेदों में है?", options: ["अनुच्छेद 239 से 242", "अनुच्छेद 243, 243 क से ण", "अनुच्छेद 243 त से 243 यछ", "अनुच्छेद 244, 244 क"], answer: "अनुच्छेद 243, 243 क से ण" },
+        { question: "'निर्वाचन' (भाग-15) से संबंधित अनुच्छेद कौन से हैं?", options: ["अनुच्छेद 308 से 323", "अनुच्छेद 324 से 329", "अनुच्छेद 330 से 342", "अनुच्छेद 343 से 351"], answer: "अनुच्छेद 324 से 329" },
+        { question: "'राजभाषा' (भाग-17) से संबंधित अनुच्छेद कौन से हैं?", options: ["अनुच्छेद 330 से 342", "अनुच्छेद 343 से 351", "अनुच्छेद 352 से 360", "अनुच्छेद 368"], answer: "अनुच्छेद 343 से 351" },
+        { question: "'आपात उपबंध' (भाग-18) का वर्णन किन अनुच्छेदों में है?", options: ["अनुच्छेद 343 से 351", "अनुच्छेद 352 से 360", "अनुच्छेद 361 से 367", "अनुच्छेद 368"], answer: "अनुच्छेद 352 से 360" },
+        { question: "'संविधान संशोधन' (भाग-20) का प्रावधान किस अनुच्छेद में है?", options: ["अनुच्छेद 352", "अनुच्छेद 360", "अनुच्छेद 368", "अनुच्छेद 370"], answer: "अनुच्छेद 368" },
+
+        // ---------- संविधान के स्रोत (Previous Image) ----------
+        { question: "भारतीय संविधान में संसदीय व्यवस्था को किस देश के संविधान के समान रखा गया है?", options: ["अमेरिका के", "ब्रिटेन के", "कनाडा के", "आयरलैंड के"], answer: "ब्रिटेन के" },
+        { question: "भारत के संविधान निर्माताओं ने न्यायिक पुनरावलोकन के विचार को ग्रहण किया है?", options: ["ब्रिटेन से", "फ़्रांस से", "स्विट्जरलैंड से", "U.S.A. से"], answer: "U.S.A. से" },
+        { question: "'कानून के समान संरक्षण' वाक्य कहाँ से लिया गया है?", options: ["U.S.A. से", "ब्रिटेन से", "कनाडा से", "ऑस्ट्रेलिया से"], answer: "U.S.A. से" },
+        { question: "भारतीय संविधान का सबसे बड़ा एकाकी स्रोत है?", options: ["ब्रिटिश शासन", "U.S.A. का बिल ऑफ राइट्स", "गवर्नमेंट ऑफ इंडिया एक्ट, 1919", "भारत सरकार अधिनियम, 1935"], answer: "भारत सरकार अधिनियम, 1935" },
+        { question: "भारतीय संविधान में आपात सम्बन्धी उपबन्ध लिया गया है?", options: ["कनाडा के संविधान से", "जर्मनी के वीमर संविधान से", "आयरलैंड के संविधान से", "दक्षिण अफ्रीका के संविधान से"], answer: "जर्मनी के वीमर संविधान से" },
+        { question: "राज्य सभा के गठन में प्रतिभा, अनुभव एवं सेवा को प्रतिनिधित्व देने में भारतीय संविधान निर्माता किससे प्रभावित हुए थे?", options: ["आयरलैंड से", "कनाडा से", "ऑस्ट्रेलिया से", "ब्रिटेन से"], answer: "आयरलैंड से" },
+        { question: "भारतीय संविधान में संघवाद किस देश से लिया गया है?", options: ["U.A.E.", "U.S.A.", "ऑस्ट्रेलिया", "कनाडा"], answer: "कनाडा" },
+        { question: "भारत में कलेक्टर का पद औपनिवेशिक शासन ने उधार लिया था?", options: ["इंग्लैंड से", "आयरलैंड से", "ऑस्ट्रिया से", "फ्रांस से"], answer: "इंग्लैंड से" },
+        { question: "भारतीय संविधान द्वारा प्रदत्त मौलिक अधिकारों के स्थगन सम्बन्धी कार्यपालिका के अधिकारों को किस देश के संविधान से लिया गया है?", options: ["आयरलैंड के", "जर्मनी के", "दक्षिण अफ्रीका के", "फ्रांस के"], answer: "जर्मनी के" },
+
+        // ---------- प्रस्तावना एवं विशेषताएँ ----------
+        { question: "किस संविधान संशोधन द्वारा शब्द 'पंथनिरपेक्ष' भारत के संविधान की प्रस्तावना में जोड़ा गया है?", options: ["42वें संविधान संशोधन द्वारा", "44वें संविधान संशोधन द्वारा", "46वें संविधान संशोधन द्वारा", "73वें संविधान संशोधन द्वारा"], answer: "42वें संविधान संशोधन द्वारा" },
+        { question: "'समाजवाद' का अर्थ है?", options: ["राष्ट्रीयकरण", "सामाजिक न्याय", "सामाजिक नियंत्रण", "पूँजीवाद का विरोध"], answer: "सामाजिक न्याय" },
+        { question: "भारतीय संविधान की प्रस्तावना के अनुसार भारत के शासन की सर्वोच्च सत्ता किसमें निहित है?", options: ["संसद में", "राष्ट्रपति में", "जनता में", "सर्वोच्च न्यायालय में"], answer: "जनता में" },
+        { question: "भारत को सम्प्रभुता, एकता तथा अखण्डता को अक्षुण्ण बनाये रखने तथा उसकी रक्षा करने का प्रावधान किया गया है?", options: ["मूल अधिकारों में", "नीति-निर्देशक सिद्धांतों में", "प्रस्तावना में", "मूल कर्तव्यों में"], answer: "प्रस्तावना में" },
+        { question: "भारतीय संविधान की प्रस्तावना में 'समाजवादी' शब्द किस संशोधन द्वारा लाया गया था?", options: ["32वाँ", "42वाँ", "44वाँ", "74वाँ"], answer: "42वाँ" },
+        { question: "संविधान सभा में प्रस्तुत उद्देश्य प्रस्ताव में अभिव्यक्ति विचार को भारतीय संविधान के किस भाग में पूर्णतः शामिल किया गया है?", options: ["प्रस्तावना में", "मौलिक अधिकारों में", "राज्य के नीति निर्देशक तत्वों में", "मूल कर्तव्यों में"], answer: "प्रस्तावना में" },
+        { question: "भारतीय संविधान की प्रस्तावना में देश का नाम उल्लिखित है?", options: ["भारत और भारतवर्ष", "भारत और हिन्दुस्तान", "भारत और इण्डिया", "हिन्दुस्तान और इण्डिया"], answer: "भारत और इण्डिया" },
+        { question: "भारत की सम्प्रभुता किसमें निहित है?", options: ["भारतीय संसद में", "राष्ट्रपति में", "प्रधानमंत्री में", "भारत की जनता में"], answer: "भारत की जनता में" },
+        { question: "भारतीय संविधान को संविधान सभा द्वारा अंगीकृत किया गया?", options: ["15 अगस्त, 1947 को", "26 नवम्बर, 1949 को", "24 जनवरी, 1950 को", "26 जनवरी, 1950 को"], answer: "26 नवम्बर, 1949 को" },
+        { question: "भारत का संविधान पूर्ण रूप से तैयार हुआ?", options: ["26 जनवरी, 1950 को", "26 नवम्बर, 1949 को", "11 फरवरी, 1948 को", "24 जनवरी, 1950 को"], answer: "26 नवम्बर, 1949 को" },
+        { question: "भारतीय संविधान किस तिथि को लागू किया गया था?", options: ["26 नवम्बर, 1949", "26 जनवरी, 1950", "15 अगस्त, 1947", "24 जनवरी, 1950"], answer: "26 जनवरी, 1950" },
+        { question: "किस वर्ष भारत एक प्रभुत्व सम्पन्न प्रजातांत्रिक गणराज्य बना?", options: ["1947 में", "1949 में", "1950 में", "1951 में"], answer: "1950 में" },
+        { question: "अब तक भारत के संविधान की उद्देशिका में कितनी बार संशोधन किया जा चुका है?", options: ["एक बार", "दो बार", "तीन बार", "कभी नहीं"], answer: "एक बार" },
+        { question: "भारत के संविधान की प्रस्तावना में प्रथम संशोधन कब किया गया?", options: ["1951 में", "1971 में", "1976 में", "1984 में"], answer: "1976 में" },
+        { question: "किसने भारतीय संविधान की प्रस्तावना को भारतीय संविधान की राजनीतिक कुंडली के रूप में वर्णित किया?", options: ["बी. आर. अम्बेडकर", "कन्हैयालाल माणिकलाल मुंशी", "जवाहरलाल नेहरू", "वल्लभभाई पटेल"], answer: "कन्हैयालाल माणिकलाल मुंशी" },
+        { question: "भारत का संविधान किस प्रकार का है?", options: ["कठोर", "लचीला", "नम्य और अनम्य", "इनमें से कोई नहीं"], answer: "नम्य और अनम्य" },
+        { question: "विश्व का सबसे बड़ा, लिखित एवं सर्वाधिक व्यापक संविधान किस देश का है?", options: ["ब्रिटेन का", "भारत का", "कनाडा का", "दक्षिण अफ्रीका का"], answer: "भारत का" },
+        { question: "भारत के संविधान में भारत को माना गया है?", options: ["अर्ध संघ", "स्वतंत्र राज्यों का संघ", "राज्यों का एक संघ", "एकात्मक राज्य"], answer: "राज्यों का एक संघ" },
+        { question: "भारत का संविधान भारत में किस पद्धति की सरकार की व्यवस्था करता है?", options: ["अध्यक्षात्मक", "संसदीय", "राजतंत्रीय", "तानाशाही"], answer: "संसदीय" },
+        { question: "भारतीय संविधान में किस प्रकार के अधिकारों को समाविष्ट किया गया है?", options: ["मूल अधिकारों को", "संपत्ति के अधिकारों को", "केवल राजनीतिक अधिकारों को", "प्राकृतिक अधिकारों को"], answer: "मूल अधिकारों को" },
+        { question: "भारतीय संविधान किस प्रकार की नागरिकता का प्रावधान करता है?", options: ["दोहरी", "एकल", "बहुराष्ट्रीय", "राज्यों के आधार पर"], answer: "एकल" },
+        { question: "भारतीय संविधान किस प्रकार के मताधिकार की व्यवस्था करता है?", options: ["संपत्ति आधारित", "शिक्षा आधारित", "वयस्क", "वर्गीय"], answer: "वयस्क" },
+        { question: "भारतीय संविधान का स्वरूप किस प्रकार का है?", options: ["एकात्मक", "पूर्णतया संघात्मक", "संरचना में संघात्मक, भावना में एकात्मक", "भावना में संघात्मक, संरचना में एकात्मक"], answer: "संरचना में संघात्मक, भावना में एकात्मक" },
+        { question: "भारतीय संविधान पर सबसे अधिक प्रभाव पड़ा है?", options: ["ब्रिटिश संविधान का", "अमेरिकी संविधान का", "कनाडा के संविधान का", "भारत सरकार अधिनियम, 1935 का"], answer: "भारत सरकार अधिनियम, 1935 का" },
+        { question: "भारतीय संविधान में आर्टिकल्स की संख्या है?", options: ["395", "400 के लगभग", "448", "468/470 (लगभग)"], answer: "468/470 (लगभग)" },
+        { question: "भारत में किस प्रकार की शासन व्यवस्था अपनायी गयी है?", options: ["अमेरिकी अध्यक्षात्मक प्रणाली", "ब्रिटिश संसदात्मक प्रणाली", "फ्रांसीसी अध्यक्षात्मक प्रणाली", "जर्मन संसदात्मक प्रणाली"], answer: "ब्रिटिश संसदात्मक प्रणाली" },
+        { question: "भारतीय राजनीतिक व्यवस्था में सर्वोच्च है?", options: ["सर्वोच्च न्यायालय", "संविधान", "संसद", "धर्म"], answer: "संविधान" },
+        { question: "भारतीय संविधान का अभिभावक कौन है?", options: ["राष्ट्रपति", "प्रधानमंत्री", "सर्वोच्च न्यायालय", "निर्वाचन आयोग"], answer: "सर्वोच्च न्यायालय" },
+        { question: "भारत में वयस्क मताधिकार की उम्र सीमा है?", options: ["18 वर्ष", "21 वर्ष", "25 वर्ष", "16 वर्ष"], answer: "18 वर्ष" },
+        { question: "भारतीय संघीय व्यवस्था की विशेषता है?", options: ["दोहरी नागरिकता", "संविधान की सर्वोच्चता", "केंद्र में संपूर्ण शक्ति", "शक्तियों का एकीकरण"], answer: "संविधान की सर्वोच्चता" },
+        { question: "भारत के संविधान में संघीय शब्द की जगह किन शब्दों को स्थान दिया गया है?", options: ["संघीय राज्य", "राज्यों का संघ", "राज्यों का समूह", "इकाइयों का संघ"], answer: "राज्यों का संघ" },
+
+        // ---------- भारतीय संविधान के विदेशी स्रोत तथा अनुप्रेरणा (New Image) ----------
+        { question: "भारतीय संविधान में 'मूल अधिकार' (Fundamental Rights) और 'न्यायिक पुनरावलोकन' (Judicial Review) किस देश के संविधान से लिए गए हैं?", options: ["ब्रिटेन", "संयुक्त राज्य अमेरिका", "आयरलैंड", "कनाडा"], answer: "संयुक्त राज्य अमेरिका" },
+        { question: "'वित्तीय आपात' (Financial Emergency) और 'उपराष्ट्रपति' का पद किस देश के संविधान की देन है?", options: ["जर्मनी", "रूस", "संयुक्त राज्य अमेरिका", "दक्षिण अफ्रीका"], answer: "संयुक्त राज्य अमेरिका" },
+        { question: "उच्चतम एवं उच्च न्यायालयों के न्यायाधीशों को हटाने की विधि एवं निर्वाचित राष्ट्रपति पर महाभियोग चलाने का प्रावधान कहाँ से लिया गया है?", options: ["ब्रिटेन", "कनाडा", "संयुक्त राज्य अमेरिका", "आयरलैंड"], answer: "संयुक्त राज्य अमेरिका" },
+        { question: "'संसदीय शासन पद्धति', 'विधि निर्माण प्रक्रिया' और 'एकल नागरिकता' का प्रावधान कहाँ से लिया गया है?", options: ["कनाडा", "ब्रिटेन", "आयरलैंड", "ऑस्ट्रेलिया"], answer: "ब्रिटेन" },
+        { question: "'नीति निर्देशक सिद्धांत' और 'राष्ट्रपति के निर्वाचक-मंडल की व्यवस्था' किस देश से प्रेरित हैं?", options: ["आयरलैंड", "संयुक्त राज्य अमेरिका", "फ्रांस", "दक्षिण अफ्रीका"], answer: "आयरलैंड" },
+        { question: "राष्ट्रपति द्वारा राज्य सभा में साहित्य, कला, विज्ञान तथा समाज सेवा आदि के क्षेत्र में ख्याति प्राप्त व्यक्तियों का मनोनयन कहाँ से लिया गया है?", options: ["ब्रिटेन", "आयरलैंड", "कनाडा", "ऑस्ट्रेलिया"], answer: "आयरलैंड" },
+        { question: "'समवर्ती सूची' और 'प्रस्तावना की विशिष्ट भाषा' किस देश के संविधान से ली गई है?", options: ["कनाडा", "दक्षिण अफ्रीका", "ऑस्ट्रेलिया", "संयुक्त राज्य अमेरिका"], answer: "ऑस्ट्रेलिया" },
+        { question: "आपातकाल के दौरान राष्ट्रपति को मौलिक अधिकार सम्बन्धी शक्तियां किस देश से ली गई हैं?", options: ["जर्मनी", "रूस", "जापान", "आयरलैंड"], answer: "जर्मनी" },
+        { question: "'संघ एवं राज्यों के मध्य शक्तियों का विभाजन' और 'सातवीं अनुसूची की सूचियाँ' कहाँ से ली गई हैं?", options: ["ऑस्ट्रेलिया", "कनाडा", "ब्रिटेन", "आयरलैंड"], answer: "कनाडा" },
+        { question: "'अवशिष्ट शक्तियाँ केन्द्र के पास' और 'राज्यपाल की नियुक्ति विषयक प्रक्रिया' का प्रावधान कहाँ से लिया गया है?", options: ["ऑस्ट्रेलिया", "कनाडा", "ब्रिटेन", "संयुक्त राज्य अमेरिका"], answer: "कनाडा" },
+        { question: "'संविधान संशोधन की प्रक्रिया' का प्रावधान किस देश के संविधान से लिया गया है?", options: ["दक्षिण अफ्रीका", "रूस", "जर्मनी", "फ्रांस"], answer: "दक्षिण अफ्रीका" },
+        { question: "'मूल कर्तव्य' और 'पंचवर्षीय योजना की अवधारणा' कहाँ से प्रेरित है?", options: ["जापान", "आयरलैंड", "रूस", "चीन"], answer: "रूस" },
+        { question: "'विधि द्वारा स्थापित प्रक्रिया' तथा विधि सिद्धांतों का प्रावधान कहाँ से लिया गया है?", options: ["ब्रिटेन", "जापान", "फ्रांस", "जर्मनी"], answer: "जापान" },
+        { question: "'गणतंत्रात्मक शासन व्यवस्था' किस देश के संविधान से ली गई है?", options: ["फ्रांस", "संयुक्त राज्य अमेरिका", "ब्रिटेन", "आयरलैंड"], answer: "फ्रांस" }
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; 
+    let isCurrentAnswered = false;
+
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function initQuiz() {
+        questions = shuffleArray(originalQuestions);
+        questions.forEach(q => q.options = shuffleArray(q.options));
+        
+        document.getElementById('total-q-num').innerText = questions.length;
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+        const qData = questions[currentQuestionIndex];
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        qData.options.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
+        
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        const correctAns = questions[currentQuestionIndex].answer;
+        const allLis = document.getElementById('options-list').querySelectorAll('li');
+        const resultText = document.getElementById('result-text');
+
+        allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
+            if (li.innerText === correctAns) {
+                li.classList.add('correct');
+            }
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) {
+                li.classList.add('wrong');
+            }
+        });
+
+        if (selectedOpt === correctAns) {
+            resultText.innerText = "✅ सही उत्तर!";
+            resultText.style.color = "green";
+        } else {
+            resultText.innerText = "❌ गलत उत्तर!";
+            resultText.style.color = "red";
+        }
+        
+        updatePaginationHighlight();
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+
+        questions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.id = `page-${index}`;
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            if (userAnswers[index]) {
+                if (userAnswers[index] === questions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम (Summary)</h2></div>`;
+        
+        let listHTML = '';
+        questions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया (Unattempted)'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / ${questions.length}</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से टेस्ट दें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0);
+    }
+
+    window.onload = initQuiz;
+
+</script>
+
+</body>
+</html>
