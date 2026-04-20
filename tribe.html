@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>महत्वपूर्ण दिवस एवं थीम - Advanced Mock Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .options li:not(.disabled):hover {
+            background-color: #e9ecef;
+        }
+        .options li.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+        }
+        .options li.wrong {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+        .options li.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .pagination-wrapper {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .page-num {
+            background-color: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .page-num:hover {
+            background-color: #ddd;
+        }
+        .page-num.active {
+            box-shadow: 0 0 0 2px #000 inset;
+        }
+        .page-num.answered-correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .page-num.answered-wrong {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        #result-text {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+            min-height: 24px;
+        }
+        
+        /* Summary Styles */
+        .summary-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .summary-correct {
+            border-left: 5px solid #28a745;
+        }
+        .summary-wrong {
+            border-left: 5px solid #dc3545;
+        }
+        .summary-unattempted {
+            border-left: 5px solid #ffc107;
+        }
+        .summary-item p { margin: 5px 0; font-size: 15px; }
+        .score-board {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quiz-main-container">
+    <div class="header">
+        <h2 id="quiz-title">मॉक टेस्ट (Mock Test)</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">0</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    
+    <ul class="options" id="options-list"></ul>
+
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें और रिजल्ट देखें</button>
+
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;">
+    </div>
+
+<script>
+    // ----------------------------------------------------
+    // यहाँ अपना प्रश्न डेटा (Array) डालें
+    // ----------------------------------------------------
+        const originalQuestions = [
+        { 
+            question: "एस्किमो (Eskimo) जनजाति का मुख्य निवास क्षेत्र कौन सा है?", 
+            options: ["टुंड्रा प्रदेश (ग्रीनलैंड, अलास्का, कनाडा)", "टैगा प्रदेश (नॉर्वे, स्वीडन, रूस)", "अमेज़न बेसिन (ब्राज़ील, पेरू)", "सहारा मरुस्थल (उत्तरी अफ्रीका)"], 
+            answer: "टुंड्रा प्रदेश (ग्रीनलैंड, अलास्का, कनाडा)" 
+        },
+        { 
+            question: "रेड इंडियन (Red Indian) मूल रूप से कहाँ की जनजाति है?", 
+            options: ["उत्तरी अमेरिका (कनाडा, संयुक्त राज्य अमेरिका)", "दक्षिण अमेरिका (पेरू, चिली)", "मध्य अमेरिका (मेक्सिको, ग्वाटेमाला)", "ऑस्ट्रेलिया और न्यूज़ीलैंड"], 
+            answer: "उत्तरी अमेरिका (कनाडा, संयुक्त राज्य अमेरिका)" 
+        },
+        { 
+            question: "पिग्मी (Pygmy) जनजाति का निवास स्थान कहाँ है?", 
+            options: ["कांगो बेसिन (मध्य अफ्रीका)", "अमेज़न बेसिन (दक्षिण अमेरिका)", "कालाहारी मरुस्थल (दक्षिणी अफ्रीका)", "सहारा मरुस्थल (उत्तरी अफ्रीका)"], 
+            answer: "कांगो बेसिन (मध्य अफ्रीका)" 
+        },
+        { 
+            question: "बुशमैन (Bushman) जनजाति किस क्षेत्र में पाई जाती है?", 
+            options: ["कालाहारी मरुस्थल (बोत्सवाना, अफ्रीका)", "सहारा मरुस्थल (उत्तरी अफ्रीका)", "अरब का मरुस्थल (मध्य पूर्व)", "गोबी मरुस्थल (मंगोलिया)"], 
+            answer: "कालाहारी मरुस्थल (बोत्सवाना, अफ्रीका)" 
+        },
+        { 
+            question: "मसाई (Masai) जनजाति का संबंध किस क्षेत्र से है?", 
+            options: ["पूर्वी अफ्रीका (केन्या, तंजानिया, युगांडा)", "पश्चिमी अफ्रीका (नाइजीरिया, सेनेगल)", "दक्षिणी अफ्रीका (क्वाज़ुलू-नताल)", "उत्तरी अफ्रीका (मोरक्को, मॉरिटानिया)"], 
+            answer: "पूर्वी अफ्रीका (केन्या, तंजानिया, युगांडा)" 
+        },
+        { 
+            question: "बद्दू (Bedouin) जनजाति मुख्य रूप से कहाँ निवास करती है?", 
+            options: ["अरब का मरुस्थल", "सहारा मरुस्थल", "कालाहारी मरुस्थल", "थार का मरुस्थल"], 
+            answer: "अरब का मरुस्थल" 
+        },
+        { 
+            question: "जुलू (Zulu) जनजाति का निवास क्षेत्र किस देश में है?", 
+            options: ["दक्षिण अफ्रीका (क्वाज़ुलू-नताल प्रांत)", "केन्या और तंजानिया", "सूडान और इथियोपिया", "कांगो और युगांडा"], 
+            answer: "दक्षिण अफ्रीका (क्वाज़ुलू-नताल प्रांत)" 
+        },
+        { 
+            question: "माओरी (Maori) कहाँ की मूल जनजाति है?", 
+            options: ["न्यूज़ीलैंड", "ऑस्ट्रेलिया", "पापुआ न्यू गिनी", "मलेशिया"], 
+            answer: "न्यूज़ीलैंड" 
+        },
+        { 
+            question: "एबोरिजिन्स (Aborigines) जनजाति का संबंध किस देश से है?", 
+            options: ["ऑस्ट्रेलिया", "न्यूज़ीलैंड", "श्रीलंका", "मलेशिया"], 
+            answer: "ऑस्ट्रेलिया" 
+        },
+        { 
+            question: "लैप्स / सामी (Lapps) जनजाति कहाँ पाई जाती है?", 
+            options: ["स्कैंडिनेविया (नॉर्वे, स्वीडन, फ़िनलैंड)", "टुंड्रा प्रदेश (उत्तरी साइबेरिया, रूस)", "उत्तरी अमेरिका (कनाडा, अलास्का)", "मध्य एशिया (किर्गिस्तान)"], 
+            answer: "स्कैंडिनेविया (नॉर्वे, स्वीडन, फ़िनलैंड)" 
+        },
+        { 
+            question: "चुक्ची (Chukchi) जनजाति का निवास क्षेत्र कौन सा है?", 
+            options: ["उत्तर-पूर्वी साइबेरिया (रूस)", "दक्षिण-पश्चिमी साइबेरिया (रूस)", "स्कैंडिनेविया (नॉर्वे)", "पामीर का पठार (मध्य एशिया)"], 
+            answer: "उत्तर-पूर्वी साइबेरिया (रूस)" 
+        },
+        { 
+            question: "खिर्गिज़ (Kyrgyz) जनजाति कहाँ निवास करती है?", 
+            options: ["मध्य एशिया (पामीर का पठार, किर्गिस्तान)", "साइबेरिया (रूस)", "पश्चिमी एशिया (ईरान, इराक)", "पूर्वी यूरोप (आर्मेनिया)"], 
+            answer: "मध्य एशिया (पामीर का पठार, किर्गिस्तान)" 
+        },
+        { 
+            question: "ऐनू (Ainu) जनजाति का संबंध किस देश से है?", 
+            options: ["जापान", "चीन", "दक्षिण कोरिया", "रूस"], 
+            answer: "जापान" 
+        },
+        { 
+            question: "तारतार (Tartar) जनजाति मुख्य रूप से कहाँ पाई जाती है?", 
+            options: ["साइबेरिया (रूस)", "पामीर का पठार (मध्य एशिया)", "काकेशस क्षेत्र (आर्मेनिया)", "स्कैंडिनेविया (फ़िनलैंड)"], 
+            answer: "साइबेरिया (रूस)" 
+        },
+        { 
+            question: "बोरो (Boro) जनजाति का निवास स्थान कहाँ है?", 
+            options: ["अमेज़न बेसिन (ब्राज़ील, पेरू)", "कांगो बेसिन (मध्य अफ्रीका)", "मलय प्रायद्वीप", "सहारा मरुस्थल (अफ्रीका)"], 
+            answer: "अमेज़न बेसिन (ब्राज़ील, पेरू)" 
+        },
+        { 
+            question: "तुआरेग (Tuareg) जनजाति किस क्षेत्र से संबंधित है?", 
+            options: ["सहारा मरुस्थल (अफ्रीका)", "कालाहारी मरुस्थल (बोत्सवाना)", "अरब का मरुस्थल", "अटाकामा मरुस्थल (दक्षिण अमेरिका)"], 
+            answer: "सहारा मरुस्थल (अफ्रीका)" 
+        },
+        { 
+            question: "यानोमामी (Yanomami) जनजाति कहाँ निवास करती है?", 
+            options: ["वेनेज़ुएला और ब्राज़ील (अमेज़न वन)", "मेक्सिको और मध्य अमेरिका", "पेरू और चिली (एंडीज पर्वत)", "नाइजीरिया और सेनेगल (अफ्रीका)"], 
+            answer: "वेनेज़ुएला और ब्राज़ील (अमेज़न वन)" 
+        },
+        { 
+            question: "प्राचीन माया (Maya) जनजाति/सभ्यता का संबंध किस क्षेत्र से है?", 
+            options: ["मेक्सिको और मध्य अमेरिका", "पेरू (दक्षिण अमेरिका)", "अमेज़न बेसिन (ब्राज़ील)", "संयुक्त राज्य अमेरिका (एरिज़ोना)"], 
+            answer: "मेक्सिको और मध्य अमेरिका" 
+        },
+        { 
+            question: "पापुआन (Papuan) जनजाति कहाँ की मूल निवासी है?", 
+            options: ["न्यू गिनी", "न्यूज़ीलैंड", "मलेशिया", "मलय प्रायद्वीप"], 
+            answer: "न्यू गिनी" 
+        },
+        { 
+            question: "वेद्दा (Vedda) जनजाति किस देश में पाई जाती है?", 
+            options: ["श्रीलंका", "मलेशिया", "इंडोनेशिया", "ऑस्ट्रेलिया"], 
+            answer: "श्रीलंका" 
+        },
+        { 
+            question: "सेमांग (Semang) जनजाति का निवास स्थान कहाँ है?", 
+            options: ["मलेशिया", "श्रीलंका", "न्यू गिनी", "जापान"], 
+            answer: "मलेशिया" 
+        },
+        { 
+            question: "सकाई (Sakai) जनजाति मुख्य रूप से कहाँ निवास करती है?", 
+            options: ["मलय प्रायद्वीप", "अरब प्रायद्वीप", "इंडोचाइना प्रायद्वीप", "कोरियाई प्रायद्वीप"], 
+            answer: "मलय प्रायद्वीप" 
+        },
+        { 
+            question: "बोअर (Boer) जनजाति का संबंध किस क्षेत्र और मूल से है?", 
+            options: ["दक्षिण अफ्रीका (डच मूल के)", "दक्षिण अफ्रीका (ब्रिटिश मूल के)", "पूर्वी अफ्रीका (फ्रांसीसी मूल के)", "उत्तरी अफ्रीका (अरब मूल के)"], 
+            answer: "दक्षिण अफ्रीका (डच मूल के)" 
+        },
+        { 
+            question: "कुर्द (Kurd) जनजाति किन देशों के भौगोलिक क्षेत्र में निवास करती है?", 
+            options: ["ईरान, इराक, आर्मेनिया, तुर्किये", "सऊदी अरब, यमन, ओमान, यूएई", "अफगानिस्तान, पाकिस्तान, ताजिकिस्तान", "मिस्र, लीबिया, सूडान, मोरक्को"], 
+            answer: "ईरान, इराक, आर्मेनिया, तुर्किये" 
+        },
+        { 
+            question: "अफ़रीदी (Afridi) जनजाति का मुख्य निवास क्षेत्र कौन सा है?", 
+            options: ["पाकिस्तान (खैबर पख्तूनख्वा)", "अफगानिस्तान (कंधार)", "ईरान (बलूचिस्तान)", "भारत (कश्मीर)"], 
+            answer: "पाकिस्तान (खैबर पख्तूनख्वा)" 
+        },
+        { 
+            question: "याकू (Yakut) जनजाति कहाँ पाई जाती है?", 
+            options: ["टुंड्रा प्रदेश (उत्तरी साइबेरिया, रूस)", "टुंड्रा प्रदेश (ग्रीनलैंड, अलास्का)", "स्कैंडिनेविया (नॉर्वे, स्वीडन)", "पामीर का पठार (मध्य एशिया)"], 
+            answer: "टुंड्रा प्रदेश (उत्तरी साइबेरिया, रूस)" 
+        },
+        { 
+            question: "यूकागीर (Yukaghir) जनजाति का संबंध किस क्षेत्र से है?", 
+            options: ["साइबेरिया (रूस)", "मध्य एशिया (किर्गिस्तान)", "स्कैंडिनेविया (फ़िनलैंड)", "पूर्वी यूरोप (आर्मेनिया)"], 
+            answer: "साइबेरिया (रूस)" 
+        },
+        { 
+            question: "फुलानी (Fulani) जनजाति किस क्षेत्र में निवास करती है?", 
+            options: ["पश्चिमी अफ्रीका (नाइजीरिया, सेनेगल)", "पूर्वी अफ्रीका (केन्या, तंजानिया)", "उत्तरी अफ्रीका (मोरक्को, मिस्र)", "दक्षिणी अफ्रीका (बोत्सवाना, नामीबिया)"], 
+            answer: "पश्चिमी अफ्रीका (नाइजीरिया, सेनेगल)" 
+        },
+        { 
+            question: "हाउसा (Hausa) जनजाति मुख्य रूप से कहाँ पाई जाती है?", 
+            options: ["उत्तरी नाइजीरिया (अफ्रीका)", "दक्षिणी केन्या (अफ्रीका)", "पूर्वी तंजानिया (अफ्रीका)", "पश्चिमी सेनेगल (अफ्रीका)"], 
+            answer: "उत्तरी नाइजीरिया (अफ्रीका)" 
+        },
+        { 
+            question: "बांटू (Bantu) जनजाति का निवास क्षेत्र कौन सा है?", 
+            options: ["मध्य और दक्षिणी अफ्रीका", "उत्तरी और पश्चिमी अफ्रीका", "पूर्वी और हॉर्न ऑफ अफ्रीका", "सहारा और साहेल क्षेत्र"], 
+            answer: "मध्य और दक्षिणी अफ्रीका" 
+        },
+        { 
+            question: "नूबा (Nuba) जनजाति किस देश से संबंधित है?", 
+            options: ["सूडान (अफ्रीका)", "सोमालिया (अफ्रीका)", "नाइजीरिया (अफ्रीका)", "रवांडा (अफ्रीका)"], 
+            answer: "सूडान (अफ्रीका)" 
+        },
+        { 
+            question: "मूर (Moor) जनजाति कहाँ निवास करती है?", 
+            options: ["उत्तर-पश्चिमी अफ्रीका (मोरक्को, मॉरिटानिया)", "दक्षिण-पूर्वी अफ्रीका (मोजाम्बिक, मेडागास्कर)", "मध्य अफ्रीका (कांगो बेसिन)", "हॉर्न ऑफ अफ्रीका (सोमालिया, इथियोपिया)"], 
+            answer: "उत्तर-पश्चिमी अफ्रीका (मोरक्को, मॉरिटानिया)" 
+        },
+        { 
+            question: "कलमुख (Kalmyk) जनजाति का संबंध किस क्षेत्र से है?", 
+            options: ["मध्य एशिया (रूस का कलमीकिया क्षेत्र)", "उत्तरी साइबेरिया (रूस का याकुतिया क्षेत्र)", "पूर्वी यूरोप (यूक्रेन)", "काकेशस क्षेत्र (जॉर्जिया)"], 
+            answer: "मध्य एशिया (रूस का कलमीकिया क्षेत्र)" 
+        },
+        { 
+            question: "इंका (Inca) प्राचीन सभ्यता/जनजाति का निवास क्षेत्र क्या था?", 
+            options: ["पेरू (दक्षिण अमेरिका)", "मेक्सिको (उत्तरी अमेरिका)", "ब्राज़ील (दक्षिण अमेरिका)", "चिली (दक्षिण अमेरिका)"], 
+            answer: "पेरू (दक्षिण अमेरिका)" 
+        },
+        { 
+            question: "होपी (Hopi) जनजाति किस देश में निवास करती है?", 
+            options: ["संयुक्त राज्य अमेरिका (एरिज़ोना)", "संयुक्त राज्य अमेरिका (अलास्का)", "कनाडा (ओंटारियो)", "मेक्सिको (चिहुआहुआ)"], 
+            answer: "संयुक्त राज्य अमेरिका (एरिज़ोना)" 
+        }
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; 
+    let isCurrentAnswered = false;
+
+    // शफल फंक्शन
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function initQuiz() {
+        if(originalQuestions.length === 0) {
+            document.getElementById('question-text').innerText = "कृपया 'originalQuestions' एरे में प्रश्न जोड़ें।";
+            return;
+        }
+        
+        // प्रश्नों और उनके विकल्पों को शफल करें
+        questions = shuffleArray(originalQuestions);
+        questions.forEach(q => q.options = shuffleArray(q.options));
+        
+        document.getElementById('total-q-num').innerText = questions.length;
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+        const qData = questions[currentQuestionIndex];
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        qData.options.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                // अगर पहले से उत्तर दिया है, तो सही-गलत दिखाएं
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
+        
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        const correctAns = questions[currentQuestionIndex].answer;
+        const allLis = document.getElementById('options-list').querySelectorAll('li');
+        const resultText = document.getElementById('result-text');
+
+        // विकल्पों को डिसेबल करें और सही-गलत हाइलाइट करें
+        allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
+            if (li.innerText === correctAns) {
+                li.classList.add('correct');
+            }
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) {
+                li.classList.add('wrong');
+            }
+        });
+
+        if (selectedOpt === correctAns) {
+            resultText.innerText = "✅ सही उत्तर!";
+            resultText.style.color = "green";
+        } else {
+            resultText.innerText = "❌ गलत उत्तर!";
+            resultText.style.color = "red";
+        }
+        
+        updatePaginationHighlight();
+        
+        // (ऑटो नेक्स्ट वाला कोड यहाँ से हटा दिया गया है)
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+
+        questions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.id = `page-${index}`;
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            if (userAnswers[index]) {
+                if (userAnswers[index] === questions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+    }
+
+    // समरी (रिजल्ट) दिखाने का फंक्शन
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम (Summary)</h2></div>`;
+        
+        let listHTML = '';
+        questions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया (Unattempted)'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / ${questions.length}</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से टेस्ट दें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); // सबसे ऊपर स्क्रॉल करें
+    }
+
+    window.onload = initQuiz;
+
+</script>
+
+</body>
+</html>
