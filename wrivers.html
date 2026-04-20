@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>महत्वपूर्ण दिवस एवं थीम - Advanced Mock Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .options li:not(.disabled):hover {
+            background-color: #e9ecef;
+        }
+        .options li.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+        }
+        .options li.wrong {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+        .options li.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .pagination-wrapper {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .page-num {
+            background-color: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .page-num:hover {
+            background-color: #ddd;
+        }
+        .page-num.active {
+            box-shadow: 0 0 0 2px #000 inset;
+        }
+        .page-num.answered-correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .page-num.answered-wrong {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        #result-text {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+            min-height: 24px;
+        }
+        
+        /* Summary Styles */
+        .summary-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .summary-correct {
+            border-left: 5px solid #28a745;
+        }
+        .summary-wrong {
+            border-left: 5px solid #dc3545;
+        }
+        .summary-unattempted {
+            border-left: 5px solid #ffc107;
+        }
+        .summary-item p { margin: 5px 0; font-size: 15px; }
+        .score-board {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quiz-main-container">
+    <div class="header">
+        <h2 id="quiz-title">मॉक टेस्ट (Mock Test)</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">0</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    
+    <ul class="options" id="options-list"></ul>
+
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें और रिजल्ट देखें</button>
+
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;">
+    </div>
+
+<script>
+    // ----------------------------------------------------
+    // यहाँ अपना प्रश्न डेटा (Array) डालें
+    // ----------------------------------------------------
+    const originalQuestions = [
+        {
+            question: "नील नदी का उद्गम-स्थल कहाँ है और यह कहाँ गिरती है (मुहाना)?", 
+            options: ["विक्टोरिया झील - लाल सागर", "टैंगानिका झील - भूमध्य सागर", "विक्टोरिया झील - भूमध्य सागर", "अल्बर्ट झील - लाल सागर"], 
+            answer: "विक्टोरिया झील - भूमध्य सागर" 
+        },
+        { 
+            question: "मिसिसिपी-मिसौरी नदी का उद्गम-स्थल क्या है?", 
+            options: ["येलोस्टोन पार्क", "रॉकी पर्वत", "रेड रॉक स्रोत", "ब्लैक हिल्स"], 
+            answer: "रेड रॉक स्रोत" 
+        },
+        { 
+            question: "अमेजन नदी का उद्गम-स्थल कहाँ है और इसका मुहाना कहाँ है?", 
+            options: ["लैगो विलफेरो - प्रशांत महासागर", "लैगो विलफेरो - अटलांटिक महासागर", "एंडीज पर्वत - कैरेबियन सागर", "ब्राजील का पठार - मेक्सिको की खाड़ी"], 
+            answer: "लैगो विलफेरो - अटलांटिक महासागर" 
+        },
+        { 
+            question: "यांग्सी नदी किस स्थान से निकलती है?", 
+            options: ["कुनलुन पर्वत", "पामीर का पठार", "अल्ताई पर्वत", "तिब्बत का पठार"], 
+            answer: "तिब्बत का पठार" 
+        },
+        { 
+            question: "ओबे नदी का उद्गम-स्थल और मुहाना क्रमशः क्या है?", 
+            options: ["अल्ताई पर्वत - ओब की खाड़ी", "कुनलुन पर्वत - पीला सागर", "अल्ताई पर्वत - चीन सागर", "यूराल पर्वत - कैस्पियन सागर"], 
+            answer: "अल्ताई पर्वत - ओब की खाड़ी" 
+        },
+        { 
+            question: "ह्वांगहो नदी का उद्गम-स्थल इनमें से कौन सा है?", 
+            options: ["तियान शान पर्वत", "अल्ताई पर्वत", "क्युनलुन पर्वत", "हिमालय पर्वत"], 
+            answer: "क्युनलुन पर्वत" 
+        },
+        { 
+            question: "कांगो नदी का उद्गम-स्थल कहाँ है?", 
+            options: ["विक्टोरिया झील", "कटंगा पठार", "लुआलावा", "किलिमंजारो"], 
+            answer: "लुआलावा" 
+        },
+        { 
+            question: "वोल्गा नदी का उद्गम-स्थल और मुहाना क्रमशः क्या हैं?", 
+            options: ["वल्डाई पठार - काला सागर", "यूराल पर्वत - कैस्पियन सागर", "वल्डाई पठार - कैस्पियन सागर", "काकेशस पर्वत - काला सागर"], 
+            answer: "वल्डाई पठार - कैस्पियन सागर" 
+        },
+        { 
+            question: "ब्रह्मपुत्र नदी कहाँ से निकलती है?", 
+            options: ["राकस ताल", "मानसरोवर झील", "गंगोत्री हिमानी", "शेषनाग झील"], 
+            answer: "मानसरोवर झील" 
+        },
+        { 
+            question: "डेन्यूब नदी किस पर्वत से निकलती है और कहाँ गिरती है?", 
+            options: ["आल्प्स पर्वत - भूमध्य सागर", "कार्पेथियन पर्वत - कैस्पियन सागर", "यूराल पर्वत - काला सागर", "ब्लैक फॉरेस्ट पर्वत - काला सागर"], 
+            answer: "ब्लैक फॉरेस्ट पर्वत - काला सागर" 
+        },
+        { 
+            question: "सतलज नदी का उद्गम-स्थल कहाँ स्थित है?", 
+            options: ["मानसरोवर झील के निकट सानो ख्याबाब हिमनद", "रोहतांग दर्रा के निकट व्यास कुंड", "मानसरोवर झील के निकट स्थित राकस ताल", "गंगोत्री हिमानी के गोमुख से"], 
+            answer: "मानसरोवर झील के निकट स्थित राकस ताल" 
+        },
+        { 
+            question: "सिंधु नदी का सटीक उद्गम-स्थल क्या है?", 
+            options: ["मानसरोवर झील के निकट सानो ख्याबाब हिमनद", "मानसरोवर झील के निकट स्थित राकस ताल", "मप्सतुंग हिमानी (नेपाल)", "काराकोरम दर्रे के निकट सियाचिन हिमनद"], 
+            answer: "मानसरोवर झील के निकट सानो ख्याबाब हिमनद" 
+        },
+        { 
+            question: "गंगा नदी का उद्गम-स्थल और मुहाना क्या है?", 
+            options: ["गंगोत्री हिमानी - अरब सागर", "यमुनोत्री हिमानी - बंगाल की खाड़ी", "गंगोत्री हिमानी - बंगाल की खाड़ी", "मानसरोवर झील - खम्भात की खाड़ी"], 
+            answer: "गंगोत्री हिमानी - बंगाल की खाड़ी" 
+        },
+        { 
+            question: "रावी नदी कहाँ से निकलती है और किस नदी में मिल जाती है?", 
+            options: ["रोहतांग दर्रा - सतलज नदी", "बारालाचा दर्रा - चिनाब नदी", "व्यास कुंड - सतलज नदी", "रोहतांग दर्रा - चिनाब नदी"], 
+            answer: "रोहतांग दर्रा - चिनाब नदी" 
+        },
+        { 
+            question: "व्यास नदी कहाँ से निकलती है और किस नदी में मिलती है?", 
+            options: ["रोहतांग दर्रा के निकट व्यास कुंड - रावी नदी", "रोहतांग दर्रा के निकट व्यास कुंड - सतलज नदी", "शेषनाग झील - चिनाब नदी", "राकस ताल - चिनाब नदी"], 
+            answer: "रोहतांग दर्रा के निकट व्यास कुंड - सतलज नदी" 
+        },
+        { 
+            question: "झेलम नदी का उद्गम-स्थल क्या है?", 
+            options: ["वुलर झील", "डल झील", "मानसरोवर झील", "शेषनाग झील"], 
+            answer: "शेषनाग झील" 
+        },
+        { 
+            question: "यमुना नदी का मुहाना कहाँ स्थित है?", 
+            options: ["गंगा (काढ़ागोला)", "गंगा (प्रयाग)", "गंगा (पटना)", "बंगाल की खाड़ी"], 
+            answer: "गंगा (प्रयाग)" 
+        },
+        { 
+            question: "चम्बल नदी का उद्गम-स्थल कहाँ है और यह कहाँ गिरती है?", 
+            options: ["अमरकंटक की पहाड़ी - गंगा नदी", "जानापाव पहाड़ी - यमुना नदी", "नाग पहाड़ी - यमुना नदी", "सिहावा - गंगा नदी"], 
+            answer: "जानापाव पहाड़ी - यमुना नदी" 
+        },
+        { 
+            question: "घाघरा नदी का उद्गम-स्थल कहाँ है?", 
+            options: ["गोसाईंनाथ की चोटी", "सानो ख्याबाब हिमनद", "मप्सतुंग हिमानी (नेपाल)", "यमुनोत्री हिमानी"], 
+            answer: "मप्सतुंग हिमानी (नेपाल)" 
+        },
+        { 
+            question: "कोसी नदी कहाँ से निकलती है और किस स्थान पर गंगा नदी में मिलती है?", 
+            options: ["गोसाईंनाथ की चोटी - गंगा नदी (पटना)", "नेपाल - गंगा नदी (काढ़ागोला)", "मप्सतुंग हिमानी - यमुना नदी", "गोसाईंनाथ की चोटी - गंगा नदी (काढ़ागोला)"], 
+            answer: "गोसाईंनाथ की चोटी - गंगा नदी (काढ़ागोला)" 
+        },
+        { 
+            question: "गण्डक नदी का उद्गम-स्थल और मुहाना क्रमशः क्या है?", 
+            options: ["नेपाल - गंगा (पटना)", "नेपाल - गंगा (काढ़ागोला)", "मप्सतुंग हिमानी - गंगा (पटना)", "गोसाईंनाथ की चोटी - गंगा (प्रयाग)"], 
+            answer: "नेपाल - गंगा (पटना)" 
+        },
+        { 
+            question: "सोन नदी का उद्गम-स्थल क्या है और यह कहाँ जाकर मिलती है?", 
+            options: ["अमरकंटक की पहाड़ी - खम्भात की खाड़ी", "अमरकंटक की पहाड़ी - गंगा (पटना)", "सिहावा - बंगाल की खाड़ी", "नाग पहाड़ी - गंगा (पटना)"], 
+            answer: "अमरकंटक की पहाड़ी - गंगा (पटना)" 
+        },
+        { 
+            question: "नर्मदा नदी कहाँ से निकलती है और इसका मुहाना कहाँ है?", 
+            options: ["मुल्ताई नगर - खम्भात की खाड़ी", "अमरकंटक की पहाड़ी - कच्छ की रण", "सिहावा - बंगाल की खाड़ी", "अमरकंटक की पहाड़ी - खम्भात की खाड़ी"], 
+            answer: "अमरकंटक की पहाड़ी - खम्भात की खाड़ी" 
+        },
+        { 
+            question: "ताप्ती नदी का उद्गम-स्थल और मुहाना क्या है?", 
+            options: ["अमरकंटक की पहाड़ी - खम्भात की खाड़ी", "मुल्ताई नगर - खम्भात की खाड़ी", "मुल्ताई नगर - कच्छ की रण", "नाग पहाड़ी - कच्छ की रण"], 
+            answer: "मुल्ताई नगर - खम्भात की खाड़ी" 
+        },
+        { 
+            question: "महानदी का उद्गम-स्थल क्या है?", 
+            options: ["महाबलेश्वर", "नाग पहाड़ी", "सिहावा", "ब्रह्मगिरि पहाड़ी"], 
+            answer: "सिहावा" 
+        },
+        { 
+            question: "लूनी नदी कहाँ से निकलती है और इसका मुहाना कहाँ है?", 
+            options: ["नाग पहाड़ी - खम्भात की खाड़ी", "उदयपुर जिला - कच्छ की रण", "अरावली पर्वत - खम्भात की खाड़ी", "नाग पहाड़ी - कच्छ की रण"], 
+            answer: "नाग पहाड़ी - कच्छ की रण" 
+        },
+        { 
+            question: "साबरमती नदी का उद्गम-स्थल कहाँ है?", 
+            options: ["नाग पहाड़ी", "उदयपुर जिला", "मुल्ताई नगर", "अमरकंटक की पहाड़ी"], 
+            answer: "उदयपुर जिला" 
+        },
+        { 
+            question: "कावेरी नदी का उद्गम-स्थल क्या है?", 
+            options: ["त्र्यंबक गाँव", "महाबलेश्वर", "ब्रह्मगिरि पहाड़ी", "पश्चिमी घाट पर्वत"], 
+            answer: "ब्रह्मगिरि पहाड़ी" 
+        },
+        { 
+            question: "कृष्णा नदी का उद्गम-स्थल कहाँ है?", 
+            options: ["ब्रह्मगिरि पहाड़ी", "पश्चिमी घाट पर्वत", "त्र्यंबक गाँव", "महाबलेश्वर"], 
+            answer: "महाबलेश्वर" 
+        },
+        { 
+            question: "गोदावरी नदी कहाँ से निकलती है?", 
+            options: ["महाबलेश्वर (महाराष्ट्र)", "त्र्यंबक गाँव (नासिक)", "ब्रह्मगिरि पहाड़ी (कर्नाटक)", "सिहावा (छत्तीसगढ़)"], 
+            answer: "त्र्यंबक गाँव (नासिक)" 
+        },
+        { 
+            question: "तुंगभद्रा नदी का उद्गम-स्थल क्या है और यह किस नदी में मिलती है?", 
+            options: ["पश्चिमी घाट पर्वत - गोदावरी नदी", "ब्रह्मगिरि पहाड़ी - कृष्णा नदी", "पश्चिमी घाट पर्वत - कृष्णा नदी", "महाबलेश्वर - कावेरी नदी"], 
+            answer: "पश्चिमी घाट पर्वत - कृष्णा नदी" 
+        }
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; 
+    let isCurrentAnswered = false;
+
+    // शफल फंक्शन
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function initQuiz() {
+        if(originalQuestions.length === 0) {
+            document.getElementById('question-text').innerText = "कृपया 'originalQuestions' एरे में प्रश्न जोड़ें।";
+            return;
+        }
+        
+        // प्रश्नों और उनके विकल्पों को शफल करें
+        questions = shuffleArray(originalQuestions);
+        questions.forEach(q => q.options = shuffleArray(q.options));
+        
+        document.getElementById('total-q-num').innerText = questions.length;
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+        const qData = questions[currentQuestionIndex];
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        qData.options.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                // अगर पहले से उत्तर दिया है, तो सही-गलत दिखाएं
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
+        
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        const correctAns = questions[currentQuestionIndex].answer;
+        const allLis = document.getElementById('options-list').querySelectorAll('li');
+        const resultText = document.getElementById('result-text');
+
+        // विकल्पों को डिसेबल करें और सही-गलत हाइलाइट करें
+        allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
+            if (li.innerText === correctAns) {
+                li.classList.add('correct');
+            }
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) {
+                li.classList.add('wrong');
+            }
+        });
+
+        if (selectedOpt === correctAns) {
+            resultText.innerText = "✅ सही उत्तर!";
+            resultText.style.color = "green";
+        } else {
+            resultText.innerText = "❌ गलत उत्तर!";
+            resultText.style.color = "red";
+        }
+        
+        updatePaginationHighlight();
+        
+        // (ऑटो नेक्स्ट वाला कोड यहाँ से हटा दिया गया है)
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+
+        questions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.id = `page-${index}`;
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            if (userAnswers[index]) {
+                if (userAnswers[index] === questions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+    }
+
+    // समरी (रिजल्ट) दिखाने का फंक्शन
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम (Summary)</h2></div>`;
+        
+        let listHTML = '';
+        questions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया (Unattempted)'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / ${questions.length}</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से टेस्ट दें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); // सबसे ऊपर स्क्रॉल करें
+    }
+
+    window.onload = initQuiz;
+
+</script>
+
+</body>
+</html>
