@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>पर्यावरण सम्मेलन (स्मार्ट 4-Option 'Retry Mode' टेस्ट)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            width: 100%;
+            max-width: 750px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+        }
+        .back-btn:hover { background-color: #5a6268; }
+
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 750px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .options li:not(.disabled):hover {
+            background-color: #e9ecef;
+        }
+        .options li.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+            font-weight: bold;
+        }
+        .options li.wrong {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+            text-decoration: line-through;
+        }
+        .options li.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .submit-btn:hover { background-color: #218838; }
+        .pagination-wrapper {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .page-num {
+            background-color: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .page-num.active { box-shadow: 0 0 0 2px #000 inset; }
+        .page-num.answered-correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .page-num.answered-retry {
+            background-color: #fd7e14; /* Orange for retried answers */
+            color: white;
+            border-color: #fd7e14;
+        }
+        #result-text {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+            min-height: 24px;
+        }
+        
+        .summary-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .summary-perfect { border-left: 5px solid #28a745; }
+        .summary-retried { border-left: 5px solid #fd7e14; }
+        .summary-unattempted { border-left: 5px solid #6c757d; }
+        .summary-item p { margin: 5px 0; font-size: 15px; }
+        .score-board {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="#" class="back-btn" onclick="location.reload()">⬅ Refresh</a>
+</div>
+
+<div class="quiz-container" id="quiz-main-container">
+    <div class="header">
+        <h2 id="quiz-title">पर्यावरण सम्मेलन और वर्ष (20 Questions - Retry Mode)</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">0</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    
+    <ul class="options" id="options-list"></ul>
+
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें और रिजल्ट देखें</button>
+
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;"></div>
+
+<script>
+    const originalQuestions = [
+        { question: "आर्द्रभूमियों (Wetlands) के संरक्षण के लिए 'रामसर सम्मेलन' किस वर्ष अपनाया गया था?", options: ["1971", "1972", "1982", "1992", "1975", "1985"], answer: "1971" },
+        { question: "पर्यावरण पर पहला वैश्विक सम्मेलन, 'स्टॉकहोम सम्मेलन' किस वर्ष आयोजित किया गया था?", options: ["1972", "1985", "1992", "1997", "1979", "1989"], answer: "1972" },
+        { question: "लुप्तप्राय जीवों के व्यापार को नियंत्रित करने के लिए 'CITES' (वाशिंगटन सम्मेलन) कब अपनाया गया?", options: ["1973", "1979", "1985", "1992", "1989", "1998"], answer: "1973" },
+        { question: "प्रवासी प्रजातियों (Migratory Species) के संरक्षण के लिए 'बॉन सम्मेलन' (CMS) किस वर्ष अपनाया गया?", options: ["1979", "1982", "1971", "1985", "1992", "1994"], answer: "1979" },
+        { question: "ओजोन परत के संरक्षण के लिए बुनियादी ढांचा 'वियना सम्मेलन' किस वर्ष अपनाया गया?", options: ["1985", "1987", "1989", "1992", "1997", "2001"], answer: "1985" },
+        { question: "ओजोन को नुकसान पहुंचाने वाले पदार्थों पर रोक लगाने वाला 'मॉन्ट्रियल प्रोटोकॉल' कब अपनाया गया?", options: ["1987", "1989", "1992", "1997", "1985", "2005"], answer: "1987" },
+        { question: "खतरनाक कचरे के सीमा पार आवागमन को रोकने के लिए 'बेसल सम्मेलन' कब अपनाया गया?", options: ["1989", "1992", "1998", "2001", "1985", "1994"], answer: "1989" },
+        { question: "ऐतिहासिक 'पृथ्वी सम्मेलन' (Earth Summit) ब्राज़ील के रियो में किस वर्ष हुआ था?", options: ["1992", "1997", "2002", "2012", "1987", "1994"], answer: "1992" },
+        { question: "मरुस्थलीकरण (Desertification) और सूखे से निपटने के लिए UNCCD किस वर्ष अपनाया गया?", options: ["1994", "1992", "1997", "1998", "2001", "2004"], answer: "1994" },
+        { question: "ग्रीनहाउस गैसों के उत्सर्जन को कम करने के लिए 'क्योटो प्रोटोकॉल' किस वर्ष अपनाया गया?", options: ["1997", "1992", "2005", "2001", "1998", "2010"], answer: "1997" },
+        { question: "खतरनाक रसायनों के व्यापार में 'पूर्व सूचित सहमति' (PIC) के लिए 'रॉटरडैम सम्मेलन' कब आया?", options: ["1998", "2001", "1989", "1992", "1994", "2004"], answer: "1998" },
+        { question: "जैव सुरक्षा (Biosafety) और LMOs के सुरक्षित उपयोग के लिए 'कार्टाजेना प्रोटोकॉल' कब अपनाया गया?", options: ["2000", "2010", "1992", "1998", "2004", "2014"], answer: "2000" },
+        { question: "जैविक प्रदूषकों (POPs) यानी 'डर्टी डजन' पर रोक लगाने वाला 'स्टॉकहोम सम्मेलन' कब अपनाया गया?", options: ["2001", "1998", "1989", "2004", "2010", "1992"], answer: "2001" },
+        { question: "आनुवंशिक संसाधनों के उचित बंटवारे (ABS) के लिए 'नागोया प्रोटोकॉल' किस वर्ष अपनाया गया?", options: ["2010", "2000", "1992", "2014", "2015", "1998"], answer: "2010" },
+        { question: "पारे (Mercury) के प्रदूषण से बचाने के लिए 'मिनामाता सम्मेलन' किस वर्ष अपनाया गया?", options: ["2013", "2001", "1989", "2010", "2017", "1998"], answer: "2013" },
+        { question: "वैश्विक तापमान वृद्धि को 1.5°C तक सीमित रखने का 'पेरिस समझौता' किस वर्ष अपनाया गया?", options: ["2015", "2012", "1997", "2021", "2010", "2016"], answer: "2015" },
+        { question: "हाइड्रोफ्लोरोकार्बन (HFCs) को कम करने के लिए मॉन्ट्रियल प्रोटोकॉल में 'किगाली संशोधन' कब किया गया?", options: ["2016", "2015", "1987", "2010", "2021", "2005"], answer: "2016" },
+        { question: "राष्ट्रीय सीमाओं के बाहर समुद्री जैव विविधता की रक्षा के लिए 'उच्च समुद्र संधि' (BBNJ) कब अपनाई गई?", options: ["2023", "2021", "2015", "2010", "1982", "1994"], answer: "2023" },
+        { question: "21वीं सदी के लिए सतत विकास का ब्लूप्रिंट 'एजेंडा 21' किस सम्मेलन में अपनाया गया था?", options: ["पृथ्वी सम्मेलन (1992)", "स्टॉकहोम सम्मेलन (1972)", "पेरिस समझौता (2015)", "क्योटो प्रोटोकॉल (1997)", "जोहान्सबर्ग सम्मेलन (2002)", "वियना सम्मेलन (1985)"], answer: "पृथ्वी सम्मेलन (1992)" },
+        { question: "खतरे में पड़ी आर्द्रभूमियों के रजिस्टर 'मोंट्रेक्स रिकॉर्ड' का संबंध किस सम्मेलन से है?", options: ["रामसर सम्मेलन", "बेसल सम्मेलन", "स्टॉकहोम सम्मेलन", "साइट्स (CITES)", "बॉन सम्मेलन", "मिनामाता सम्मेलन"], answer: "रामसर सम्मेलन" }
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    
+    // Retry Mode Logic State Variables
+    let clickedOptions = {}; 
+    let firstAttempts = {}; // Tracks the very first option clicked for scoring
+
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function initQuiz() {
+        questions = shuffleArray(originalQuestions);
+        
+        questions.forEach((q, i) => {
+            let distractors = q.options.filter(opt => opt !== q.answer);
+            distractors = shuffleArray(distractors);
+            let selectedOptions = [q.answer, distractors[0], distractors[1], distractors[2]];
+            q.displayOptions = shuffleArray(selectedOptions);
+            
+            // Initialize states for Retry Logic
+            clickedOptions[i] = [];
+            firstAttempts[i] = null;
+        });
+        
+        document.getElementById('total-q-num').innerText = questions.length;
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        const qData = questions[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        // Check if the correct answer was already found in previous attempts
+        const isCorrectlyAnswered = clickedOptions[currentQuestionIndex].includes(qData.answer);
+
+        qData.displayOptions.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            const isClicked = clickedOptions[currentQuestionIndex].includes(opt);
+
+            if (isCorrectlyAnswered) {
+                li.classList.add('disabled');
+                if (opt === qData.answer) li.classList.add('correct');
+                else if (isClicked) li.classList.add('wrong');
+            } else {
+                if (isClicked) {
+                    li.classList.add('wrong', 'disabled'); // Wrong option stays red & disabled
+                } else {
+                    li.onclick = () => selectOption(opt, li);
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        if (isCorrectlyAnswered) {
+            resultText.innerText = "✅ बिल्कुल सही उत्तर!";
+            resultText.style.color = "green";
+        } else if (clickedOptions[currentQuestionIndex].length > 0) {
+            resultText.innerText = "❌ गलत उत्तर! कृपया अन्य विकल्प चुनें (Retry)।";
+            resultText.style.color = "#dc3545";
+        }
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        // Log the first attempt for scoring
+        if (!firstAttempts[currentQuestionIndex]) {
+            firstAttempts[currentQuestionIndex] = selectedOpt;
+        }
+        
+        clickedOptions[currentQuestionIndex].push(selectedOpt);
+
+        if (selectedOpt === questions[currentQuestionIndex].answer) {
+            // Correct answer found! Re-render to lock question
+            renderQuestion(); 
+        } else {
+            // Wrong answer clicked - Retry mode activates
+            liElement.classList.add('wrong', 'disabled');
+            liElement.onclick = null;
+            document.getElementById('result-text').innerText = "❌ गलत उत्तर! कृपया अन्य विकल्प चुनें (Retry)।";
+            document.getElementById('result-text').style.color = "#dc3545";
+            updatePaginationHighlight();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+        questions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.id = `page-${index}`;
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-retry');
+            
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            // Highlight based on whether they got it right on FIRST try or RETRY
+            const isCorrectlyAnswered = clickedOptions[index].includes(questions[index].answer);
+            if (isCorrectlyAnswered) {
+                if (firstAttempts[index] === questions[index].answer) {
+                    page.classList.add('answered-correct'); // Green for perfect
+                } else {
+                    page.classList.add('answered-retry'); // Orange for retried
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let firstTryScore = 0;
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम (Retry Mode)</h2></div>`;
+        let listHTML = '';
+        
+        questions.forEach((q, index) => {
+            const firstAns = firstAttempts[index];
+            const isCorrectlyAnswered = clickedOptions[index].includes(q.answer);
+            
+            let itemClass = 'summary-unattempted';
+            let statusText = '<span style="color:#6c757d">प्रयास नहीं किया गया</span>';
+            
+            if (isCorrectlyAnswered) {
+                if (firstAns === q.answer) {
+                    firstTryScore++;
+                    itemClass = 'summary-perfect';
+                    statusText = '<span style="color:#28a745">पहले प्रयास में सही ✅</span>';
+                } else {
+                    itemClass = 'summary-retried';
+                    statusText = `<span style="color:#fd7e14">रिट्राई करके सही किया 🔄 (पहला उत्तर: ${firstAns})</span>`;
+                }
+            } else if (clickedOptions[index].length > 0) {
+                 itemClass = 'summary-unattempted'; // They tried but gave up before finding correct
+                 statusText = `<span style="color:#dc3545">बीच में छोड़ दिया (अंतिम प्रयास: ${clickedOptions[index][clickedOptions[index].length - 1]})</span>`;
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p><strong>स्थिति:</strong> ${statusText}</p>
+                    <p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">
+            आपका 'First Try' स्कोर:<br> 
+            <span style="font-size:32px; color:#007bff">${firstTryScore}</span> / ${questions.length}
+        </div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से टेस्ट दें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); 
+    }
+
+    window.onload = initQuiz;
+
+</script>
+
+</body>
+</html>
