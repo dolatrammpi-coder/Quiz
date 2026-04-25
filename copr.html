@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>पर्यावरण सम्मेलन और प्रोटोकॉल (स्मार्ट 4-Option टेस्ट)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            width: 100%;
+            max-width: 750px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 750px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .options li:not(.disabled):hover {
+            background-color: #e9ecef;
+        }
+        .options li.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+        }
+        .options li.wrong {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+        .options li.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .pagination-wrapper {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .page-num {
+            background-color: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .page-num:hover {
+            background-color: #ddd;
+        }
+        .page-num.active {
+            box-shadow: 0 0 0 2px #000 inset;
+        }
+        .page-num.answered-correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .page-num.answered-wrong {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        #result-text {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+            min-height: 24px;
+        }
+        
+        .summary-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .summary-correct { border-left: 5px solid #28a745; }
+        .summary-wrong { border-left: 5px solid #dc3545; }
+        .summary-unattempted { border-left: 5px solid #ffc107; }
+        .summary-item p { margin: 5px 0; font-size: 15px; }
+        .score-board {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="env.html" class="back-btn">⬅ Back</a>
+</div>
+
+<div class="quiz-container" id="quiz-main-container">
+    <div class="header">
+        <h2 id="quiz-title">पर्यावरण सम्मेलन और प्रोटोकॉल (25 Questions)</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">0</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    
+    <ul class="options" id="options-list"></ul>
+
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें और रिजल्ट देखें</button>
+
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;"></div>
+
+<script>
+    // ----------------------------------------------------
+    // पर्यावरण सम्मेलनों पर 25 महत्वपूर्ण प्रश्न (हर प्रश्न में 6 विकल्प हैं)
+    // ----------------------------------------------------
+    const originalQuestions = [
+        {
+            question: "आर्द्रभूमि (Wetlands) के संरक्षण और उनके सतत उपयोग से संबंधित अंतरराष्ट्रीय सम्मेलन कौन सा है?",
+            options: ["रामसर सम्मेलन", "बेसल सम्मेलन", "स्टॉकहोम सम्मेलन", "क्योटो प्रोटोकॉल", "मिनामाता सम्मेलन", "रॉटरडैम सम्मेलन"],
+            answer: "रामसर सम्मेलन"
+        },
+        {
+            question: "ओजोन परत को नुकसान पहुंचाने वाले पदार्थों (जैसे CFCs) पर रोक लगाने के लिए कौन सा प्रोटोकॉल अपनाया गया था?",
+            options: ["मॉन्ट्रियल प्रोटोकॉल", "क्योटो प्रोटोकॉल", "कार्टाजेना प्रोटोकॉल", "नागोया प्रोटोकॉल", "पेरिस समझौता", "बॉन सम्मेलन"],
+            answer: "मॉन्ट्रियल प्रोटोकॉल"
+        },
+        {
+            question: "विकसित देशों के ग्रीनहाउस गैस (GHG) उत्सर्जन को कम करने के लिए कानूनी रूप से बाध्यकारी लक्ष्य किस प्रोटोकॉल के तहत तय किए गए थे?",
+            options: ["क्योटो प्रोटोकॉल", "मॉन्ट्रियल प्रोटोकॉल", "नागोया प्रोटोकॉल", "कार्टाजेना प्रोटोकॉल", "मिनामाता सम्मेलन", "बेसल सम्मेलन"],
+            answer: "क्योटो प्रोटोकॉल"
+        },
+        {
+            question: "खतरनाक कचरे (Hazardous Waste) के सीमा पार आवागमन (Transboundary Movement) पर रोक लगाने से कौन सा सम्मेलन संबंधित है?",
+            options: ["बेसल सम्मेलन", "रॉटरडैम सम्मेलन", "स्टॉकहोम सम्मेलन", "रामसर सम्मेलन", "वियना सम्मेलन", "बॉन सम्मेलन"],
+            answer: "बेसल सम्मेलन"
+        },
+        {
+            question: "पर्यावरण में लगातार बने रहने वाले जैविक प्रदूषकों (POPs) को खत्म करने या प्रतिबंधित करने के लिए कौन सा सम्मेलन अपनाया गया है?",
+            options: ["स्टॉकहोम सम्मेलन", "बेसल सम्मेलन", "मिनामाता सम्मेलन", "रामसर सम्मेलन", "रॉटरडैम सम्मेलन", "वियना सम्मेलन"],
+            answer: "स्टॉकहोम सम्मेलन"
+        },
+        {
+            question: "पारे (Mercury) के प्रदूषण से मानव स्वास्थ्य और पर्यावरण को बचाने के लिए कौन सा अंतरराष्ट्रीय सम्मेलन अपनाया गया है?",
+            options: ["मिनामाता सम्मेलन", "स्टॉकहोम सम्मेलन", "बेसल सम्मेलन", "रामसर सम्मेलन", "बॉन सम्मेलन", "साइट्स (CITES)"],
+            answer: "मिनामाता सम्मेलन"
+        },
+        {
+            question: "मरुस्थलीकरण (Desertification) और सूखे से निपटने के लिए एकमात्र कानूनी रूप से बाध्यकारी अंतरराष्ट्रीय समझौता कौन सा है?",
+            options: ["यूएनसीसीडी (UNCCD)", "यूएनएफसीसीसी (UNFCCC)", "सीबीडी (CBD)", "साइट्स (CITES)", "रामसर सम्मेलन", "क्योटो प्रोटोकॉल"],
+            answer: "यूएनसीसीडी (UNCCD)"
+        },
+        {
+            question: "लुप्तप्राय जीवों और वनस्पतियों के अंतरराष्ट्रीय व्यापार को नियंत्रित करने वाले सम्मेलन (CITES) को अन्य किस नाम से जाना जाता है?",
+            options: ["वाशिंगटन सम्मेलन", "रियो सम्मेलन", "रामसर सम्मेलन", "बॉन सम्मेलन", "स्टॉकहोम सम्मेलन", "वियना सम्मेलन"],
+            answer: "वाशिंगटन सम्मेलन"
+        },
+        {
+            question: "वैश्विक तापमान वृद्धि (Global Warming) को पूर्व-औद्योगिक स्तर से 2°C से नीचे रखने का लक्ष्य किस समझौते में तय किया गया है?",
+            options: ["पेरिस समझौता", "क्योटो प्रोटोकॉल", "मॉन्ट्रियल प्रोटोकॉल", "नागोया प्रोटोकॉल", "रियो घोषणा", "कोपेनहेगन समझौता"],
+            answer: "पेरिस समझौता"
+        },
+        {
+            question: "आनुवंशिक रूप से संशोधित जीवों (LMOs/GMOs) के सुरक्षित उपयोग और 'जैव सुरक्षा' (Biosafety) से कौन सा प्रोटोकॉल जुड़ा है?",
+            options: ["कार्टाजेना प्रोटोकॉल", "नागोया प्रोटोकॉल", "क्योटो प्रोटोकॉल", "मॉन्ट्रियल प्रोटोकॉल", "जिनेवा प्रोटोकॉल", "किगाली संशोधन"],
+            answer: "कार्टाजेना प्रोटोकॉल"
+        },
+        {
+            question: "आनुवंशिक संसाधनों तक पहुंच और लाभों के उचित बंटवारे (Access and Benefit-sharing - ABS) से कौन सा प्रोटोकॉल संबंधित है?",
+            options: ["नागोया प्रोटोकॉल", "कार्टाजेना प्रोटोकॉल", "क्योटो प्रोटोकॉल", "मॉन्ट्रियल प्रोटोकॉल", "मैड्रिड प्रोटोकॉल", "किगाली संशोधन"],
+            answer: "नागोया प्रोटोकॉल"
+        },
+        {
+            question: "प्रवासी प्रजातियों (Migratory Species) के संरक्षण के लिए UNEP के तहत कौन सा सम्मेलन अपनाया गया था?",
+            options: ["बॉन सम्मेलन", "रामसर सम्मेलन", "बेसल सम्मेलन", "स्टॉकहोम सम्मेलन", "रियो सम्मेलन", "वियना सम्मेलन"],
+            answer: "बॉन सम्मेलन"
+        },
+        {
+            question: "हाइड्रोफ्लोरोकार्बन (HFCs) को कम करने के उद्देश्य से 2016 में किस प्रोटोकॉल में 'किगाली संशोधन' (Kigali Amendment) किया गया था?",
+            options: ["मॉन्ट्रियल प्रोटोकॉल", "क्योटो प्रोटोकॉल", "पेरिस समझौता", "नागोया प्रोटोकॉल", "कार्टाजेना प्रोटोकॉल", "मिनामाता सम्मेलन"],
+            answer: "मॉन्ट्रियल प्रोटोकॉल"
+        },
+        {
+            question: "खतरनाक रसायनों और कीटनाशकों के अंतरराष्ट्रीय व्यापार में 'पूर्व सूचित सहमति' (PIC - Prior Informed Consent) प्रक्रिया किस सम्मेलन की विशेषता है?",
+            options: ["रॉटरडैम सम्मेलन", "बेसल सम्मेलन", "स्टॉकहोम सम्मेलन", "मिनामाता सम्मेलन", "रामसर सम्मेलन", "बॉन सम्मेलन"],
+            answer: "रॉटरडैम सम्मेलन"
+        },
+        {
+            question: "राष्ट्रीय सीमाओं के बाहर के समुद्री क्षेत्रों (High Seas) की जैव विविधता के संरक्षण के लिए 2023 में कौन सी ऐतिहासिक संधि अपनाई गई?",
+            options: ["उच्च समुद्र संधि (BBNJ Treaty)", "अंटार्कटिक संधि", "पेरिस समझौता", "यूएनसीसीडी (UNCCD)", "रामसर सम्मेलन", "बॉन सम्मेलन"],
+            answer: "उच्च समुद्र संधि (BBNJ Treaty)"
+        },
+        {
+            question: "5 जून को 'विश्व पर्यावरण दिवस' मनाने की शुरुआत किस सम्मेलन से हुई थी?",
+            options: ["स्टॉकहोम सम्मेलन 1972", "पृथ्वी सम्मेलन 1992", "क्योटो प्रोटोकॉल 1997", "पेरिस समझौता 2015", "रामसर सम्मेलन 1971", "जिनेवा सम्मेलन"],
+            answer: "स्टॉकहोम सम्मेलन 1972"
+        },
+        {
+            question: "'मोंट्रेक्स रिकॉर्ड' (Montreux Record) का संबंध इनमें से किस विषय से है?",
+            options: ["खतरे में पड़ी आर्द्रभूमियों (Wetlands) का रजिस्टर", "खतरे में पड़े जीवों की सूची", "ओजोन परत को नुकसान पहुंचाने वाले पदार्थों का रिकॉर्ड", "ग्रीनहाउस गैस उत्सर्जन का डेटा", "खतरनाक कचरे के व्यापार का रिकॉर्ड", "महासागर प्लास्टिक प्रदूषण का मैप"],
+            answer: "खतरे में पड़ी आर्द्रभूमियों (Wetlands) का रजिस्टर"
+        },
+        {
+            question: "'सतत विकास' (Sustainable Development) का कॉन्सेप्ट सबसे पहले किस प्रसिद्ध रिपोर्ट में विस्तार से लाया गया था?",
+            options: ["ब्रंटलैंड रिपोर्ट (Our Common Future)", "IPCC असेसमेंट रिपोर्ट", "UNEP ग्लोबल एनवायरनमेंट आउटलुक", "क्लब ऑफ रोम रिपोर्ट", "एजेंडा 21", "मिलेनियम इकोसिस्टम असेसमेंट"],
+            answer: "ब्रंटलैंड रिपोर्ट (Our Common Future)"
+        },
+        {
+            question: "1992 के रियो 'पृथ्वी सम्मेलन' में इनमें से कौन सा दस्तावेज़ अपनाया गया था, जो 21वीं सदी के लिए सतत विकास का ब्लूप्रिंट है?",
+            options: ["एजेंडा 21", "एजेंडा 2030", "आइची लक्ष्य", "मिलेनियम डेवलपमेंट गोल्स", "सेंडाई फ्रेमवर्क", "पेरिस रूलबुक"],
+            answer: "एजेंडा 21"
+        },
+        {
+            question: "अंतर्राष्ट्रीय सौर गठबंधन (ISA) की स्थापना किस COP सम्मेलन के दौरान भारत और फ्रांस द्वारा की गई थी?",
+            options: ["COP 21 (पेरिस)", "COP 26 (ग्लासगो)", "COP 27 (शर्म अल-शेख)", "COP 28 (दुबई)", "COP 3 (क्योटो)", "COP 15 (कोपेनहेगन)"],
+            answer: "COP 21 (पेरिस)"
+        },
+        {
+            question: "'आइची लक्ष्य' (Aichi Targets) जिसमें 20 लक्ष्य शामिल थे, किस अंतरराष्ट्रीय सम्मेलन से जुड़े हैं?",
+            options: ["जैव विविधता सम्मेलन (CBD)", "यूएनएफसीसीसी (UNFCCC)", "यूएनसीसीडी (UNCCD)", "साइट्स (CITES)", "रामसर सम्मेलन", "मिनामाता सम्मेलन"],
+            answer: "जैव विविधता सम्मेलन (CBD)"
+        },
+        {
+            question: "UNFCCC के COP 27 (2022) में जलवायु परिवर्तन से प्रभावित देशों की मदद के लिए किस नए फंड को बनाने पर सहमति बनी थी?",
+            options: ["लॉस एंड डैमेज फंड (Loss and Damage Fund)", "ग्रीन क्लाइमेट फंड", "ग्लोबल एनवायरनमेंट फैसिलिटी", "अडैप्टेशन फंड", "क्लीन टेक्नोलॉजी फंड", "क्लाइमेट इन्वेस्टमेंट फंड"],
+            answer: "लॉस एंड डैमेज फंड (Loss and Damage Fund)"
+        },
+        {
+            question: "भारत ने COP 26 (ग्लासगो) में 'नेट-जीरो कार्बन एमिशन' (Net-Zero) का लक्ष्य किस वर्ष तक हासिल करने का 'पंचामृत' वचन दिया था?",
+            options: ["2070", "2050", "2030", "2060", "2080", "2045"],
+            answer: "2070"
+        },
+        {
+            question: "वन्यजीवों और वनस्पतियों के अवैध व्यापार को मॉनिटर करने वाले नेटवर्क 'TRAFFIC' की स्थापना किसने की थी?",
+            options: ["WWF और IUCN", "UNEP और UNDP", "World Bank और IMF", "Greenpeace और PETA", "UNESCO और FAO", "WMO और WHO"],
+            answer: "WWF और IUCN"
+        },
+        {
+            question: "ओजोन परत के संरक्षण के लिए 1985 में कौन सा फ्रेमवर्क सम्मेलन साइन किया गया था (जिसकी सफलता के बाद मॉन्ट्रियल प्रोटोकॉल लाया गया)?",
+            options: ["वियना सम्मेलन", "जिनेवा सम्मेलन", "बेसल सम्मेलन", "बॉन सम्मेलन", "हेलसिंकी सम्मेलन", "वाशिंगटन सम्मेलन"],
+            answer: "वियना सम्मेलन"
+        }
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; 
+    let isCurrentAnswered = false;
+
+    // शफल फंक्शन
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function initQuiz() {
+        if(originalQuestions.length === 0) {
+            document.getElementById('question-text').innerText = "कृपया 'originalQuestions' एरे में प्रश्न जोड़ें।";
+            return;
+        }
+        
+        // प्रश्नों को शफल करें
+        questions = shuffleArray(originalQuestions);
+        
+        // 6 विकल्पों में से 4 को रैंडमली चुनें (जिसमें 1 सही और 3 गलत हों)
+        questions.forEach(q => {
+            let distractors = q.options.filter(opt => opt !== q.answer);
+            distractors = shuffleArray(distractors);
+            let selectedOptions = [q.answer, distractors[0], distractors[1], distractors[2]];
+            // इन 4 विकल्पों को फिर से शफल कर दें
+            q.displayOptions = shuffleArray(selectedOptions);
+        });
+        
+        document.getElementById('total-q-num').innerText = questions.length;
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+        const qData = questions[currentQuestionIndex];
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        // केवल 4 रैंडम विकल्प (displayOptions) दिखाएँगे
+        qData.displayOptions.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
+        
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        const correctAns = questions[currentQuestionIndex].answer;
+        const allLis = document.getElementById('options-list').querySelectorAll('li');
+        const resultText = document.getElementById('result-text');
+
+        allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
+            if (li.innerText === correctAns) {
+                li.classList.add('correct');
+            }
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) {
+                li.classList.add('wrong');
+            }
+        });
+
+        if (selectedOpt === correctAns) {
+            resultText.innerText = "✅ सही उत्तर!";
+            resultText.style.color = "green";
+        } else {
+            resultText.innerText = "❌ गलत उत्तर!";
+            resultText.style.color = "red";
+        }
+        
+        updatePaginationHighlight();
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+
+        questions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.id = `page-${index}`;
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            if (userAnswers[index]) {
+                if (userAnswers[index] === questions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम (Summary)</h2></div>`;
+        
+        let listHTML = '';
+        questions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया (Unattempted)'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / ${questions.length}</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से टेस्ट दें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); 
+    }
+
+    window.onload = initQuiz;
+
+</script>
+
+</body>
+</html>
