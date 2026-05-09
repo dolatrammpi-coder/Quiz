@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Fun: States & Capitals Quiz!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+
+        body {
+            font-family: 'Comic Neue', cursive, sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .quiz-card {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            border: 5px dashed #ff9a9e;
+            position: relative;
+            z-index: 10;
+        }
+
+        h2 { 
+            color: #ff6b6b; 
+            font-size: 2rem;
+            margin-top: 0;
+            text-shadow: 2px 2px #feca57;
+        }
+
+        .question-box {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #2e86de;
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Speaker Button ki Styling */
+        .speaker-btn {
+            background: #feca57;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 #ff9f43;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .speaker-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #ff9f43;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            font-size: 1.2rem;
+            font-family: 'Comic Neue', cursive;
+            font-weight: bold;
+            border: 3px solid #54a0ff;
+            background: #c8d6e5;
+            color: #222f3e;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 5px 0 #54a0ff;
+        }
+
+        .option-btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        .correct {
+            background-color: #1dd1a1 !important;
+            border-color: #10ac84 !important;
+            color: white !important;
+            box-shadow: 0 5px 0 #10ac84 !important;
+        }
+
+        .wrong {
+            background-color: #ff6b6b !important;
+            border-color: #ee5253 !important;
+            color: white !important;
+            box-shadow: 0 5px 0 #ee5253 !important;
+        }
+
+        #next-btn {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 1.3rem;
+            font-family: 'Comic Neue', cursive;
+            background-color: #feca57;
+            color: #222f3e;
+            border: 3px solid #ff9f43;
+            border-radius: 15px;
+            cursor: pointer;
+            display: none;
+            width: 100%;
+            font-weight: bold;
+            box-shadow: 0 5px 0 #ff9f43;
+        }
+
+        #next-btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        .stats {
+            margin-top: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #5f27cd;
+        }
+
+        /* Animation Container */
+        #animation-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .falling-item {
+            position: absolute;
+            top: -100px;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(120vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="animation-layer"></div>
+
+<div class="quiz-card">
+    <h2>🌟 States & Capitals! 🌟</h2>
+    <div class="question-box" id="question">Loading question...</div>
+    <div class="options-grid" id="options"></div>
+    <button id="next-btn" onclick="nextQuestion()">Next Question 🚀</button>
+    <div class="stats">
+        ⭐ Score: <span id="score">0</span> | 📝 Question: <span id="q-count">1</span>/28
+    </div>
+</div>
+
+<script>
+    const originalQuizData = [
+        { state: "Andhra Pradesh", capital: "Amaravati" },
+        { state: "Arunachal Pradesh", capital: "Itanagar" },
+        { state: "Assam", capital: "Dispur" },
+        { state: "Bihar", capital: "Patna" },
+        { state: "Chhattisgarh", capital: "Raipur" },
+        { state: "Goa", capital: "Panaji" },
+        { state: "Gujarat", capital: "Gandhinagar" },
+        { state: "Haryana", capital: "Chandigarh" },
+        { state: "Himachal Pradesh", capital: "Shimla" },
+        { state: "Jharkhand", capital: "Ranchi" },
+        { state: "Karnataka", capital: "Bengaluru" },
+        { state: "Kerala", capital: "Thiruvananthapuram" },
+        { state: "Madhya Pradesh", capital: "Bhopal" },
+        { state: "Maharashtra", capital: "Mumbai" },
+        { state: "Manipur", capital: "Imphal" },
+        { state: "Meghalaya", capital: "Shillong" },
+        { state: "Mizoram", capital: "Aizawl" },
+        { state: "Nagaland", capital: "Kohima" },
+        { state: "Odisha", capital: "Bhubaneswar" },
+        { state: "Punjab", capital: "Chandigarh" },
+        { state: "Rajasthan", capital: "Jaipur" },
+        { state: "Sikkim", capital: "Gangtok" },
+        { state: "Tamil Nadu", capital: "Chennai" },
+        { state: "Telangana", capital: "Hyderabad" },
+        { state: "Tripura", capital: "Agartala" },
+        { state: "Uttar Pradesh", capital: "Lucknow" },
+        { state: "Uttarakhand", capital: "Dehradun" },
+        { state: "West Bengal", capital: "Kolkata" }
+    ];
+
+    let quizData = [];
+    let currentScore = 0;
+    let questionsAsked = 0;
+    let correctAnswer = "";
+
+    // Text to Speech Function
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Purani aawaz rokne ke liye
+            let speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'en-IN'; // Indian English accent
+            speech.rate = 0.85;    // Bachcho ke liye thoda slow
+            speech.pitch = 1.1;    // Thodi soft aawaz
+            window.speechSynthesis.speak(speech);
+        } else {
+            alert("Sorry, aapka browser voice feature support nahi karta!");
+        }
+    }
+
+    function shuffleArray(array) {
+        let shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    function createFallingAnimation(emojis, count, size) {
+        const layer = document.getElementById('animation-layer');
+        for (let i = 0; i < count; i++) {
+            const item = document.createElement('div');
+            item.className = 'falling-item';
+            item.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            item.style.left = Math.random() * 100 + 'vw';
+            item.style.fontSize = size + 'px';
+            item.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            item.style.animationDelay = (Math.random() * 1) + 's';
+
+            layer.appendChild(item);
+
+            setTimeout(() => {
+                item.remove();
+            }, 5000);
+        }
+    }
+
+    function triggerFlowerShower() {
+        createFallingAnimation(['🌸', '🌼', '🌺', '🌻', '✨'], 40, 30);
+    }
+
+    function triggerElephantRain() {
+        createFallingAnimation(['🐘', '💥', '💦'], 25, 45);
+    }
+
+    function startQuiz() {
+        quizData = shuffleArray(originalQuizData);
+        currentScore = 0;
+        questionsAsked = 0;
+        document.getElementById('score').innerText = currentScore;
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        if (questionsAsked >= quizData.length) {
+            alert(`🎉 Yay! Quiz Over! Your Score: ${currentScore}/${quizData.length} 🎉`);
+            startQuiz();
+            return;
+        }
+
+        document.getElementById('next-btn').style.display = 'none';
+        const item = quizData[questionsAsked];
+        correctAnswer = item.capital;
+        
+        // Yahan Text ke sath Speaker Button add kiya gaya hai
+        document.getElementById('question').innerHTML = `
+            What is the capital of <strong>${item.state}</strong>? 
+            <button class="speaker-btn" onclick="speakText('${item.state}')" title="Listen to State Name">🔊</button>
+        `;
+        
+        document.getElementById('q-count').innerText = questionsAsked + 1;
+
+        let choices = [item.capital];
+        while (choices.length < 4) {
+            let randomCap = originalQuizData[Math.floor(Math.random() * originalQuizData.length)].capital;
+            if (!choices.includes(randomCap)) choices.push(randomCap);
+        }
+        choices = shuffleArray(choices);
+
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = choice;
+            btn.onclick = () => handleSelection(btn, choice);
+            optionsContainer.appendChild(btn);
+        });
+        
+        questionsAsked++;
+    }
+
+    function handleSelection(selectedBtn, choice) {
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(b => {
+            b.disabled = true;
+            b.style.cursor = 'not-allowed';
+        });
+
+        if (choice === correctAnswer) {
+            selectedBtn.classList.add('correct');
+            currentScore++;
+            document.getElementById('score').innerText = currentScore;
+            triggerFlowerShower();
+        } else {
+            selectedBtn.classList.add('wrong');
+            triggerElephantRain();
+            buttons.forEach(b => {
+                if (b.innerText === correctAnswer) b.classList.add('correct');
+            });
+        }
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    startQuiz();
+</script>
+
+</body>
+</html>
