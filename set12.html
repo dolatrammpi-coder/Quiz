@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamesh Special Quiz</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #eef2f3; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        .quiz-container { 
+            background: white; 
+            max-width: 600px; 
+            margin: auto; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+        }
+        .options { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            margin-top: 20px; 
+        }
+        button { 
+            padding: 12px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            transition: 0.3s; 
+        }
+        .option-btn { 
+            background-color: #007BFF; 
+            color: white; 
+        }
+        .option-btn:hover { 
+            background-color: #0056b3; 
+        }
+        .action-btns {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .shuffle-btn { 
+            background-color: #28a745; 
+            color: white; 
+        }
+        .shuffle-btn:hover { 
+            background-color: #218838; 
+        }
+        .next-btn {
+            background-color: #ffc107; 
+            color: #333;
+            display: none;
+        }
+        .next-btn:hover {
+            background-color: #e0a800;
+        }
+        #feedback { 
+            margin-top: 20px; 
+            font-weight: bold; 
+            font-size: 18px; 
+            min-height: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h2>📚 Kamesh Special GK Quiz</h2>
+        <div id="question-text" style="font-size: 20px; margin-bottom: 20px; color: #333;"></div>
+        <div class="options" id="options-container"></div>
+        <div id="feedback"></div>
+        
+        <div class="action-btns">
+            <button class="shuffle-btn" onclick="shuffleQuiz()">🔀 Questions Shuffle Karein</button>
+            <button class="next-btn" onclick="nextQuestion()" id="next-btn">Next Question ➡️</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "भारतीय चुनावों में पारदर्शिता सुनिश्चित करने के लिए ईवीएम (EVM) के साथ उपयोग की जाने वाली मशीन 'VVPAT' का पूर्ण रूप क्या है?",
+                options: ["वोटर वेरीफाइएबल पेपर ऑडिट ट्रेल", "वोटिंग वेरिफिकेशन पेपर एंड ट्रेल", "वोटर वेरीफाइड पोलिंग अकाउंट ट्रेल", "विजुअल वोटर पेपर ऑडिट ट्रेल"],
+                answer: "वोटर वेरीफाइएबल पेपर ऑडिट ट्रेल"
+            },
+            {
+                q: "पाँच उभरती हुई प्रमुख अर्थव्यवस्थाओं के समूह 'BRICS' (ब्रिक्स) की स्थापना के समय इसका मूल नाम केवल 'BRIC' था। इसमें 'S' (दक्षिण अफ्रीका) किस वर्ष जुड़ा?",
+                options: ["2008", "2010", "2012", "2015"],
+                answer: "2010"
+            },
+            {
+                q: "वर्तमान उत्तर प्रदेश के किस स्तूप पर भगवान बुद्ध पहली बार अपने पाँच शिष्यों से मिले थे?",
+                options: ["कांची स्तूप", "धमेक स्तूप", "चौखंडी स्तूप", "विकल्पों में से कोई नहीं"],
+                answer: "चौखंडी स्तूप"
+            },
+            {
+                q: "______ हवा की नमी को मापता है।",
+                options: ["आर्द्रतामापी", "माइक्रोमीटर", "थर्मामीटर", "हाइड्रोमीटर"],
+                answer: "आर्द्रतामापी"
+            },
+            {
+                q: "निम्नलिखित में से कौन-सा अनुच्छेद संसद की सदस्यता के लिए योग्यता निर्धारित करता है?",
+                options: ["अनुच्छेद 84", "अनुच्छेद 81", "अनुच्छेद 83", "अनुच्छेद 82"],
+                answer: "अनुच्छेद 84"
+            },
+            {
+                q: "समाज के आर्थिक रूप से कमजोर वर्गों, विशेषकर अनुसूचित जातियों और अनुसूचित जनजातियों के शिक्षण एवं आर्थिक हितों का संवर्धन निम्न में से किसके अंतर्गत आता है?",
+                options: ["मौलिक अधिकार", "राज्य के नीति निदेशक तत्व", "मौलिक कर्तव्य", "पांचवी अनुसूची"],
+                answer: "राज्य के नीति निदेशक तत्व"
+            }
+        ];
+
+        let currentQIndex = 0;
+        let quizData = [...questions];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function loadQuestion() {
+            document.getElementById('feedback').innerText = "";
+            document.getElementById('next-btn').style.display = "none";
+            
+            if (currentQIndex >= quizData.length) {
+                document.getElementById('question-text').innerText = "🎉 Quiz Khatam! Check karo tumne kitne sahi kiye aur padhai pe dhyan do!";
+                document.getElementById('options-container').innerHTML = "";
+                return;
+            }
+
+            const q = quizData[currentQIndex];
+            document.getElementById('question-text').innerText = "Q" + (currentQIndex + 1) + ". " + q.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = "";
+            
+            let shuffledOptions = [...q.options];
+            shuffleArray(shuffledOptions);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, q.answer, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, btn) {
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(b => b.disabled = true); // Disable all options after selection
+
+            if (selected === correct) {
+                btn.style.backgroundColor = "#28a745"; // Green
+                document.getElementById('feedback').innerText = "✅ Sahi Jawab!";
+                document.getElementById('feedback').style.color = "#28a745";
+            } else {
+                btn.style.backgroundColor = "#dc3545"; // Red
+                document.getElementById('feedback').innerText = "❌ Galat Jawab!";
+                document.getElementById('feedback').style.color = "#dc3545";
+                
+                // Kamesh ke liye special audio warning
+                const msg = new SpeechSynthesisUtterance('Kamesh yaar tu padhai pe dhyan de le, instagram WhatsApp se hata kar');
+                msg.lang = 'hi-IN';
+                msg.rate = 0.9; 
+                window.speechSynthesis.speak(msg);
+            }
+            document.getElementById('next-btn').style.display = "inline-block";
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            loadQuestion();
+        }
+
+        function shuffleQuiz() {
+            shuffleArray(quizData);
+            currentQIndex = 0;
+            loadQuestion();
+        }
+
+        // Quiz start hote hi load karein
+        shuffleQuiz();
+    </script>
+</body>
+</html>
