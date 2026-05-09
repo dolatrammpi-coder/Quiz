@@ -44,8 +44,31 @@
             color: #2e86de;
             min-height: 80px;
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: center;
+            gap: 10px;
+        }
+
+        /* Speaker Button ki Styling */
+        .speaker-btn {
+            background: #feca57;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 #ff9f43;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .speaker-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #ff9f43;
         }
 
         .options-grid {
@@ -154,7 +177,6 @@
 </div>
 
 <script>
-    // Master Data
     const originalQuizData = [
         { state: "Andhra Pradesh", capital: "Amaravati" },
         { state: "Arunachal Pradesh", capital: "Itanagar" },
@@ -191,7 +213,20 @@
     let questionsAsked = 0;
     let correctAnswer = "";
 
-    // Array shuffle karne ka function
+    // Text to Speech Function
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Purani aawaz rokne ke liye
+            let speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'en-IN'; // Indian English accent
+            speech.rate = 0.85;    // Bachcho ke liye thoda slow
+            speech.pitch = 1.1;    // Thodi soft aawaz
+            window.speechSynthesis.speak(speech);
+        } else {
+            alert("Sorry, aapka browser voice feature support nahi karta!");
+        }
+    }
+
     function shuffleArray(array) {
         let shuffled = [...array];
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -201,7 +236,6 @@
         return shuffled;
     }
 
-    // Animation function
     function createFallingAnimation(emojis, count, size) {
         const layer = document.getElementById('animation-layer');
         for (let i = 0; i < count; i++) {
@@ -209,15 +243,13 @@
             item.className = 'falling-item';
             item.innerText = emojis[Math.floor(Math.random() * emojis.length)];
             
-            // Random styling
             item.style.left = Math.random() * 100 + 'vw';
             item.style.fontSize = size + 'px';
-            item.style.animationDuration = (Math.random() * 2 + 2) + 's'; // 2s to 4s
-            item.style.animationDelay = (Math.random() * 1) + 's'; // 0s to 1s delay
+            item.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            item.style.animationDelay = (Math.random() * 1) + 's';
 
             layer.appendChild(item);
 
-            // Element ko animation ke baad remove karna
             setTimeout(() => {
                 item.remove();
             }, 5000);
@@ -232,9 +264,8 @@
         createFallingAnimation(['🐘', '💥', '💦'], 25, 45);
     }
 
-    // Quiz Logic
     function startQuiz() {
-        quizData = shuffleArray(originalQuizData); // Har baar naya sequence
+        quizData = shuffleArray(originalQuizData);
         currentScore = 0;
         questionsAsked = 0;
         document.getElementById('score').innerText = currentScore;
@@ -244,7 +275,7 @@
     function nextQuestion() {
         if (questionsAsked >= quizData.length) {
             alert(`🎉 Yay! Quiz Over! Your Score: ${currentScore}/${quizData.length} 🎉`);
-            startQuiz(); // Restart
+            startQuiz();
             return;
         }
 
@@ -252,16 +283,20 @@
         const item = quizData[questionsAsked];
         correctAnswer = item.capital;
         
-        document.getElementById('question').innerText = `What is the capital of ${item.state}?`;
+        // Yahan Text ke sath Speaker Button add kiya gaya hai
+        document.getElementById('question').innerHTML = `
+            What is the capital of <strong>${item.state}</strong>? 
+            <button class="speaker-btn" onclick="speakText('${item.state}')" title="Listen to State Name">🔊</button>
+        `;
+        
         document.getElementById('q-count').innerText = questionsAsked + 1;
 
-        // Generate options (1 correct, 3 wrong)
         let choices = [item.capital];
         while (choices.length < 4) {
             let randomCap = originalQuizData[Math.floor(Math.random() * originalQuizData.length)].capital;
             if (!choices.includes(randomCap)) choices.push(randomCap);
         }
-        choices = shuffleArray(choices); // Options ko bhi shuffle kiya
+        choices = shuffleArray(choices);
 
         const optionsContainer = document.getElementById('options');
         optionsContainer.innerHTML = '';
@@ -287,10 +322,10 @@
             selectedBtn.classList.add('correct');
             currentScore++;
             document.getElementById('score').innerText = currentScore;
-            triggerFlowerShower(); // Sahi hone par Phool
+            triggerFlowerShower();
         } else {
             selectedBtn.classList.add('wrong');
-            triggerElephantRain(); // Galat hone par Haathi
+            triggerElephantRain();
             buttons.forEach(b => {
                 if (b.innerText === correctAnswer) b.classList.add('correct');
             });
@@ -298,7 +333,6 @@
         document.getElementById('next-btn').style.display = 'block';
     }
 
-    // Game Start karein
     startQuiz();
 </script>
 
