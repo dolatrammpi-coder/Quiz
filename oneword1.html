@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hindi Quiz - Set 1</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #555;
+            font-weight: bold;
+            background: #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #ccc;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .options-list li {
+            background-color: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .options-list li:hover {
+            background-color: #eef5ff;
+            border-color: var(--secondary-color);
+        }
+
+        .options-list li.selected {
+            background-color: #eef5ff;
+            border-color: var(--secondary-color);
+        }
+
+        .options-list li.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .options-list li.wrong {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        button {
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .check-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .progress-bar-container {
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+            max-height: 180px; 
+            overflow-y: auto; /* Adds scroll if questions exceed view */
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .nav-num {
+            width: 32px;
+            height: 32px;
+            font-size: 0.85rem;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background: white;
+            color: #555;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .nav-num:hover {
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+        }
+
+        .nav-num.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .nav-num.answered {
+            background-color: #e0e0e0;
+            border-color: #999;
+        }
+
+        #result-container {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #result-container h2 {
+            color: var(--primary-color);
+        }
+
+        .feedback-msg {
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="quiz-box">
+        <div class="header">
+            <a href="hindi.html" class="back-btn">&#8592; Back</a>
+            <span id="question-counter" style="font-weight:bold; color:#555;">प्रश्नोत्तरी</span>
+        </div>
+
+        <div id="question-container">
+            <div class="question-text" id="question-text">Question will appear here</div>
+            <ul class="options-list" id="options-list">
+                <!-- Options injected by JS -->
+            </ul>
+            <span id="immediate-feedback" class="feedback-msg"></span>
+        </div>
+
+        <div class="action-buttons">
+            <button class="check-btn" onclick="checkCurrentAnswer()">Check Answer</button>
+            <button class="submit-btn" onclick="submitQuiz()">Submit Quiz</button>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar">
+                <!-- Number buttons injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <div class="quiz-container" id="result-container">
+        <h2>प्रश्नोत्तरी समाप्त! (Quiz Completed!)</h2>
+        <p id="final-score" style="font-size: 1.5rem; margin: 20px 0;"></p>
+        <button class="submit-btn" onclick="location.reload()">Restart Quiz</button>
+    </div>
+
+    <script>
+        // Combined 66 Questions from both columns of the page
+        const quizData = [
+            // Left Column Data
+            { question: "ऐसा हथियार जिसे फेंककर चलाया जाए:", options: ["शस्त्र", "अस्त्र", "आयुध", "ढाल"], correct: 1 },
+            { question: "अवसर के अनुरूप बदल जाने वाला:", options: ["अवसरवादी", "स्वार्थी", "चापलूस", "धोखेबाज"], correct: 0 },
+            { question: "किसी एक में ही आस्था रखने वाला:", options: ["एकाग्र", "आस्तिक", "अनन्य", "भक्त"], correct: 2 },
+            { question: "सामान्य नियम के विरुद्ध बात:", options: ["असंगत", "नियमहीन", "अवैध", "अपवाद"], correct: 3 },
+            { question: "जो अभी-अभी उत्पन्न हुआ हो:", options: ["नवजात", "अद्य प्रसूत", "नूतन", "अर्वाचीन"], correct: 1 },
+            { question: "पीढ़ी दर पीढ़ी चला आने वाला:", options: ["परम्परागत", "सनातन", "अन्वयागत", "प्राचीन"], correct: 2 },
+            { question: "जो बदला न जा सके:", options: ["अपरिवर्तनीय", "स्थायी", "अडिग", "निश्चित"], correct: 0 },
+            { question: "जो परीक्षा में उत्तीर्ण न हो:", options: ["असफल", "अनुत्तीर्ण", "विफल", "अयोग्य"], correct: 1 },
+            { question: "अपराध बोध से होने वाली ग्लानि:", options: ["पश्चाताप", "क्षोभ", "संकोच", "आत्मग्लानि"], correct: 3 },
+            { question: "किसी वस्तु को दूसरे देश से अपने देश में क्रय कर लाने की क्रिया:", options: ["आयात", "निर्यात", "व्यापार", "क्रय"], correct: 0 },
+            { question: "जिसे कोई रोक न सके:", options: ["अजेय", "अबाधित", "अप्रतिहत", "अदम्य"], correct: 2 },
+            { question: "जो मनुष्यता से दूर हो:", options: ["क्रूर", "अमानुषिक", "निर्दयी", "पाशविक"], correct: 1 },
+            { question: "किसी विषय पर तत्काल बोलना:", options: ["भाषण", "प्रवचन", "वाक्पटुता", "आशुभाषण"], correct: 3 },
+            { question: "जिसमें शक्ति न हो (Left Col):", options: ["अशक्त", "दुर्बल", "कमजोर", "निर्जीव"], correct: 0 },
+            { question: "आग से झुलसा हुआ:", options: ["जला हुआ", "दहन", "अनलदग्ध", "भस्म"], correct: 2 },
+            { question: "जो संविधान के अनुकूल न हो:", options: ["अवैध", "असंवैधानिक", "गैरकानूनी", "अनुचित"], correct: 1 },
+            { question: "जो सदा से चला आ रहा है:", options: ["लगातार", "निरंतर", "शाश्वत", "अनवरत"], correct: 3 },
+            { question: "जिसका अनुभव किया गया हो (Left Col):", options: ["अनुभूत", "अनुभवी", "ज्ञात", "परीक्षित"], correct: 0 },
+            { question: "धन से सम्बन्ध रखने वाला:", options: ["वित्तीय", "आर्थिक", "धनवान", "व्यापारिक"], correct: 1 },
+            { question: "पानी भरने वाला:", options: ["पनघट", "मल्लाह", "अम्बुवाह", "जलवाहक"], correct: 2 },
+            { question: "जिसके बिना कार्य न चल सके:", options: ["अनिवार्य", "आवश्यक", "अपेक्षित", "अपरिहार्य"], correct: 3 },
+            { question: "जिसका उपचार (इलाज) या हल न हो सके:", options: ["असाध्य", "कठिन", "लाइलाज", "असंभव"], correct: 0 },
+            { question: "बिना आयास (प्रयत्न) के:", options: ["सहज", "अनायास", "अचानक", "सरल"], correct: 1 },
+            { question: "आय-व्यय के आँकड़ों की जाँच करने वाला:", options: ["मुनीम", "लिपिक", "अंकेक्षक", "खजांची"], correct: 2 },
+            { question: "जहाँ पहुँचा न जा सके:", options: ["दुर्गम", "अजेय", "कठिन", "अगम्य"], correct: 3 },
+            
+            // Right Column Data
+            { question: "जो ढका हुआ न हो:", options: ["अनावृत", "अनावृत्त", "नग्न", "खुला"], correct: 0 },
+            { question: "बिना देखरेख का जानवर:", options: ["लावारिस", "अनाथ", "पालतू", "अनेर"], correct: 3 },
+            { question: "जो दिखाई न दे:", options: ["अदृश्य", "लुप्त", "गायब", "परोक्ष"], correct: 0 },
+            { question: "जिसका ज्ञान इन्द्रियों द्वारा न हो:", options: ["अगोचर", "अतीन्द्रिय", "अदृश्य", "अज्ञात"], correct: 0 },
+            { question: "जिसमें शक्ति न हो (Right Col):", options: ["दुर्बल", "अशक्त / निर्बल", "कमजोर", "क्षीण"], correct: 1 },
+            { question: "जो बिना सोचे समझे अनुगमन करे:", options: ["अंधभक्त", "अनुयायी", "अंधानुगामी", "दास"], correct: 2 },
+            { question: "जो व्यक्ति विदेश में रहता हो:", options: ["विदेशी", "अप्रवासी", "पर्यटक", "घुमक्कड़"], correct: 1 },
+            { question: "सीमा का अनुचित रूप से उल्लंघन:", options: ["आक्रमण", "अतिक्रमण", "घुसपैठ", "कब्जा"], correct: 1 },
+            { question: "निर्धारित मूल्य से अधिक लिया जाने वाला शुल्क:", options: ["कर", "रिश्वत", "अधिशुल्क", "जुर्माना"], correct: 2 },
+            { question: "किसी शुभ कार्य को विधिविधान और श्रद्धापूर्वक करना:", options: ["पूजन", "हवन", "अनुष्ठान", "उत्सव"], correct: 2 },
+            { question: "जिस पर कोई नियंत्रण न हो:", options: ["स्वतंत्र", "निरंकुश", "अनियंत्रित", "आजाद"], correct: 2 },
+            { question: "किसी प्रस्ताव को समर्थन प्रदान करने की प्रक्रिया:", options: ["सहमति", "अनुमोदन", "स्वीकृति", "प्रस्तावना"], correct: 1 },
+            { question: "आभार मानने वाला:", options: ["कृतज्ञ", "आभारी", "ऋणी", "धन्यवादी"], correct: 1 },
+            { question: "सबसे पहले गिना जाने वाला:", options: ["प्रथम", "अग्रगण्य", "प्रमुख", "श्रेष्ठ"], correct: 1 },
+            { question: "जिस पर आक्रमण न किया जा सके/जिसका मुकाबला न किया जा सके:", options: ["अजेय", "अयोध्य", "शक्तिशाली", "सुरक्षित"], correct: 1 },
+            { question: "ज्ञात या कल्पित तथ्यों के आधार पर लिया गया निर्णय:", options: ["निष्कर्ष", "अध्याहरण", "निर्णय", "कल्पना"], correct: 1 },
+            { question: "जो पढ़ा न जा सके:", options: ["अपठनीय", "अस्पष्ट", "गूढ़", "जटिल"], correct: 0 },
+            { question: "जो पढ़ा न गया हो:", options: ["अनपढ़", "अपठित", "निरक्षर", "कोरा"], correct: 1 },
+            { question: "जिसका विभाजन नहीं किया जा सके:", options: ["अविभाज्य", "अखंड", "साबुत", "एकजुट"], correct: 0 },
+            { question: "जिसका विभाजन न किया गया हो:", options: ["संपूर्ण", "अविभक्त", "समग्र", "संयुक्त"], correct: 1 },
+            { question: "जिसके खण्ड या टुकड़े न किये गये हों:", options: ["साबुत", "अखण्डित", "पूर्ण", "समूचा"], correct: 1 },
+            { question: "जिसके खण्ड या टुकड़े न हो सकें:", options: ["अखण्ड", "कठोर", "मजबूत", "ठोस"], correct: 0 },
+            { question: "जिसकी अपेक्षा हो:", options: ["जरूरी", "अपेक्षित", "चाहत", "आवश्यक"], correct: 1 },
+            { question: "जिसकी अपेक्षा न हो:", options: ["अचानक", "अनपेक्षित", "आकस्मिक", "व्यर्थ"], correct: 1 },
+            { question: "जो न जाना गया हो:", options: ["अज्ञात", "गुप्त", "रहस्य", "अनजान"], correct: 0 },
+            { question: "जो जाना गया हो:", options: ["प्रसिद्ध", "विख्यात", "ज्ञात", "परिचित"], correct: 2 },
+            { question: "अण्डे से जन्म लेने वाला:", options: ["पक्षी", "अण्डज", "जलचर", "नभचर"], correct: 1 },
+            { question: "जो काम करना संभव न हो:", options: ["कठिन", "मुश्किल", "असंभव", "दुष्कर"], correct: 2 },
+            { question: "जो कम खाता हो:", options: ["अल्पाहारी", "कंजूस", "रोगी", "उपवासी"], correct: 0 },
+            { question: "जो अवश्य होने वाला हो:", options: ["निश्चित", "तय", "अवश्यम्भावी", "अनिवार्य"], correct: 2 },
+            { question: "जिसे सूंघा जा सके:", options: ["सुगंधित", "आघ्रेय", "महक", "खुशबूदार"], correct: 1 },
+            { question: "जो जुड़ा या मिला न हो:", options: ["अलग", "पृथक", "अयुत", "भिन्न"], correct: 2 },
+            { question: "अधिकार या कब्जे में आया हुआ:", options: ["अधिकृत", "विजित", "गुलाम", "अधीन"], correct: 0 },
+            { question: "जिसका वर्णन न किया जा सके:", options: ["अकथनीय", "अवर्णनीय", "अद्भुत", "विचित्र"], correct: 1 },
+            { question: "जिसका संबंध अध्यात्म से है:", options: ["धार्मिक", "पवित्र", "आध्यात्मिक", "ईश्वरीय"], correct: 2 },
+            { question: "अपने जीवन पर लिखी गयी कथा:", options: ["जीवनी", "संस्मरण", "आत्मकथा", "डायरी"], correct: 2 },
+            { question: "जिस पर मुकदमा चलाया गया हो:", options: ["दोषी", "अपराधी", "अभियुक्त", "कैदी"], correct: 2 },
+            { question: "जिसके पास कुछ न हो:", options: ["गरीब", "दरिद्र", "भिखारी", "अकिंचन"], correct: 3 },
+            { question: "देव अथवा प्रकृति द्वारा होने वाला दुःख:", options: ["आधिदैविक", "प्रकोप", "आपदा", "कष्ट"], correct: 0 },
+            { question: "साँप-बिच्छू के जहर या भूत-प्रेत के भय को मंत्रों से झाड़नेवाला:", options: ["तांत्रिक", "ओझा", "सपेरा", "वैद्य"], correct: 1 }
+        ];
+
+        let currentQuestion = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+        let checkedStatus = new Array(quizData.length).fill(false);
+
+        const questionTextElement = document.getElementById('question-text');
+        const optionsListElement = document.getElementById('options-list');
+        const progressBarElement = document.getElementById('progress-bar');
+        const feedbackElement = document.getElementById('immediate-feedback');
+        const counterElement = document.getElementById('question-counter');
+
+        function initQuiz() {
+            renderProgressBar();
+            loadQuestion(currentQuestion);
+        }
+
+        function loadQuestion(index) {
+            currentQuestion = index;
+            feedbackElement.textContent = ""; 
+            feedbackElement.style.color = "";
+            counterElement.textContent = `प्रश्न ${index + 1} / ${quizData.length}`;
+            
+            const qData = quizData[index];
+            questionTextElement.textContent = `Q${index + 1}. ${qData.question}`;
+            
+            optionsListElement.innerHTML = '';
+            
+            qData.options.forEach((opt, i) => {
+                const li = document.createElement('li');
+                li.textContent = opt;
+                li.onclick = () => selectOption(i);
+                
+                if (userAnswers[index] === i) {
+                    li.classList.add('selected');
+                }
+                
+                if (checkedStatus[index]) {
+                    li.style.pointerEvents = 'none'; 
+                    if (i === qData.correct) {
+                        li.classList.add('correct');
+                    } else if (userAnswers[index] === i && i !== qData.correct) {
+                        li.classList.add('wrong');
+                    }
+                }
+                
+                optionsListElement.appendChild(li);
+            });
+
+            updateProgressBarUI();
+        }
+
+        function selectOption(optionIndex) {
+            if (checkedStatus[currentQuestion]) return; 
+            
+            userAnswers[currentQuestion] = optionIndex;
+            
+            const listItems = optionsListElement.querySelectorAll('li');
+            listItems.forEach(item => item.classList.remove('selected'));
+            listItems[optionIndex].classList.add('selected');
+
+            const navBtns = document.querySelectorAll('.nav-num');
+            navBtns[currentQuestion].classList.add('answered');
+        }
+
+        function checkCurrentAnswer() {
+            if (userAnswers[currentQuestion] === null) {
+                feedbackElement.textContent = "कृपया पहले एक विकल्प चुनें! (Please select an option first!)";
+                feedbackElement.style.color = "#dc3545";
+                return;
+            }
+
+            if (checkedStatus[currentQuestion]) return;
+
+            checkedStatus[currentQuestion] = true;
+            const qData = quizData[currentQuestion];
+            const listItems = optionsListElement.querySelectorAll('li');
+            const selected = userAnswers[currentQuestion];
+
+            listItems.forEach(item => item.style.pointerEvents = 'none');
+
+            if (selected === qData.correct) {
+                listItems[selected].classList.add('correct');
+                feedbackElement.textContent = "सही उत्तर! (Correct Answer!)";
+                feedbackElement.style.color = "#28a745";
+            } else {
+                listItems[selected].classList.add('wrong');
+                listItems[qData.correct].classList.add('correct');
+                feedbackElement.textContent = "गलत उत्तर! (Wrong Answer!)";
+                feedbackElement.style.color = "#dc3545";
+            }
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            for (let i = 0; i < quizData.length; i++) {
+                if (userAnswers[i] === quizData[i].correct) {
+                    score++;
+                }
+            }
+
+            document.getElementById('quiz-box').style.display = 'none';
+            const resultBox = document.getElementById('result-container');
+            resultBox.style.display = 'block';
+            
+            document.getElementById('final-score').innerHTML = `आपका स्कोर (Your Score): <br><br> <strong>${score} / ${quizData.length}</strong>`;
+        }
+
+        function renderProgressBar() {
+            progressBarElement.innerHTML = '';
+            for (let i = 0; i < quizData.length; i++) {
+                const btn = document.createElement('div');
+                btn.classList.add('nav-num');
+                btn.textContent = i + 1;
+                btn.onclick = () => loadQuestion(i);
+                progressBarElement.appendChild(btn);
+            }
+        }
+
+        function updateProgressBarUI() {
+            const navBtns = document.querySelectorAll('.nav-num');
+            navBtns.forEach((btn, idx) => {
+                btn.classList.remove('active');
+                if (idx === currentQuestion) {
+                    btn.classList.add('active');
+                    // auto scroll to the active button
+                    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        }
+
+        initQuiz();
+    </script>
+</body>
+</html>
