@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>संयुक्त सैन्य अभ्यास : 2025-26 (स्मार्ट टेस्ट)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            width: 100%;
+            max-width: 750px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .back-btn:hover { background-color: #5a6268; }
+        
+        .set-selector {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-family: 'Poppins', sans-serif;
+            font-weight: bold;
+            background-color: #fff;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 750px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        .header { text-align: center; margin-bottom: 20px; font-weight: 600; color: #2c3e50; }
+        .question { font-size: 18px; font-weight: 500; margin-bottom: 20px; line-height: 1.5; color: #0056b3; }
+        
+        .options { list-style-type: none; padding: 0; }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .options li:not(.disabled):hover { background-color: #e9ecef; }
+        .options li.correct { background-color: #d4edda !important; border-color: #c3e6cb !important; color: #155724 !important; }
+        .options li.wrong { background-color: #f8d7da !important; border-color: #f5c6cb !important; color: #721c24 !important; }
+        .options li.disabled { cursor: not-allowed; opacity: 0.8; }
+        
+        .navigation { display: flex; justify-content: space-between; margin-top: 20px; }
+        button {
+            background-color: #007bff; color: #fff; border: none; padding: 10px 20px;
+            border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .submit-btn { background-color: #28a745; width: 100%; margin-top: 15px; font-weight: bold; }
+        .submit-btn:hover { background-color: #218838; }
+        
+        .pagination-wrapper { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; max-height: 150px; overflow-y: auto; }
+        .pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+        .page-num {
+            background-color: #eee; color: #333; border: 1px solid #ccc; width: 35px; height: 35px;
+            display: flex; justify-content: center; align-items: center; border-radius: 5px;
+            cursor: pointer; font-weight: 500; font-size: 14px;
+        }
+        .page-num:hover { background-color: #ddd; }
+        .page-num.active { box-shadow: 0 0 0 2px #000 inset; }
+        .page-num.answered-correct { background-color: #28a745; color: white; border-color: #28a745; }
+        .page-num.answered-wrong { background-color: #dc3545; color: white; border-color: #dc3545; }
+        
+        #result-text { margin-top: 15px; font-weight: bold; text-align: center; font-size: 16px; min-height: 24px; }
+        .summary-item { padding: 15px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .summary-correct { border-left: 5px solid #28a745; }
+        .summary-wrong { border-left: 5px solid #dc3545; }
+        .summary-unattempted { border-left: 5px solid #ffc107; }
+        .score-board { text-align: center; font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; padding: 15px; background: #e9ecef; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="#" class="back-btn" onclick="location.reload()">⬅ रीस्टार्ट</a>
+    <select id="set-select" class="set-selector" onchange="changeSet()">
+        <option value="countries">Set 1: किन देशों के बीच हुआ?</option>
+        <option value="locations">Set 2: कहाँ आयोजित हुआ?</option>
+    </select>
+</div>
+
+<div class="quiz-container" id="quiz-main-container">
+    <div class="header">
+        <h2 id="quiz-title">संयुक्त सैन्य अभ्यास टेस्ट</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">38</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    <ul class="options" id="options-list"></ul>
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें</button>
+    
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;"></div>
+
+<script>
+    // डेटाबेस 1: किन देशों के बीच हुआ
+    const dataCountries = [
+        ["लामितिये 2026", "भारत-सेशेल्स", "भारत-अमेरिका,भारत-फ्रांस,भारत-मालदीव,भारत-जापान"],
+        ["16वां 'वज्र प्रहार' 2026", "भारत-अमेरिका", "भारत-जापान,भारत-रूस,भारत-फ्रांस,भारत-श्रीलंका"],
+        ["7वां 'धर्म गार्जियन' 2026", "भारत-जापान", "भारत-अमेरिका,भारत-फ्रांस,भारत-रूस,भारत-नेपाल"],
+        ["वायु शक्ति-2026", "घरेलू (IAF की सभी इकाइयां)", "भारत-अमेरिका,भारत-जापान,बहुराष्ट्रीय,भारत-फ्रांस"],
+        ["वायु गार्जियन-2026", "भारत-थाईलैंड", "भारत-जापान,भारत-अमेरिका,भारत-इंडोनेशिया,भारत-मलेशिया"],
+        ["13वां 'मिलन' अभ्यास 2026", "बहुराष्ट्रीय", "भारत-अमेरिका,भारत-जापान,भारत-फ्रांस,भारत-रूस"],
+        ["13वां 'खंजर' अभ्यास 2026", "भारत-किर्गिस्तान", "भारत-कजाकिस्तान,भारत-उज्बेकिस्तान,भारत-अफगानिस्तान,भारत-मंगोलिया"],
+        ["17वां 'दोस्ती' अभ्यास 2026", "भारत-श्रीलंका-मालदीव", "भारत-जापान-अमेरिका,भारत-रूस-चीन,भारत-नेपाल-भूटान,भारत-थाईलैंड-सिंगापुर"],
+        ["8वां 'एकथा' 2025", "भारत-मालदीव", "भारत-श्रीलंका,भारत-नेपाल,भारत-बांग्लादेश,भारत-सेशेल्स"],
+        ["डेजर्ट साइक्लोन-II 2025", "भारत-यूएई", "भारत-ओमान,भारत-सऊदी अरब,भारत-मिस्र,भारत-कतर"],
+        ["14वां 'एकुवेरिन' 2025", "भारत-मालदीव", "भारत-सेशेल्स,भारत-मॉरीशस,भारत-श्रीलंका,भारत-इंडोनेशिया"],
+        ["5वां 'हरिमऊ शक्ति' 2025", "भारत-मलेशिया", "भारत-इंडोनेशिया,भारत-थाईलैंड,भारत-सिंगापुर,भारत-वियतनाम"],
+        ["10वां 'गरुड़ शक्ति' 2025", "भारत-इंडोनेशिया", "भारत-मलेशिया,भारत-जापान,भारत-फ्रांस,भारत-रूस"],
+        ["19वां 'सूर्य-किरण' 2025", "भारत-नेपाल", "भारत-भूटान,भारत-बांग्लादेश,भारत-श्रीलंका,भारत-म्यांमार"],
+        ["11वां 'मित्र शक्ति' 2025", "भारत-श्रीलंका", "भारत-नेपाल,भारत-बांग्लादेश,भारत-मालदीव,भारत-थाईलैंड"],
+        ["8वां अजेय वॉरियर 2025", "भारत-यूनाइटेड किंगडम", "भारत-अमेरिका,भारत-जापान,भारत-फ्रांस,भारत-जर्मनी"],
+        ["8वां गरुड़ 2025", "भारत-फ्रांस", "भारत-रूस,भारत-अमेरिका,भारत-जापान,भारत-जर्मनी"],
+        ["6ठा 'विनबैक्स' 2025", "भारत-वियतनाम", "भारत-सिंगापुर,भारत-थाईलैंड,भारत-मलेशिया,भारत-इंडोनेशिया"],
+        ["AUSINDEX 2025", "भारत-ऑस्ट्रेलिया", "भारत-जापान,भारत-अमेरिका,भारत-ब्रिटेन,भारत-सिंगापुर"],
+        ["28वां मालाबार 2025", "भारत, ऑस्ट्रेलिया, जापान, अमेरिका", "भारत, रूस, चीन,भारत, फ्रांस, जापान,भारत, ब्रिटेन, ऑस्ट्रेलिया,बहुराष्ट्रीय"],
+        ["JAIMEX Ex. 2025", "भारत-जापान", "भारत-ऑस्ट्रेलिया,भारत-अमेरिका,भारत-इंडोनेशिया,भारत-मलेशिया"],
+        ["5वां 'समुद्र शक्ति' Ex. 2025", "भारत-इंडोनेशिया", "भारत-जापान,भारत-मलेशिया,भारत-सिंगापुर,भारत-श्रीलंका"],
+        ["चौथा 'ऑस्ट्राहिंद' Ex. 2025", "भारत-ऑस्ट्रेलिया", "भारत-जापान,भारत-अमेरिका,भारत-यूके,भारत-रूस"],
+        ["'इंद्र 2025' अभ्यास", "भारत-रूस", "भारत-अमेरिका,भारत-जापान,भारत-फ्रांस,भारत-जर्मनी"],
+        ["'कोंकण 2025' Ex. 2025", "भारत-ब्रिटेन (यूनाइटेड किंगडम)", "भारत-फ्रांस,भारत-जापान,भारत-रूस,भारत-अमेरिका"],
+        ["पैसिफिक रीच (XPR 2025)", "बहुराष्ट्रीय", "भारत-जापान,भारत-अमेरिका,भारत-रूस,भारत-फ्रांस"],
+        ["फ्रीडम एज Ex. 2025", "दक्षिण कोरिया, अमेरिका, जापान", "भारत, अमेरिका, जापान,भारत, ऑस्ट्रेलिया, जापान,रूस, चीन, उत्तर कोरिया,भारत, फ्रांस, ब्रिटेन"],
+        ["21वां 'युद्धाभ्यास' 2025", "भारत-अमेरिका", "भारत-रूस,भारत-जापान,भारत-फ्रांस,भारत-ब्रिटेन"],
+        ["14वां 'मैत्री' अभ्यास 2025", "भारत और थाईलैंड", "भारत और नेपाल,भारत और श्रीलंका,भारत और बांग्लादेश,भारत और भूटान"],
+        ["12वां SLINEX Ex. 2025", "भारत-श्रीलंका", "भारत-सिंगापुर,भारत-नेपाल,भारत-जापान,भारत-मालदीव"],
+        ["'जा माता' तटरक्षक Ex. 2025", "भारत-जापान", "भारत-अमेरिका,भारत-फ्रांस,भारत-ऑस्ट्रेलिया,भारत-इंडोनेशिया"],
+        ["'ऐकेमी (AIKEYME) 2025", "भारत-अफ्रीका देश", "भारत-खाड़ी देश,भारत-यूरोपीय संघ,भारत-आसियान,भारत-दक्षिण अमेरिका"],
+        ["14वां 'बोल्ड कुरुक्षेत्र'-2025", "भारत-सिंगापुर", "भारत-श्रीलंका,भारत-जापान,भारत-मलेशिया,भारत-इंडोनेशिया"],
+        ["'पूर्वी प्रचंड प्रहार' 2025", "भारतीय सशस्त्र बलों के बीच", "भारत-जापान,भारत-अमेरिका,भारत-रूस,बहुराष्ट्रीय"],
+        ["32वां SIMBEX Ex. 2025", "भारत-सिंगापुर", "भारत-जापान,भारत-मलेशिया,भारत-श्रीलंका,भारत-ऑस्ट्रेलिया"],
+        ["PASSEX Ex. 2025", "भारत-ग्रीस", "भारत-रूस,भारत-फ्रांस,भारत-इटली,भारत-ब्रिटेन"],
+        ["17वां नोमैडिक एलीफेंट-2025", "भारत-मंगोलिया", "भारत-किर्गिस्तान,भारत-कजाकिस्तान,भारत-नेपाल,भारत-भूटान"],
+        ["6ठा 'डस्टलिक' 2025", "भारत-उज्बेकिस्तान", "भारत-कजाकिस्तान,भारत-ताजिकिस्तान,भारत-मंगोलिया,भारत-तुर्कमेनिस्तान"]
+    ];
+
+    // डेटाबेस 2: कहाँ आयोजित हुआ
+    const dataLocations = [
+        ["लामितिये 2026", "सेशेल्स", "मालदीव,मॉरीशस,मेडागास्कर,भारत"],
+        ["16वां 'वज्र प्रहार' 2026", "बकलोह, हिमाचल प्रदेश", "चौबटिया, उत्तराखंड,पिथौरागढ़, उत्तराखंड,उमरोई, मेघालय,पुणे, महाराष्ट्र"],
+        ["7वां 'धर्म गार्जियन' 2026", "चौबटिया, उत्तराखंड", "बकलोह, हिमाचल प्रदेश,औली, उत्तराखंड,बीकानेर, राजस्थान,ग्वालियर, मध्य प्रदेश"],
+        ["वायु शक्ति-2026", "पोखरण रेंज, जैसलमेर (राजस्थान)", "महाजन फील्ड फायरिंग रेंज,बाड़मेर, राजस्थान,चांदीपुर, ओडिशा,कच्छ, गुजरात"],
+        ["वायु गार्जियन-2026", "कोराट, थाईलैंड (LCA तेजस और Su-30 MKI ने भाग लिया)", "बैंकॉक, थाईलैंड,हनोई, वियतनाम,सिंगापुर,क्वालालंपुर, मलेशिया"],
+        ["13वां 'मिलन' अभ्यास 2026", "विशाखापत्तनम (आंध्र प्रदेश) (INS विक्रांत ने भाग लिया)", "चेन्नई तट पर,अरब सागर में,बंगाल की खाड़ी,कोच्चि, केरल"],
+        ["13वां 'खंजर' अभ्यास 2026", "मिसामारी (असम)", "उमरोई (मेघालय),जोरहाट (असम),तवांग (अरुणाचल प्रदेश),बागडोगरा (पश्चिम बंगाल)"],
+        ["17वां 'दोस्ती' अभ्यास 2026", "मालदीव (भारतीय तट रक्षक बल ने भाग लिया)", "कोलंबो, श्रीलंका,सेशेल्स,लक्षद्वीप,पोर्ट ब्लेयर"],
+        ["8वां 'एकथा' 2025", "मालदीव", "मॉरीशस,श्रीलंका,अंडमान,इंडोनेशिया"],
+        ["डेजर्ट साइक्लोन-II 2025", "अबू धाबी", "दुबई,मस्कट,रियाद,दोहा"],
+        ["14वां 'एकुवेरिन' 2025", "तिरुवनंतपुरम, केरल", "कोच्चि, केरल,विशाखापत्तनम,चेन्नई,गोवा"],
+        ["5वां 'हरिमऊ शक्ति' 2025", "बीकानेर (राजस्थान)", "जैसलमेर (राजस्थान),जोधपुर (राजस्थान),पोखरण रेंज,बाड़मेर"],
+        ["10वां 'गरुड़ शक्ति' 2025", "हिमाचल प्रदेश", "उत्तराखंड,सिक्किम,अरुणाचल प्रदेश,जम्मू-कश्मीर"],
+        ["19वां 'सूर्य-किरण' 2025", "पिथौरागढ़, उत्तराखंड", "चौबटिया, उत्तराखंड,औली, उत्तराखंड,देहरादून,बकलोह, हिमाचल प्रदेश"],
+        ["11वां 'मित्र शक्ति' 2025", "बेलगावी, कर्नाटक", "बेंगलुरु, कर्नाटक,पुणे, महाराष्ट्र,चेन्नई, तमिलनाडु,हैदराबाद, तेलंगाना"],
+        ["8वां अजेय वॉरियर 2025", "महाजन फील्ड फायरिंग रेंज, राजस्थान", "पोखरण रेंज, राजस्थान,बीकानेर,जोधपुर,अहमदनगर"],
+        ["8वां गरुड़ 2025", "फ्रांस", "जर्मनी,ब्रिटेन,इटली,स्पेन"],
+        ["6ठा 'विनबैक्स' 2025", "हनोई, वियतनाम", "हो ची मिन्ह सिटी,सिंगापुर,बैंकॉक, थाईलैंड,मनीला, फिलीपींस"],
+        ["AUSINDEX 2025", "जापान के पश्चिम में", "प्रशांत महासागर,दक्षिण चीन सागर,हिंद महासागर,ऑस्ट्रेलिया के तट पर"],
+        ["28वां मालाबार 2025", "गुआम, प्रशांत महासागर", "हवाई द्वीप,बंगाल की खाड़ी,हिंद महासागर,अरब सागर"],
+        ["JAIMEX Ex. 2025", "जापान के पश्चिम में", "टोक्यो तट,बंगाल की खाड़ी,अरब सागर,मलेशिया तट"],
+        ["5वां 'समुद्र शक्ति' Ex. 2025", "विशाखापत्तनम, आंध्र प्रदेश", "पोर्ट ब्लेयर,चेन्नई तट,कोच्चि,मुंबई"],
+        ["चौथा 'ऑस्ट्राहिंद' Ex. 2025", "पर्थ, ऑस्ट्रेलिया", "सिडनी, ऑस्ट्रेलिया,कैनबरा, ऑस्ट्रेलिया,मेलबर्न,डार्विन"],
+        ["'इंद्र 2025' अभ्यास", "महाजन फील्ड फायरिंग रेंज, बीकानेर, राजस्थान", "पोखरण, राजस्थान,जोधपुर,ग्वालियर,पुणे"],
+        ["'कोंकण 2025' Ex. 2025", "भारत के पश्चिम तट पर (INS विक्रांत ने भाग लिया)", "भारत के पूर्वी तट पर,बंगाल की खाड़ी में,अरब सागर में (INS विक्रमादित्य),अंडमान सागर में"],
+        ["पैसिफिक रीच (XPR 2025)", "सिंगापुर (भारत का INS निस्तार शामिल हुआ)", "मलेशिया,इंडोनेशिया,जापान,वियतनाम"],
+        ["फ्रीडम एज Ex. 2025", "दक्षिण कोरिया", "जापान,अमेरिका,ताइवान,फिलीपींस"],
+        ["21वां 'युद्धाभ्यास' 2025", "अलास्का, संयुक्त राज्य अमेरिका", "कैलिफोर्निया,हवाई,गुआम,टेक्सास"],
+        ["14वां 'मैत्री' अभ्यास 2025", "उमरोई (मेघालय)", "मिसामारी (असम),शिलांग (मेघालय),तवांग (अरुणाचल),दिमापुर (नागालैंड)"],
+        ["12वां SLINEX Ex. 2025", "कोलंबो, श्रीलंका", "हम्बनटोटा, श्रीलंका,त्रिंकोमाली, श्रीलंका,चेन्नई, भारत,मालदीव"],
+        ["'जा माता' तटरक्षक Ex. 2025", "चेन्नई तट पर", "कोच्चि तट पर,विशाखापत्तनम तट पर,मुंबई तट पर,गोवा तट पर"],
+        ["'ऐकेमी (AIKEYME) 2025", "तंजानिया", "केन्या,दक्षिण अफ्रीका,मिस्र,नाइजीरिया"],
+        ["14वां 'बोल्ड कुरुक्षेत्र'-2025", "जोधपुर (भारतीय सेना की मैकेनाइज्ड इन्फैन्ट्री ने हिस्सा लिया)", "बीकानेर,जैसलमेर,पुणे,अहमदनगर"],
+        ["'पूर्वी प्रचंड प्रहार' 2025", "मेचुका, अरुणाचल प्रदेश", "तवांग, अरुणाचल प्रदेश,उमरोई, मेघालय,मिसामारी, असम,लेह, लद्दाख"],
+        ["32वां SIMBEX Ex. 2025", "सिंगापुर (शिवालिक श्रेणी का INS सतपुड़ा ने हिस्सा लिया)", "इंडोनेशिया,मलेशिया,थाईलैंड,जापान"],
+        ["PASSEX Ex. 2025", "अरब सागर में मुम्बई के पास", "बंगाल की खाड़ी में,हिंद महासागर में,चेन्नई तट पर,लक्षद्वीप के पास"],
+        ["17वां नोमैडिक एलीफेंट-2025", "उलानबटोर, मंगोलिया", "ताशकंद, उज्बेकिस्तान,बिश्केक, किर्गिस्तान,अस्ताना, कजाकिस्तान,दुशांबे, ताजिकिस्तान"],
+        ["6ठा 'डस्टलिक' 2025", "पुणे", "अहमदनगर,बेलगावी,ग्वालियर,जबलपुर"]
+    ];
+
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; 
+    let isCurrentAnswered = false;
+
+    // शफल फंक्शन
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function changeSet() {
+        const mode = document.getElementById('set-select').value;
+        loadQuiz(mode);
+    }
+
+    function loadQuiz(mode) {
+        let rawData = mode === 'countries' ? dataCountries : dataLocations;
+        
+        currentQuestions = rawData.map(d => {
+            let questionText = mode === 'countries' 
+                ? `"${d[0]}" संयुक्त सैन्य अभ्यास किन-किन देशों/दलों के बीच आयोजित किया गया?`
+                : `"${d[0]}" संयुक्त सैन्य अभ्यास कहाँ आयोजित किया गया?`;
+
+            let correctAns = d[1];
+            let distractors = d[2].split(',');
+            
+            // रैंडम 3 गलत विकल्प चुनें और सही के साथ मिला दें
+            distractors = shuffleArray(distractors).slice(0, 3);
+            let displayOpts = shuffleArray([correctAns, ...distractors]);
+
+            return {
+                question: questionText,
+                answer: correctAns,
+                options: displayOpts
+            };
+        });
+
+        // पूरे 38 प्रश्नों को शफल करें
+        currentQuestions = shuffleArray(currentQuestions);
+
+        currentQuestionIndex = 0;
+        userAnswers = {};
+        
+        document.getElementById('quiz-main-container').style.display = 'block';
+        document.getElementById('summary-container').style.display = 'none';
+        
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+        const qData = currentQuestions[currentQuestionIndex];
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        qData.options.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
+        
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        const correctAns = currentQuestions[currentQuestionIndex].answer;
+        const allLis = document.getElementById('options-list').querySelectorAll('li');
+        const resultText = document.getElementById('result-text');
+
+        allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
+            if (li.innerText === correctAns) { li.classList.add('correct'); }
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) { li.classList.add('wrong'); }
+        });
+
+        if (selectedOpt === correctAns) {
+            resultText.innerText = "✅ सही उत्तर!";
+            resultText.style.color = "green";
+        } else {
+            resultText.innerText = "❌ गलत उत्तर!";
+            resultText.style.color = "red";
+        }
+        updatePaginationHighlight();
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < currentQuestions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+
+        currentQuestions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            if (userAnswers[index]) {
+                if (userAnswers[index] === currentQuestions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === currentQuestions.length - 1;
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        const setName = document.getElementById('set-select').options[document.getElementById('set-select').selectedIndex].text;
+        
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम: ${setName}</h2></div>`;
+        let listHTML = '';
+        
+        currentQuestions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / 38</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से शुरू करें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); 
+    }
+
+    // पेज लोड होने पर डिफ़ॉल्ट सेट 'countries' लोड करें
+    window.onload = () => loadQuiz('countries');
+
+</script>
+
+</body>
+</html>
