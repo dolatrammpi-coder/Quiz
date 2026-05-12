@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>साहित्य अकादमी पुरस्कार (हिंदी) 1981-2025</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            width: 100%;
+            max-width: 750px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .back-btn:hover { background-color: #5a6268; }
+        
+        .set-selector {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-family: 'Poppins', sans-serif;
+            font-weight: bold;
+            background-color: #fff;
+            cursor: pointer;
+            outline: none;
+            color: #d35400;
+        }
+
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 750px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        .header { text-align: center; margin-bottom: 20px; font-weight: 600; color: #2c3e50; }
+        .question { font-size: 18px; font-weight: 500; margin-bottom: 20px; line-height: 1.5; color: #0056b3; }
+        
+        .options { list-style-type: none; padding: 0; }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .options li:not(.disabled):hover { background-color: #e9ecef; }
+        .options li.correct { background-color: #d4edda !important; border-color: #c3e6cb !important; color: #155724 !important; }
+        .options li.wrong { background-color: #f8d7da !important; border-color: #f5c6cb !important; color: #721c24 !important; }
+        .options li.disabled { cursor: not-allowed; opacity: 0.8; }
+        
+        .navigation { display: flex; justify-content: space-between; margin-top: 20px; }
+        button {
+            background-color: #007bff; color: #fff; border: none; padding: 10px 20px;
+            border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .submit-btn { background-color: #28a745; width: 100%; margin-top: 15px; font-weight: bold; }
+        .submit-btn:hover { background-color: #218838; }
+        
+        .pagination-wrapper { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; max-height: 150px; overflow-y: auto; }
+        .pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+        .page-num {
+            background-color: #eee; color: #333; border: 1px solid #ccc; width: 35px; height: 35px;
+            display: flex; justify-content: center; align-items: center; border-radius: 5px;
+            cursor: pointer; font-weight: 500; font-size: 14px;
+        }
+        .page-num:hover { background-color: #ddd; }
+        .page-num.active { box-shadow: 0 0 0 2px #000 inset; }
+        .page-num.answered-correct { background-color: #28a745; color: white; border-color: #28a745; }
+        .page-num.answered-wrong { background-color: #dc3545; color: white; border-color: #dc3545; }
+        
+        #result-text { margin-top: 15px; font-weight: bold; text-align: center; font-size: 16px; min-height: 24px; }
+        .summary-item { padding: 15px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .summary-correct { border-left: 5px solid #28a745; }
+        .summary-wrong { border-left: 5px solid #dc3545; }
+        .summary-unattempted { border-left: 5px solid #ffc107; }
+        .score-board { text-align: center; font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; padding: 15px; background: #e9ecef; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="#" class="back-btn" onclick="location.reload()">⬅ रीस्टार्ट</a>
+    <select id="set-select" class="set-selector" onchange="changeSet()">
+        <option value="works">Set 1: कृति पहचानें</option>
+        <option value="authors">Set 2: साहित्यकार पहचानें</option>
+    </select>
+</div>
+
+<div class="quiz-container" id="quiz-main-container">
+    <div class="header">
+        <h2 id="quiz-title">साहित्य अकादमी पुरस्कार (हिंदी) टेस्ट</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">45</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    <ul class="options" id="options-list"></ul>
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें</button>
+    
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;"></div>
+
+<script>
+    // रॉ डेटा: [वर्ष, साहित्यकार, कृति] (1981 - 2025)
+    const rawData = [
+        ["1981", "त्रिलोचन", "ताप के ताए हुए दिन"],
+        ["1982", "हरिशंकर परसाई", "विकलाँग श्रद्धा का दौर"],
+        ["1983", "सर्वेश्वरदयाल सक्सेना", "खूँटियों पर टंगे लोग"],
+        ["1984", "रघुवीर सहाय", "लोग भूल गए हैं"],
+        ["1985", "निर्मल वर्मा", "कव्वे और काला पानी"],
+        ["1986", "केदारनाथ अग्रवाल", "अपूर्वा"],
+        ["1987", "श्रीकांत वर्मा", "मगध"],
+        ["1988", "नरेश मेहता", "अरण्या"],
+        ["1989", "केदारनाथ सिंह", "अकाल में सारस"],
+        ["1990", "शिवप्रसाद सिंह", "नीला चाँद"],
+        ["1991", "गिरिजाकुमार माथुर", "मैं वक्त के हूँ सामने"],
+        ["1992", "गिरिराज किशोर", "ढाई घर"],
+        ["1993", "विष्णु प्रभाकर", "अर्धनारीश्वर"],
+        ["1994", "अशोक वाजपेयी", "कहीं नहीं वहीं"],
+        ["1995", "कुंवर नारायण", "कोई दूसरा नहीं"],
+        ["1996", "सुरेन्द्र वर्मा", "मुझे चाँद चाहिए"],
+        ["1997", "लीलाधर जगूड़ी", "अनुभव के आकाश में चाँद"],
+        ["1998", "अरुण कमल", "नए इलाके में"],
+        ["1999", "विनोद कुमार शुक्ल", "दीवार में एक खिड़की रहती थी"],
+        ["2000", "मंगलेश डबराल", "हम जो देखते हैं"],
+        ["2001", "अलका सरावगी", "कलिकथा वाया बाईपास"],
+        ["2002", "राजेश जोशी", "दो पंक्तियों के बीच"],
+        ["2003", "कमलेश्वर", "कितने पाकिस्तान"],
+        ["2004", "वीरेन डंगवाल", "दुष्चक्र में स्रष्टा"],
+        ["2005", "मनोहर श्याम जोशी", "क्याप"],
+        ["2006", "ज्ञानेन्द्रपति", "संशयात्मा"],
+        ["2007", "अमरकांत", "इन्हीं हथियारों से"],
+        ["2008", "गोविंद मिश्र", "कोहरे में कैद रंग"],
+        ["2009", "कैलाश वाजपेयी", "हवा में हस्ताक्षर"],
+        ["2010", "उदय प्रकाश", "मोहनदास"],
+        ["2011", "काशीनाथ सिंह", "रेहन पर रघू"],
+        ["2012", "चंद्रकांत देवताले", "पत्थर फेंक रहा हूँ"],
+        ["2013", "मृदुला गर्ग", "मिलजुल मन"],
+        ["2014", "रमेशचंद्र शाह", "विनायक"],
+        ["2015", "रामदरश मिश्र", "आग की हँसी"],
+        ["2016", "नासिरा शर्मा", "पारिजात"],
+        ["2017", "ममता कालिया", "दुक्खम-सुक्खम"],
+        ["2018", "चित्रा मुद्गल", "पोस्ट बॉक्स नं. 203 नाला सोपारा"],
+        ["2019", "नंदकिशोर आचार्य", "छीलते हुए अपने को"],
+        ["2020", "अनामिका", "टोकरी में दिगंत"],
+        ["2021", "दया प्रकाश सिन्हा", "सम्राट अशोक"],
+        ["2022", "बद्री नारायण", "तुमड़ी के शब्द"],
+        ["2023", "संजीव", "मुझे पहचानो"],
+        ["2024", "गगन गिल", "मैं जब तक आई बाहर"],
+        ["2025", "ममता कालिया", "जीते जी इलाहाबाद"]
+    ];
+
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; 
+    let isCurrentAnswered = false;
+
+    // शफल फंक्शन
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function changeSet() {
+        const mode = document.getElementById('set-select').value;
+        loadQuiz(mode);
+    }
+
+    function loadQuiz(mode) {
+        // स्मार्ट डिस्ट्रेक्टर जेनरेटर
+        currentQuestions = rawData.map(d => {
+            let questionText, correctAns, allPossibleDistractors;
+
+            if (mode === 'works') {
+                questionText = `वर्ष ${d[0]} में '${d[1]}' को उनकी किस कृति के लिए साहित्य अकादमी पुरस्कार मिला?`;
+                correctAns = d[2];
+                // बाकी सभी कृतियों को डिस्ट्रेक्टर के रूप में लेना
+                allPossibleDistractors = rawData.map(item => item[2]).filter(val => val !== correctAns);
+            } else {
+                questionText = `वर्ष ${d[0]} में '${d[2]}' कृति के लिए साहित्य अकादमी पुरस्कार किसे प्रदान किया गया?`;
+                correctAns = d[1];
+                // बाकी सभी लेखकों को डिस्ट्रेक्टर के रूप में लेना (ममता कालिया 2 बार हैं, इसलिए Set का उपयोग करके डुप्लीकेट हटा रहे हैं)
+                allPossibleDistractors = [...new Set(rawData.map(item => item[1]))].filter(val => val !== correctAns);
+            }
+
+            // रैंडम 3 गलत विकल्प चुनें
+            let distractors = shuffleArray(allPossibleDistractors).slice(0, 3);
+            let displayOpts = shuffleArray([correctAns, ...distractors]);
+
+            return {
+                question: questionText,
+                answer: correctAns,
+                options: displayOpts
+            };
+        });
+
+        // पूरे 45 प्रश्नों को शफल करें
+        currentQuestions = shuffleArray(currentQuestions);
+
+        currentQuestionIndex = 0;
+        userAnswers = {};
+        
+        document.getElementById('quiz-main-container').style.display = 'block';
+        document.getElementById('summary-container').style.display = 'none';
+        
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+        const qData = currentQuestions[currentQuestionIndex];
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        qData.options.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
+        
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        const correctAns = currentQuestions[currentQuestionIndex].answer;
+        const allLis = document.getElementById('options-list').querySelectorAll('li');
+        const resultText = document.getElementById('result-text');
+
+        allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
+            if (li.innerText === correctAns) { li.classList.add('correct'); }
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) { li.classList.add('wrong'); }
+        });
+
+        if (selectedOpt === correctAns) {
+            resultText.innerText = "✅ सही उत्तर!";
+            resultText.style.color = "green";
+        } else {
+            resultText.innerText = "❌ गलत उत्तर!";
+            resultText.style.color = "red";
+        }
+        updatePaginationHighlight();
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < currentQuestions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+
+        currentQuestions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            if (userAnswers[index]) {
+                if (userAnswers[index] === currentQuestions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === currentQuestions.length - 1;
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        const setName = document.getElementById('set-select').options[document.getElementById('set-select').selectedIndex].text;
+        
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम: ${setName}</h2></div>`;
+        let listHTML = '';
+        
+        currentQuestions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / 45</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से शुरू करें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); 
+    }
+
+    // पेज लोड होने पर डिफ़ॉल्ट सेट लोड करें
+    window.onload = () => loadQuiz('works');
+
+</script>
+
+</body>
+</html>
