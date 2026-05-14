@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPP Samanya Gyan (Set 13) - स्मार्ट 4-Option टेस्ट</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            width: 100%;
+            max-width: 750px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 750px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .options li:not(.disabled):hover {
+            background-color: #e9ecef;
+        }
+        .options li.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+        }
+        .options li.wrong {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+        .options li.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .pagination-wrapper {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .page-num {
+            background-color: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .page-num:hover {
+            background-color: #ddd;
+        }
+        .page-num.active {
+            box-shadow: 0 0 0 2px #000 inset;
+        }
+        .page-num.answered-correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .page-num.answered-wrong {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        #result-text {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+            min-height: 24px;
+        }
+        
+        .summary-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .summary-correct { border-left: 5px solid #28a745; }
+        .summary-wrong { border-left: 5px solid #dc3545; }
+        .summary-unattempted { border-left: 5px solid #ffc107; }
+        .summary-item p { margin: 5px 0; font-size: 15px; }
+        .score-board {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="upp.html" class="back-btn">⬅ UPP Samanya Gyan</a>
+</div>
+
+<div class="quiz-container" id="quiz-main-container">
+    <div class="header">
+        <h2 id="quiz-title">सामान्य ज्ञान (Set 13) टेस्ट (38 Questions)</h2>
+        <p>प्रश्न <span id="current-q-num">1</span> / <span id="total-q-num">0</span></p>
+    </div>
+    
+    <div class="question" id="question-text">प्रश्न लोड हो रहा है...</div>
+    
+    <ul class="options" id="options-list"></ul>
+
+    <div id="result-text"></div>
+
+    <div class="navigation">
+        <button id="prev-btn" onclick="prevQuestion()">पिछला</button>
+        <button id="next-btn" onclick="nextQuestion()">अगला</button>
+    </div>
+
+    <button class="submit-btn" onclick="showSummary()">टेस्ट सबमिट करें और रिजल्ट देखें</button>
+
+    <div class="pagination-wrapper">
+        <div class="pagination" id="pagination-container"></div>
+    </div>
+</div>
+
+<div class="quiz-container" id="summary-container" style="display: none;"></div>
+
+<script>
+    // ----------------------------------------------------
+    // Set 13 के पूरे 38 प्रश्न (हर एक में 6 विकल्प)
+    // ----------------------------------------------------
+    const originalQuestions = [
+        {
+            question: "'चुनावी बॉन्ड' योजना का शुभारम्भ कब हुआ ?",
+            options: ["जनवरी 2018", "अप्रैल 2018", "अप्रैल 2019", "दिसम्बर 2019", "मार्च 2017", "जुलाई 2018"],
+            answer: "जनवरी 2018"
+        },
+        {
+            question: "संविधान सभा में सदस्यों की कुल संख्या 389 थी, जिसमें से _______ रियासतों के प्रतिनिधि थे।",
+            options: ["109", "84", "93", "102", "73", "292"],
+            answer: "93"
+        },
+        {
+            question: "वह शासक कौन था जिसने राजसिंहासन पर बैठने के लिए अपने पिता बिम्बिसार की हत्या की थी?",
+            options: ["अशोक", "अजातशत्रु", "कनिष्क", "सिमुक", "उदयिन", "शिशुनाग"],
+            answer: "अजातशत्रु"
+        },
+        {
+            question: "निम्नलिखित में कौन-सा सूफी संत के साथ संबंधित है?",
+            options: ["त्रिपिटक", "दरमा", "खानकाह", "आराधनालय", "विहार", "मठ"],
+            answer: "खानकाह"
+        },
+        {
+            question: "निम्नलिखित में से किसने, भारत छोड़ो आंदोलन के दौरान बॉम्बे के गोवालिया टैंक मैदान में भारतीय राष्ट्रीय कांग्रेस का ध्वज फहराया था?",
+            options: ["अरुणा आसफ अली", "लक्ष्मी सहगल", "कनकलता बरुआ", "भीकाजी रुस्तम कामा", "सरोजिनी नायडू", "एनी बेसेंट"],
+            answer: "अरुणा आसफ अली"
+        },
+        {
+            question: "निम्नलिखित में से किस वैज्ञानिक ने यह सिद्ध किया कि सूर्य के चारों ओर प्रत्येक नक्षत्र का मार्ग दीर्घवृत्ताकार है?",
+            options: ["केप्लर", "गैलीलियो", "न्यूटन", "कॉपरनिकस", "टॉलेमी", "आइंस्टीन"],
+            answer: "केप्लर"
+        },
+        {
+            question: "निम्नलिखित स्थानों का उनके संबंधित ऊर्जा स्रोतों से सही मिलान कीजिए-\nA. पावागढ़ - 1. पवन\nB. तातापानी - 2. सौर\nC. मुपंदल - 3. भूतापीय\nD. काकरापार - 4. परमाणु",
+            options: ["A-2, B-3, C-1, D-4", "A-1, B-2, C-3, D-4", "A-3, B-1, C-2, D-4", "A-2, B-1, C-3, D-4", "A-4, B-3, C-2, D-1", "A-1, B-4, C-2, D-3"],
+            answer: "A-2, B-3, C-1, D-4"
+        },
+        {
+            question: "भारत में पश्चिमी तट के उत्तरी भाग को क्या कहते हैं?",
+            options: ["कोंकण तट", "कोरोमंडल तट", "मालाबार तट", "उत्तरी सरकार", "कन्नड़ तट", "उत्कल तट"],
+            answer: "कोंकण तट"
+        },
+        {
+            question: "भारतीय रिजर्व बैंक (RBI) का राष्ट्रीयकरण किस वर्ष किया गया था?",
+            options: ["1935", "1949", "1951", "1969", "1955", "1980"],
+            answer: "1949"
+        },
+        {
+            question: "बैंकिंग लेन-देन में 'SWIFT' कोड का पूर्ण रूप क्या है?",
+            options: ["Society For Worldwide Interbank Financial Telecommunication", "Safe Worldwide Interbank Financial Transaction", "Swift Wireless International Fund Transfer", "Secure Worldwide Interbank Fund Transfer", "Society For Wireless Interbank Financial Transfer", "System For Worldwide Interbank Financial Telecommunication"],
+            answer: "Society For Worldwide Interbank Financial Telecommunication"
+        },
+        {
+            question: "वर्तमान में भारत का सबसे बड़ा व्यापारिक भागीदार कौन-सा देश है?",
+            options: ["चीन", "अमेरिका", "संयुक्त अरब अमीरात", "रूस", "जापान", "सऊदी अरब"],
+            answer: "अमेरिका"
+        },
+        {
+            question: "बिजनौर जिले को किस उत्पाद के लिए पहचान दी गई है?",
+            options: ["कागज शिल्प", "लकड़ी की नक्काशी", "इत्र", "कालीन", "पीतल के बर्तन", "ताले"],
+            answer: "लकड़ी की नक्काशी"
+        },
+        {
+            question: "उन लोगों के लिए क्या शब्द प्रयोग किया जाएगा जो नियमित रूप से निर्धनता रेखा के अंदर और उससे बाहर होते रहते हैं?",
+            options: ["सामान्यतः निर्धन", "अनियमित निर्धन", "दीर्घकालिक निर्धन", "चक्रीय निर्धन", "पूर्ण निर्धन", "अस्थायी निर्धन"],
+            answer: "चक्रीय निर्धन"
+        },
+        {
+            question: "'पेसमेकर' (Pacemaker) का संबंध शरीर के किस अंग से है?",
+            options: ["वृक्क", "मस्तिष्क", "हृदय", "फेफड़े", "यकृत", "अग्न्याशय"],
+            answer: "हृदय"
+        },
+        {
+            question: "दूध से क्रीम निकालने पर दूध का घनत्व (Density) पर क्या प्रभाव पड़ता है?",
+            options: ["घनत्व कम हो जाता है।", "घनत्व बढ़ जाता है।", "घनत्व अपरिवर्तित रहता है।", "पहले बढ़ता है फिर घटता है।", "शून्य हो जाता है।", "आधा हो जाता है।"],
+            answer: "घनत्व बढ़ जाता है।"
+        },
+        {
+            question: "उत्तर प्रदेश का एकमात्र राष्ट्रीय उद्यान कौन-सा है?",
+            options: ["जिम कॉर्बेट", "दुधवा राष्ट्रीय उद्यान", "नंदा देवी", "राजाजी", "कान्हा राष्ट्रीय उद्यान", "बांधवगढ़"],
+            answer: "दुधवा राष्ट्रीय उद्यान"
+        },
+        {
+            question: "नवाबगंज पक्षी विहार का नया नाम क्या कर दिया गया है?",
+            options: ["अटल बिहारी वाजपेयी पक्षी विहार", "शहीद चन्द्रशेखर आजाद पक्षी विहार", "भीमराव अंबेडकर पक्षी विहार", "लोकनायक पक्षी विहार", "महात्मा गांधी पक्षी विहार", "सरदार पटेल पक्षी विहार"],
+            answer: "शहीद चन्द्रशेखर आजाद पक्षी विहार"
+        },
+        {
+            question: "'क्लाउड कंप्यूटिंग' (Cloud Computing) का इनमें से कौन-सा सबसे सटीक उदाहरण है?",
+            options: ["हार्ड डिस्क में फाइल सेव करना", "गूगल ड्राइव पर अपनी तस्वीरें अपलोड करना", "प्रिंटर से फोटो निकालना", "पेन ड्राइव में गाने डालना", "कंप्यूटर को रीस्टार्ट करना", "ब्लूटूथ से फाइल भेजना"],
+            answer: "गूगल ड्राइव पर अपनी तस्वीरें अपलोड करना"
+        },
+        {
+            question: "वह दुर्भावनापूर्ण सॉफ्टवेयर कौन सा है, जो उपयोगकर्ताओं को उनके डिवाइस में 'वायरस' होने की झूठी चेतावनी देकर डराता है और उनसे फर्जी एंटीवायरस खरीदने के लिए पैसे ऐंठता है?",
+            options: ["कीलॉगर (Keylogger)", "स्केवेयर (Scareware)", "लॉजिक बम", "स्पूफिंग", "एडवेयर", "वॉर्म"],
+            answer: "स्केवेयर (Scareware)"
+        },
+        {
+            question: "वर्ष 1948 में संयुक्त राष्ट्र द्वारा अपनाई गई 'मानवाधिकारों की सार्वभौम घोषणा' (UDHR) का मसौदा (Draft) तैयार करने वाली समिति की अध्यक्षता किस प्रसिद्ध महिला ने की थी?",
+            options: ["सरोजिनी नायडू", "एलेनोर रूजवेल्ट", "मदर टेरेसा", "एनी बेसेंट", "मार्गरेट थैचर", "इंदिरा गांधी"],
+            answer: "एलेनोर रूजवेल्ट"
+        },
+        {
+            question: "मई 2011 में पाकिस्तान के एबटाबाद में दुनिया के सबसे वांछित आतंकवादी 'ओसामा बिन लादेन' को मारने के लिए अमेरिकी नेवी सील्स द्वारा चलाए गए गुप्त सैन्य अभियान का कोडनेम क्या था?",
+            options: ["ऑपरेशन डेजर्ट स्टॉर्म", "ऑपरेशन एंड्योरिंग फ्रीडम", "ऑपरेशन नेपच्यून स्पीयर", "ऑपरेशन जेरोनिमो", "ऑपरेशन रेड डॉन", "ऑपरेशन ईगल क्लॉ"],
+            answer: "ऑपरेशन नेपच्यून स्पीयर"
+        },
+        {
+            question: "इंटरनेट के इतिहास में दुनिया की सबसे 'पहली' सोशल मीडिया वेबसाइट किसे माना जाता है, जिसे 1997 में लॉन्च किया गया था?",
+            options: ["माइस्पेस", "ऑर्कुट", "सिक्स डिग्रीज", "फेसबुक", "ट्विटर", "लिंक्डइन"],
+            answer: "सिक्स डिग्रीज"
+        },
+        {
+            question: "भारत के सभी पूर्व प्रधानमंत्रियों के जीवन, कार्यों और उनके योगदान को समर्पित 'प्रधानमंत्री संग्रहालय' कहाँ स्थित है?",
+            options: ["अहमदाबाद", "नई दिल्ली", "प्रयागराज", "वाराणसी", "मुंबई", "लखनऊ"],
+            answer: "नई दिल्ली"
+        },
+        {
+            question: "नोबेल पुरस्कार प्रदान करने वाले यूरोपीय देश 'स्वीडन' (Sweden) की आधिकारिक मुद्रा निम्नलिखित में से कौन-सी है?",
+            options: ["यूरो", "डॉलर", "क्रोना", "फ्रैंक", "रैंड", "पाउंड"],
+            answer: "क्रोना"
+        },
+        {
+            question: "हजारों द्वीपों से मिलकर बने दक्षिण-पूर्व एशियाई देश 'फिलीपींस' (Philippines) की राजधानी क्या है?",
+            options: ["हनोई", "ताइपे", "मनीला", "सुवा", "बैंकॉक", "जकार्ता"],
+            answer: "मनीला"
+        },
+        {
+            question: "भारत में पंचायती राज व्यवस्था को संवैधानिक दर्जा मिलने के उपलक्ष्य में प्रतिवर्ष 'राष्ट्रीय पंचायती राज दिवस' (National Panchayati Raj Day) कब मनाया जाता है?",
+            options: ["24 अप्रैल", "2 अक्टूबर", "15 अगस्त", "26 नवंबर", "5 जून", "14 अप्रैल"],
+            answer: "24 अप्रैल"
+        },
+        {
+            question: "जलवायु परिवर्तन के खतरे से निपटने के लिए संयुक्त राष्ट्र की एक प्रमुख अंतर्राष्ट्रीय पर्यावरण संधि 'UNFCCC' का पूर्ण रूप क्या है?",
+            options: ["यूनाइटेड नेशंस फोरम ऑन क्लाइमेट चेंज एंड कंजर्वेशन", "यूनाइटेड नेशंस फ्रेमवर्क कन्वेंशन ऑन क्लाइमेट चेंज", "यूनाइटेड नेशंस फाउंडेशन फॉर क्लाइमेट चेंज कंट्रोल", "यूनिवर्सल नेटवर्क फॉर क्लाइमेट एंड कंजर्वेशन काउंसिल", "यूनाइटेड नेशंस फेडरेशन ऑन क्लाइमेट चेंज", "यूनाइटेड नेशंस फोर्स फॉर क्लाइमेट चेंज कंट्रोल"],
+            answer: "यूनाइटेड नेशंस फ्रेमवर्क कन्वेंशन ऑन क्लाइमेट चेंज"
+        },
+        {
+            question: "अंतर्राष्ट्रीय शिपिंग को सुरक्षित बनाने और जहाजों द्वारा होने वाले समुद्री प्रदूषण को रोकने के लिए जिम्मेदार 'अंतर्राष्ट्रीय समुद्री संगठन' (IMO) का मुख्यालय कहाँ है?",
+            options: ["जिनेवा, स्विट्जरलैंड", "लंदन, यूके", "हैम्बर्ग, जर्मनी", "न्यूयॉर्क, अमेरिका", "पेरिस, फ्रांस", "रोम, इटली"],
+            answer: "लंदन, यूके"
+        },
+        {
+            question: "पर्यावरण संरक्षण, मानवाधिकार और सतत विकास के लिए काम करने वाले साहसी लोगों को दिए जाने वाले किस पुरस्कार को 'वैकल्पिक नोबेल पुरस्कार' (Alternative Nobel Prize) कहा जाता है?",
+            options: ["राइट लाइवलीहुड अवार्ड", "रेमन मैग्सेसे पुरस्कार", "टायलर पुरस्कार", "सखारोव पुरस्कार", "गोल्डमैन पर्यावरण पुरस्कार", "इंदिरा गांधी शांति पुरस्कार"],
+            answer: "राइट लाइवलीहुड अवार्ड"
+        },
+        {
+            question: "2011 की भारतीय जनगणना के अंतिम आँकड़ों के अनुसार, भारत की 'कुल साक्षरता दर' (Overall Literacy Rate) लगभग कितनी दर्ज की गई थी?",
+            options: ["65.46%", "73.00%", "74.04%", "82.14%", "69.32%", "75.06%"],
+            answer: "74.04%"
+        },
+        {
+            question: "वर्ष 1992 में पर्यावरण और विकास पर संयुक्त राष्ट्र सम्मेलन (UNCED), जिसे ऐतिहासिक 'पृथ्वी सम्मेलन' (Earth Summit) के रूप में जाना जाता है, कहाँ आयोजित किया गया था?",
+            options: ["स्टॉकहोम, स्वीडन", "रियो डी जनेरियो, ब्राजील", "क्योटो, जापान", "जोहान्सबर्ग, दक्षिण अफ्रीका", "पेरिस, फ्रांस", "नैरोबी, केन्या"],
+            answer: "रियो डी जनेरियो, ब्राजील"
+        },
+        {
+            question: "महिलाओं और लड़कियों के बीच बेहद लोकप्रिय टीम खेल 'नेटबॉल' (Netball) में प्रत्येक टीम की ओर से कोर्ट पर एक समय में खेलने वाले खिलाड़ियों की संख्या कितनी होती है?",
+            options: ["5", "7", "9", "11", "6", "8"],
+            answer: "7"
+        },
+        {
+            question: "उत्तर प्रदेश में पुलिस की सशस्त्र शाखा 'पीएसी' (Provincial Armed Constabulary) का आधिकारिक रूप से गठन (स्थापना) किस वर्ष किया गया था?",
+            options: ["1948", "1952", "1963", "1973", "1950", "1956"],
+            answer: "1948"
+        },
+        {
+            question: "उत्तर प्रदेश के प्रथम 'लोकायुक्त' (Lokayukta) कौन थे, जिन्होंने 1977 में राज्य में भ्रष्टाचार विरोधी इस सर्वोच्च संस्था का कार्यभार संभाला था?",
+            options: ["न्यायमूर्ति एन.के. मेहरोत्रा", "न्यायमूर्ति विशम्भर दयाल", "न्यायमूर्ति संजय मिश्रा", "न्यायमूर्ति कमलाकांत वर्मा", "न्यायमूर्ति सुधीर चंद्र वर्मा", "न्यायमूर्ति ए.बी. सिंह"],
+            answer: "न्यायमूर्ति विशम्भर दयाल"
+        },
+        {
+            question: "उत्तर प्रदेश राज्य को प्रशासनिक सुविधा के लिए कुल 18 मंडलों (Divisions) में बाँटा गया है। इनमें से किन मंडलों में जिलों की संख्या सर्वाधिक (6-6 जिले) है?",
+            options: ["प्रयागराज और वाराणसी", "आगरा और अलीगढ़", "लखनऊ, कानपुर और मेरठ", "गोरखपुर और बस्ती", "अयोध्या और देवीपाटन", "बरेली और मुरादाबाद"],
+            answer: "लखनऊ, कानपुर और मेरठ"
+        },
+        {
+            question: "हाल ही में किस देश में स्थित माउंट सेमेरू ज्वालामुखी में विस्फोट हुआ है?",
+            options: ["इंडोनेशिया", "जापान", "फिलीपींस", "इटली", "चिली", "आइसलैंड"],
+            answer: "इंडोनेशिया"
+        },
+        {
+            question: "हाल ही में 'ऑपरेशन अजय' भारत सरकार द्वारा क्यों चलाया गया था?",
+            options: ["सूडान से भारतीयों को निकालने के लिए", "यूक्रेन से छात्रों को लाने के लिए", "इजराइल से भारतीय नागरिकों की सुरक्षित वापसी के लिए", "म्यांमार में राहत सामग्री भेजने के लिए", "तुर्की में भूकंप पीड़ितों की मदद के लिए", "अफगानिस्तान से नागरिकों को निकालने के लिए"],
+            answer: "इजराइल से भारतीय नागरिकों की सुरक्षित वापसी के लिए"
+        },
+        {
+            question: "व्यावसायिक रूप से 'बायो-बिटुमेन' का उत्पादन शुरू करने वाला दुनिया का पहला देश कौन बन गया है?",
+            options: ["भारत", "अमेरिका", "चीन", "जापान", "जर्मनी", "स्वीडन"],
+            answer: "भारत"
+        }
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; 
+    let isCurrentAnswered = false;
+
+    // शफल फंक्शन
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    function initQuiz() {
+        if(originalQuestions.length === 0) {
+            document.getElementById('question-text').innerText = "कृपया 'originalQuestions' एरे में प्रश्न जोड़ें।";
+            return;
+        }
+        
+        // प्रश्नों को शफल करें
+        questions = shuffleArray(originalQuestions);
+        
+        // 6 विकल्पों में से 4 को रैंडमली चुनें (जिसमें 1 सही और 3 गलत हों)
+        questions.forEach(q => {
+            // सही उत्तर को हटाकर बाकी 5 गलत विकल्पों का ऐरे बनाएँ
+            let distractors = q.options.filter(opt => opt !== q.answer);
+            // 5 गलत विकल्पों को शफल करें
+            distractors = shuffleArray(distractors);
+            // सही उत्तर और शुरू के 3 शफल्ड गलत विकल्पों को मिलाएँ
+            let selectedOptions = [q.answer, distractors[0], distractors[1], distractors[2]];
+            // इन 4 विकल्पों को फिर से शफल कर दें ताकि सही उत्तर हमेशा एक ही जगह न रहे
+            q.displayOptions = shuffleArray(selectedOptions);
+        });
+        
+        document.getElementById('total-q-num').innerText = questions.length;
+        renderQuestion();
+        renderPagination();
+    }
+
+    function renderQuestion() {
+        isCurrentAnswered = !!userAnswers[currentQuestionIndex];
+        const qText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const resultText = document.getElementById('result-text');
+        const qData = questions[currentQuestionIndex];
+
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        qText.innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+        optionsList.innerHTML = '';
+        resultText.innerText = '';
+
+        // केवल 4 रैंडम विकल्प (displayOptions) दिखाएँगे
+        qData.displayOptions.forEach((opt) => {
+            const li = document.createElement('li');
+            li.innerText = opt;
+            
+            if (!isCurrentAnswered) {
+                li.onclick = () => selectOption(opt, li);
+            } else {
+                li.classList.add('disabled');
+                if (opt === qData.answer) {
+                    li.classList.add('correct');
+                } else if (userAnswers[currentQuestionIndex] === opt && opt !== qData.answer) {
+                    li.classList.add('wrong');
+                }
+            }
+            optionsList.appendChild(li);
+        });
+
+        updateButtons();
+        updatePaginationHighlight();
+    }
+
+    function selectOption(selectedOpt, liElement) {
+        if (isCurrentAnswered) return;
+        isCurrentAnswered = true;
+        
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        const correctAns = questions[currentQuestionIndex].answer;
+        const allLis = document.getElementById('options-list').querySelectorAll('li');
+        const resultText = document.getElementById('result-text');
+
+        allLis.forEach(li => {
+            li.classList.add('disabled');
+            li.onclick = null;
+            if (li.innerText === correctAns) {
+                li.classList.add('correct');
+            }
+            if (li.innerText === selectedOpt && selectedOpt !== correctAns) {
+                li.classList.add('wrong');
+            }
+        });
+
+        if (selectedOpt === correctAns) {
+            resultText.innerText = "✅ सही उत्तर!";
+            resultText.style.color = "green";
+        } else {
+            resultText.innerText = "❌ गलत उत्तर!";
+            resultText.style.color = "red";
+        }
+        
+        updatePaginationHighlight();
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+
+        questions.forEach((_, index) => {
+            const div = document.createElement('div');
+            div.className = 'page-num';
+            div.id = `page-${index}`;
+            div.innerText = index + 1;
+            div.onclick = () => {
+                currentQuestionIndex = index;
+                renderQuestion();
+            };
+            container.appendChild(div);
+        });
+        updatePaginationHighlight();
+    }
+
+    function updatePaginationHighlight() {
+        const pages = document.querySelectorAll('.page-num');
+        pages.forEach((page, index) => {
+            page.classList.remove('active', 'answered-correct', 'answered-wrong');
+            
+            if (index === currentQuestionIndex) {
+                page.classList.add('active');
+                page.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            if (userAnswers[index]) {
+                if (userAnswers[index] === questions[index].answer) {
+                    page.classList.add('answered-correct');
+                } else {
+                    page.classList.add('answered-wrong');
+                }
+            }
+        });
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-main-container').style.display = 'none';
+        const summaryContainer = document.getElementById('summary-container');
+        summaryContainer.style.display = 'block';
+        
+        let score = 0;
+        let summaryHTML = `<div class="header"><h2>टेस्ट का परिणाम (Summary)</h2></div>`;
+        
+        let listHTML = '';
+        questions.forEach((q, index) => {
+            const userAns = userAnswers[index];
+            const isCorrect = userAns === q.answer;
+            let itemClass = 'summary-unattempted';
+            
+            if (userAns) {
+                if (isCorrect) {
+                    score++;
+                    itemClass = 'summary-correct';
+                } else {
+                    itemClass = 'summary-wrong';
+                }
+            }
+
+            listHTML += `
+                <div class="summary-item ${itemClass}">
+                    <p><strong>प्रश्न ${index + 1}:</strong> ${q.question}</p>
+                    <p style="color: ${!userAns ? '#856404' : (isCorrect ? '#155724' : '#721c24')}">
+                        <strong>आपका उत्तर:</strong> ${userAns || 'कोई उत्तर नहीं दिया (Unattempted)'}
+                    </p>
+                    ${!isCorrect ? `<p style="color: #155724;"><strong>सही उत्तर:</strong> ${q.answer}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        summaryHTML += `<div class="score-board">आपका स्कोर: <span style="color:#007bff">${score}</span> / ${questions.length}</div>`;
+        summaryHTML += listHTML;
+        summaryHTML += `<button class="submit-btn" onclick="location.reload()" style="margin-top:20px;">फिर से टेस्ट दें (Restart)</button>`;
+        
+        summaryContainer.innerHTML = summaryHTML;
+        window.scrollTo(0, 0); 
+    }
+
+    window.onload = initQuiz;
+
+</script>
+
+</body>
+</html>
