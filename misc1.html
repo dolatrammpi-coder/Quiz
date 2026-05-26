@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anusandhan Sansthan Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .option-btn {
+            background-color: #ecf0f1;
+            color: #333;
+            border: 2px solid #bdc3c7;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .option-btn:hover {
+            background-color: #e0e6ed;
+        }
+        .correct {
+            background-color: #2ecc71 !important;
+            color: white !important;
+            border-color: #27ae60 !important;
+        }
+        .wrong {
+            background-color: #e74c3c !important;
+            color: white !important;
+            border-color: #c0392b !important;
+        }
+        #quiz-screen, #result-screen {
+            display: none;
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+        .score-text {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            text-align: right;
+        }
+        #next-btn {
+            display: none;
+            background-color: #9b59b6;
+            margin-top: 20px;
+        }
+        #next-btn:hover {
+            background-color: #8e44ad;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="home-screen">
+    <h1>महत्वपूर्ण अनुसंधान संस्थान Quiz</h1>
+    <p>Practice mode select karein:</p>
+    <button class="btn" onclick="startQuiz('orgToPlace')">Organization ➔ Place</button>
+    <button class="btn" onclick="startQuiz('placeToOrg')">Place ➔ Organization</button>
+</div>
+
+<div class="container" id="quiz-screen">
+    <div class="score-text">Question: <span id="q-num">1</span>/<span id="total-q">0</span> | Score: <span id="score">0</span></div>
+    <div class="question-text" id="question">Question text here</div>
+    <div id="options-container">
+        </div>
+    <button class="btn" id="next-btn" onclick="nextQuestion()">Next Question</button>
+</div>
+
+<div class="container" id="result-screen">
+    <h1>Quiz Complete!</h1>
+    <p class="question-text">Aapka Score: <span id="final-score"></span> / <span id="final-total"></span></p>
+    <button class="btn" onclick="goHome()">Home Par Jayein</button>
+</div>
+
+<script>
+    const data = [
+        { org: "भारतीय गन्ना अनुसंधान संस्थान", place: "लखनऊ" },
+        { org: "केन्द्रीय औषधि अनुसंधान संस्थान", place: "लखनऊ" },
+        { org: "राष्ट्रीय वनस्पति अनुसंधान संस्थान", place: "लखनऊ" },
+        { org: "औद्योगिक विष विज्ञान अनुसंधान संस्थान", place: "लखनऊ" },
+        { org: "भारतीय दलहन अनुसंधान संस्थान", place: "कानपुर" },
+        { org: "भारतीय चीनी अनुसंधान संस्थान", place: "कानपुर" },
+        { org: "राष्ट्रीय बकरी अनुसंधान संस्थान", place: "मथुरा" },
+        { org: "केन्द्रीय पक्षी अनुसंधान संस्थान", place: "बरेली" },
+        { org: "भारतीय पशु चिकित्सा अनुसंधान संस्थान", place: "बरेली" },
+        { org: "भारतीय चारागाह एवं चारा अनुसंधान संस्थान", place: "झांसी" },
+        { org: "भारतीय सब्जी अनुसंधान संस्थान", place: "वाराणसी" },
+        { org: "केन्द्रीय वन अनुसंधान संस्थान", place: "देहरादून" },
+        { org: "भारतीय वन सर्वेक्षण", place: "देहरादून" },
+        { org: "भारतीय पेट्रोलियम संस्थान", place: "देहरादून" },
+        { org: "भारतीय सर्वेक्षण विभाग", place: "देहरादून" },
+        { org: "केन्द्रीय भवन निर्माण संस्थान", place: "रुड़की" },
+        { org: "राष्ट्रीय डेयरी अनुसंधान संस्थान", place: "करनाल" },
+        { org: "राष्ट्रीय मस्तिष्क अनुसंधान केंद्र", place: "गुरुग्राम" },
+        { org: "भारतीय कृषि अनुसंधान संस्थान", place: "नई दिल्ली" },
+        { org: "भारतीय कृषि अनुसंधान परिषद", place: "नई दिल्ली" },
+        { org: "भारतीय आयुर्विज्ञान अनुसंधान परिषद", place: "नई दिल्ली" },
+        { org: "केंद्रीय सड़क अनुसंधान संस्थान", place: "नई दिल्ली" },
+        { org: "भारतीय मौसम विज्ञान संस्थान", place: "नई दिल्ली" },
+        { org: "अखिल भारतीय आयुर्विज्ञान संस्थान (AIIMS)", place: "नई दिल्ली" },
+        { org: "केंद्रीय कपास अनुसंधान संस्थान", place: "नागपुर" },
+        { org: "भाभा परमाणु अनुसंधान केंद्र", place: "ट्राम्बे (महाराष्ट्र)" },
+        { org: "भारतीय विज्ञान संस्थान", place: "बेंगलुरु" },
+        { org: "भारतीय अंतरिक्ष अनुसंधान संगठन (ISRO)", place: "बेंगलुरु" },
+        { org: "भारतीय मसाला अनुसंधान संस्थान", place: "कोझिकोड (केरल)" },
+        { org: "विक्रम साराभाई अंतरिक्ष केंद्र", place: "तिरुवनंतपुरम" },
+        { org: "सतीश धवन अंतरिक्ष केंद्र", place: "श्रीहरिकोटा (AP)" },
+        { org: "केंद्रीय चमड़ा अनुसंधान संस्थान", place: "चेन्नई" },
+        { org: "केंद्रीय आलू अनुसंधान संस्थान", place: "शिमला" },
+        { org: "केंद्रीय चावल अनुसंधान संस्थान", place: "कटक (ओडिशा)" },
+        { org: "केंद्रीय विद्युत रसायन अनुसंधान संस्थान", place: "कराईकुडी (तमिलनाडु)" },
+        { org: "राष्ट्रीय भू-भौतिकी अनुसंधान संस्थान", place: "हैदराबाद" },
+        { org: "राष्ट्रीय पोषण संस्थान", place: "हैदराबाद" },
+        { org: "भारतीय हीरा संस्थान", place: "सूरत" },
+        { org: "केंद्रीय नमक और समुद्री रसायन अनुसंधान संस्थान", place: "भावनगर (गुजरात)" },
+        { org: "राष्ट्रीय ग्रामीण विकास संस्थान", place: "हैदराबाद" },
+        { org: "केंद्रीय नारियल अनुसंधान संस्थान", place: "कासरगोड (केरल)" },
+        { org: "कपड़ा अनुसंधान संस्थान", place: "अहमदाबाद" },
+        { org: "राष्ट्रीय समुद्र विज्ञान संस्थान", place: "पणजी (गोवा)" },
+        { org: "साहा परमाणु भौतिकी संस्थान", place: "कोलकाता" },
+        { org: "केंद्रीय जूट प्रौद्योगिकी अनुसंधान संस्थान", place: "कोलकाता" },
+        { org: "भारतीय चाय बोर्ड का मुख्यालय", place: "कोलकाता" },
+        { org: "भारतीय उष्णकटिबंधीय मौसम विज्ञान संस्थान", place: "पुणे" },
+        { org: "राष्ट्रीय हल्दी बोर्ड", place: "निजामाबाद (तेलंगाना)" },
+        { org: "राष्ट्रीय डेयरी विकास बोर्ड", place: "आनंद (गुजरात)" },
+        { org: "जीवाणु प्रौद्योगिकी संस्थान", place: "चंडीगढ़" },
+        { org: "भारतीय वन्यजीव संस्थान", place: "देहरादून" },
+        { org: "केंद्रीय खाद्य प्रौद्योगिकी अनुसंधान संस्थान", place: "मैसूर (कर्नाटक)" },
+        { org: "केंद्रीय शुष्क क्षेत्र अनुसंधान संस्थान", place: "जोधपुर" },
+        { org: "भारतीय तंबाकू बोर्ड", place: "राजमुंदरी" },
+        { org: "केंद्रीय खनन एवं ईंधन अनुसंधान संस्थान", place: "धनबाद" },
+        { org: "भारतीय भूवैज्ञानिक सर्वेक्षण", place: "कोलकाता" },
+        { org: "केंद्रीय समुद्री मत्स्य अनुसंधान संस्थान", place: "कोच्चि (केरल)" },
+        { org: "राष्ट्रीय महासागर प्रौद्योगिकी संस्थान", place: "चेन्नई" },
+        { org: "प्लाज्मा अनुसंधान संस्थान", place: "गांधीनगर (गुजरात)" }
+    ];
+
+    let currentMode = '';
+    let quizData = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz(mode) {
+        currentMode = mode;
+        quizData = shuffleArray([...data]); // Copy and shuffle
+        currentQuestionIndex = 0;
+        score = 0;
+        
+        document.getElementById('home-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        document.getElementById('total-q').innerText = quizData.length;
+        
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        answered = false;
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('q-num').innerText = currentQuestionIndex + 1;
+        document.getElementById('score').innerText = score;
+        
+        const currentItem = quizData[currentQuestionIndex];
+        const questionEl = document.getElementById('question');
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        let questionText, correctAnswer;
+        let allOptionsPool = [];
+
+        if (currentMode === 'orgToPlace') {
+            questionText = currentItem.org + " कहाँ स्थित है?";
+            correctAnswer = currentItem.place;
+            allOptionsPool = [...new Set(data.map(item => item.place))];
+        } else {
+            questionText = currentItem.place + " में कौन सा संस्थान स्थित है?";
+            correctAnswer = currentItem.org;
+            allOptionsPool = [...new Set(data.map(item => item.org))];
+        }
+
+        questionEl.innerText = questionText;
+
+        // Generate options (1 correct, 3 wrong)
+        let options = [correctAnswer];
+        allOptionsPool = shuffleArray(allOptionsPool.filter(opt => opt !== correctAnswer));
+        
+        for (let i = 0; i < 3 && i < allOptionsPool.length; i++) {
+            options.push(allOptionsPool[i]);
+        }
+        
+        options = shuffleArray(options);
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(btn, opt, correctAnswer);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedBtn, selectedOpt, correctOpt) {
+        if (answered) return;
+        answered = true;
+
+        const buttons = document.querySelectorAll('.option-btn');
+        
+        if (selectedOpt === correctOpt) {
+            selectedBtn.classList.add('correct');
+            score++;
+            document.getElementById('score').innerText = score;
+        } else {
+            selectedBtn.classList.add('wrong');
+            // Highlight the correct one
+            buttons.forEach(btn => {
+                if (btn.innerText === correctOpt) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < quizData.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('final-total').innerText = quizData.length;
+    }
+
+    function goHome() {
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('home-screen').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
