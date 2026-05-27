@@ -10,6 +10,8 @@
             --primary-hover: #1D4ED8;
             --success: #10B981;
             --danger: #EF4444;
+            --shuffle: #8B5CF6;
+            --shuffle-hover: #7C3AED;
             --bg: #F3F4F6;
             --card-bg: #FFFFFF;
             --text-main: #1F2937;
@@ -41,7 +43,8 @@
         /* --- Navigation Links --- */
         .nav-links {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -53,20 +56,22 @@
             font-weight: 600;
             text-align: center;
             transition: 0.3s;
-            display: inline-block;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .back-btn {
-            background-color: #374151;
-            color: white;
-        }
+        .back-btn { background-color: #374151; color: white; }
         .back-btn:hover { background-color: #1F2937; }
 
-        .revision-link {
-            background-color: #F59E0B;
-            color: white;
-        }
+        .revision-link { background-color: #F59E0B; color: white; }
         .revision-link:hover { background-color: #D97706; }
+
+        .shuffle-btn { background-color: var(--shuffle); color: white; flex: 1; min-width: 200px;}
+        .shuffle-btn:hover { background-color: var(--shuffle-hover); }
 
         /* --- Quiz Container --- */
         .quiz-card {
@@ -140,11 +145,7 @@
             font-size: 15px;
         }
 
-        .explanation.show {
-            display: block;
-            animation: fadeIn 0.5s ease-in;
-        }
-
+        .explanation.show { display: block; animation: fadeIn 0.5s ease-in; }
         .explanation.success-bg { background-color: #ECFDF5; border-left: 5px solid var(--success); }
         .explanation.danger-bg { background-color: #FEF2F2; border-left: 5px solid var(--danger); }
 
@@ -223,10 +224,11 @@
 <body>
 
     <div class="container">
-        <!-- Navigation Links -->
+        <!-- Navigation & Shuffle Links -->
         <div class="nav-links">
-            <a href="current_affairs.html" class="nav-btn back-btn">⬅ Back to current_affairs.html</a>
-            <a href="april.html" class="nav-btn revision-link">📖 इस महीने का रिवीजन करें (april.html)</a>
+            <a href="current_affairs.html" class="nav-btn back-btn">⬅ Back</a>
+            <a href="april.html" class="nav-btn revision-link">📖 इस महीने का रिवीजन करें</a>
+            <button onclick="shuffleQuiz()" class="nav-btn shuffle-btn">🔀 प्रश्नों को शफल (Shuffle) करें</button>
         </div>
 
         <!-- Summary Section -->
@@ -236,14 +238,15 @@
             <div class="stat-row stat-correct">सही उत्तर (Correct): <span id="correctQ">0</span></div>
             <div class="stat-row stat-wrong">गलत उत्तर (Wrong): <span id="wrongQ">0</span></div>
             <div class="stat-row" style="color: var(--text-muted);">छोड़े गए (Unattempted): <span id="unattemptedQ">0</span></div>
-            <button class="btn" style="margin-top: 20px;" onclick="location.reload()">क्विज फिर से शुरू करें</button>
+            <button class="btn" style="margin-top: 20px;" onclick="location.reload()">मूल क्रम में रीस्टार्ट करें</button>
+            <button class="btn" style="margin-top: 20px; background-color: var(--shuffle);" onclick="shuffleQuiz()">फिर से शफल करें</button>
         </div>
 
         <!-- Quiz Section -->
         <div id="quizCard" class="quiz-card">
             <div class="quiz-header">
-                <span id="questionCounter">प्रश्न 1 / 30</span>
-                <span id="categoryLabel">राष्ट्रीय</span>
+                <span id="questionCounter">प्रश्न 1 / X</span>
+                <span id="categoryLabel">श्रेणी</span>
             </div>
 
             <div id="questionText" class="question-text">प्रश्न यहाँ आएगा...</div>
@@ -270,7 +273,7 @@
     </div>
 
     <script>
-        // Quiz Data based on transcript facts
+        // मूल क्विज डेटा
         const quizData = [
     // --- राष्ट्रीय और राज्य स्तरीय (National & State) ---
     {
@@ -960,10 +963,12 @@
         correctAnswer: 3,
         explanation: "दुनिया भर में श्रमिकों के योगदान और अधिकारों के सम्मान में यह 1 मई को मनाया जाता है।"
     }
-        ];
+];
 
+        // activeQuizData वह एरे है जिसे स्क्रीन पर दिखाया जाएगा (यह शफल हो सकता है)
+        let activeQuizData = [...originalQuizData];
         let currentQuestionIndex = 0;
-        let userAnswers = new Array(quizData.length).fill(null); // stores selected option index
+        let userAnswers = new Array(activeQuizData.length).fill(null);
 
         const elements = {
             qCounter: document.getElementById('questionCounter'),
@@ -979,6 +984,32 @@
             summaryCard: document.getElementById('summaryCard')
         };
 
+        // --- SHUFFLE FUNCTIONALITY ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function shuffleQuiz() {
+            // क्विज डेटा को शफल करें
+            shuffleArray(activeQuizData);
+            
+            // क्विज की स्थिति को रीसेट करें
+            currentQuestionIndex = 0;
+            userAnswers = new Array(activeQuizData.length).fill(null);
+            
+            // UI को वापस क्विज पर सेट करें (यदि समरी खुली हो)
+            elements.summaryCard.style.display = 'none';
+            elements.quizCard.style.display = 'block';
+            elements.progBar.style.display = 'flex';
+            
+            initQuiz();
+            alert("✅ क्विज के प्रश्न शफल (Shuffle) कर दिए गए हैं! अब आप नए क्रम में टेस्ट दे सकते हैं।");
+        }
+        // -----------------------------
+
         function initQuiz() {
             generateProgressBar();
             loadQuestion(currentQuestionIndex);
@@ -986,7 +1017,7 @@
 
         function generateProgressBar() {
             elements.progBar.innerHTML = '';
-            quizData.forEach((_, idx) => {
+            activeQuizData.forEach((_, idx) => {
                 const btn = document.createElement('div');
                 btn.className = 'prog-num';
                 btn.innerText = idx + 1;
@@ -998,12 +1029,12 @@
 
         function updateProgressStyles() {
             const progBtns = elements.progBar.children;
-            for(let i=0; i<quizData.length; i++){
+            for(let i=0; i<activeQuizData.length; i++){
                 progBtns[i].className = 'prog-num'; // reset
                 if (i === currentQuestionIndex) progBtns[i].classList.add('active');
                 
                 if (userAnswers[i] !== null) {
-                    if (userAnswers[i] === quizData[i].correctAnswer) {
+                    if (userAnswers[i] === activeQuizData[i].correctAnswer) {
                         progBtns[i].classList.add('answered-correct');
                     } else {
                         progBtns[i].classList.add('answered-wrong');
@@ -1013,8 +1044,8 @@
         }
 
         function loadQuestion(index) {
-            const data = quizData[index];
-            elements.qCounter.innerText = `प्रश्न ${index + 1} / ${quizData.length}`;
+            const data = activeQuizData[index];
+            elements.qCounter.innerText = `प्रश्न ${index + 1} / ${activeQuizData.length}`;
             elements.category.innerText = `🏷️ ${data.category}`;
             elements.qText.innerText = data.question;
 
@@ -1047,10 +1078,9 @@
                 showExplanation(index);
             }
 
-            // Buttons state
             elements.prevBtn.disabled = index === 0;
             
-            if (index === quizData.length - 1) {
+            if (index === activeQuizData.length - 1) {
                 elements.nextBtn.style.display = 'none';
                 elements.submitBtn.style.display = 'inline-block';
             } else {
@@ -1062,14 +1092,14 @@
         }
 
         function selectOption(selectedIndex) {
-            if (userAnswers[currentQuestionIndex] !== null) return; // Prevent re-answering
+            if (userAnswers[currentQuestionIndex] !== null) return; 
 
             userAnswers[currentQuestionIndex] = selectedIndex;
-            loadQuestion(currentQuestionIndex); // Reload to show styling and explanation
+            loadQuestion(currentQuestionIndex); 
         }
 
         function showExplanation(index) {
-            const data = quizData[index];
+            const data = activeQuizData[index];
             const isCorrect = userAnswers[index] === data.correctAnswer;
             
             elements.explanation.innerHTML = `<strong>${isCorrect ? '✅ सही उत्तर!' : '❌ गलत उत्तर!'}</strong><br><br>${data.explanation}`;
@@ -1077,7 +1107,7 @@
         }
 
         function nextQuestion() {
-            if (currentQuestionIndex < quizData.length - 1) {
+            if (currentQuestionIndex < activeQuizData.length - 1) {
                 currentQuestionIndex++;
                 loadQuestion(currentQuestionIndex);
             }
@@ -1102,7 +1132,7 @@
 
             userAnswers.forEach((ans, idx) => {
                 if (ans === null) unattempted++;
-                else if (ans === quizData[idx].correctAnswer) correct++;
+                else if (ans === activeQuizData[idx].correctAnswer) correct++;
                 else wrong++;
             });
 
@@ -1110,7 +1140,7 @@
             elements.progBar.style.display = 'none';
             elements.summaryCard.style.display = 'block';
 
-            document.getElementById('totalQ').innerText = quizData.length;
+            document.getElementById('totalQ').innerText = activeQuizData.length;
             document.getElementById('correctQ').innerText = correct;
             document.getElementById('wrongQ').innerText = wrong;
             document.getElementById('unattemptedQ').innerText = unattempted;
@@ -1118,7 +1148,7 @@
             window.scrollTo(0,0);
         }
 
-        // Start Quiz
+        // स्टार्ट क्विज
         initQuiz();
     </script>
 </body>
