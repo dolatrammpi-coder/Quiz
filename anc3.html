@@ -88,6 +88,7 @@
         input[type="radio"] {
             transform: scale(1.3);
             margin-right: 10px;
+            cursor: pointer;
         }
         .quiz-footer {
             display: flex;
@@ -139,7 +140,8 @@
         </div>
         <div class="quiz-footer">
             <span id="progressText" class="progress"></span>
-            <button class="btn" id="nextBtn" onclick="checkAndNext()">चेक करें ➡</button>
+            <!-- बटन डिफ़ॉल्ट रूप से छिपा रहेगा -->
+            <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">अगला प्रश्न ➡</button>
         </div>
     </div>
 
@@ -267,7 +269,7 @@
         isChecked = false;
         document.getElementById('feedbackText').style.display = 'none';
         document.getElementById('referenceText').style.display = 'none';
-        document.getElementById('nextBtn').innerText = "चेक करें ➡";
+        document.getElementById('nextBtn').style.display = 'none'; // अगला बटन छिपा दें
 
         const qText = document.getElementById('questionText');
         const optionsCont = document.getElementById('optionsContainer');
@@ -280,9 +282,9 @@
         catBadge.innerText = currentQ.category;
         
         if(currentQ.category.includes('Place')) {
-            catBadge.style.backgroundColor = '#e67e22'; // Orange for Place
+            catBadge.style.backgroundColor = '#e67e22'; // Orange
         } else {
-            catBadge.style.backgroundColor = '#8e44ad'; // Purple for Feature
+            catBadge.style.backgroundColor = '#8e44ad'; // Purple
         }
 
         qText.innerText = currentQ.question;
@@ -298,56 +300,60 @@
             radio.name = 'quizOption';
             radio.value = index;
             
+            // क्लिक करते ही उत्तर चेक करने के लिए इवेंट लिसनर
+            radio.onclick = function() { checkAnswer(this.value); };
+            
             label.appendChild(radio);
             label.appendChild(document.createTextNode(opt));
             optionsCont.appendChild(label);
         });
     }
 
-    function checkAndNext() {
-        const selectedOption = document.querySelector('input[name="quizOption"]:checked');
+    function checkAnswer(selectedValue) {
+        // अगर पहले से चेक हो चुका है तो कुछ न करें
+        if (isChecked) return;
+        
+        isChecked = true;
         let currentQ = currentQuestions[currentQuestionIndex];
         let feedback = document.getElementById('feedbackText');
         let refText = document.getElementById('referenceText');
 
-        if (!isChecked) {
-            if (!selectedOption) {
-                alert("कृपया पहले एक विकल्प चुनें!");
-                return;
-            }
+        let selectedVal = parseInt(selectedValue);
+        let correctVal = currentQ.answer;
 
-            isChecked = true;
-            let selectedVal = parseInt(selectedOption.value);
-            let correctVal = currentQ.answer;
+        // सही उत्तर को हरा करें
+        document.getElementById('optLabel_' + correctVal).style.backgroundColor = '#d4efdf';
+        document.getElementById('optLabel_' + correctVal).style.borderColor = '#27ae60';
 
-            document.getElementById('optLabel_' + correctVal).style.backgroundColor = '#d4efdf';
-            document.getElementById('optLabel_' + correctVal).style.borderColor = '#27ae60';
-
-            if (selectedVal === correctVal) {
-                score++;
-                feedback.innerText = "✅ सही उत्तर!";
-                feedback.className = "correct-ans";
-            } else {
-                document.getElementById('optLabel_' + selectedVal).style.backgroundColor = '#fadbd8';
-                document.getElementById('optLabel_' + selectedVal).style.borderColor = '#e74c3c';
-                feedback.innerText = "❌ गलत उत्तर! सही उत्तर: " + currentQ.options[correctVal];
-                feedback.className = "wrong-ans";
-            }
-            
-            refText.innerText = "(संदर्भ: " + currentQ.ref + ")";
-            feedback.style.display = 'block';
-            refText.style.display = 'block';
-            document.getElementById('nextBtn').innerText = "अगला प्रश्न ➡";
-            
-            document.querySelectorAll('input[name="quizOption"]').forEach(r => r.disabled = true);
-            
+        if (selectedVal === correctVal) {
+            score++;
+            feedback.innerText = "✅ सही उत्तर!";
+            feedback.className = "correct-ans";
         } else {
-            currentQuestionIndex++;
-            if (currentQuestionIndex >= currentQuestions.length) {
-                showResult();
-            } else {
-                loadQuestion();
-            }
+            // गलत उत्तर को लाल करें
+            document.getElementById('optLabel_' + selectedVal).style.backgroundColor = '#fadbd8';
+            document.getElementById('optLabel_' + selectedVal).style.borderColor = '#e74c3c';
+            feedback.innerText = "❌ गलत उत्तर! सही उत्तर: " + currentQ.options[correctVal];
+            feedback.className = "wrong-ans";
+        }
+        
+        refText.innerText = "(संदर्भ: " + currentQ.ref + ")";
+        feedback.style.display = 'block';
+        refText.style.display = 'block';
+        
+        // सभी रेडियो बटन डिसेबल कर दें
+        document.querySelectorAll('input[name="quizOption"]').forEach(r => r.disabled = true);
+        
+        // "अगला प्रश्न" बटन दिखाएँ
+        document.getElementById('nextBtn').style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex >= currentQuestions.length) {
+            showResult();
+        } else {
+            loadQuestion();
         }
     }
 
