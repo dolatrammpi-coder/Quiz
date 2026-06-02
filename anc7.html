@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC Level: भारतीय लोक नाट्यकला क्विज़</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            width: 100%;
+            max-width: 750px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .controls {
+            width: 100%;
+            max-width: 750px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            background-color: #2c3e50;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+        .btn:hover { background-color: #1a252f; }
+        .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .btn.active-set { background-color: #e74c3c; box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+        
+        .quiz-container {
+            background: white;
+            width: 100%;
+            max-width: 750px;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+        }
+        .question-number {
+            font-size: 15px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .question-text {
+            font-size: 19px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            color: #222;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+        .option {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 6px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .option:hover { background: #e9ecef; border-color: #adb5bd; }
+        .option.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .option.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .option.disabled { pointer-events: none; }
+        
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            border-radius: 4px;
+            display: none;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #856404;
+        }
+
+        .quiz-nav-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .nav-palette {
+            width: 100%;
+            max-width: 750px;
+            margin-top: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .nav-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: #ecf0f1;
+            color: #333;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .nav-btn.active { border: 3px solid #34495e; transform: scale(1.1); background: #34495e; color: white;}
+        .nav-btn.correct-nav { background: #28a745; color: white; border-color: #28a745; }
+        .nav-btn.wrong-nav { background: #dc3545; color: white; border-color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="anc.html" class="btn">⬅ Back (anc.html)</a>
+        <button class="btn" onclick="shuffleCurrentSet()">🔀 प्रश्न शफ़ल करें</button>
+    </div>
+
+    <div class="controls">
+        <button id="btn-set1" class="btn active-set" onclick="loadSet(1)">Set 1: 30 MCQs (कठिन विकल्प)</button>
+        <button id="btn-set2" class="btn" onclick="loadSet(2)">Set 2: 60 Statements (30 सत्य / 30 असत्य)</button>
+    </div>
+
+    <div class="quiz-container">
+        <div class="question-number" id="q-num">लोड हो रहा है...</div>
+        <div class="question-text" id="q-text"></div>
+        <div class="options" id="options-container"></div>
+        <div class="explanation" id="explanation"></div>
+        
+        <div class="quiz-nav-btns">
+            <button class="btn" id="prev-btn" onclick="prevQuestion()">⬅ पिछला (Prev)</button>
+            <button class="btn" id="next-btn" onclick="nextQuestion()">अगला (Next) ➡</button>
+        </div>
+    </div>
+
+    <div class="nav-palette" id="nav-palette">
+        </div>
+
+    <script>
+        // सभी 30 लोक नाट्यकलाओं का डेटा (अनुष्ठानिक, मनोरंजन, और दक्षिण भारतीय)
+        const theatreData = [
+            // 1. अनुष्ठानिक (Ritual Theatre)
+            { name: "अंकिया नाट (Ankiya Nat)", state: "असम", zone: "East", desc: "शंकरदेव द्वारा शुरू किया गया, भगवान कृष्ण के जीवन पर आधारित एक-अंकीय नाटक।" },
+            { name: "रामलीला (Ramlila)", state: "उत्तर प्रदेश", zone: "North", desc: "तुलसीदास के रामचरितमानस पर आधारित, रामायण का नाट्य रूपांतरण (यूनेस्को अमूर्त धरोहर)।" },
+            { name: "रासलीला (Raslila)", state: "उत्तर प्रदेश (ब्रज) / मणिपुर", zone: "North", desc: "भगवान कृष्ण की युवावस्था और गोपियों के साथ उनके आध्यात्मिक प्रेम की कथाएँ।" },
+            { name: "भूत अराधना (Bhoota Aradhana)", state: "कर्नाटक", zone: "South", desc: "तटीय कर्नाटक में स्थानीय आत्माओं/देवताओं की पूजा से जुड़ा अनुष्ठानिक नाटक।" },
+            { name: "रम्मन (Ramman)", state: "उत्तराखंड", zone: "North", desc: "गढ़वाल क्षेत्र में भूम्याल देवता को समर्पित धार्मिक उत्सव और अनुष्ठानिक रंगमंच (यूनेस्को धरोहर)।" },
+            
+            // 2. मनोरंजन (Entertainment Theatre)
+            { name: "भवई (Bhavai)", state: "गुजरात", zone: "West", desc: "सामाजिक विषयों पर व्यंग्य और हास्य का अनूठा रूप, जिसमें घड़े सिर पर रखकर भी प्रदर्शन होता है।" },
+            { name: "दसकठिया (Daskathia)", state: "ओडिशा", zone: "East", desc: "शिव पूजा से जुड़ा, जहाँ दो कलाकार 'काठी' (लकड़ी के टुकड़े) बजाकर कथा सुनाते हैं।" },
+            { name: "गरोडा (Garoda)", state: "गुजरात", zone: "West", desc: "ब्राह्मण समुदाय (गरोडा) द्वारा 'पैठकर' (चित्र कथा) दिखाकर की जाने वाली कला।" },
+            { name: "जात्रा (Jatra)", state: "पश्चिम बंगाल", zone: "East", desc: "श्री चैतन्य महाप्रभु द्वारा लोकप्रिय बनाया गया एक अत्यधिक संगीत-प्रधान नाट्य रूप।" },
+            { name: "करियइला (Kariyila)", state: "हिमाचल प्रदेश", zone: "North", desc: "खुली हवा में होने वाला हास्य और व्यंग्य नाटक, जो अक्सर मेलों में प्रदर्शित होता है।" },
+            { name: "माँच (Maach)", state: "मध्य प्रदेश", zone: "Central", desc: "मालवा क्षेत्र का प्रमुख लोक रंगमंच, जो पौराणिक और ऐतिहासिक कहानियों पर आधारित है।" },
+            { name: "नौटंकी (Nautanki)", state: "उत्तर प्रदेश", zone: "North", desc: "रोमांस, वीरता और ऐतिहासिक कथाओं का मंचन। इसकी कानपुर और हाथरस शैलियाँ प्रसिद्ध हैं।" },
+            { name: "ओजा-पाली (Oja-Pali)", state: "असम", zone: "NE", desc: "मनसा देवी से जुड़ी कथाओं का वर्णन, जहाँ 'ओजा' मुख्य गायक और 'पाली' कोरस होते हैं।" },
+            { name: "पंडवानी (Pandavani)", state: "छत्तीसगढ़", zone: "Central", desc: "महाभारत की कथाएँ (विशेषकर भीम से जुड़ी), तीजन बाई इसकी प्रसिद्ध कलाकार हैं।" },
+            { name: "पोवाडा (Powada)", state: "महाराष्ट्र", zone: "West", desc: "वीर रस प्रधान नाट्य शैली, जो छत्रपति शिवाजी और अन्य शूरवीरों की गाथा गाती है।" },
+            { name: "स्वांग (Swang)", state: "हरियाणा / राजस्थान", zone: "North", desc: "गीत-संगीत और संवाद का खुला मंचन, जिसमें महिला पात्रों की भूमिका भी पुरुष निभाते हैं।" },
+            { name: "तमाशा (Tamasha)", state: "महाराष्ट्र", zone: "West", desc: "महार समुदाय से विकसित, लावणी नृत्य के साथ जुड़ा हुआ एक तेज और जीवंत नाट्य रूप।" },
+            { name: "विल्लू पाटू (Villu Pattu)", state: "तमिलनाडु / केरल", zone: "South", desc: "इसे 'धनुष गीत' भी कहते हैं, इसमें धनुष (Bow) के आकार के वाद्ययंत्र का प्रयोग होता है।" },
+            { name: "भांड पाथेर (Bhand Pather)", state: "जम्मू और कश्मीर", zone: "North", desc: "कृषक समुदाय से जुड़ा व्यंग्य, हास्य और यथार्थवाद का अनूठा कश्मीरी नाट्य रूप।" },
+            { name: "भाओना (Bhaona)", state: "असम", zone: "NE", desc: "अंकिया नाट का ही प्रस्तुतीकरण रूप, जो मुख्य रूप से माजुली द्वीप के सत्रों (मठों) में होता है।" },
+            { name: "दशावतार (Dashavatar)", state: "महाराष्ट्र / गोवा", zone: "West", desc: "कोंकण क्षेत्र में भगवान विष्णु के दस अवतारों (मत्स्य से कल्कि तक) का नाटकीय प्रदर्शन।" },
+            { name: "भांड (Bhand)", state: "पंजाब / उत्तर प्रदेश", zone: "North", desc: "दो कलाकारों (भांड) द्वारा किए जाने वाले हास्य और नकल (Mimicry) के प्रदर्शन।" },
+
+            // 3. दक्षिण भारतीय (South Indian Theatre)
+            { name: "यक्षगान (Yakshagana)", state: "कर्नाटक", zone: "South", desc: "भारी वेशभूषा, विस्तृत श्रृंगार और तीव्र संगीत वाला पारंपरिक नृत्य-नाटक।" },
+            { name: "बुर्रा कथा (Burra Katha)", state: "आंध्र प्रदेश / तेलंगाना", zone: "South", desc: "तंबूरा (बुर्रा) बजाकर सुनाई जाने वाली कथा, जिसमें एक मुख्य कलाकार और दो सहायक होते हैं।" },
+            { name: "पगती वेषालु (Pagati Veshalu)", state: "तेलंगाना / आंध्र प्रदेश", zone: "South", desc: "यह दिन के समय (पगती) किया जाने वाला बहुरूपिया (Role-play) नाटक है।" },
+            { name: "बायलता (Bayalata)", state: "कर्नाटक", zone: "South", desc: "धार्मिक त्योहारों के अंत में खुले मैदान (बायल) में होने वाला नाट्य रूप।" },
+            { name: "ताल-मद्दाले (Tala-Maddale)", state: "कर्नाटक / केरल", zone: "South", desc: "यह यक्षगान का एक रूप है, लेकिन इसमें केवल संवाद होता है (नृत्य या वेशभूषा नहीं)।" },
+            { name: "थेय्यम (Theyyam)", state: "केरल", zone: "South", desc: "मालाबार क्षेत्र में देवी-देवताओं और नायकों को समर्पित एक भव्य अनुष्ठानिक और तांत्रिक कला।" },
+            { name: "कृष्ण अट्टम (Krishnattam)", state: "केरल", zone: "South", desc: "आठ दिनों के चक्र में भगवान कृष्ण का जन्म से लेकर स्वर्गारोहण तक का जीवन दर्शाने वाला नाटक।" },
+            { name: "कुरूवंजी (Kuravanji)", state: "तमिलनाडु", zone: "South", desc: "कुरवा जनजाति की महिलाओं द्वारा किया जाने वाला प्रेम-कथाओं से जुड़ा गीत-नृत्य नाट्य।" }
+        ];
+
+        const stateZones = {
+            "North": ["पंजाब", "हरियाणा", "हिमाचल प्रदेश", "उत्तराखंड", "उत्तर प्रदेश", "जम्मू और कश्मीर", "बिहार", "राजस्थान"],
+            "South": ["तमिलनाडु", "केरल", "कर्नाटक", "आंध्र प्रदेश", "तेलंगाना", "पुडुचेरी"],
+            "East": ["पश्चिम बंगाल", "ओडिशा", "झारखंड", "बिहार", "असम"],
+            "West": ["गुजरात", "राजस्थान", "महाराष्ट्र", "गोवा"],
+            "Central": ["मध्य प्रदेश", "छत्तीसगढ़", "उत्तर प्रदेश"],
+            "NE": ["असम", "अरुणाचल प्रदेश", "मेघालय", "मणिपुर", "मिजोरम", "त्रिपुरा", "नागालैंड", "सिक्किम"]
+        };
+
+        let currentSetQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = []; 
+        let activeSet = 1;
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function buildSet1() {
+            let set = [];
+            theatreData.forEach(theatre => {
+                let correctOpt = theatre.state;
+                // Get distractors from the same zone to make it tough
+                let distractors = stateZones[theatre.zone].filter(s => !theatre.state.includes(s));
+                
+                // If not enough in same zone, borrow from neighboring zones
+                if (distractors.length < 3) {
+                    let backupZones = [];
+                    if(theatre.zone === 'South') backupZones = ['West', 'East'];
+                    else if(theatre.zone === 'North') backupZones = ['Central', 'West'];
+                    else backupZones = ['Central', 'North', 'South'];
+                    
+                    backupZones.forEach(z => {
+                        distractors = [...distractors, ...stateZones[z].filter(s => !theatre.state.includes(s))];
+                    });
+                }
+                
+                distractors = shuffleArray([...new Set(distractors)]).slice(0, 3);
+                
+                let options = [{ text: correctOpt, isCorrect: true }];
+                distractors.forEach(d => options.push({ text: d, isCorrect: false }));
+                options = shuffleArray(options);
+
+                set.push({
+                    question: `लोक नाट्यकला "${theatre.name}" का संबंध मुख्य रूप से किस राज्य/क्षेत्र से है?\n(संकेत: ${theatre.desc})`,
+                    options: options.map(o => o.text),
+                    answer: options.findIndex(o => o.isCorrect),
+                    explanation: `सही उत्तर: ${theatre.state}।\n${theatre.name} - ${theatre.desc}`
+                });
+            });
+            return shuffleArray(set);
+        }
+
+        function buildSet2() {
+            let set = [];
+            // 30 सत्य कथन
+            theatreData.forEach(theatre => {
+                set.push({
+                    question: `कथन पर विचार करें:\n"${theatre.name} लोक नाट्यकला का संबंध मुख्य रूप से ${theatre.state} से है।"\nक्या यह कथन सत्य है या असत्य?`,
+                    options: ["सत्य (True)", "असत्य (False)"],
+                    answer: 0,
+                    explanation: `यह कथन सत्य है। ${theatre.name} मुख्य रूप से ${theatre.state} का ही प्रसिद्ध नाट्य रूप है। (${theatre.desc})`
+                });
+            });
+
+            // 30 असत्य कथन (राज्य बदल कर)
+            theatreData.forEach(theatre => {
+                // Pick a random zone different from actual zone
+                let wrongZoneKeys = Object.keys(stateZones).filter(k => k !== theatre.zone);
+                let randomZone = wrongZoneKeys[Math.floor(Math.random() * wrongZoneKeys.length)];
+                let wrongState = stateZones[randomZone][Math.floor(Math.random() * stateZones[randomZone].length)];
+                
+                set.push({
+                    question: `कथन पर विचार करें:\n"${theatre.name} लोक नाट्यकला का संबंध मुख्य रूप से ${wrongState} से है।"\nक्या यह कथन सत्य है या असत्य?`,
+                    options: ["सत्य (True)", "असत्य (False)"],
+                    answer: 1,
+                    explanation: `यह कथन असत्य है। "${theatre.name}" वास्तव में ${wrongState} का नहीं, बल्कि "${theatre.state}" का नाट्य रूप है।`
+                });
+            });
+            return shuffleArray(set);
+        }
+
+        function loadSet(setNumber) {
+            activeSet = setNumber;
+            document.getElementById('btn-set1').classList.remove('active-set');
+            document.getElementById('btn-set2').classList.remove('active-set');
+            document.getElementById(`btn-set${setNumber}`).classList.add('active-set');
+
+            currentSetQuestions = (setNumber === 1) ? buildSet1() : buildSet2();
+            userAnswers = new Array(currentSetQuestions.length).fill(undefined);
+            currentQuestionIndex = 0;
+            renderNavPalette();
+            displayQuestion(0);
+        }
+
+        function shuffleCurrentSet() {
+            loadSet(activeSet);
+        }
+
+        function displayQuestion(index) {
+            currentQuestionIndex = index;
+            const q = currentSetQuestions[index];
+            
+            document.getElementById('q-num').innerText = `प्रश्न ${index + 1} / ${currentSetQuestions.length}  (Set ${activeSet})`;
+            document.getElementById('q-text').innerText = q.question;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const explanationBox = document.getElementById('explanation');
+            explanationBox.style.display = 'none';
+            explanationBox.innerText = q.explanation;
+
+            q.options.forEach((optText, optIndex) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'option';
+                optDiv.innerText = optText;
+                
+                if (userAnswers[index] !== undefined) {
+                    optDiv.classList.add('disabled');
+                    if (optIndex === q.answer) optDiv.classList.add('correct');
+                    if (userAnswers[index] === false && optDiv.dataset.clicked === 'true') {
+                        optDiv.classList.add('wrong');
+                    }
+                } else {
+                    optDiv.onclick = () => selectOption(optIndex, optDiv);
+                }
+                optionsContainer.appendChild(optDiv);
+            });
+
+            if (userAnswers[index] !== undefined) {
+                explanationBox.style.display = 'block';
+            }
+
+            document.getElementById('prev-btn').disabled = (index === 0);
+            document.getElementById('next-btn').disabled = (index === currentSetQuestions.length - 1);
+
+            updateNavPaletteActiveState();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentSetQuestions.length - 1) {
+                displayQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                displayQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function selectOption(selectedIndex, clickedDiv) {
+            const isCorrect = selectedIndex === currentSetQuestions[currentQuestionIndex].answer;
+            userAnswers[currentQuestionIndex] = isCorrect;
+            clickedDiv.dataset.clicked = 'true';
+            
+            const options = document.querySelectorAll('.option');
+            options.forEach((opt, idx) => {
+                opt.classList.add('disabled');
+                if (idx === currentSetQuestions[currentQuestionIndex].answer) opt.classList.add('correct');
+            });
+
+            if (!isCorrect) clickedDiv.classList.add('wrong');
+
+            document.getElementById('explanation').style.display = 'block';
+            renderNavPalette();
+        }
+
+        function renderNavPalette() {
+            const nav = document.getElementById('nav-palette');
+            nav.innerHTML = '';
+            
+            for (let i = 0; i < currentSetQuestions.length; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'nav-btn';
+                btn.innerText = i + 1;
+                
+                if (userAnswers[i] === true) btn.classList.add('correct-nav');
+                if (userAnswers[i] === false) btn.classList.add('wrong-nav');
+                if (i === currentQuestionIndex) btn.classList.add('active');
+                
+                btn.onclick = () => displayQuestion(i);
+                nav.appendChild(btn);
+            }
+        }
+
+        function updateNavPaletteActiveState() {
+            const btns = document.querySelectorAll('.nav-btn');
+            btns.forEach((btn, idx) => {
+                if (idx === currentQuestionIndex) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        window.onload = () => loadSet(1);
+    </script>
+</body>
+</html>
