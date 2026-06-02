@@ -45,6 +45,7 @@
             font-size: 14px;
         }
         .btn:hover { background-color: #1a252f; }
+        .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
         .btn.active-set { background-color: #e74c3c; box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
         
         .quiz-container {
@@ -55,6 +56,8 @@
             padding: 25px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             min-height: 350px;
+            display: flex;
+            flex-direction: column;
         }
         .question-number {
             font-size: 15px;
@@ -73,6 +76,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            flex-grow: 1;
         }
         .option {
             background: #f8f9fa;
@@ -99,6 +103,14 @@
             font-size: 15px;
             line-height: 1.6;
         }
+
+        .quiz-nav-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
         
         .nav-palette {
             width: 100%;
@@ -108,7 +120,7 @@
             flex-wrap: wrap;
             gap: 8px;
             justify-content: center;
-            max-height: 250px;
+            max-height: 200px;
             overflow-y: auto;
             padding: 10px;
             background: white;
@@ -135,7 +147,7 @@
 <body>
 
     <div class="header">
-        <a href="anc.html" class="btn">⬅ Back (anc.html)</a>
+        <a href="anc.html" class="btn">⬅ Back</a>
         <button class="btn" onclick="shuffleCurrentSet()">🔀 प्रश्न शफ़ल करें</button>
     </div>
 
@@ -149,65 +161,68 @@
         <div class="question-text" id="q-text"></div>
         <div class="options" id="options-container"></div>
         <div class="explanation" id="explanation"></div>
+        
+        <div class="quiz-nav-btns">
+            <button class="btn" id="prev-btn" onclick="prevQuestion()">⬅ पिछला (Prev)</button>
+            <button class="btn" id="next-btn" onclick="nextQuestion()">अगला (Next) ➡</button>
+        </div>
     </div>
 
     <div class="nav-palette" id="nav-palette">
         </div>
 
     <script>
-        // सभी 48 नृत्यों का डेटाबेस (कठिन विकल्पों के लिए 'Zone' के साथ)
-        const dancesData = [
+        const dData = [
             { name: "छाऊ (Chau)", state: "झारखंड, ओडिशा, पश्चिम बंगाल", zone: "East", desc: "यह एक अर्ध-शास्त्रीय युद्ध कला नृत्य है।" },
             { name: "गरबा (Garba)", state: "गुजरात", zone: "West", desc: "यह नवरात्रि में देवी दुर्गा की आराधना में किया जाता है।" },
             { name: "डांडिया रास (Dandiya Raas)", state: "गुजरात", zone: "West", desc: "यह देवी दुर्गा और महिषासुर के बीच युद्ध का प्रतीकात्मक रूप है।" },
             { name: "तरंगमेल (Tarangmel)", state: "गोवा", zone: "West", desc: "युवाओं द्वारा दशहरा और होली के दौरान किया जाने वाला नृत्य।" },
-            { name: "घूमरा (Ghumura)", state: "ओडिशा", zone: "East", desc: "प्राचीन काल में यह युद्ध नृत्य था, अब यह सामाजिक आयोजनों में होता है।" },
+            { name: "घूमरा (Ghumura)", state: "ओडिशा", zone: "East", desc: "प्राचीन काल में यह युद्ध नृत्य था।" },
             { name: "गणगौर (Gengor)", state: "राजस्थान", zone: "West", desc: "शिव और पार्वती के मिलन का जश्न मनाने वाला नृत्य।" },
-            { name: "कालबेलिया (Kalbelia)", state: "राजस्थान", zone: "West", desc: "सपेरा जनजाति का नृत्य, जिसे यूनेस्को की सूची में शामिल किया गया है।" },
-            { name: "चरबा (Charba)", state: "हिमाचल प्रदेश", zone: "North", desc: "यह दशहरा उत्सव के दौरान किया जाने वाला लोकप्रिय नृत्य है।" },
+            { name: "कालबेलिया (Kalbelia)", state: "राजस्थान", zone: "West", desc: "सपेरा जनजाति का नृत्य, यूनेस्को की अमूर्त धरोहर।" },
+            { name: "चरबा (Charba)", state: "हिमाचल प्रदेश", zone: "North", desc: "यह दशहरा उत्सव के दौरान किया जाने वाला नृत्य है।" },
             { name: "भांगड़ा (Bhangra)", state: "पंजाब", zone: "North", desc: "बैसाखी के अवसर पर पुरुषों द्वारा किया जाने वाला ऊर्जावान नृत्य।" },
             { name: "गिद्दा (Giddha)", state: "पंजाब", zone: "North", desc: "पंजाबी महिलाओं द्वारा घेरे में किया जाने वाला जीवंत नृत्य।" },
-            { name: "दादरा (Dadra)", state: "उत्तर प्रदेश", zone: "North", desc: "अर्ध-शास्त्रीय रूप, जो मुख्य रूप से तवायफों और दरबारों से जुड़ा था।" },
-            { name: "जवारा (Jawara)", state: "मध्य प्रदेश", zone: "Central", desc: "बुंदेलखंड क्षेत्र का फसल कटाई नृत्य, जिसमें महिलाएं सिर पर जवारा रखती हैं।" },
-            { name: "मटकी (Matki)", state: "मध्य प्रदेश", zone: "Central", desc: "मालवा क्षेत्र की महिलाओं द्वारा सिर पर मिट्टी के बर्तन रखकर किया जाता है।" },
-            { name: "गोरमारिया (Gormaria)", state: "छत्तीसगढ़", zone: "Central", desc: "बस्तर की माड़िया जनजाति द्वारा भैंसे (गौर) के सींग पहनकर किया जाता है।" },
-            { name: "अलकाप (Alkapp)", state: "झारखंड, पश्चिम बंगाल", zone: "East", desc: "यह ग्रामीण नाटक और नृत्य का एक रूप है जो शिव से जुड़ा है।" },
-            { name: "बिरहा (Birha)", state: "बिहार, उत्तर प्रदेश", zone: "North", desc: "यह दर्द और जुदाई को व्यक्त करने वाला अहीर समुदाय का लोक रूप है।" },
-            { name: "पाइका (Paika)", state: "झारखंड, ओडिशा", zone: "East", desc: "मुंडा जनजाति का मार्शल आर्ट (युद्ध) नृत्य।" },
-            { name: "बागुरुम्बा (Bagurumba)", state: "असम", zone: "NE", desc: "बोडो जनजाति का रंगीन और पारंपरिक 'तितली नृत्य'।" },
-            { name: "जाट-जतिन (Jari Jatin)", state: "बिहार", zone: "North", desc: "मिथिला क्षेत्र में विवाहित जोड़ों के बीच कोमल प्रेम और विवाद को दर्शाता है।" },
-            { name: "झूमर (Jhumar - North)", state: "हरियाणा, पंजाब, राजस्थान", zone: "North", desc: "यह पुरुषों द्वारा फसल कटाई और खुशी के मौकों पर किया जाता है।" },
-            { name: "झुमुर (Jhumur - East)", state: "असम, पश्चिम बंगाल, झारखंड", zone: "East", desc: "चाय बागान के संथाल और मुंडा जनजातियों द्वारा किया जाने वाला नृत्य।" },
-            { name: "दंड जात्रा (Danda Jatra)", state: "ओडिशा", zone: "East", desc: "भगवान शिव और देवी काली की पूजा के लिए किया जाने वाला एक प्राचीन धार्मिक अनुष्ठान।" },
-            { name: "बिहू (Bihu)", state: "असम", zone: "NE", desc: "फसल के मौसम का जश्न मनाने वाला तेज और ऊर्जावान नृत्य।" },
+            { name: "दादरा (Dadra)", state: "उत्तर प्रदेश", zone: "North", desc: "अर्ध-शास्त्रीय नृत्य और गायन रूप।" },
+            { name: "जवारा (Jawara)", state: "मध्य प्रदेश", zone: "Central", desc: "बुंदेलखंड क्षेत्र का फसल कटाई नृत्य।" },
+            { name: "मटकी (Matki)", state: "मध्य resonance प्रदेश", zone: "Central", desc: "मालवा क्षेत्र की महिलाओं द्वारा सिर पर घड़ा रखकर किया जाता है।" },
+            { name: "गोरमारिया (Gormaria)", state: "छत्तीसगढ़", zone: "Central", desc: "बस्तर की माड़िया जनजाति द्वारा भैंसे के सींग पहनकर किया जाता है।" },
+            { name: "अलकाप (Alkapp)", state: "झारखंड, पश्चिम बंगाल", zone: "East", desc: "यह ग्रामीण नाटक और नृत्य का मिलाजुला रूप है।" },
+            { name: "बिरहा (Birha)", state: "बिहार, उत्तर प्रदेश", zone: "North", desc: "यह विरह रस की प्रधानता वाला लोक गायन-नृत्य रूप है।" },
+            { name: "पाइका (Paika)", state: "झारखंड, ओडिशा", zone: "East", desc: "मुंडा/सादान समुदाय का मार्शल आर्ट (युद्ध) नृत्य।" },
+            { name: "बागुरुम्बा (Bagurumba)", state: "असम", zone: "NE", desc: "बोडो जनजाति का रंगीन 'तितली नृत्य'।" },
+            { name: "जाट-जतिन (Jari Jatin)", state: "बिहार", zone: "North", desc: "मिथिला क्षेत्र में विवाहित जीवन के खट्टे-मीठे प्रसंगों को दर्शाता है।" },
+            { name: "झूमर (Jhumar - North)", state: "हरियाणा, पंजाब, राजस्थान", zone: "North", desc: "यह फसल कटाई के मौकों पर किया जाता है।" },
+            { name: "झुमुर (Jhumur - East)", state: "असम, पश्चिम बंगाल, झारखंड", zone: "East", desc: "चाय बागान के श्रमिकों द्वारा किया जाने वाला नृत्य।" },
+            { name: "दंड जात्रा (Danda Jatra)", state: "ओडिशा", zone: "East", desc: "भगवान शिव की पूजा के लिए किया जाने वाला धार्मिक अनुष्ठान।" },
+            { name: "बिहू (Bihu)", state: "असम", zone: "NE", desc: "फसल और नए साल का जश्न मनाने वाला तेज गति का नृत्य।" },
             { name: "थांग ता (Thang Ta)", state: "मणिपुर", zone: "NE", desc: "तलवार और भाले के साथ किया जाने वाला प्राचीन मार्शल आर्ट नृत्य।" },
-            { name: "रंगमा (Rangma)", state: "नागालैंड", zone: "NE", desc: "नागाओं (विशेषकर रेंगमा जनजाति) का एक पारंपरिक युद्ध नृत्य।" },
-            { name: "सिंघी छम (Singhi Chham)", state: "सिक्किम", zone: "NE", desc: "स्नो लायन (बर्फीले शेर) की वेशभूषा में किया जाने वाला शुभ नृत्य।" },
-            { name: "कुम्मी (Kummi)", state: "तमिलनाडु, केरल", zone: "South", desc: "संगीत वाद्ययंत्र के बिना तालियां बजाकर महिलाओं द्वारा किया जाता है।" },
-            { name: "मयिल अट्टम (Mayil Attam)", state: "तमिलनाडु, केरल", zone: "South", desc: "भगवान मुरुगन के सम्मान में मोर की वेशभूषा पहनकर किया जाने वाला नृत्य।" },
-            { name: "बुट्टा बोम्मालु (Butta Bommalu)", state: "आंध्र प्रदेश", zone: "South", desc: "नर्तक खोखले मुखौटे पहनते हैं जो सिर और कंधों पर टिके होते हैं।" },
-            { name: "कैकोट्टिकली (Kaikottikali)", state: "केरल", zone: "South", desc: "ओणम के दौरान महिलाओं द्वारा सममित घेरे में किया जाने वाला नृत्य।" },
-            { name: "पदयानी (Padayani)", state: " केरल", zone: "South", desc: "भव्य मुखौटों (कोलम) के साथ देवी भद्रकाली के मंदिरों में किया जाने वाला अनुष्ठानिक नृत्य।" },
-            { name: "कोलकली (Kolkali)", state: "केरल, लक्षद्वीप", zone: "South", desc: "हाथ में छोटी छड़ियाँ लेकर घेरे में किया जाने वाला लयबद्ध नृत्य।" },
-            { name: "परिचाकली (Parichakali)", state: "लक्षद्वीप, केरल", zone: "South", desc: "तलवार और ढाल के साथ किया जाने वाला एक मार्शल आर्ट लोक नृत्य।" },
-            { name: "पुलिकली (Pulikali)", state: "केरल", zone: "South", desc: "ओणम के दौरान बाघ और तेंदुए के रूप में शरीर को रंग कर किया जाने वाला नृत्य।" },
-            { name: "पटा कुनिथा (Pata Kunitha)", state: "कर्नाटक", zone: "South", desc: "लंबे बांस के खंभों (पटा) का उपयोग करके किया जाने वाला धार्मिक नृत्य।" },
-            { name: "चकियार कुथु (Chakyar Koothu)", state: "केरल", zone: "South", desc: "यह एक प्रकार का एकल अभिनय और नृत्य है, जो हिंदू महाकाव्यों पर आधारित है।" },
-            { name: "झूमर (Tribal Jhumar)", state: "झारखंड, ओडिशा", zone: "East", desc: "छोटानागपुर पठार की जनजातियों का पारंपरिक नृत्य।" },
-            { name: "करमा नाच (Karma Naach)", state: "छत्तीसगढ़, मध्य प्रदेश, झारखंड", zone: "Central", desc: "करम देव की पूजा और कर्म के महत्व को दर्शाने वाला आदिवासी नृत्य।" },
-            { name: "राउत नाच (Raut Nacha)", state: "छत्तीसगढ़", zone: "Central", desc: "यादव समुदाय द्वारा दिवाली के बाद किया जाने वाला पारंपरिक नृत्य।" },
-            { name: "दुमहल (Dumhal)", state: "जम्मू और कश्मीर", zone: "North", desc: "वाट्टल जनजाति के पुरुषों द्वारा लंबी शंक्वाकार टोपियां पहनकर किया जाता है।" },
-            { name: "फुगड़ी (Fugdi)", state: "गोवा", zone: "West", desc: "कोंकणी महिलाओं द्वारा गणेश चतुर्थी के दौरान किया जाने वाला तेज नृत्य।" },
-            { name: "चेराव (Cheraw)", state: "मिजोरम", zone: "NE", desc: "इसे 'बांस नृत्य' भी कहा जाता है, जिसमें लयबद्ध तरीके से बांस की छड़ियों का उपयोग होता है।" },
-            { name: "डलखाई (Dalkhai)", state: "ओडिशा", zone: "East", desc: "संबलपुर क्षेत्र का आदिवासी नृत्य, जो मुख्य रूप से महिलाओं द्वारा किया जाता है।" },
-            { name: "हुली वेसा (Huli Vesha)", state: "कर्नाटक", zone: "South", desc: "तटीय क्षेत्र में नवरात्रि के दौरान बाघ की वेशभूषा में किया जाने वाला नृत्य।" },
-            { name: "टिप्पणी (Tippani)", state: "गुजरात", zone: "West", desc: "चोरवाड़ क्षेत्र की महिलाओं द्वारा लकड़ी की छड़ियों (टिप्पणी) से फर्श पीटते हुए किया जाता है।" },
-            { name: "गारदी (Garadi)", state: "पुडुचेरी", zone: "South", desc: "रामायण के वानर सेना के जश्न का प्रतीक, पैरों में भारी लोहे के छल्ले पहनकर किया जाता है।" },
-            { name: "तेरह ताली (Tera Taali)", state: "राजस्थान", zone: "West", desc: "कामर जनजाति की महिलाओं द्वारा शरीर पर 13 मंजीरे बांधकर किया जाता है।" },
-            { name: "होजागिरी (Hojagiri)", state: "त्रिपुरा", zone: "NE", desc: "रियांग जनजाति की महिलाओं द्वारा मिट्टी के घड़े पर खड़े होकर संतुलन का अद्भुत प्रदर्शन।" }
+            { name: "रंगमा (Rangma)", state: "नागालैंड", zone: "NE", desc: "रेंगमा नागा जनजाति का एक पारंपरिक युद्ध नृत्य।" },
+            { name: "सिंघी छम (Singhi Chham)", state: "सिक्किम", zone: "NE", desc: "बर्फीले शेर की वेशभूषा में किया जाने वाला नृत्य।" },
+            { name: "कुम्मी (Kummi)", state: "तमिलनाडु, केरल", zone: "South", desc: "बिना वाद्ययंत्र के केवल तालियों की थाप पर होता है।" },
+            { name: "मयिल अट्टम (Mayil Attam)", state: "तमिलनाडु, केरल", zone: "South", desc: "मोर की वेशभूषा पहनकर किया जाने वाला नृत्य।" },
+            { name: "बुट्टा बोम्मालु (Butta Bommalu)", state: "आंध्र प्रदेश", zone: "South", desc: "नर्तक बांस के बने खोखले खिलौने/मुखौटे पहनते हैं।" },
+            { name: "कैकोट्टिकली (Kaikottikali)", state: "केरल", zone: "South", desc: "ओणम के दौरान महिलाओं द्वारा सममित घेरे में किया जाता है।" },
+            { name: "पदयानी (Padayani)", state: "केरल", zone: "South", desc: "भव्य कोलम मुखौटों के साथ देवी भद्रकाली के मंदिरों में होता है।" },
+            { name: "कोलकली (Kolkali)", state: "केरल, लक्षद्वीप", zone: "South", desc: "हाथ में छोटी रंगीन छड़ियाँ लेकर किया जाने वाला नृत्य।" },
+            { name: "परिचाकली (Parichakali)", state: "लक्षद्वीप, केरल", zone: "South", desc: "तलवार (परिचा) और ढाल के साथ किया जाने वाला युद्ध नृत्य।" },
+            { name: "पुलिकली (Pulikali)", state: "केरल", zone: "South", desc: "ओणम पर बाघ और शिकारी का स्वांग रचाकर किया जाने वाला कला रूप।" },
+            { name: "पटा कुनिथा (Pata Kunitha)", state: "कर्नाटक", zone: "South", desc: "लंबे सजे हुए बांस के खंभों का उपयोग करके किया जाने वाला नृत्य।" },
+            { name: "चकियार कुथु (Chakyar Koothu)", state: "केरल", zone: "South", desc: "यह मंदिरों में किया जाने वाला एक अत्यधिक परिष्कृत हास्य-अभिनय रूप है।" },
+            { name: "झूमर (Tribal Jhumar)", state: "झारखंड, ओडिशा", zone: "East", desc: "छोटानागपुर पठार की जनजातियों का नृत्य।" },
+            { name: "करमा नाच (Karma Naach)", state: "छत्तीसगढ़, मध्य प्रदेश, झारखंड", zone: "Central", desc: "करम राजा/देवता की पूजा के लिए आदिवासी समुदाय का नृत्य।" },
+            { name: "राуत नाच (Raut Nacha)", state: "छत्तीसगढ़", zone: "Central", desc: "यादव (राउत) समुदाय द्वारा यदुवंशियों के शौर्य के रूप में किया जाता है।" },
+            { name: "दुमहल (Dumhal)", state: "जम्मू और कश्मीर", zone: "North", desc: "शाह सुक्का कतार की याद में वाट्टल जनजाति के पुरुषों द्वारा किया जाता है।" },
+            { name: "फुगड़ी (Fugdi)", state: "गोवा", zone: "West", desc: "कोंकणी महिलाओं द्वारा व्रत और त्योहारों पर किया जाने वाला तीव्र नृत्य।" },
+            { name: "चेराव (Cheraw)", state: "मिजोरम", zone: "NE", desc: "इसे 'बांस नृत्य' (Bamboo Dance) भी कहा जाता है।" },
+            { name: "डलखाई (Dalkhai)", state: "ओडिशा", zone: "East", desc: "संबलपुर क्षेत्र का अत्यंत लोकप्रिय लोक नृत्य।" },
+            { name: "हुली वेसा (Huli Vesha)", state: "कर्नाटक", zone: "South", desc: "तटीय कर्नाटक में नवरात्रि पर 'बाघ' बनकर किया जाने वाला नृत्य।" },
+            { name: "टिप्पणी (Tippani)", state: "गुजरात", zone: "West", desc: "मजदूर महिलाओं द्वारा फर्श कूटने वाली छड़ियों के साथ किया जाता है।" },
+            { name: "गारदी (Garadi)", state: "पुडुचेरी", zone: "South", desc: "रामायण की वानर सेना की जीत के जश्न का प्रदर्शन करने वाला नृत्य।" },
+            { name: "तेरह ताली (Tera Taali)", state: "राजस्थान", zone: "West", desc: "कामर जाति द्वारा बाबा रामदेव जी की आराधना में किया जाता है।" },
+            { name: "होजागिरी (Hojagiri)", state: "त्रिपुरा", zone: "NE", desc: "रियांग जनजाति की लड़कियों द्वारा मटके और दीयों को संतुलित करने वाला नृत्य।" }
         ];
 
-        // राज्यों की जोन के अनुसार सूची (कठिन विकल्प बनाने के लिए)
         const stateZones = {
             "North": ["पंजाब", "हरियाणा", "हिमाचल प्रदेश", "उत्तराखंड", "उत्तर प्रदेश", "जम्मू और कश्मीर", "बिहार"],
             "South": ["तमिलनाडु", "केरल", "कर्नाटक", "आंध्र प्रदेश", "तेलंगाना", "पुडुचेरी", "लक्षद्वीप"],
@@ -222,7 +237,6 @@
         let userAnswers = []; 
         let activeSet = 1;
 
-        // शफ़ल फ़ंक्शन
         function shuffleArray(array) {
             let arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -232,23 +246,18 @@
             return arr;
         }
 
-        // Set 1 जनरेटर (48 MCQs - कठिन विकल्प)
         function buildSet1() {
             let set = [];
-            dancesData.forEach(dance => {
-                // सही राज्य
+            dData.forEach(dance => {
                 let correctOpt = dance.state;
-                // गलत राज्य ढूँढना (उसी ज़ोन के ताकि कठिन लगे)
                 let distractors = stateZones[dance.zone].filter(s => !dance.state.includes(s));
-                // अगर उसी ज़ोन में कम बचे, तो दूसरे ज़ोन से लें
                 if (distractors.length < 3) {
-                    distractors = [...distractors, ...stateZones["Central"], ...stateZones["South"], ...stateZones["North"]].filter(s => !dance.state.includes(s));
+                    distractors = [...distractors, ...stateZones["Central"], ...stateZones["South"]].filter(s => !dance.state.includes(s));
                 }
                 distractors = shuffleArray([...new Set(distractors)]).slice(0, 3);
                 
                 let options = [{ text: correctOpt, isCorrect: true }];
                 distractors.forEach(d => options.push({ text: d, isCorrect: false }));
-                
                 options = shuffleArray(options);
 
                 set.push({
@@ -261,22 +270,20 @@
             return shuffleArray(set);
         }
 
-        // Set 2 जनरेटर (96 Statement MCQs: 48 सत्य, 48 असत्य)
         function buildSet2() {
             let set = [];
-            // 48 सत्य कथन
-            dancesData.forEach(dance => {
+            // 48 सत्य
+            dData.forEach(dance => {
                 set.push({
                     question: `कथन पर विचार करें:\n"${dance.name} नृत्य का संबंध मुख्य रूप से ${dance.state} से है।"\nक्या यह कथन सत्य है या असत्य?`,
                     options: ["सत्य (True)", "असत्य (False)"],
-                    answer: 0, // सत्य
-                    explanation: `यह कथन सत्य है। ${dance.name} मुख्य रूप से ${dance.state} में ही किया जाता है। (${dance.desc})`
+                    answer: 0,
+                    explanation: `यह कथन सत्य है। ${dance.name} मुख्य रूप से ${dance.state} में ही किया जाता है।`
                 });
             });
 
-            // 48 असत्य कथन (राज्य बदल कर)
-            dancesData.forEach(dance => {
-                // कोई भी ऐसा राज्य लें जो सही नहीं है
+            // 48 असत्य
+            dData.forEach(dance => {
                 let wrongZoneKeys = Object.keys(stateZones).filter(k => k !== dance.zone);
                 let randomZone = wrongZoneKeys[Math.floor(Math.random() * wrongZoneKeys.length)];
                 let wrongState = stateZones[randomZone][Math.floor(Math.random() * stateZones[randomZone].length)];
@@ -284,28 +291,20 @@
                 set.push({
                     question: `कथन पर विचार करें:\n"${dance.name} नृत्य का संबंध मुख्य रूप से ${wrongState} से है।"\nक्या यह कथन सत्य है या असत्य?`,
                     options: ["सत्य (True)", "असत्य (False)"],
-                    answer: 1, // असत्य
-                    explanation: `यह कथन असत्य है। "${dance.name}" वास्तव में ${wrongState} का नहीं, बल्कि "${dance.state}" का पारंपरिक नृत्य है।`
+                    answer: 1,
+                    explanation: `यह कथन असत्य है। "${dance.name}" वास्तव में ${dance.state} का नृत्य है, न कि ${wrongState} का।`
                 });
             });
-
-            // सभी 96 कथनों को शफ़ल करें
             return shuffleArray(set);
         }
 
-        // सेट लोड करना
         function loadSet(setNumber) {
             activeSet = setNumber;
             document.getElementById('btn-set1').classList.remove('active-set');
             document.getElementById('btn-set2').classList.remove('active-set');
             document.getElementById(`btn-set${setNumber}`).classList.add('active-set');
 
-            if (setNumber === 1) {
-                currentSetQuestions = buildSet1();
-            } else {
-                currentSetQuestions = buildSet2();
-            }
-
+            currentSetQuestions = (setNumber === 1) ? buildSet1() : buildSet2();
             userAnswers = new Array(currentSetQuestions.length).fill(undefined);
             currentQuestionIndex = 0;
             renderNavPalette();
@@ -313,10 +312,9 @@
         }
 
         function shuffleCurrentSet() {
-            loadSet(activeSet); // Re-builds and shuffles the currently active set
+            loadSet(activeSet);
         }
 
-        // प्रश्न प्रदर्शित करना
         function displayQuestion(index) {
             currentQuestionIndex = index;
             const q = currentSetQuestions[index];
@@ -338,16 +336,10 @@
                 
                 if (userAnswers[index] !== undefined) {
                     optDiv.classList.add('disabled');
-                    if (optIndex === q.answer) {
-                        optDiv.classList.add('correct');
-                    }
-                    if (userAnswers[index] === false && optDiv.dataset.clicked === 'true') {
-                        optDiv.classList.add('wrong');
-                    }
+                    if (optIndex === q.answer) optDiv.classList.add('correct');
                 } else {
                     optDiv.onclick = () => selectOption(optIndex, optDiv);
                 }
-                
                 optionsContainer.appendChild(optDiv);
             });
 
@@ -355,25 +347,36 @@
                 explanationBox.style.display = 'block';
             }
 
+            // Next / Prev बटन की स्थिति नियंत्रित करना
+            document.getElementById('prev-btn').disabled = (index === 0);
+            document.getElementById('next-btn').disabled = (index === currentSetQuestions.length - 1);
+
             updateNavPaletteActiveState();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentSetQuestions.length - 1) {
+                displayQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                displayQuestion(currentQuestionIndex - 1);
+            }
         }
 
         function selectOption(selectedIndex, clickedDiv) {
             const isCorrect = selectedIndex === currentSetQuestions[currentQuestionIndex].answer;
             userAnswers[currentQuestionIndex] = isCorrect;
-            clickedDiv.dataset.clicked = 'true';
             
             const options = document.querySelectorAll('.option');
             options.forEach((opt, idx) => {
                 opt.classList.add('disabled');
-                if (idx === currentSetQuestions[currentQuestionIndex].answer) {
-                    opt.classList.add('correct');
-                }
+                if (idx === currentSetQuestions[currentQuestionIndex].answer) opt.classList.add('correct');
             });
 
-            if (!isCorrect) {
-                clickedDiv.classList.add('wrong');
-            }
+            if (!isCorrect) clickedDiv.classList.add('wrong');
 
             document.getElementById('explanation').style.display = 'block';
             renderNavPalette();
@@ -409,9 +412,7 @@
             });
         }
 
-        // Initialize with Set 1
         window.onload = () => loadSet(1);
-
     </script>
 </body>
 </html>
