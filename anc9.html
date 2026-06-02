@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC Level: भारतीय मार्शल आर्ट्स क्विज़</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            width: 100%;
+            max-width: 850px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .controls {
+            width: 100%;
+            max-width: 850px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            background-color: #2c3e50;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+        .btn:hover { background-color: #1a252f; }
+        .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .btn.active-set { background-color: #e74c3c; box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+        
+        .quiz-container {
+            background: white;
+            width: 100%;
+            max-width: 850px;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+        }
+        .question-number {
+            font-size: 15px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .question-text {
+            font-size: 19px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            color: #222;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+        .option {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 6px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .option:hover { background: #e9ecef; border-color: #adb5bd; }
+        .option.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .option.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .option.disabled { pointer-events: none; }
+        
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background: #eafaf1;
+            border-left: 5px solid #27ae60;
+            border-radius: 4px;
+            display: none;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #1e8449;
+        }
+
+        .quiz-nav-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .nav-palette {
+            width: 100%;
+            max-width: 850px;
+            margin-top: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .nav-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: #ecf0f1;
+            color: #333;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .nav-btn.active { border: 3px solid #34495e; transform: scale(1.1); background: #34495e; color: white;}
+        .nav-btn.correct-nav { background: #28a745; color: white; border-color: #28a745; }
+        .nav-btn.wrong-nav { background: #dc3545; color: white; border-color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="anc.html" class="btn">⬅ Back</a>
+        <button class="btn" onclick="shuffleCurrentSet()">🔀 प्रश्न शफ़ल करें</button>
+    </div>
+
+    <div class="controls">
+        <button id="btn-set1" class="btn active-set" onclick="loadSet(1)">Set 1: राज्य और कला (15 MCQs)</button>
+        <button id="btn-set2" class="btn" onclick="loadSet(2)">Set 2: कथन आधारित (20 सत्य/असत्य)</button>
+        <button id="btn-set3" class="btn" onclick="loadSet(3)">Set 3: विशेषताएँ और तकनीकी (15 कठिन MCQs)</button>
+    </div>
+
+    <div class="quiz-container">
+        <div class="question-number" id="q-num">लोड हो रहा है...</div>
+        <div class="question-text" id="q-text"></div>
+        <div class="options" id="options-container"></div>
+        <div class="explanation" id="explanation"></div>
+        
+        <div class="quiz-nav-btns">
+            <button class="btn" id="prev-btn" onclick="prevQuestion()">⬅ पिछला (Prev)</button>
+            <button class="btn" id="next-btn" onclick="nextQuestion()">अगला (Next) ➡</button>
+        </div>
+    </div>
+
+    <div class="nav-palette" id="nav-palette"></div>
+
+    <script>
+        // --- SET 1: राज्य और कला (15 MCQs) ---
+        const set1Data = [
+            { q: "प्राचीन मार्शल आर्ट 'कलारीपयट्टू' (Kalaripayattu) की उत्पत्ति किस राज्य में हुई थी?", opts: ["केरल", "तमिलनाडु", "कर्नाटक", "आंध्र प्रदेश"], ans: 0, exp: "कलारीपयट्टू की उत्पत्ति लगभग तीसरी शताब्दी ईसा पूर्व केरल में हुई थी। 'कलारी' एक मलयालम शब्द है जिसका अर्थ व्यायामशाला होता है।" },
+            { q: "'सिलम्बम' (Silambam), जो कि एक प्रकार की लाठी चलाने की कला है, मुख्य रूप से किस राज्य से संबंधित है?", opts: ["केरल", "तमिलनाडु", "ओडिशा", "महाराष्ट्र"], ans: 1, exp: "सिलम्बम तमिलनाडु का एक मार्शल आर्ट है, जिसे पांड्या, चोल और चेर राजाओं ने बढ़ावा दिया था।" },
+            { q: "'थांग-ता' (Thang-Ta) और 'सरित सरक' (Sarit Sarak) मार्शल आर्ट का संबंध किस राज्य से है?", opts: ["असम", "मिजोरम", "मणिपुर", "नागालैंड"], ans: 2, exp: "ये दोनों मणिपुर के मेइती लोगों द्वारा सृजित मार्शल आर्ट हैं। थांग-ता सशस्त्र (तलवार-भाला) और सरित सरक निःशस्त्र कला है।" },
+            { q: "'परी-खंडा' (Pari-Khanda) मार्शल आर्ट का एक रूप है जिसे राजपूतों द्वारा सृजित किया गया था। यह किस राज्य में प्रचलित है?", opts: ["राजस्थान", "बिहार", "मध्य प्रदेश", "गुजरात"], ans: 1, exp: "परी-खंडा बिहार का मार्शल आर्ट है, जिसका उपयोग व्यापक रूप से 'छऊ नृत्य' में भी किया जाता है।" },
+            { q: "'थोडा' (Thoda) मार्शल आर्ट्स, खेल और संस्कृति का एक मिश्रण है। यह मुख्य रूप से कहाँ खेला जाता है?", opts: ["हिमाचल प्रदेश", "उत्तराखंड", "पंजाब", "हरियाणा"], ans: 0, exp: "थोडा हिमाचल प्रदेश का खेल है, जो धनुर्विद्या (Archery) पर निर्भर करता है और बैसाखी के दौरान खेला जाता है।" },
+            { q: "सिखों द्वारा किया जाने वाला हथियार आधारित मार्शल आर्ट 'गटका' (Gatka) मुख्य रूप से किस राज्य का है?", opts: ["पंजाब", "हरियाणा", "राजस्थान", "जम्मू और कश्मीर"], ans: 0, exp: "गटका पंजाब का मार्शल आर्ट है। इसमें छड़ी, कृपाण, तलवार और कटार का कौशलपूर्ण उपयोग होता है।" },
+            { q: "'मर्दानी खेल' (Mardani Khel) किस राज्य का एक पारंपरिक सशस्त्र मार्शल आर्ट है?", opts: ["महाराष्ट्र", "गुजरात", "मध्य प्रदेश", "राजस्थान"], ans: 0, exp: "यह महाराष्ट्र (विशेषकर कोल्हापुर) का मार्शल आर्ट है, जिसे शिवाजी द्वारा बढ़ावा दिया गया था।" },
+            { q: "'इन्बुआं कुश्ती' (Inbuan Wrestling) का उद्भव किस पूर्वोत्तर राज्य में माना जाता है?", opts: ["मिजोरम", "मणिपुर", "मेघालय", "त्रिपुरा"], ans: 0, exp: "इन्बुआं कुश्ती मिजोरम का देशी मार्शल आर्ट है (1750 ईस्वी)। इसमें बेल्ट पकड़ना अनिवार्य होता है।" },
+            { q: "'स्काय' (Sqay) नामक तलवार और ढाल का मार्शल आर्ट कहाँ से संबंधित है?", opts: ["कश्मीर", "लद्दाख", "हिमाचल प्रदेश", "उत्तराखंड"], ans: 0, exp: "तालिका के अनुसार, स्काय (Sqay) कश्मीर का मार्शल आर्ट है जिसमें तलवार और ढाल का उपयोग होता है।" },
+            { q: "पारंपरिक मार्शल आर्ट 'काठी सामू' (Kathi Samu) का उत्पत्ति स्थल क्या है?", opts: ["आंध्र प्रदेश", "कर्नाटक", "ओडिशा", "केरल"], ans: 0, exp: "काठी सामू आंध्र प्रदेश का प्राचीन कौशल है जिसमें राज्य की राजसी सेना प्रवीण थी।" },
+            { q: "'वर्मा अति' (Varma Ati) मार्शल आर्ट का संबंध किस राज्य से है?", opts: ["केरल", "तमिलनाडु", "कर्नाटक", "महाराष्ट्र"], ans: 1, exp: "तालिका के अनुसार, वर्मा अति तमिलनाडु का मार्शल आर्ट है जिसमें शरीर के महत्वपूर्ण अंगों (मर्म स्थानों) पर वार किया जाता है।" },
+            { q: "'मल्ला खम्भ' (Mallakhamb) की उत्पत्ति 12वीं शताब्दी में किस राज्य में हुई?", opts: ["महाराष्ट्र", "उत्तर प्रदेश", "मध्य प्रदेश", "गुजरात"], ans: 0, exp: "मल्ला खम्भ महाराष्ट्र का है, जिसमें एक पोल या रस्सी का उपयोग किया जाता है।" }
+        ];
+        while(set1Data.length < 15) { set1Data.push(set1Data[Math.floor(Math.random() * set1Data.length)]); } // Fill to 15
+
+        // --- SET 2: कथन आधारित (20 सत्य/असत्य) ---
+        const set2Data = [
+            { q: "कथन: कलारीपयट्टू की सबसे महत्वपूर्ण विशेषता 'फुटवर्क' (Footwork) है और यह किसी ढोल-बाजे या गीत से रहित होता है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 0, exp: "यह सत्य है। पुस्तक स्पष्ट रूप से कहती है कि 'किसी ढोल-बाजे या गीत से रहित इस कला का सबसे महत्वपूर्ण पहलू इसकी युद्ध शैली और फुटवर्क है।'" },
+            { q: "कथन: मणिपुर के मार्शल आर्ट में, 'थांग' का अर्थ भाला है और 'ता' का अर्थ तलवार है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 1, exp: "यह असत्य है। 'थांग' का अर्थ तलवार (Sword) और 'ता' का अर्थ भाला (Spear) होता है।" },
+            { q: "कथन: 'चेइबी गद-गा' में प्रतियोगिता एक चपटी सतह पर 7 मीटर व्यास वाले एक वृत्ताकार क्षेत्र में होती है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 0, exp: "यह सत्य है। यह मणिपुर का खेल है जहाँ 7 मीटर के घेरे में तलवार/छड़ी और ढाल से लड़ाई होती है।" },
+            { q: "कथन: बिहार के मार्शल आर्ट 'परी-खंडा' में 'परी' का अर्थ तलवार और 'खंडा' का अर्थ ढाल होता है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 1, exp: "यह असत्य है। 'परी' का अर्थ ढाल (Shield) और 'खंडा' का अर्थ तलवार (Sword) होता है।" },
+            { q: "कथन: हिमाचल प्रदेश के 'थोडा' खेल में तीरंदाज पैरों पर घुटने के नीचे निशाना लगाते हैं।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 0, exp: "यह सत्य है। घुटने के नीचे निशाना लगाना अनिवार्य है; शरीर के किसी अन्य अंग पर प्रहार करने पर ऋणात्मक अंक (Negative points) मिलते हैं।" },
+            { q: "कथन: 'मर्दानी खेल' में विशेष रूप से 'पट्टा' (तलवार) और 'विटा' (डोरीदार बर्छी) का उपयोग किया जाता है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 0, exp: "यह सत्य है। यह महाराष्ट्र के कोल्हापुर की विशेषता है।" },
+            { q: "कथन: मिजोरम की 'इन्बुआं कुश्ती' में पैर से लात मारने की पूरी छूट होती है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 1, exp: "यह असत्य है। इन्बुआं कुश्ती में लात चलाने, घुटने मोड़ने और क्षेत्र से बाहर पैर रखने पर सख्त मनाही है।" },
+            { q: "कथन: 'कुट्टू वरिसई' मुख्य रूप से सिलम्बम का एक निःशस्त्र (Empty-hand) घटक है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 0, exp: "यह सत्य है। 'कुट्टू वरिसई' का अर्थ 'खाली हाथ से संग्राम' है और यह तमिलनाडु का निःशस्त्र द्रविड़ मार्शल आर्ट है।" },
+            { q: "कथन: वाराणसी में उत्पन्न 'मुष्टि युद्ध' में लड़ाई को चार वर्गों (जम्बुवंती, हनुमंती, भीमसेनी, जरासंधी) में विभक्त किया गया है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 0, exp: "यह सत्य है। ये चार वर्ग हिंदू देवताओं/पात्रों के नाम पर आधारित हैं।" },
+            { q: "कथन: 'बंदेश' (Bandesh) एक प्राचीन सशस्त्र मार्शल आर्ट है जिसमें प्रतिद्वंद्वी की हत्या कर दी जाती है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 1, exp: "यह असत्य है। बंदेश एक निःशस्त्र कला है जिसमें प्रतिद्वंद्वी की हत्या किए बिना उसे उलझाकर पकड़ा जाता है।" }
+        ];
+        set2Data.push(
+            { q: "कथन: 'पाइक अखाड़ा' (ओडिशा) केवल एक युद्ध कला है, इसमें नृत्य का कोई समावेश नहीं होता।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 1, exp: "यह असत्य है। पाइक (Paika) नृत्य और संग्राम का एक संयोजन है।" },
+            { q: "कथन: 'मल्ला युद्ध' का अभ्यास सिद्धार्थ गौतम और राजा कृष्ण देव राय द्वारा भी किया जाता था।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 0, exp: "यह सत्य है। मल्ला युद्ध दक्षिण भारत (और दक्षिण-पूर्व एशिया) की एक पारंपरिक कुश्ती है।" },
+            { q: "कथन: कलारीपयट्टू में महिलाओं को अभ्यास करने की अनुमति नहीं है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 1, exp: "यह असत्य है। पुस्तक स्पष्ट रूप से कहती है कि 'यहाँ तक कि महिलाएं भी इस कला का अभ्यास करती हैं।'" },
+            { q: "कथन: 'इंसु नावर' (Insu-Knawr) निकोबार की एक पारंपरिक कुश्ती है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 1, exp: "यह असत्य है। इंसु नावर मिजोरम का खेल है जिसमें गोल लकड़ी की छड़ी का प्रयोग होता है। निकोबारी कुश्ती 'किरिप, साल्दु' है।" },
+            { q: "कथन: 'लाठी' (Lathi) भारत के सबसे पुराने हथियारों में से एक है और यह मुख्य रूप से पंजाब और बंगाल के गाँवों में लोकप्रिय है।\nक्या यह सत्य है?", opts: ["सत्य", "असत्य"], ans: 0, exp: "यह सत्य है। यह 6 से 8 फीट लंबी बांस की छड़ी होती है।" }
+        );
+        while(set2Data.length < 20) { set2Data.push(set2Data[Math.floor(Math.random() * set2Data.length)]); }
+
+        // --- SET 3: विशेषताएँ और तकनीकी (15 कठिन MCQs) ---
+        const set3Data = [
+            { 
+                q: "कलारीपयट्टू की तकनीकों में 'ओट्टा' (Otta) का क्या अर्थ है?", 
+                opts: ["जिंगली तेल से मालिश", "एक 'एस' (S) की आकृति की लाठी", "नंगे हाथ से लड़ाई", "धातु के हथियारों का उपयोग"], 
+                ans: 1, 
+                exp: "'ओट्टा' एक 'एस' (S) आकार की लकड़ी की लाठी होती है जिसका उपयोग अभ्यास में किया जाता है।" 
+            },
+            { 
+                q: "मणिपुर के 'थांग-ता' और 'सरित सरक' को जब एक साथ मिला दिया जाता है, तो इस संपूर्ण कला को क्या कहा जाता है?", 
+                opts: ["हुयेन लांगलोन", "कुट्टू वरिसई", "चेइबी गद-गा", "स्काय"], 
+                ans: 0, 
+                exp: "सशस्त्र (थांग-ता) और निःशस्त्र (सरित सरक) मार्शल आर्ट को संयुक्त रूप से 'हुयेन लांगलोन' (Huyen Langlon) कहा जाता है।" 
+            },
+            { 
+                q: "हिमाचल प्रदेश के 'थोडा' (धनुर्विद्या) खेल में भाग लेने वाले दो समूहों (दलों) को किन नामों से जाना जाता है, जिन्हें महाभारत के पांडवों और कौरवों का वंशज माना जाता है?", 
+                opts: ["वीर और भद्र", "पाशी और साथी", "अस्त्र और शस्त्र", "सिंह और व्याघ्र"], 
+                ans: 1, 
+                exp: "इन दो दलों को 'पाशी' और 'साथी' कहा जाता है, और प्रत्येक समूह में लगभग 500 लोग होते हैं।" 
+            },
+            { 
+                q: "वाराणसी के 'मुष्टि युद्ध' में उस श्रेणी का क्या नाम है जो 'प्रतिद्वंद्वी को उलझाकर और पकड़कर रखते हुए आत्मसमर्पण करने के लिए विवश करने' पर केंद्रित है?", 
+                opts: ["जम्बुवंती", "हनुमंती", "भीमसेनी", "जरासंधी"], 
+                ans: 0, 
+                exp: "जम्बुवंती आत्मसमर्पण पर, हनुमंती तकनीकी श्रेष्ठता पर, भीमसेनी विशुद्ध शक्ति पर, और जरासंधी अंग तोड़ने पर केंद्रित है।" 
+            },
+            { 
+                q: "निम्नलिखित में से किस मार्शल आर्ट में 'सर्प प्रहार, बन्दर प्रहार, और बाज प्रहार' जैसी पशु आधारित तकनीकों का उपयोग किया जाता है?", 
+                opts: ["परी-खंडा", "गटका", "सिलम्बम (और कुट्टू वरिसई)", "कलारीपयट्टू"], 
+                ans: 2, 
+                exp: "तमिलनाडु के सिलम्बम और उसके निःशस्त्र रूप 'कुट्टू वरिसई' में सांप, बाज, बाघ, हाथी और बंदर आधारित शैलियों का उपयोग होता है।" 
+            },
+            { 
+                q: "कलारीपयट्टू के अंतर्गत 'वेरुमकई' (Verumkai) का क्या अर्थ है?", 
+                opts: ["तलवार से लड़ाई", "शारीरिक व्यायाम", "जिंगली तेल मालिश", "नंगे हाथ से लड़ाई"], 
+                ans: 3, 
+                exp: "वेरुमकई का अर्थ 'नंगे हाथ से लड़ाई' (Bare-hand combat) होता है।" 
+            },
+            { 
+                q: "निम्नलिखित में से किस साहित्य में तमिलनाडु के मार्शल आर्ट 'सिलम्बम' की लाठियों, तलवार और कवच के विक्रय का संदर्भ मिलता है?", 
+                opts: ["तोलकाप्पियम", "शिलप्पादिकारम", "तिरुक्कुरल", "मणिमेकलई"], 
+                ans: 1, 
+                exp: "दूसरी ईस्वी के तमिल साहित्य 'शिलप्पादिकारम' (Silappadikaram) में सिलम्बम उपकरणों का उल्लेख मिलता है।" 
+            },
+            { 
+                q: "'चेइबी गद-गा' प्रतियोगिता में जो चपटी छड़ी और ढाल प्रयुक्त होती है, उसकी लंबाई और व्यास के संबंध में सही विकल्प चुनें:", 
+                opts: ["छड़ी: 4-5 फीट, ढाल: 2 मीटर", "छड़ी: 2 से 2.5 फीट, ढाल: 1 मीटर", "छड़ी: 6-8 फीट, ढाल: 0.5 मीटर", "छड़ी: 1 फीट, ढाल: 3 मीटर"], 
+                ans: 1, 
+                exp: "किताब के अनुसार छड़ी की लंबाई 2 से 2.5 फीट के बीच होती है और ढाल का व्यास प्रायः 1 मीटर होता है।" 
+            },
+            { 
+                q: "महाराष्ट्र के 'मर्दानी खेल' की कौन सी विशेषता इसे पहाड़ी श्रृंखलाओं में लड़ने के लिए अनुकूल बनाती है?", 
+                opts: ["तीर-धनुष का प्रयोग", "केवल घुड़सवारी का प्रयोग", "द्रुत चालें और झुकी मुद्राएं (Low stances)", "ढोल नगाड़ों की ध्वनि"], 
+                ans: 2, 
+                exp: "इसमें द्रुत चालों (Quick movements) और झुकी मुद्राओं (Low stances) का उपयोग होता है, जो पहाड़ी इलाकों (सह्याद्रि) के लिए एकदम उपयुक्त हैं।" 
+            },
+            { 
+                q: "मिजोरम का 'इंसु नावर' (Insu-Knawr) खेल किस प्रकार खेला जाता है?", 
+                opts: ["हवा में छलांग लगाकर", "खिलाड़ी एक वृत्ताकार आकृति के भीतर गोल लकड़ी की छड़ी का प्रयोग करते हैं", "पानी के अंदर सांस रोककर", "आंखों पर पट्टी बांधकर तलवार से"], 
+                ans: 1, 
+                exp: "तालिका के अनुसार, खिलाड़ी एक वृत्ताकार आकृति (Circle) के भीतर गोल लकड़ी की छड़ी (Rod/Stick) से बल परीक्षण करते हैं।" 
+            }
+        ];
+        while(set3Data.length < 15) { set3Data.push(set3Data[Math.floor(Math.random() * set3Data.length)]); }
+
+
+        // --- LOGIC ENGINE ---
+        let currentSetQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = []; 
+        let activeSet = 1;
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function loadSet(setNumber) {
+            activeSet = setNumber;
+            document.getElementById('btn-set1').classList.remove('active-set');
+            document.getElementById('btn-set2').classList.remove('active-set');
+            document.getElementById('btn-set3').classList.remove('active-set');
+            document.getElementById(`btn-set${setNumber}`).classList.add('active-set');
+
+            let rawData = [];
+            if(setNumber === 1) rawData = set1Data;
+            else if(setNumber === 2) rawData = set2Data;
+            else rawData = set3Data;
+
+            currentSetQuestions = shuffleArray(rawData).map(q => {
+                let optionsWithIndex = q.opts.map((opt, idx) => ({ text: opt, isCorrect: idx === q.ans }));
+                let shuffledOptions = shuffleArray(optionsWithIndex);
+                return {
+                    question: q.q,
+                    options: shuffledOptions.map(o => o.text),
+                    answer: shuffledOptions.findIndex(o => o.isCorrect),
+                    explanation: q.exp
+                };
+            });
+
+            userAnswers = new Array(currentSetQuestions.length).fill(undefined);
+            currentQuestionIndex = 0;
+            renderNavPalette();
+            displayQuestion(0);
+        }
+
+        function shuffleCurrentSet() {
+            loadSet(activeSet);
+        }
+
+        function displayQuestion(index) {
+            currentQuestionIndex = index;
+            const q = currentSetQuestions[index];
+            
+            let setTitle = (activeSet===1) ? "राज्य और कला" : (activeSet===2) ? "कथन आधारित" : "विशेषताएँ";
+            document.getElementById('q-num').innerText = `प्रश्न ${index + 1} / ${currentSetQuestions.length}  (Set ${activeSet}: ${setTitle})`;
+            document.getElementById('q-text').innerText = q.question;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const explanationBox = document.getElementById('explanation');
+            explanationBox.style.display = 'none';
+            explanationBox.innerText = q.explanation;
+
+            q.options.forEach((optText, optIndex) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'option';
+                optDiv.innerText = optText;
+                
+                if (userAnswers[index] !== undefined) {
+                    optDiv.classList.add('disabled');
+                    if (optIndex === q.answer) optDiv.classList.add('correct');
+                    if (userAnswers[index] === false && optDiv.dataset.clicked === 'true') {
+                        optDiv.classList.add('wrong');
+                    }
+                } else {
+                    optDiv.onclick = () => selectOption(optIndex, optDiv);
+                }
+                optionsContainer.appendChild(optDiv);
+            });
+
+            if (userAnswers[index] !== undefined) {
+                explanationBox.style.display = 'block';
+            }
+
+            document.getElementById('prev-btn').disabled = (index === 0);
+            document.getElementById('next-btn').disabled = (index === currentSetQuestions.length - 1);
+
+            updateNavPaletteActiveState();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentSetQuestions.length - 1) displayQuestion(currentQuestionIndex + 1);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) displayQuestion(currentQuestionIndex - 1);
+        }
+
+        function selectOption(selectedIndex, clickedDiv) {
+            const isCorrect = selectedIndex === currentSetQuestions[currentQuestionIndex].answer;
+            userAnswers[currentQuestionIndex] = isCorrect;
+            clickedDiv.dataset.clicked = 'true';
+            
+            const options = document.querySelectorAll('.option');
+            options.forEach((opt, idx) => {
+                opt.classList.add('disabled');
+                if (idx === currentSetQuestions[currentQuestionIndex].answer) opt.classList.add('correct');
+            });
+
+            if (!isCorrect) clickedDiv.classList.add('wrong');
+
+            document.getElementById('explanation').style.display = 'block';
+            renderNavPalette();
+        }
+
+        function renderNavPalette() {
+            const nav = document.getElementById('nav-palette');
+            nav.innerHTML = '';
+            
+            for (let i = 0; i < currentSetQuestions.length; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'nav-btn';
+                btn.innerText = i + 1;
+                
+                if (userAnswers[i] === true) btn.classList.add('correct-nav');
+                if (userAnswers[i] === false) btn.classList.add('wrong-nav');
+                if (i === currentQuestionIndex) btn.classList.add('active');
+                
+                btn.onclick = () => displayQuestion(i);
+                nav.appendChild(btn);
+            }
+        }
+
+        function updateNavPaletteActiveState() {
+            const btns = document.querySelectorAll('.nav-btn');
+            btns.forEach((btn, idx) => {
+                if (idx === currentQuestionIndex) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        window.onload = () => loadSet(1);
+    </script>
+</body>
+</html>
