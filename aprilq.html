@@ -114,26 +114,31 @@
             pointer-events: none;
         }
 
-        /* कण्ट्रोल बटन्स (Next, Prev, Shuffle) */
+        /* कण्ट्रोल बटन्स */
         .controls {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
             margin-top: 25px;
             border-top: 2px solid #e8eaed;
             padding-top: 20px;
         }
 
         .control-btn {
-            padding: 12px 20px;
+            padding: 10px 16px;
             border: none;
             border-radius: 6px;
             background-color: var(--primary-color);
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
         }
 
         .control-btn:hover:not(:disabled) {
@@ -152,6 +157,14 @@
 
         .shuffle-btn:hover {
             background-color: #f2a900;
+        }
+
+        .submit-btn {
+            background-color: var(--success-color);
+        }
+
+        .submit-btn:hover {
+            background-color: #2b8844;
         }
 
         /* नैविगेशन बोर्ड स्टाइल्स */
@@ -209,22 +222,85 @@
             border-color: #1a73e8;
             color: #1a73e8;
         }
+
+        /* रिजल्ट स्क्रीन स्टाइल्स */
+        #result-screen {
+            display: none;
+        }
+
+        .score-card {
+            background-color: #e8f0fe;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .summary-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 5px solid #dadce0;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .summary-item.correct-item { border-left-color: var(--success-color); }
+        .summary-item.incorrect-item { border-left-color: var(--danger-color); }
+        .summary-item.unanswered-item { border-left-color: var(--warning-color); }
+
+        .summary-q { font-weight: bold; margin-top: 0; margin-bottom: 8px; }
+        .summary-p { margin: 4px 0; font-size: 15px; }
         
-        /* मोबाइल रिस्पॉन्सिव */
+        .text-success { color: var(--success-color); font-weight: bold; }
+        .text-danger { color: var(--danger-color); font-weight: bold; }
+        .text-warning { color: #d89b00; font-weight: bold; }
+
+        .result-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+        }
+
         @media (max-width: 600px) {
             .controls {
                 flex-direction: column;
-                gap: 15px;
             }
             .control-btn {
                 width: 100%;
+            }
+            .result-actions {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="quiz-screen">
         <div class="header">
             <h2 id="quiz-title">करंट अफेयर्स क्विज़</h2>
             <a href="current_affairs.html" class="back-btn">← Back</a>
@@ -233,29 +309,47 @@
         <div class="quiz-box">
             <div class="question" id="question-text">लोड हो रहा है...</div>
             <ul class="options-list" id="options-container">
-                <!-- ऑप्शन्स यहाँ डायनामिकली आएंगे -->
-            </ul>
+                </ul>
         </div>
 
-        <!-- कंट्रोल बटन्स (पिछला, सफल, अगला) -->
         <div class="controls">
             <button class="control-btn" id="prev-btn" onclick="prevQuestion()">← पिछला (Prev)</button>
-            <button class="control-btn shuffle-btn" id="shuffle-btn" onclick="shuffleQuiz()">🔀 सफल करें (Shuffle)</button>
+            <button class="control-btn shuffle-btn" id="shuffle-btn" onclick="shuffleQuiz()">🔀 सफल (Shuffle)</button>
             <button class="control-btn" id="next-btn" onclick="nextQuestion()">अगला (Next) →</button>
+            <button class="control-btn submit-btn" id="submit-btn" onclick="submitQuiz()">✅ सबमिट करें</button>
         </div>
     </div>
 
-    <!-- नीचे क्वेश्चन नंबर सूची बोर्ड -->
-    <div class="navigation-board">
+    <div class="container" id="result-screen">
+        <div class="header">
+            <h2>क्विज़ परिणाम (Result)</h2>
+            <a href="current_affairs.html" class="back-btn">← Exit</a>
+        </div>
+        
+        <div class="score-card">
+            <p class="score-text" id="score-display">आपका स्कोर: 0 / 200</p>
+            <p id="performance-msg" style="margin-top: 10px; font-weight: bold;"></p>
+        </div>
+
+        <h3>विस्तृत समीक्षा (Detailed Review):</h3>
+        <div class="summary-container" id="summary-container">
+            </div>
+
+        <div class="result-actions">
+            <button class="control-btn shuffle-btn result-btn" id="retest-btn" onclick="retestIncorrect()">🔄 गलत/छूटे प्रश्नों का Re-test करें</button>
+            <button class="control-btn result-btn" onclick="restartFullQuiz()">▶️ पूरा क्विज़ फिर से शुरू करें</button>
+        </div>
+    </div>
+
+    <div class="navigation-board" id="nav-board-container">
         <div class="board-title">क्वेश्चन नंबर सूची बोर्ड (सीधे प्रश्न पर जाएँ)</div>
         <div class="grid-container" id="grid-container">
-            <!-- 1 से 200 तक की ग्रिड लिस्ट यहाँ आएगी -->
-        </div>
+            </div>
     </div>
 
     <script>
-        // सभी 200 प्रश्नों का डेटाबेस
-        let quizData = [
+        // सभी 200 प्रश्नों का मास्टर डेटाबेस
+        const originalQuizData = [
             { q: "नोकिया ने भारत में कंट्री बिजनेस लीडर के रूप में किसे नियुक्त किया है?", o: ["विभा मेहरा", "समर मित्तल", "चंचल कुमार", "धीरज सेठ"], a: 1 },
             { q: "दिवंगत विजयपत सिंघानिया किस समूह के पूर्व अध्यक्ष थे?", o: ["रिलायंस", "टाटा", "रेमंड", "महिंद्रा"], a: 2 },
             { q: "उखना खुरेलसुख किस देश के प्रधानमंत्री चुने गए हैं?", o: ["वियतनाम", "मंगोलिया", "सूरीनाम", "म्यांमार"], a: 1 },
@@ -271,7 +365,7 @@
             { q: "मिन आंग ह्लाइंग किस देश के राष्ट्रपति चुने गए हैं?", o: ["वियतनाम", "म्यांमार", "कंबोडिया", "थाईलैंड"], a: 1 },
             { q: "दिवंगत गिलबर्टसन संगमा का संबंध किस खेल से था?", o: ["हॉकी", "क्रिकेट", "फुटबॉल", "बैडमिंटन"], a: 2 },
             { q: "टो लाम को किस देश के नए राष्ट्रपति के रूप में चुना गया है?", o: ["मंगोलिया", "वियतनाम", "कंबोडिया", "लाओस"], a: 1 },
-            { q: "भारत की पहली खुले तौर पर क्वीर सांसद कौन बनी हैं?", o: ["सयानी गुप्ता", "MAINAKA गुरुस्वामी", "रतिका श्री", "अपराजिता रामनाथ"], a: 1 },
+            { q: "भारत की पहली खुले तौर पर क्वीर सांसद कौन बनी हैं?", o: ["सयानी गुप्ता", "मेनका गुरुस्वामी", "रतिका श्री", "अपराजिता रामनाथ"], a: 1 },
             { q: "कैम्पबेल विल्सन ने किस कंपनी के सीईओ पद से इस्तीफा दिया है?", o: ["इंडिगो", "एयर इंडिया", "स्पाइसजेट", "गो एयर"], a: 1 },
             { q: "जनरल फान वान गियांग को किस देश का नया उप प्रधानमंत्री और रक्षा मंत्री नियुक्त किया गया है?", o: ["म्यांमार", "लाओस", "वियतनाम", "कंबोडिया"], a: 2 },
             { q: "यूएन आर्थिक, सामाजिक और सांस्कृतिक अधिकारों की समिति (CESCR) के लिए किस भारतीय को निर्वाचित किया गया है?", o: ["प्रीति सरण", "मेनका गुरुस्वामी", "सयानी गुप्ता", "अनीता चौधरी"], a: 0 },
@@ -297,7 +391,7 @@
             { q: "कुकू टीवी के ब्रांड एंबेसडर और निवेशक कौन बने हैं?", o: ["विराट कोहली", "महेंद्र सिंह धोनी", "रोहित शर्मा", "सचिन तेंदुलकर"], a: 1 },
             { q: "यामाहा म्यूजिक इंडिया का ब्रांड एंबेसडर किसको बनाया गया है?", o: ["एआर रहमान", "अरिजीत सिंह", "श्रेया घोषाल", "सोनू निगम"], a: 0 },
             { q: "इन्फोसिस (Infosys) ने अपना नया वैश्विक ब्रांड एंबेसडर किसे नियुक्त किया है?", o: ["राफेल नडाल", "रोजर फेडरर", "कार्लोस अल्कराज", "नोवाक जोकोविच"], a: 2 },
-            { q: "हाल ही में एयर इंडिया के सीईओ पद से इस्तीफा देने वाले कैंपबेल विल्सन का इस्तीफा किस कारण से हुआ?", o: ["स्वास्थ्य कारण", "अहमादाबाद विमान हादसा व नियामक दबाव", "नई नौकरी", "रिटायरमेंट"], a: 1 },
+            { q: "हाल ही में एयर इंडिया के सीईओ पद से इस्तीफा देने वाले कैंपबेल विल्सन का इस्तीफा किस कारण से हुआ?", o: ["स्वास्थ्य कारण", "अहमदाबाद विमान हादसा व नियामक दबाव", "नई नौकरी", "रिटायरमेंट"], a: 1 },
             { q: "नेपाल की नई स्वास्थ्य एवं जनसंख्या मंत्री निशा मेहता का संबंध किस देश से है?", o: ["भारत", "नेपाल", "भूटान", "श्रीलंका"], a: 1 },
             { q: "मंगोलिया के नवनिर्वाचित प्रधानमंत्री उखना खुरेलसुख की राजधानी क्या है?", o: ["हनोई", "उलानबटोर", "काठमांडू", "थिम्पू"], a: 1 },
             { q: "सूरीनाम की राजधानी क्या है?", o: ["जॉर्जटाउन", "पारामारिबो", "लीमा", "बोगोटा"], a: 1 },
@@ -458,6 +552,7 @@
             { q: "प्रधानमंत्री ग्राम सड़क योजना (PMGSY-III) को किस वर्ष तक के लिए बढ़ा दिया गया है?", o: ["2026", "2027", "2028", "2030"], a: 2 }
         ];
 
+        let quizData = [...originalQuizData];
         let currentQuestionIndex = 0;
         let userAnswers = new Array(quizData.length).fill(null);
 
@@ -525,8 +620,6 @@
             // कंट्रोल बटन्स को अपडेट करें
             prevBtn.disabled = currentQuestionIndex === 0;
             nextBtn.disabled = currentQuestionIndex === quizData.length - 1;
-            
-            // ऑटो-स्क्रॉल (scrollIntoView) हटा दिया गया है ताकि पेज अपने आप जंप न करे।
         }
 
         // उत्तर की जाँच करना
@@ -549,8 +642,6 @@
             // ग्रिड लिस्ट अपडेट करें
             const currentGridItem = document.getElementById(`grid-item-${currentQuestionIndex}`);
             if (currentGridItem) currentGridItem.classList.add('answered');
-
-            // ऑटो-नेक्स्ट हटा दिया गया है।
         }
 
         // पिछला प्रश्न
@@ -572,7 +663,7 @@
             loadQuestion(index);
         }
 
-        // सफल (Shuffle) क्विज़ फीचर - Fisher-Yates Algorithm
+        // सफल (Shuffle) क्विज़ फीचर
         function shuffleQuiz() {
             if(confirm("क्या आप पक्का क्विज़ को शफल (Shuffle) करके रीसेट करना चाहते हैं? आपकी पूरी प्रोग्रेस मिट जाएगी।")) {
                 for (let i = quizData.length - 1; i > 0; i--) {
@@ -588,6 +679,105 @@
                 initGridBoard();
                 loadQuestion(0);
             }
+        }
+
+        // सबमिट क्विज़ और रिजल्ट दिखाएं
+        function submitQuiz() {
+            const unansweredCount = userAnswers.filter(a => a === null).length;
+            if(unansweredCount > 0) {
+                if(!confirm(`आपने ${unansweredCount} प्रश्नों के उत्तर नहीं दिए हैं। क्या आप फिर भी सबमिट करना चाहते हैं?`)) {
+                    return;
+                }
+            }
+
+            let correctCount = 0;
+            let summaryHTML = '';
+
+            quizData.forEach((q, index) => {
+                const userAnswerIndex = userAnswers[index];
+                const isCorrect = userAnswerIndex === q.a;
+                if (isCorrect) correctCount++;
+
+                const userAnswerText = userAnswerIndex !== null ? q.o[userAnswerIndex] : "कोई उत्तर नहीं दिया (Unanswered)";
+                const correctAnswerText = q.o[q.a];
+                
+                let itemClass = "unanswered-item";
+                let userColorClass = "text-warning";
+                
+                if(userAnswerIndex !== null) {
+                    itemClass = isCorrect ? "correct-item" : "incorrect-item";
+                    userColorClass = isCorrect ? "text-success" : "text-danger";
+                }
+
+                summaryHTML += `
+                    <div class="summary-item ${itemClass}">
+                        <p class="summary-q">प्रश्न ${index + 1}: ${q.q}</p>
+                        <p class="summary-p">आपका उत्तर: <span class="${userColorClass}">${userAnswerText}</span></p>
+                        ${!isCorrect ? `<p class="summary-p">सही उत्तर: <span class="text-success">${correctAnswerText}</span></p>` : ''}
+                    </div>
+                `;
+            });
+
+            document.getElementById('score-display').innerText = `आपका स्कोर: ${quizData.length} में से ${correctCount}`;
+            
+            const performanceMsg = document.getElementById('performance-msg');
+            const percentage = (correctCount / quizData.length) * 100;
+            if(percentage >= 80) {
+                performanceMsg.innerText = "उत्कृष्ट प्रदर्शन! 🌟";
+                performanceMsg.style.color = "var(--success-color)";
+            } else if(percentage >= 50) {
+                performanceMsg.innerText = "अच्छा प्रयास! 👍";
+                performanceMsg.style.color = "var(--warning-color)";
+            } else {
+                performanceMsg.innerText = "और अभ्यास की आवश्यकता है! 📚";
+                performanceMsg.style.color = "var(--danger-color)";
+            }
+
+            document.getElementById('summary-container').innerHTML = summaryHTML;
+
+            // स्क्रीन टॉगल करें
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('nav-board-container').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+
+            // री-टेस्ट बटन दिखाएँ या छिपाएँ
+            if(correctCount === quizData.length) {
+                document.getElementById('retest-btn').style.display = 'none';
+            } else {
+                document.getElementById('retest-btn').style.display = 'block';
+            }
+        }
+
+        // गलत और छूटे हुए प्रश्नों का Re-test
+        function retestIncorrect() {
+            const wrongQuestions = quizData.filter((q, index) => userAnswers[index] !== q.a);
+            
+            quizData = wrongQuestions;
+            userAnswers = new Array(quizData.length).fill(null);
+            currentQuestionIndex = 0;
+
+            // स्क्रीन टॉगल करें
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            document.getElementById('nav-board-container').style.display = 'block';
+
+            initGridBoard();
+            loadQuestion(0);
+        }
+
+        // पूरा क्विज़ फिर से शुरू करें
+        function restartFullQuiz() {
+            quizData = [...originalQuizData];
+            userAnswers = new Array(quizData.length).fill(null);
+            currentQuestionIndex = 0;
+
+            // स्क्रीन टॉगल करें
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            document.getElementById('nav-board-container').style.display = 'block';
+
+            initGridBoard();
+            loadQuestion(0);
         }
 
         // स्टार्ट
