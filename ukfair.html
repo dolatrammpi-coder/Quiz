@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>उत्तराखंड के मेले - स्मार्ट क्विज़</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --text: #333333;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .back-btn { color: white; text-decoration: none; font-weight: bold; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 5px; }
+        .shuffle-btn { background: #f39c12; border: none; padding: 8px 15px; color: white; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        
+        .main-container { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .quiz-section { flex: 3; background: var(--card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .palette-section { flex: 1; background: var(--card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; }
+        
+        .question-header { font-size: 1.2rem; margin-bottom: 15px; font-weight: 600; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option { padding: 12px 15px; border: 2px solid #ddd; border-radius: 5px; cursor: pointer; transition: 0.3s; background: #fff; font-size: 1rem; }
+        .option:hover:not(.disabled) { background: #f0f0f0; border-color: var(--primary); }
+        .option.correct { background: var(--success); color: white; border-color: var(--success); }
+        .option.wrong { background: var(--danger); color: white; border-color: var(--danger); }
+        .option.disabled { cursor: not-allowed; opacity: 0.9; }
+        
+        .controls { display: flex; justify-content: space-between; margin-top: 25px; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s; }
+        .btn-nav { background: var(--primary); color: white; }
+        .btn-nav:disabled { background: #aaa; cursor: not-allowed; }
+        .btn-submit { background: var(--success); color: white; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; }
+        .grid-item { padding: 10px; text-align: center; background: #eee; border-radius: 5px; cursor: pointer; font-weight: bold; border: 2px solid transparent; }
+        .grid-item.attempted { background: var(--primary); color: white; }
+        .grid-item.active { border-color: #333; transform: scale(1.1); }
+        
+        .result-section { display: none; background: var(--card); padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto; text-align: center; }
+        .score-card { font-size: 2rem; font-weight: bold; margin-bottom: 10px; }
+        .review-list { text-align: left; margin-top: 30px; }
+        .review-item { padding: 15px; border-bottom: 1px solid #ddd; }
+        .review-item h4 { margin-bottom: 5px; }
+        .text-green { color: var(--success); font-weight: bold; }
+        .text-red { color: var(--danger); font-weight: bold; }
+        
+        .action-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn-retest { background: #9b59b6; color: white; }
+        .btn-restart { background: var(--danger); color: white; }
+
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column-reverse; }
+            .palette-section { max-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="uk.html" class="back-btn">⬅ Back</a>
+        <h2>उत्तराखंड के मेले - प्रैक्टिस सेट (50 प्रश्न)</h2>
+        <button class="shuffle-btn" onclick="initQuiz(true)">🔀 शफल करें</button>
+    </div>
+
+    <div class="main-container" id="quiz-mode">
+        <div class="quiz-section">
+            <h3 id="question-number">प्रश्न 1 / 50</h3>
+            <div class="question-header" id="question-text">प्रश्न यहाँ लोड होगा...</div>
+            <div class="options" id="options-container">
+                </div>
+            
+            <div class="controls">
+                <button class="btn-nav" id="btn-prev" onclick="changeQuestion(-1)">पिछला (Prev)</button>
+                <button class="btn-submit" id="btn-submit-main" style="display: none;" onclick="submitQuiz()">सबमिट करें</button>
+                <button class="btn-nav" id="btn-next" onclick="changeQuestion(1)">अगला (Next)</button>
+            </div>
+        </div>
+        
+        <div class="palette-section">
+            <h3>नेविगेशन बोर्ड</h3>
+            <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">सीधे प्रश्न पर जाने के लिए नंबर पर क्लिक करें</p>
+            <div class="grid" id="palette-grid">
+                </div>
+        </div>
+    </div>
+
+    <div class="result-section" id="result-mode">
+        <div class="score-card" id="score-display">स्कोर: 0 / 50</div>
+        <h3 id="score-message"></h3>
+        
+        <div class="action-btns">
+            <button class="btn-retest" id="btn-retest" onclick="retestWrongUnattempted()">🔄 गलत/छूटे प्रश्नों का री-टेस्ट दें</button>
+            <button class="btn-restart" onclick="fullRestart()">⏮ फुल रिस्टार्ट (सभी 50 प्रश्न)</button>
+        </div>
+
+        <div class="review-list" id="review-container">
+            <h3>विस्तृत समीक्षा (Detailed Review)</h3>
+            </div>
+    </div>
+
+    <script>
+        // 50 Questions Data
+        const allQuestionsData = [
+            { q: "प्रसिद्ध 'जोल्जीबी मेला' उत्तराखंड के किस जिले में आयोजित होता है?", o: ["अल्मोड़ा", "पिथौरागढ़", "चमोली", "देहरादून"], a: "पिथौरागढ़" },
+            { q: "'श्यालदे त्रिबोती (बिखौती) मेला' का आयोजन कहाँ किया जाता है?", o: ["द्वाराहाट (अल्मोड़ा)", "जोशीमठ (चमोली)", "काशीपुर (उधम सिंह नगर)", "श्रीनगर (पौड़ी)"], a: "द्वाराहाट (अल्मोड़ा)" },
+            { q: "'पूर्णागिरी मेला' किस जिले में लगता है?", o: ["चंपावत", "बागेश्वर", "पिथौरागढ़", "नैनीताल"], a: "चंपावत" },
+            { q: "'वग्वाल (बग्वाल)' या 'देवीधुरा मेला' का संबंध किस जिले से है?", o: ["पौड़ी गढ़वाल", "टिहरी गढ़वाल", "चंपावत", "उत्तरकाशी"], a: "चंपावत" },
+            { q: "प्रसिद्ध 'उत्तरायणी मेला' कहाँ आयोजित होता है?", o: ["बागेश्वर", "चमोली", "देहरादून", "हरिद्वार"], a: "बागेश्वर" },
+            { q: "'चैती मेला' का आयोजन उत्तराखंड के किस जिले में होता है?", o: ["देहरादून", "उधम सिंह नगर", "हरिद्वार", "नैनीताल"], a: "उधम सिंह नगर" },
+            { q: "'टपकेश्वर मेला' और 'झंडा मेला' किस जिले के प्रमुख मेले हैं?", o: ["हरिद्वार", "टिहरी गढ़वाल", "देहरादून", "पौड़ी गढ़वाल"], a: "देहरादून" },
+            { q: "'रणभूत कोथिक' मेले का आयोजन कहाँ किया जाता है?", o: ["चमोली", "टिहरी गढ़वाल", "उत्तरकाशी", "रुद्रप्रयाग"], a: "टिहरी गढ़वाल" },
+            { q: "प्रसिद्ध 'कुंभ मेला' उत्तराखंड में कहाँ लगता है?", o: ["ऋषिकेश", "देवप्रयाग", "हरिद्वार", "रुद्रप्रयाग"], a: "हरिद्वार" },
+            { q: "ऐतिहासिक 'गोचर (गौचर) मेला' किस जिले में आयोजित होता है?", o: ["चमोली", "पिथौरागढ़", "उत्तरकाशी", "अल्मोड़ा"], a: "चमोली" },
+            { q: "'बैकुंठ चतुर्दशी मेला' कहाँ लगता है?", o: ["श्रीनगर (पौड़ी)", "जोशीमठ", "मासी", "बाराकोट"], a: "श्रीनगर (पौड़ी)" },
+            { q: "'माघ मेला' का संबंध मुख्य रूप से किस जिले से है?", o: ["उत्तरकाशी", "टिहरी", "देहरादून", "चमोली"], a: "उत्तरकाशी" },
+            { q: "'विश्व (बिस्सू) मेला' मुख्य रूप से जौनसार बावर क्षेत्र में लगता है, यह क्षेत्र किस जिले में है?", o: ["उत्तरकाशी", "देहरादून", "टिहरी", "पौड़ी"], a: "देहरादून" },
+            { q: "'सोमनाथ मेला' का आयोजन कहाँ होता है?", o: ["मासी (अल्मोड़ा)", "जोशीमठ", "काशीपुर", "श्रीनगर"], a: "मासी (अल्मोड़ा)" },
+            { q: "'उर्ष (उर्स) मेला' (पिरान कलियर) किस जिले में आयोजित किया जाता है?", o: ["देहरादून", "हरिद्वार", "उधम सिंह नगर", "नैनीताल"], a: "हरिद्वार" },
+            { q: "'धनगल (दंगल) मेला' किस जिले में लगता है?", o: ["पौड़ी गढ़वाल", "टिहरी", "चमोली", "पिथौरागढ़"], a: "पौड़ी गढ़वाल" },
+            { q: "'चंद्रबदनी मेला' का संबंध किस जिले से है?", o: ["देहरादून", "टिहरी गढ़वाल", "पौड़ी", "चमोली"], a: "टिहरी गढ़वाल" },
+            { q: "'गणनाथ का मेला' और 'श्रावणी मेला' किस जिले में लगते हैं?", o: ["अल्मोड़ा", "चंपावत", "पिथौरागढ़", "बागेश्वर"], a: "अल्मोड़ा" },
+            { q: "'तिमुंडा मेला' किस जिले में आयोजित होता है?", o: ["रुद्रप्रयाग", "चमोली", "उत्तरकाशी", "टिहरी"], a: "चमोली" },
+            { q: "'नड़ीधुरा (लड़ीधुरा) मेला' और 'मनेश्वर मेला' कहाँ लगते हैं?", o: ["चंपावत", "पिथौरागढ़", "अल्मोड़ा", "बागेश्वर"], a: "चंपावत" },
+            { q: "'नोटी (नौटी) कोथिक' मेले का आयोजन किस जिले में होता है?", o: ["चमोली", "पौड़ी", "टिहरी", "उत्तरकाशी"], a: "चमोली" },
+            { q: "'थल मेला' किस जिले का प्रसिद्ध मेला है?", o: ["पिथौरागढ़", "चंपावत", "बागेश्वर", "अल्मोड़ा"], a: "पिथौरागढ़" },
+            { q: "'शीतला मेला' का आयोजन कहाँ किया जाता है?", o: ["देहरादून", "हल्द्वानी/अल्मोड़ा", "रुड़की", "चकराता"], a: "हल्द्वानी/अल्मोड़ा" },
+            { q: "उत्तरायणी मेले में किस वर्ष 'कुली बेगार प्रथा' के रजिस्टर सरयू नदी में बहाए गए थे?", o: ["1919", "1920", "1921", "1922"], a: "1921" },
+            { q: "देवीधुरा (बग्वाल) मेले का मुख्य आकर्षण क्या है?", o: ["पशु व्यापार", "पाषाण युद्ध (पत्थर मार)", "नौकायन", "फूलों की होली"], a: "पाषाण युद्ध (पत्थर मार)" },
+            { q: "जोल्जीबी मेला किन दो नदियों के संगम पर लगता है?", o: ["अलकनंदा-मंदाकिनी", "काली-गोरी", "सरयू-गोमती", "गंगा-यमुना"], a: "काली-गोरी" },
+            { q: "थल मेले की शुरुआत 13 अप्रैल 1940 को किस घटना की स्मृति में हुई थी?", o: ["काकोरी कांड", "जलियांवाला बाग हत्याकांड", "चौरी-चौरा", "भारत छोड़ो आंदोलन"], a: "जलियांवाला बाग हत्याकांड" },
+            { q: "कुंभ मेले का आयोजन हरिद्वार में कितने वर्षों के अंतराल में होता है?", o: ["6 वर्ष", "10 वर्ष", "12 वर्ष", "14 वर्ष"], a: "12 वर्ष" },
+            { q: "चैती मेले में किस देवी की पूजा विशेष रूप से की जाती है?", o: ["नैना देवी", "बालसुंदरी देवी", "सुरकंडा देवी", "मनसा देवी"], a: "बालसुंदरी देवी" },
+            { q: "किस मेले में 'ठोडा' नामक पारंपरिक युद्ध नृत्य किया जाता है?", o: ["माघ मेला", "बिस्सू मेला", "उत्तरायणी मेला", "गौचर मेला"], a: "बिस्सू मेला" },
+            { q: "श्रावणी मेले (जागेश्वर) की मुख्य विशेषता क्या है?", o: ["व्यापार", "निःसंतान महिलाओं द्वारा घी का दीपक लेकर पूजा", "पशु दौड़", "रथ यात्रा"], a: "निःसंतान महिलाओं द्वारा घी का दीपक लेकर पूजा" },
+            { q: "गौचर मेले की शुरुआत 1943 में किस कमिश्नर ने की थी?", o: ["बर्निडी", "ट्रेल", "रैमजे", "लुशिंगटन"], a: "बर्निडी" },
+            { q: "देहरादून का झंडा मेला किस सिख गुरु के आगमन की स्मृति में लगता है?", o: ["गुरु नानक देव", "गुरु गोबिंद सिंह", "गुरु रामराय", "गुरु तेग बहादुर"], a: "गुरु रामराय" },
+            { q: "किस मेले को 'बाड़ाहाट का थोलू' भी कहा जाता है?", o: ["गौचर मेला", "माघ मेला (उत्तरकाशी)", "बिस्सू मेला", "थल मेला"], a: "माघ मेला (उत्तरकाशी)" },
+            { q: "पिरान कलियर का उर्स मेला किस सूफी संत की दरगाह पर लगता है?", o: ["निज़ामुद्दीन औलिया", "मोइनुद्दीन चिश्ती", "अलाउद्दीन अली अहमद साबिर", "सलीम चिश्ती"], a: "अलाउद्दीन अली अहमद साबिर" },
+            { q: "पूर्णागिरी मेला लगभग कितने दिनों तक चलता है?", o: ["5 दिन", "10 दिन", "40 दिन", "60 दिन"], a: "40 दिन" },
+            { q: "चंद्रबदनी मेले में पशुबलि प्रथा को समाप्त करने में किसका बड़ा योगदान रहा?", o: ["स्वामी विवेकानंद", "स्वामी रामतीर्थ", "स्वामी मनमथन", "सुंदरलाल बहुगुणा"], a: "स्वामी मनमथन" },
+            { q: "नौटी कोथिक मेले का सीधा संबंध किस प्रसिद्ध यात्रा से है?", o: ["कैलाश मानसरोवर यात्रा", "नंदा देवी राजजात यात्रा", "चार धाम यात्रा", "कांवड़ यात्रा"], a: "नंदा देवी राजजात यात्रा" },
+            { q: "महाभारत काल के गुरु द्रोणाचार्य से किस मेले का संबंध माना जाता है?", o: ["टपकेश्वर मेला", "झंडा मेला", "चंद्रबदनी मेला", "पूर्णागिरी मेला"], a: "टपकेश्वर मेला" },
+            { q: "श्रीनगर (पौड़ी) के कमलेश्वर मंदिर में कौन सा मेला लगता है जहाँ 'खड़ा दीया' अनुष्ठान होता है?", o: ["श्रावणी मेला", "बैकुंठ चतुर्दशी मेला", "गौचर मेला", "विकास मेला"], a: "बैकुंठ चतुर्दशी मेला" },
+            { q: "इनमें से कौन सा मेला पशुओं के क्रय-विक्रय (विशेषकर बैलों) के लिए ऐतिहासिक रूप से प्रसिद्ध रहा है?", o: ["उत्तरायणी मेला", "सोमनाथ मेला", "नड़ीधुरा मेला", "तिमुंडा मेला"], a: "सोमनाथ मेला" },
+            { q: "हरिद्वार कुंभ मेले के दौरान सूर्य किस राशि में होता है?", o: ["मकर", "कुंभ", "मेष", "कर्क"], a: "मेष" },
+            { q: "हरिद्वार कुंभ मेले के दौरान बृहस्पति किस राशि में प्रवेश करता है?", o: ["मकर", "कुंभ", "मेष", "तुला"], a: "कुंभ" },
+            { q: "बग्वाल (पाषाण युद्ध) मेला किस पर्व के दिन आयोजित होता है?", o: ["दीपावली", "होली", "रक्षाबंधन", "दशहरा"], a: "रक्षाबंधन" },
+            { q: "'विकास मेला' उत्तराखंड के किस जिले से संबंधित है?", o: ["अल्मोड़ा", "टिहरी गढ़वाल", "देहरादून", "नैनीताल"], a: "टिहरी गढ़वाल" },
+            { q: "जोल्जीबी मेले की शुरुआत 1914 में किसने की थी?", o: ["गजेंद्र बहादुर", "बर्निडी", "बद्रीदत्त पांडे", "गुमानी पंत"], a: "गजेंद्र बहादुर" },
+            { q: "'हरियाली मेला' कुमाऊं के अलावा गढ़वाल के किस जिले में भी प्रसिद्ध है?", o: ["उत्तरकाशी", "रुद्रप्रयाग", "चमोली", "टिहरी"], a: "चमोली" },
+            { q: "उत्तरायणी मेले के दौरान किस नदी के तट पर स्नान का विशेष महत्व है?", o: ["गंगा", "यमुना", "सरयू", "मंदाकिनी"], a: "सरयू" },
+            { q: "इनमें से कौन सा मेला बोक्सा जनजाति के लोगों की विशेष भागीदारी के लिए जाना जाता है?", o: ["चैती मेला", "गौचर मेला", "थल मेला", "माघ मेला"], a: "चैती मेला" },
+            { q: "'बेराड़ी मेला' का आयोजन उत्तराखंड में कहाँ होता है?", o: ["पिथौरागढ़", "चंपावत", "बागेश्वर", "अल्मोड़ा"], a: "पिथौरागढ़" }
+        ];
+
+        let activeQuestions = [];
+        let userAnswers = {};
+        let currentIndex = 0;
+
+        // Shuffle utility (Fisher-Yates)
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Initialize or Restart Quiz
+        function initQuiz(shuffle = false, questionsList = allQuestionsData) {
+            document.getElementById('quiz-mode').style.display = 'flex';
+            document.getElementById('result-mode').style.display = 'none';
+            
+            // Setup questions
+            activeQuestions = questionsList.map((q, index) => {
+                let options = shuffle ? shuffleArray(q.o) : [...q.o];
+                return { id: index, q: q.q, o: options, a: q.a, originalId: q.originalId !== undefined ? q.originalId : index };
+            });
+
+            if (shuffle) activeQuestions = shuffleArray(activeQuestions);
+
+            userAnswers = {};
+            currentIndex = 0;
+            renderPalette();
+            loadQuestion();
+        }
+
+        // Load Question UI
+        function loadQuestion() {
+            const q = activeQuestions[currentIndex];
+            document.getElementById('question-number').innerText = `प्रश्न ${currentIndex + 1} / ${activeQuestions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const isAnswered = userAnswers[currentIndex] !== undefined;
+
+            q.o.forEach(opt => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.innerText = opt;
+                
+                if (isAnswered) {
+                    div.classList.add('disabled');
+                    if (opt === q.a) div.classList.add('correct');
+                    else if (opt === userAnswers[currentIndex]) div.classList.add('wrong');
+                } else {
+                    div.onclick = () => selectOption(opt);
+                }
+                optionsContainer.appendChild(div);
+            });
+
+            updateControls();
+            updatePaletteActiveStatus();
+        }
+
+        // Handle Option Click (Real-time checking)
+        function selectOption(selectedOpt) {
+            if (userAnswers[currentIndex] !== undefined) return; // Prevent change
+            
+            userAnswers[currentIndex] = selectedOpt;
+            
+            // Visual Update for Palette
+            const gridItem = document.getElementById(`grid-item-${currentIndex}`);
+            gridItem.classList.add('attempted');
+
+            loadQuestion(); // Reload to show green/red
+        }
+
+        // Navigation
+        function changeQuestion(step) {
+            currentIndex += step;
+            if (currentIndex < 0) currentIndex = 0;
+            if (currentIndex >= activeQuestions.length) currentIndex = activeQuestions.length - 1;
+            loadQuestion();
+        }
+
+        function jumpToQuestion(index) {
+            currentIndex = index;
+            loadQuestion();
+        }
+
+        function updateControls() {
+            document.getElementById('btn-prev').disabled = currentIndex === 0;
+            
+            const btnNext = document.getElementById('btn-next');
+            const btnSubmit = document.getElementById('btn-submit-main');
+            
+            if (currentIndex === activeQuestions.length - 1) {
+                btnNext.style.display = 'none';
+                btnSubmit.style.display = 'block';
+            } else {
+                btnNext.style.display = 'block';
+                btnSubmit.style.display = 'none';
+            }
+        }
+
+        // Render Palette Grid
+        function renderPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = '';
+            activeQuestions.forEach((_, index) => {
+                const div = document.createElement('div');
+                div.className = 'grid-item';
+                div.id = `grid-item-${index}`;
+                div.innerText = index + 1;
+                div.onclick = () => jumpToQuestion(index);
+                if (userAnswers[index] !== undefined) div.classList.add('attempted');
+                grid.appendChild(div);
+            });
+        }
+
+        function updatePaletteActiveStatus() {
+            document.querySelectorAll('.grid-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`grid-item-${currentIndex}`).classList.add('active');
+            document.getElementById(`grid-item-${currentIndex}`).scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        // Smart Submission Alert & Show Results
+        function submitQuiz() {
+            const attemptedCount = Object.keys(userAnswers).length;
+            const total = activeQuestions.length;
+            
+            if (attemptedCount < total) {
+                const unattempted = total - attemptedCount;
+                if (!confirm(`आपने ${unattempted} प्रश्न छोड़ दिए हैं। क्या आप फिर भी सबमिट करना चाहते हैं?`)) {
+                    return;
+                }
+            }
+            showResults();
+        }
+
+        function showResults() {
+            document.getElementById('quiz-mode').style.display = 'none';
+            document.getElementById('result-mode').style.display = 'block';
+            
+            let score = 0;
+            const reviewContainer = document.getElementById('review-container');
+            reviewContainer.innerHTML = '<h3>विस्तृत समीक्षा (Detailed Review)</h3>';
+
+            activeQuestions.forEach((q, i) => {
+                const userAns = userAnswers[i] || 'कोई उत्तर नहीं दिया (Unattempted)';
+                const isCorrect = userAns === q.a;
+                if (isCorrect) score++;
+
+                reviewContainer.innerHTML += `
+                    <div class="review-item">
+                        <h4>Q${i+1}: ${q.q}</h4>
+                        <p>आपका उत्तर: <span class="${isCorrect ? 'text-green' : 'text-red'}">${userAns}</span></p>
+                        ${!isCorrect ? `<p>सही उत्तर: <span class="text-green">${q.a}</span></p>` : ''}
+                    </div>
+                `;
+            });
+
+            document.getElementById('score-display').innerText = `स्कोर: ${score} / ${activeQuestions.length}`;
+            
+            const percent = (score / activeQuestions.length) * 100;
+            let msg = "";
+            if(percent >= 80) msg = "उत्कृष्ट प्रदर्शन! आपकी तैयारी शानदार है। 🏆";
+            else if(percent >= 50) msg = "अच्छा प्रयास! थोड़ी और मेहनत से आप बेहतर कर सकते हैं। 👍";
+            else msg = "आपको और अभ्यास की आवश्यकता है। री-टेस्ट दें! 📚";
+            
+            document.getElementById('score-message').innerText = msg;
+
+            // Hide retest button if score is 100%
+            document.getElementById('btn-retest').style.display = (score === activeQuestions.length) ? 'none' : 'inline-block';
+        }
+
+        // Re-test wrong or unattempted
+        function retestWrongUnattempted() {
+            const failedQuestions = activeQuestions.filter((q, i) => userAnswers[i] !== q.a);
+            initQuiz(false, failedQuestions);
+        }
+
+        // Full Restart
+        function fullRestart() {
+            initQuiz(false, allQuestionsData);
+        }
+
+        // Start initial quiz
+        window.onload = () => initQuiz(false);
+    </script>
+</body>
+</html>
