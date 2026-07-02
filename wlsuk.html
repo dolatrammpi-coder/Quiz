@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>उत्तराखंड की जैव विविधता एवं संरक्षित क्षेत्र - स्मार्ट क्विज़</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --text: #333333;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .back-btn { color: white; text-decoration: none; font-weight: bold; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 5px; }
+        .shuffle-btn { background: #f39c12; border: none; padding: 8px 15px; color: white; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        
+        .main-container { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .quiz-section { flex: 3; background: var(--card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .palette-section { flex: 1; background: var(--card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; }
+        
+        .question-header { font-size: 1.2rem; margin-bottom: 15px; font-weight: 600; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option { padding: 12px 15px; border: 2px solid #ddd; border-radius: 5px; cursor: pointer; transition: 0.3s; background: #fff; font-size: 1rem; }
+        .option:hover:not(.disabled) { background: #f0f0f0; border-color: var(--primary); }
+        .option.correct { background: var(--success); color: white; border-color: var(--success); }
+        .option.wrong { background: var(--danger); color: white; border-color: var(--danger); }
+        .option.disabled { cursor: not-allowed; opacity: 0.9; }
+        
+        .controls { display: flex; justify-content: space-between; margin-top: 25px; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s; }
+        .btn-nav { background: var(--primary); color: white; }
+        .btn-nav:disabled { background: #aaa; cursor: not-allowed; }
+        .btn-submit { background: var(--success); color: white; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; }
+        .grid-item { padding: 10px; text-align: center; background: #eee; border-radius: 5px; cursor: pointer; font-weight: bold; border: 2px solid transparent; }
+        .grid-item.attempted { background: var(--primary); color: white; }
+        .grid-item.active { border-color: #333; transform: scale(1.1); }
+        
+        .result-section { display: none; background: var(--card); padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto; text-align: center; }
+        .score-card { font-size: 2rem; font-weight: bold; margin-bottom: 10px; }
+        .review-list { text-align: left; margin-top: 30px; }
+        .review-item { padding: 15px; border-bottom: 1px solid #ddd; }
+        .review-item h4 { margin-bottom: 5px; }
+        .text-green { color: var(--success); font-weight: bold; }
+        .text-red { color: var(--danger); font-weight: bold; }
+        
+        .action-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn-retest { background: #9b59b6; color: white; }
+        .btn-restart { background: var(--danger); color: white; }
+
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column-reverse; }
+            .palette-section { max-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="uttarakhand.html" class="back-btn">⬅ Back</a>
+        <h2>उत्तराखंड वन्यजीव एवं पर्यावरण - प्रैक्टिस सेट (50 प्रश्न)</h2>
+        <button class="shuffle-btn" onclick="initQuiz(true)">🔀 शफल करें</button>
+    </div>
+
+    <div class="main-container" id="quiz-mode">
+        <div class="quiz-section">
+            <h3 id="question-number">प्रश्न 1 / 50</h3>
+            <div class="question-header" id="question-text">प्रश्न यहाँ लोड होगा...</div>
+            <div class="options" id="options-container"></div>
+            
+            <div class="controls">
+                <button class="btn-nav" id="btn-prev" onclick="changeQuestion(-1)">पिछला (Prev)</button>
+                <button class="btn-submit" id="btn-submit-main" style="display: none;" onclick="submitQuiz()">सबमिट करें</button>
+                <button class="btn-nav" id="btn-next" onclick="changeQuestion(1)">अगला (Next)</button>
+            </div>
+        </div>
+        
+        <div class="palette-section">
+            <h3>नेविगेशन बोर्ड</h3>
+            <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">सीधे प्रश्न पर जाने के लिए नंबर पर क्लिक करें</p>
+            <div class="grid" id="palette-grid"></div>
+        </div>
+    </div>
+
+    <div class="result-section" id="result-mode">
+        <div class="score-card" id="score-display">स्कोर: 0 / 50</div>
+        <h3 id="score-message"></h3>
+        
+        <div class="action-btns">
+            <button class="btn-retest" id="btn-retest" onclick="retestWrongUnattempted()">🔄 गलत/छूटे प्रश्नों का री-टेस्ट दें</button>
+            <button class="btn-restart" onclick="fullRestart()">⏮ फुल रिस्टार्ट (सभी 50 प्रश्न)</button>
+        </div>
+
+        <div class="review-list" id="review-container">
+            <h3>विस्तृत समीक्षा (Detailed Review)</h3>
+        </div>
+    </div>
+
+    <script>
+        const allQuestionsData = [
+            { q: "उत्तराखंड में कुल कितने राष्ट्रीय उद्यान (National Parks) हैं?", o: ["4", "5", "6", "7"], a: "6" },
+            { q: "उत्तराखंड में कुल कितने वन्यजीव विहार (Wildlife Sanctuaries) हैं?", o: ["5", "6", "7", "8"], a: "7" },
+            { q: "भारत और एशिया का सबसे पुराना राष्ट्रीय उद्यान कौन सा है?", o: ["नंदा देवी राष्ट्रीय उद्यान", "जिम कॉर्बेट राष्ट्रीय उद्यान", "राजाजी राष्ट्रीय उद्यान", "गंगोत्री राष्ट्रीय उद्यान"], a: "जिम कॉर्बेट राष्ट्रीय उद्यान" },
+            { q: "जिम कॉर्बेट राष्ट्रीय उद्यान की स्थापना किस वर्ष हुई थी?", o: ["1936", "1955", "1972", "1982"], a: "1936" },
+            { q: "जिम कॉर्बेट राष्ट्रीय उद्यान किन जिलों में फैला हुआ है?", o: ["नैनीताल और चंपावत", "नैनीताल और पौड़ी", "पौड़ी और हरिद्वार", "चमोली और रुद्रप्रयाग"], a: "नैनीताल और पौड़ी" },
+            { q: "नंदा देवी राष्ट्रीय उद्यान की स्थापना कब हुई थी?", o: ["1982", "1983", "1988", "1990"], a: "1982" },
+            { q: "नंदा देवी राष्ट्रीय उद्यान किस जिले में स्थित है?", o: ["उत्तरकाशी", "पिथौरागढ़", "चमोली", "रुद्रप्रयाग"], a: "चमोली" },
+            { q: "फूलों की घाटी (Valley of Flowers) राष्ट्रीय उद्यान किस जिले में है?", o: ["नैनीताल", "चमोली", "उत्तरकाशी", "देहरादून"], a: "चमोली" },
+            { q: "फूलों की घाटी राष्ट्रीय उद्यान की स्थापना किस वर्ष हुई थी?", o: ["1936", "1982", "1983", "1989"], a: "1982" },
+            { q: "राजाजी राष्ट्रीय उद्यान की स्थापना कब हुई थी?", o: ["1982", "1983", "1989", "1990"], a: "1983" },
+            { q: "राजाजी राष्ट्रीय उद्यान किन जिलों में फैला है?", o: ["देहरादून, पौड़ी और हरिद्वार", "नैनीताल, अल्मोड़ा और पौड़ी", "चमोली, रुद्रप्रयाग और पौड़ी", "उत्तरकाशी, देहरादून और टिहरी"], a: "देहरादून, पौड़ी और हरिद्वार" },
+            { q: "गंगोत्री राष्ट्रीय उद्यान की स्थापना कब हुई थी?", o: ["1983", "1986", "1989", "1993"], a: "1989" },
+            { q: "गंगोत्री राष्ट्रीय उद्यान किस जिले में स्थित है?", o: ["चमोली", "रुद्रप्रयाग", "उत्तरकाशी", "टिहरी गढ़वाल"], a: "उत्तरकाशी" },
+            { q: "गोविंद पशु विहार राष्ट्रीय उद्यान किस जिले में है?", o: ["देहरादून", "उत्तरकाशी", "चमोली", "पिथौरागढ़"], a: "उत्तरकाशी" },
+            { q: "गोविंद पशु विहार राष्ट्रीय उद्यान की स्थापना किस वर्ष हुई?", o: ["1989", "1990", "1993", "2012"], a: "1990" },
+            { q: "किन दो राष्ट्रीय उद्यानों को यूनेस्को (UNESCO) द्वारा विश्व धरोहर स्थल घोषित किया गया है?", o: ["कॉर्बेट और राजाजी", "नंदा देवी और फूलों की घाटी", "गंगोत्री और गोविंद पशु विहार", "कॉर्बेट और नंदा देवी"], a: "नंदा देवी और फूलों की घाटी" },
+            { q: "गोविंद वन्यजीव विहार की स्थापना किस वर्ष हुई थी?", o: ["1936", "1955", "1972", "1986"], a: "1955" },
+            { q: "केदारनाथ वन्यजीव विहार की स्थापना कब हुई?", o: ["1955", "1972", "1987", "1993"], a: "1972" },
+            { q: "केदारनाथ वन्यजीव विहार किन जिलों में स्थित है?", o: ["चमोली और रुद्रप्रयाग", "उत्तरकाशी और टिहरी", "देहरादून और हरिद्वार", "नैनीताल और चंपावत"], a: "चमोली और रुद्रप्रयाग" },
+            { q: "अस्कोट वन्यजीव विहार किस जिले में स्थित है?", o: ["चमोली", "पिथौरागढ़", "अल्मोड़ा", "बागेश्वर"], a: "पिथौरागढ़" },
+            { q: "अस्कोट वन्यजीव विहार की स्थापना कब हुई थी?", o: ["1972", "1982", "1986", "1988"], a: "1986" },
+            { q: "सोनानदी वन्यजीव विहार किस जिले में स्थित है?", o: ["देहरादून", "हरिद्वार", "पौड़ी गढ़वाल", "नैनीताल"], a: "पौड़ी गढ़वाल" },
+            { q: "सोनानदी वन्यजीव विहार की स्थापना किस वर्ष हुई?", o: ["1986", "1987", "1988", "1993"], a: "1987" },
+            { q: "बिनसर वन्यजीव विहार कहाँ स्थित है?", o: ["नैनीताल", "अल्मोड़ा", "चंपावत", "पिथौरागढ़"], a: "अल्मोड़ा" },
+            { q: "बिनसर वन्यजीव विहार की स्थापना कब हुई?", o: ["1986", "1987", "1988", "1990"], a: "1988" },
+            { q: "मसूरी (विनोग) वन्यजीव विहार किस जिले में है?", o: ["टिहरी", "देहरादून", "उत्तरकाशी", "हरिद्वार"], a: "देहरादून" },
+            { q: "मसूरी वन्यजीव विहार की स्थापना किस वर्ष हुई?", o: ["1988", "1990", "1993", "2012"], a: "1993" },
+            { q: "नंधौर वन्यजीव विहार किन जिलों में फैला है?", o: ["नैनीताल और चंपावत", "अल्मोड़ा और पिथौरागढ़", "पौड़ी और हरिद्वार", "देहरादून और टिहरी"], a: "नैनीताल और चंपावत" },
+            { q: "नंधौर वन्यजीव विहार की स्थापना कब हुई थी?", o: ["2005", "2010", "2012", "2015"], a: "2012" },
+            { q: "उत्तराखंड राज्य का सबसे बड़ा वन्यजीव अभ्यारण्य कौन सा है?", o: ["गोविंद वन्यजीव विहार", "अस्कोट वन्यजीव विहार", "नंधौर वन्यजीव विहार", "केदारनाथ वन्यजीव विहार"], a: "केदारनाथ वन्यजीव विहार" },
+            { q: "हिमालयी कस्तूरी मृग (Himalayan Musk Deer) के संरक्षण के लिए मुख्य रूप से कौन सा विहार जाना जाता है?", o: ["सोनानदी वन्यजीव विहार", "केदारनाथ वन्यजीव विहार", "बिनसर वन्यजीव विहार", "मसूरी वन्यजीव विहार"], a: "केदारनाथ वन्यजीव विहार" },
+            { q: "उत्तराखंड में कुल कितने संरक्षण आरक्षित क्षेत्र (Conservation Reserves) हैं?", o: ["2", "3", "4", "5"], a: "4" },
+            { q: "आसन संरक्षण आरक्षित किस जिले में स्थित है?", o: ["हरिद्वार", "देहरादून", "नैनीताल", "ऊधम सिंह नगर"], a: "देहरादून" },
+            { q: "आसन संरक्षण आरक्षित की स्थापना कब हुई थी?", o: ["2000", "2005", "2012", "2015"], a: "2005" },
+            { q: "उत्तराखंड का पहला 'रामसर स्थल' (Ramsar Wetland) किसे घोषित किया गया है?", o: ["झिलमिल झील", "नैनी झील", "आसन संरक्षण आरक्षित", "सीताबनी आरक्षित"], a: "आसन संरक्षण आरक्षित" },
+            { q: "झिलमिल झील संरक्षण आरक्षित कहाँ स्थित है?", o: ["देहरादून", "हरिद्वार", "नैनीताल", "चंपावत"], a: "हरिद्वार" },
+            { q: "झिलमिल झील संरक्षण आरक्षित मुख्य रूप से किस जीव के संरक्षण के लिए जाना जाता है?", o: ["दलदली हिरण (बारहसिंघा)", "कस्तूरी मृग", "हिम तेंदुआ", "हाथी"], a: "दलदली हिरण (बारहसिंघा)" },
+            { q: "सीताबनी संरक्षण आरक्षित का पूर्व नाम क्या था?", o: ["आसन रिज़र्व", "पवलगढ़ संरक्षण आरक्षित", "नंधौर रिज़र्व", "विनोग रिज़र्व"], a: "पवलगढ़ संरक्षण आरक्षित" },
+            { q: "सीताबनी (पवलगढ़) संरक्षण आरक्षित किस जिले में स्थित है?", o: ["हरिद्वार", "देहरादून", "नैनीताल", "अल्मोड़ा"], a: "नैनीताल" },
+            { q: "पवलगढ़ रिज़र्व का नाम बदलकर 'सीताबनी कंज़र्वेशन रिज़र्व' किस वर्ष किया गया?", o: ["2015", "2020", "2022", "2024"], a: "2024" },
+            { q: "नैना देवी हिमालयन बर्ड कंजर्वेशन रिजर्व कहाँ स्थित है?", o: ["चंपावत", "नैनीताल", "अल्मोड़ा", "बागेश्वर"], a: "नैनीताल" },
+            { q: "नैना देवी हिमालयन बर्ड कंजर्वेशन रिजर्व की स्थापना कब हुई?", o: ["2005", "2012", "2015", "2020"], a: "2015" },
+            { q: "नैना देवी रिज़र्व में पक्षियों की लगभग कितनी प्रजातियाँ पाई जाती हैं?", o: ["100 से अधिक", "300 से अधिक", "600 से अधिक", "1000 से अधिक"], a: "600 से अधिक" },
+            { q: "उत्तराखंड में कितने उच्च स्थलीय प्राणी उद्यान (High Altitude Zoo) हैं?", o: ["1", "2", "3", "4"], a: "1" },
+            { q: "भारत रत्न पं० गोविन्द बल्लभ पन्त उच्च स्थलीय प्राणी उद्यान कहाँ स्थित है?", o: ["अल्मोड़ा", "नैनीताल", "देहरादून", "मुनस्यारी"], a: "नैनीताल" },
+            { q: "नैनीताल स्थित उच्च स्थलीय प्राणी उद्यान समुद्र तल से लगभग कितनी ऊंचाई पर स्थित है?", o: ["1500 मीटर", "1800 मीटर", "2100 मीटर", "2500 मीटर"], a: "2100 मीटर" },
+            { q: "उत्तराखंड में कुल कितने जैव सुरक्षित क्षेत्र (Biosphere Reserve) हैं?", o: ["1", "2", "3", "4"], a: "1" },
+            { q: "नंदा देवी बायोस्फीयर रिजर्व की स्थापना किस वर्ष हुई थी?", o: ["1982", "1986", "1988", "1990"], a: "1988" },
+            { q: "नंदा देवी बायोस्फीयर रिजर्व किन जिलों में फैला हुआ है?", o: ["चमोली, बागेश्वर और पिथौरागढ़", "उत्तरकाशी, चमोली और रुद्रप्रयाग", "नैनीताल, अल्मोड़ा और चंपावत", "टिहरी, पौड़ी और देहरादून"], a: "चमोली, बागेश्वर और पिथौरागढ़" },
+            { q: "नंदा देवी बायोस्फीयर रिजर्व का कुल क्षेत्रफल लगभग कितना है?", o: ["3000 वर्ग किमी", "4500 वर्ग किमी", "5860.6 वर्ग किमी", "7200 वर्ग किमी"], a: "5860.6 वर्ग किमी" }
+        ];
+
+        let activeQuestions = [];
+        let userAnswers = {};
+        let currentIndex = 0;
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initQuiz(shuffle = false, questionsList = allQuestionsData) {
+            document.getElementById('quiz-mode').style.display = 'flex';
+            document.getElementById('result-mode').style.display = 'none';
+            
+            activeQuestions = questionsList.map((q, index) => {
+                let options = shuffle ? shuffleArray(q.o) : [...q.o];
+                return { id: index, q: q.q, o: options, a: q.a };
+            });
+
+            if (shuffle) activeQuestions = shuffleArray(activeQuestions);
+
+            userAnswers = {};
+            currentIndex = 0;
+            renderPalette();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = activeQuestions[currentIndex];
+            document.getElementById('question-number').innerText = `प्रश्न ${currentIndex + 1} / ${activeQuestions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const isAnswered = userAnswers[currentIndex] !== undefined;
+
+            q.o.forEach(opt => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.innerText = opt;
+                
+                if (isAnswered) {
+                    div.classList.add('disabled');
+                    if (opt === q.a) div.classList.add('correct');
+                    else if (opt === userAnswers[currentIndex]) div.classList.add('wrong');
+                } else {
+                    div.onclick = () => selectOption(opt);
+                }
+                optionsContainer.appendChild(div);
+            });
+
+            updateControls();
+            updatePaletteActiveStatus();
+        }
+
+        function selectOption(selectedOpt) {
+            if (userAnswers[currentIndex] !== undefined) return;
+            userAnswers[currentIndex] = selectedOpt;
+            document.getElementById(`grid-item-${currentIndex}`).classList.add('attempted');
+            loadQuestion();
+        }
+
+        function changeQuestion(step) {
+            currentIndex += step;
+            if (currentIndex < 0) currentIndex = 0;
+            if (currentIndex >= activeQuestions.length) currentIndex = activeQuestions.length - 1;
+            loadQuestion();
+        }
+
+        function jumpToQuestion(index) {
+            currentIndex = index;
+            loadQuestion();
+        }
+
+        function updateControls() {
+            document.getElementById('btn-prev').disabled = currentIndex === 0;
+            const btnNext = document.getElementById('btn-next');
+            const btnSubmit = document.getElementById('btn-submit-main');
+            
+            if (currentIndex === activeQuestions.length - 1) {
+                btnNext.style.display = 'none';
+                btnSubmit.style.display = 'block';
+            } else {
+                btnNext.style.display = 'block';
+                btnSubmit.style.display = 'none';
+            }
+        }
+
+        function renderPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = '';
+            activeQuestions.forEach((_, index) => {
+                const div = document.createElement('div');
+                div.className = 'grid-item';
+                div.id = `grid-item-${index}`;
+                div.innerText = index + 1;
+                div.onclick = () => jumpToQuestion(index);
+                if (userAnswers[index] !== undefined) div.classList.add('attempted');
+                grid.appendChild(div);
+            });
+        }
+
+        function updatePaletteActiveStatus() {
+            document.querySelectorAll('.grid-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`grid-item-${currentIndex}`).classList.add('active');
+            document.getElementById(`grid-item-${currentIndex}`).scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        function submitQuiz() {
+            const attemptedCount = Object.keys(userAnswers).length;
+            const total = activeQuestions.length;
+            
+            if (attemptedCount < total) {
+                const unattempted = total - attemptedCount;
+                if (!confirm(`आपने ${unattempted} प्रश्न छोड़ दिए हैं। क्या आप फिर भी सबमिट करना चाहते हैं?`)) return;
+            }
+            showResults();
+        }
+
+        function showResults() {
+            document.getElementById('quiz-mode').style.display = 'none';
+            document.getElementById('result-mode').style.display = 'block';
+            
+            let score = 0;
+            const reviewContainer = document.getElementById('review-container');
+            reviewContainer.innerHTML = '<h3>विस्तृत समीक्षा (Detailed Review)</h3>';
+
+            activeQuestions.forEach((q, i) => {
+                const userAns = userAnswers[i] || 'कोई उत्तर नहीं दिया (Unattempted)';
+                const isCorrect = userAns === q.a;
+                if (isCorrect) score++;
+
+                reviewContainer.innerHTML += `
+                    <div class="review-item">
+                        <h4>Q${i+1}: ${q.q}</h4>
+                        <p>आपका उत्तर: <span class="${isCorrect ? 'text-green' : 'text-red'}">${userAns}</span></p>
+                        ${!isCorrect ? `<p>सही उत्तर: <span class="text-green">${q.a}</span></p>` : ''}
+                    </div>
+                `;
+            });
+
+            document.getElementById('score-display').innerText = `स्कोर: ${score} / ${activeQuestions.length}`;
+            
+            const percent = (score / activeQuestions.length) * 100;
+            let msg = percent >= 80 ? "उत्कृष्ट प्रदर्शन! 🏆" : percent >= 50 ? "अच्छा प्रयास! 👍" : "और अभ्यास की आवश्यकता है! 📚";
+            document.getElementById('score-message').innerText = msg;
+
+            document.getElementById('btn-retest').style.display = (score === activeQuestions.length) ? 'none' : 'inline-block';
+        }
+
+        function retestWrongUnattempted() {
+            const failedQuestions = activeQuestions.filter((q, i) => userAnswers[i] !== q.a);
+            initQuiz(false, failedQuestions);
+        }
+
+        function fullRestart() {
+            initQuiz(false, allQuestionsData);
+        }
+
+        window.onload = () => initQuiz(false);
+    </script>
+</body>
+</html>
