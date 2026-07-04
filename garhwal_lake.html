@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>उत्तराखंड झीलें एवं ताल - स्मार्ट क्विज़ v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Hind', sans-serif;
+            background-color: #f0f4f8;
+        }
+
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .palette-btn {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .palette-btn.current { border: 2px solid #2563eb; color: #2563eb; background-color: #eff6ff; }
+        .palette-btn.answered { background-color: #3b82f6; color: white; border: none; }
+        .palette-btn.unanswered { background-color: white; color: #64748b; border: 1px solid #cbd5e1; }
+
+        .correct-opt { background-color: #22c55e !important; color: white !important; border-color: #16a34a !important; }
+        .wrong-opt { background-color: #ef4444 !important; color: white !important; border-color: #dc2626 !important; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-blue-700 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <a href="uttarakhand.html" class="flex items-center gap-2 hover:bg-blue-800 px-3 py-1 rounded transition">
+                <i class="fas fa-arrow-left"></i> <span>बैक</span>
+            </a>
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fas fa-water"></i> <span id="header-title">UK झीलें & ताल क्विज़</span>
+            </h1>
+            <button onclick="shuffleQuiz()" id="shuffle-btn" class="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-sm flex items-center gap-1 hidden">
+                <i class="fas fa-random"></i> <span>शफल</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-3xl w-full mx-auto mt-6 px-4 flex-grow mb-8">
+        
+        <!-- Home / Set Selection Screen -->
+        <div id="home-screen" class="space-y-6">
+            <div class="bg-white p-8 rounded-2xl shadow-md text-center border-t-4 border-blue-600">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">उत्तराखंड सामान्य ज्ञान अभ्यास क्विज़</h2>
+                <p class="text-gray-600 mb-6">दस्तावेजों में दी गई सभी 33 झीलों/ताल पर आधारित विशेष टेस्ट सीरीज। अभ्यास के लिए नीचे से सेट का चयन करें:</p>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <!-- Set 1 Card -->
+                    <button onclick="startSet(1)" class="p-6 bg-white border-2 border-gray-200 hover:border-blue-500 rounded-2xl text-left transition hover:shadow-md group">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition">
+                            <i class="fas fa-map-marker-alt text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-850 mb-1">सेट 1: झील से स्थान/जिला</h3>
+                        <p class="text-sm text-gray-500">इसमें प्रश्न में एक विशेष झील का नाम होगा और आपको उसका सही जिला/स्थान चुनना होगा।</p>
+                    </button>
+
+                    <!-- Set 2 Card -->
+                    <button onclick="startSet(2)" class="p-6 bg-white border-2 border-gray-200 hover:border-blue-500 rounded-2xl text-left transition hover:shadow-md group">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-4 group-hover:bg-purple-600 group-hover:text-white transition">
+                            <i class="fas fa-list-ol text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-850 mb-1">सेट 2: स्थान/विशेषता से झील</h3>
+                        <p class="text-sm text-gray-500">इसमें विशिष्ट स्थान या भ्रमित करने वाली विशेषताओं के आधार पर सही झील का चयन करना होगा (4 करीबी विकल्प)।</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <!-- Progress Bar -->
+            <div class="bg-white rounded-full h-2.5 mb-6 overflow-hidden shadow-sm">
+                <div id="progress-bar" class="bg-blue-600 h-2.5 transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-md flex flex-col border border-gray-150">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded" id="question-tag">प्रश्न</span>
+                    <span class="text-gray-500 text-sm font-medium" id="question-counter">1 / 33</span>
+                </div>
+                
+                <h2 id="question-text" class="text-xl font-bold text-gray-800 mb-6 leading-relaxed"></h2>
+
+                <div id="options-container" class="grid gap-3">
+                    <!-- Options injected here -->
+                </div>
+
+                <!-- Action Navigation Buttons (Handy & Accessible) -->
+                <div class="mt-8 pt-6 border-t border-gray-100 flex justify-between gap-4">
+                    <button onclick="prevQuestion()" id="prev-btn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition disabled:opacity-50 flex items-center justify-center gap-2">
+                        <i class="fas fa-chevron-left"></i> पिछला
+                    </button>
+                    <button onclick="nextQuestion()" id="next-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 transition flex items-center justify-center gap-2">
+                        अगला <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Integrated Dashboard / Palette (Fixed Layout: Connected right under the Quiz box) -->
+            <div id="palette-section" class="bg-white border border-gray-200 rounded-2xl p-5 mt-6 shadow-sm">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-bold text-gray-700"><i class="fas fa-th-large mr-1 text-blue-600"></i> प्रश्न पैलेट (सीधे किसी भी प्रश्न पर जाएं)</span>
+                    <button onclick="checkAndSubmit()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl text-sm font-bold transition shadow-sm flex items-center gap-1">
+                        <i class="fas fa-check-double"></i> सबमिट करें
+                    </button>
+                </div>
+                <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2" id="palette-container">
+                    <!-- Numbers injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden">
+            <div class="bg-white p-8 rounded-3xl shadow-md text-center mb-6 border-t-8 border-green-500">
+                <div id="result-icon" class="text-6xl mb-4">🏆</div>
+                <h2 class="text-3xl font-black text-gray-800 mb-2" id="result-title">शानदार!</h2>
+                <div class="text-5xl font-black text-blue-600 mb-4" id="final-score">0%</div>
+                <p id="result-msg" class="text-gray-600 mb-6 px-4"></p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                    <button onclick="retestWrong()" id="retest-btn" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i class="fas fa-redo-alt"></i> गलत प्रश्नों का री-टेस्ट
+                    </button>
+                    <button onclick="backToHome()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i class="fas fa-home"></i> मुख्य स्क्रीन पर जाएं
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200">
+                <div class="bg-gray-800 text-white p-4 font-bold flex items-center gap-2">
+                    <i class="fas fa-poll-h"></i> विस्तृत समीक्षा (Detailed Review)
+                </div>
+                <div id="review-container" class="divide-y divide-gray-100">
+                    <!-- Review items -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Set 1: झील से स्थान/जिला पूछेगा
+        const set1Data = [
+            { q: "सहस्त्रताल उत्तराखंड के किस जिले में स्थित है?", options: ["टिहरी गढ़वाल", "उत्तरकाशी", "चमोली", "पौड़ी गढ़वाल"], ans: "टिहरी गढ़वाल", tag: "झील से स्थान" },
+            { q: "यमताल किस जिले में स्थित एक प्रमुख ताल है?", options: ["टिहरी गढ़वाल", "उत्तरकाशी", "चमोली", "रुद्रप्रयाग"], ans: "टिहरी गढ़वाल", tag: "झील से स्थान" },
+            { q: "महासर ताल निम्नलिखित में से किस स्थान/जिले में स्थित है?", options: ["टिहरी गढ़वाल", "उत्तरकाशी", "चमोली", "रुद्रप्रयाग"], ans: "टिहरी गढ़वाल", tag: "झील से स्थान" },
+            { q: "बासुकी ताल का संबंध मुख्य रूप से किस जिले से है?", options: ["टिहरी गढ़वाल", "चमोली", "उत्तरकाशी", "देहरादून"], ans: "टिहरी गढ़वाल", tag: "झील से स्थान" },
+            { q: "मंसूरताल उत्तराखंड के किस स्थान या हिमनद के पास स्थित है?", options: ["टिहरी (खतलिंग हिमनद)", "उत्तरकाशी (दूध गंगा)", "चमोली (बद्रीनाथ)", "पौड़ी (दूधातोली)"], ans: "टिहरी (खतलिंग हिमनद)", tag: "झील से स्थान" },
+            { q: "अप्सरा ताल निम्नलिखित में से किस जिले/स्थान पर स्थित है?", options: ["टिहरी (बुढ़ाकेदार)", "उत्तरकाशी (गंगोरी)", "चमोली (आदिबदरी)", "देहरादून (रायवाला)"], ans: "टिहरी (बुढ़ाकेदार)", tag: "झील से स्थान" },
+            { q: "भिलंगना ताल किस जिले में स्थित है?", options: ["टिहरी गढ़वाल", "उत्तरकाशी", "चमोली", "रुद्रप्रयाग"], ans: "टिहरी गढ़वाल", tag: "झील से स्थान" },
+            { q: "दुग्धताल किस प्रशासनिक जिले के अंतर्गत आता है?", options: ["पौड़ी गढ़वाल", "चमोली", "टिहरी गढ़वाल", "उत्तरकाशी"], ans: "पौड़ी गढ़वाल", tag: "झील से स्थान" },
+            { q: "ताराकुण्ड उत्तराखंड के किस क्षेत्र में स्थित है?", options: ["दूधातोली (पौड़ी)", "बेदनी (चमोली)", "बुढ़ाकेदार (टिहरी)", "गंगोरी (उत्तरकाशी)"], ans: "दूधातोली (पौड़ी)", tag: "झील से स्थान" },
+            { q: "रुपकुण्ड (रहस्यताल) किस जिले में स्थित है?", options: ["चमोली", "टिहरी गढ़वाल", "उत्तरकाशी", "रुद्रप्रयाग"], ans: "चमोली", tag: "झील से स्थान" },
+            { q: "लोकपाल (हेमकुण्ड) नामक पवित्र तीर्थस्थल किस जिले में है?", options: ["चमोली", "रुद्रप्रयाग", "उत्तरकाशी", "हरिद्वार"], ans: "चमोली", tag: "झील से स्थान" },
+            { q: "होमकुण्ड उत्तराखंड के किस जिले में रुपकुण्ड के समीप स्थित है?", options: ["चमोली", "टिहरी गढ़वाल", "उत्तरकाशी", "पौड़ी गढ़वाल"], ans: "चमोली", tag: "झील से स्थान" },
+            { q: "संतोपंथ सत्यपद ताल किस जिले में स्थित है?", options: ["चमोली", "उत्तरकाशी", "रुद्रप्रयाग", "देहरादून"], ans: "चमोली", tag: "झील से स्थान" },
+            { q: "बिरही ताल का संबंध किस जिले से है?", options: ["चमोली", "टिहरी गढ़वाल", "उत्तरकाशी", "रुद्रप्रयाग"], ans: "चमोली", tag: "झील से स्थान" },
+            { q: "बेनीताल निम्नलिखित में से किस स्थान के निकट चमोली में स्थित है?", options: ["आदिबदरी", "बद्रीनाथ", "जोशीमठ", "गोपेश्वर"], ans: "आदिबदरी", tag: "झील से स्थान" },
+            { q: "विष्णुताल चमोली में किस प्रसिद्ध धाम के निकट स्थित है?", options: ["बद्रीनाथ", "केदारनाथ", "गंगोत्री", "यमुनोत्री"], ans: "बद्रीनाथ", tag: "झील से स्थान" },
+            { q: "लिंगाताल तथा आंछरी ताल कहाँ स्थित हैं?", options: ["चमोली (फूलों की घाटी)", "उत्तरकाशी (हर की दून)", "टिहरी (खतलिंग)", "पौड़ी (दूधातोली)"], ans: "चमोली (फूलों की घाटी)", tag: "झील से स्थान" },
+            { q: "सुखताल किस जिले में घाट के ऊपर स्थित है?", options: ["चमोली", "टिहरी गढ़वाल", "उत्तरकाशी", "देहरादून"], ans: "चमोली", tag: "झील से स्थान" },
+            { q: "झलताल किस ताल के समीप स्थित है?", options: ["सुखताल", "विष्णुताल", "बेनीताल", "बिरही ताल"], ans: "सुखताल", tag: "झील से स्थान" },
+            { q: "काकभूशुंडीताल किस पर्वत श्रृंखला के निकट जोशीमठ में है?", options: ["हाथी पर्वत", "त्रिशूल पर्वत", "चौखंबा पर्वत", "नीलकंठ पर्वत"], ans: "हाथी पर्वत", tag: "झील से स्थान" },
+            { q: "गोहना झील गोपेश्वर से पूर्व में किस जिले के अंतर्गत आती थी?", options: ["चमोली", "टिहरी गढ़वाल", "रुद्रप्रयाग", "उत्तरकाशी"], ans: "चमोली", tag: "झील से स्थान" },
+            { q: "गुड़्यार, आदि मातृका नरसिंह, मणिभद्र तथा सिद्ध ताल किस जिले के प्रमुख ताल हैं?", options: ["चमोली", "उत्तरकाशी", "टिहरी गढ़वाल", "रुद्रप्रयाग"], ans: "चमोली", tag: "झील से स्थान" },
+            { q: "नचिकेता ताल किस जिले में स्थित है?", options: ["उत्तरकाशी", "चमोली", "पौड़ी गढ़वाल", "देहरादून"], ans: "उत्तरकाशी", tag: "झील से स्थान" },
+            { q: "डोडी ताल गंगोरी के निकट किस जिले में स्थित है?", options: ["उत्तरकाशी", "टिहरी गढ़वाल", "चमोली", "हरिद्वार"], ans: "उत्तरकाशी", tag: "झील से स्थान" },
+            { q: "फाचकण्डी बयां ताल उत्तराखंड के किस जिले में स्थित है?", options: ["उत्तरकाशी", "रुद्रप्रयाग", "चमोली", "पौड़ी गढ़वाल"], ans: "उत्तरकाशी", tag: "झील से स्थान" },
+            { q: "काणाताल किस प्रसिद्ध ताल के पीछे स्थित है?", options: ["डोडी ताल", "नचिकेता ताल", "केदारताल", "सहस्त्रताल"], ans: "डोडी ताल", tag: "झील से स्थान" },
+            { q: "देवरिया ताल ऊखीमठ के ऊपर किस जिले में स्थित है?", options: ["रुद्रप्रयाग", "चमोली", "टिहरी गढ़वाल", "उत्तरकाशी"], ans: "रुद्रप्रयाग", tag: "झील से स्थान" },
+            { q: "बधाणी ताल का संबंध किस जिले से है?", options: ["रुद्रप्रयाग", "टिहरी गढ़वाल", "देहरादून", "चमोली"], ans: "रुद्रप्रयाग", tag: "झील से स्थान" },
+            { q: "शरवदी या चौराबड़ी (गाँधी सरोवर) ताल कहाँ स्थित है?", options: ["रुद्रप्रयाग", "चमोली", "उत्तरकाशी", "पौड़ी गढ़वाल"], ans: "रुद्रप्रयाग", tag: "झील से स्थान" },
+            { q: "काँसरोत ताल रायवाला के पास किस जिले में स्थित है?", options: ["देहरादून", "हरिद्वार", "पौड़ी गढ़वाल", "टिहरी गढ़वाल"], ans: "देहरादून", tag: "झील से स्थान" },
+            { q: "चन्दबाड़ी ताल निम्नलिखित में से किस जिले में स्थित है?", options: ["देहरादून", "उत्तरकाशी", "चमोली", "हरिद्वार"], ans: "देहरादून", tag: "झील से स्थान" },
+            { q: "केदारताल, भराणसरताल, रोहीसाड़ा, खिड़ा और लामाताल किस जिले में हैं?", options: ["उत्तरकाशी", "टिहरी गढ़वाल", "चमोली", "रुद्रप्रयाग"], ans: "उत्तरकाशी", tag: "झील से स्थान" },
+            { q: "दिव्य सरोवर हरिद्वार में किस पर्वत पर स्थित है?", options: ["विल्व पर्वत", "नील पर्वत", "हाथी पर्वत", "नीलकंठ पर्वत"], ans: "विल्व पर्वत", tag: "झील से स्थान" }
+        ];
+
+        // Set 2: स्थान/विवरण से झील पूछेगा (कंफ्यूजिंग विकल्प)
+        const set2Data = [
+            { q: "थाती, टिहरी गढ़वाल में स्थित गढ़वाल क्षेत्र की सबसे बड़ी और गहरी झील कौन सी है?", options: ["सहस्त्रताल", "यमताल", "महासर ताल", "मंसूरताल"], ans: "सहस्त्रताल", tag: "स्थान/विशेषता से झील" },
+            { q: "सहस्त्र ताल के समीप स्थित वह कौन सा ताल है जो हमेशा बर्फ से ढका रहता है?", options: ["यमताल", "मंसूरताल", "अप्सरा ताल", "भिलंगना ताल"], ans: "यमताल", tag: "स्थान/विशेषता से झील" },
+            { q: "सहस्त्र ताल के समीप स्थित उस ताल का नाम क्या है जिसे 'भाई-बहनों का ताल' भी कहा जाता है और जिसके आसपास बुग्याल पाए जाते हैं?", options: ["महासर ताल", "यमताल", "बासुकी ताल", "भिलंगना ताल"], ans: "महासर ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "टिहरी गढ़वाल में स्थित लाल-पानी वाले अनूठे ताल की पहचान करें:", options: ["बासुकी ताल", "मंसूरताल", "अप्सरा ताल", "सहस्त्रताल"], ans: "बासुकी ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "टिहरी में खतलिंग हिमनद के पास स्थित प्रसिद्ध ताल कौन सा है?", options: ["मंसूरताल", "सहस्त्रताल", "भिलंगना ताल", "अप्सरा ताल"], ans: "मंसूरताल", tag: "स्थान/विशेषता से झील" },
+            { q: "टिहरी बुढ़ाकेदार के पास स्थित प्रमुख ताल का नाम क्या है?", options: ["अप्सरा ताल", "भिलंगना ताल", "मंसूरताल", "यमताल"], ans: "अप्सरा ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "पौड़ी गढ़वाल के दूधातोली क्षेत्र में स्थित प्रमुख ताल कौन सा है?", options: ["दुग्धताल", "ताराकुण्ड", "रूपकुण्ड", "बेनीताल"], ans: "दुग्धताल", tag: "स्थान/विशेषता से झील" },
+            { q: "चमोली में बेदनी से आगे स्थित प्रसिद्ध 'रहस्यताल' कौन सा है?", options: ["रूपकुण्ड", "होमकुण्ड", "लोकपाल", "संतोपंथ"], ans: "रूपकुण्ड", tag: "स्थान/विशेषता से झील" },
+            { q: "चमोली में स्थित उस झील को पहचानिए जिसके किनारे सिक्खों के दसवें गुरु गोविन्द सिंह ने तपस्या की थी:", options: ["लोकपाल (हेमकुण्ड)", "होमकुण्ड", "विष्णुताल", "संतोपंथ"], ans: "लोकपाल (हेमकुण्ड)", tag: "स्थान/विशेषता से झील" },
+            { q: "चमोली में त्रिकोण आकार का वह ताल कौन सा है जो अलकनन्दा नदी का उद्गम स्थल भी है?", options: ["संतोपंथ सत्यपद ताल", "बिरही ताल", "बेनीताल", "विष्णुताल"], ans: "संतोपंथ सत्यपद ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "चमोली की वह झील जिसे 'गौना झील' भी कहते हैं और जिससे बिरही नदी का उद्गम होता है, कौन सी है?", options: ["बिरही ताल", "सुखताल", "झलताल", "बेनीताल"], ans: "बिरही ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "उत्तरकाशी में दूध गंगा हिमनद के पास स्थित शांत धार्मिक ताल कौन सा है?", options: ["नचिकेता ताल", "डोडी ताल", "काणाताल", "केदारताल"], ans: "नचिकेता ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "उत्तरकाशी में गंगोरी के निकट स्थित 'षटकोण आकार' वाला प्रसिद्ध ताल कौन सा है?", options: ["डोडी ताल", "काणाताल", "नचिकेता ताल", "भराणसरताल"], ans: "डोडी ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "उत्तरकाशी का वह अनूठा ताल कौन सा है जिसका जल हमेशा उबलता रहता है?", options: ["फाचकण्डी बयां ताल", "काणाताल", "रोहीसाड़ा ताल", "देवसाड़ी ताल"], ans: "फाचकण्डी बयां ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "रुद्रप्रयाग में ऊखीमठ के ठीक ऊपर स्थित मनोरम झील का नाम क्या है?", options: ["देवरिया ताल", "बधाणी ताल", "शरवदी ताल", "चोराबाड़ी"], ans: "देवरिया ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "रुद्रप्रयाग में स्थित वह ऐतिहासिक ताल कौन सा है जिसे 'गाँधी सरोवर' भी कहा जाता है?", options: ["शरवदी या चौराबड़ी", "देवरिया ताल", "बधाणी ताल", "भिलंगना ताल"], ans: "शरवदी या चौराबड़ी", tag: "स्थान/विशेषता से झील" },
+            { q: "देहरादून की किस झील से प्रसिद्ध चन्द्रभागा नदी का उद्गम होता है?", options: ["चन्दबाड़ी ताल", "काँसरोत ताल", "दिव्य सरोवर", "ताराकुण्ड"], ans: "चन्दबाड़ी ताल", tag: "स्थान/विशेषता से झील" },
+            { q: "गोपेश्वर से पूरब में स्थित वह प्राकृतिक झील कौन सी थी जिसका निर्माण 1895 में पहाड़ गिरने से हुआ और 1970 में स्वयं टूट कर समाप्त हो गई?", options: ["गोहना झील", "बिरही ताल", "सुखताल", "रूपकुण्ड"], ans: "गोहना झील", tag: "स्थान/विशेषता से झील" },
+            { q: "उत्तरकाशी के डोडी ताल के ठीक पीछे स्थित आंशिक रूप से छिपे हुए ताल का नाम बताएं:", options: ["काणाताल", "लामाताल", "खिड़ा ताल", "रोहीसाड़ा ताल"], ans: "काणाताल", tag: "स्थान/विशेषता से झील" },
+            { q: "हरिद्वार के प्रसिद्ध विल्व पर्वत पर स्थित पवित्र सरोवर का क्या नाम है?", options: ["दिव्य सरोवर", "काँसरोत ताल", "चन्दबाड़ी ताल", "ताराकुण्ड"], ans: "दिव्य सरोवर", tag: "स्थान/विशेषता से झील" }
+        ];
+
+        let quizQuestions = [];
+        let currentIndex = 0;
+        let userAnswers = {};
+        let currentSetNumber = 1;
+
+        function startSet(setNumber) {
+            currentSetNumber = setNumber;
+            const data = (setNumber === 1) ? set1Data : set2Data;
+            
+            document.getElementById('home-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('shuffle-btn').classList.remove('hidden');
+            
+            document.getElementById('header-title').innerText = `UK झीलें - सेट ${setNumber}`;
+            
+            initQuiz(data);
+        }
+
+        function backToHome() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('shuffle-btn').classList.add('hidden');
+            document.getElementById('home-screen').classList.remove('hidden');
+            document.getElementById('header-title').innerText = "UK झीलें & ताल क्विज़";
+        }
+
+        function initQuiz(questions) {
+            quizQuestions = JSON.parse(JSON.stringify(questions));
+            currentIndex = 0;
+            userAnswers = {};
+            renderPalette();
+            showQuestion();
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function shuffleQuiz() {
+            if(confirm("क्या आप इस सेट के प्रश्नों और विकल्पों के क्रम को बेतरतीब (Shuffle) करना चाहते हैं? आपकी वर्तमान प्रगति रीसेट हो जाएगी।")) {
+                const baseData = (currentSetNumber === 1) ? set1Data : set2Data;
+                const shuffled = [...baseData].sort(() => Math.random() - 0.5);
+                shuffled.forEach(q => q.options.sort(() => Math.random() - 0.5));
+                initQuiz(shuffled);
+            }
+        }
+
+        function showQuestion() {
+            const q = quizQuestions[currentIndex];
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('question-tag').innerText = q.tag || "प्रश्न";
+            document.getElementById('question-counter').innerText = `${currentIndex + 1} / ${quizQuestions.length}`;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left p-4 rounded-xl border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 font-medium text-gray-700 flex justify-between items-center';
+                btn.innerHTML = `<span>${opt}</span><i class="fas fa-circle-notch opacity-0"></i>`;
+                
+                // State Recovery / Save
+                if (userAnswers[currentIndex]) {
+                    if (opt === q.ans) btn.classList.add('correct-opt');
+                    else if (opt === userAnswers[currentIndex].selected) btn.classList.add('wrong-opt');
+                    btn.disabled = true;
+                } else {
+                    btn.onclick = () => selectOption(opt, btn);
+                }
+                
+                container.appendChild(btn);
+            });
+
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').innerHTML = currentIndex === quizQuestions.length - 1 ? 
+                'समीक्षा करें <i class="fas fa-flag-checkered ml-1"></i>' : 
+                'अगला <i class="fas fa-chevron-right ml-1"></i>';
+
+            renderPalette();
+        }
+
+        function selectOption(opt, btn) {
+            const q = quizQuestions[currentIndex];
+            userAnswers[currentIndex] = { selected: opt, isCorrect: opt === q.ans };
+            
+            // Real-time answer checking animation
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(b => {
+                const text = b.querySelector('span').innerText;
+                if (text === q.ans) b.classList.add('correct-opt');
+                else if (text === opt) b.classList.add('wrong-opt');
+                b.disabled = true;
+            });
+
+            updateProgress();
+            renderPalette();
+
+            // Handy UX Auto-advance after selection
+            setTimeout(() => {
+                if (currentIndex < quizQuestions.length - 1) nextQuestion();
+            }, 700);
+        }
+
+        function renderPalette() {
+            const container = document.getElementById('palette-container');
+            container.innerHTML = '';
+            quizQuestions.forEach((_, idx) => {
+                const btn = document.createElement('div');
+                btn.className = `palette-btn ${idx === currentIndex ? 'current' : (userAnswers[idx] ? 'answered' : 'unanswered')}`;
+                btn.innerText = idx + 1;
+                btn.onclick = () => { currentIndex = idx; showQuestion(); };
+                container.appendChild(btn);
+            });
+        }
+
+        function updateProgress() {
+            const total = quizQuestions.length;
+            const answered = Object.keys(userAnswers).length;
+            document.getElementById('progress-bar').style.width = `${(answered / total) * 100}%`;
+        }
+
+        function nextQuestion() {
+            if (currentIndex < quizQuestions.length - 1) {
+                currentIndex++;
+                showQuestion();
+            } else {
+                checkAndSubmit();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                showQuestion();
+            }
+        }
+
+        function checkAndSubmit() {
+            const answeredCount = Object.keys(userAnswers).length;
+            const total = quizQuestions.length;
+            
+            if (answeredCount < total) {
+                const remaining = total - answeredCount;
+                if (confirm(`स्मार्ट अलर्ट: आपने अभी ${remaining} प्रश्न छोड़ दिए हैं। क्या आप फिर भी क्विज़ सबमिट करना चाहते हैं?`)) {
+                    showResult();
+                }
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const total = quizQuestions.length;
+            const correct = Object.values(userAnswers).filter(a => a.isCorrect).length;
+            const percent = Math.round((correct / total) * 100);
+
+            const scoreEl = document.getElementById('final-score');
+            scoreEl.innerText = `${percent}%`;
+            
+            let title = "प्रयास जारी रखें!";
+            let icon = "🎯";
+            let msg = `आपने इस सेट के कुल ${total} प्रश्नों में से ${correct} का सही उत्तर दिया है।`;
+
+            if (percent >= 90) { title = "उत्कृष्ट प्रदर्शन!"; icon = "👑"; }
+            else if (percent >= 75) { title = "शानदार स्कोर!"; icon = "🌟"; }
+            else if (percent >= 50) { title = "अच्छा प्रयास!"; icon = "👍"; }
+
+            document.getElementById('result-title').innerText = title;
+            document.getElementById('result-icon').innerText = icon;
+            document.getElementById('result-msg').innerText = msg;
+
+            // Retest mode logic
+            const wrongCount = total - correct;
+            document.getElementById('retest-btn').style.display = wrongCount > 0 ? 'flex' : 'none';
+
+            // Detailed Review Generation
+            const reviewContainer = document.getElementById('review-container');
+            reviewContainer.innerHTML = '';
+            quizQuestions.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                const div = document.createElement('div');
+                div.className = `p-4 ${!userAns || !userAns.isCorrect ? 'bg-red-50/70' : 'bg-green-50/70'}`;
+                div.innerHTML = `
+                    <p class="text-sm font-bold text-gray-800 mb-2">${idx + 1}. ${q.q}</p>
+                    <div class="flex flex-wrap gap-4 text-xs">
+                        <span class="text-gray-600">आपका चयन: <b class="${userAns?.isCorrect ? 'text-green-600' : 'text-red-600'}">${userAns?.selected || 'छोड़ दिया गया था'}</b></span>
+                        <span class="text-green-700">सही जवाब: <b>${q.ans}</b></span>
+                    </div>
+                `;
+                reviewContainer.appendChild(div);
+            });
+        }
+
+        function retestWrong() {
+            // Filter only unanswered or incorrect questions for pinpointed practice
+            const wrongQuestions = quizQuestions.filter((q, idx) => !userAnswers[idx] || !userAnswers[idx].isCorrect);
+            if (wrongQuestions.length > 0) {
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                initQuiz(wrongQuestions);
+            }
+        }
+    </script>
+</body>
+</html>
