@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>उत्तराखंड भौगोलिक क्विज</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <style>
+        /* मोबाइल पर हाईलाइट बॉक्स को छिपने से रोकने के लिए */
+        .leaflet-tooltip { font-size: 14px; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-sky-50 h-screen w-screen overflow-hidden flex flex-col font-sans text-slate-800 m-0 p-0">
+
+    <header class="bg-white shadow-md z-10 shrink-0 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+        <div class="flex items-center gap-3">
+            <h1 class="text-lg md:text-xl font-extrabold text-indigo-900 hidden md:block">उत्तराखंड मानचित्र क्विज</h1>
+            <select id="category-select" class="px-2 py-1.5 border border-slate-300 rounded bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="All">सभी 150+ स्थान</option>
+                <option value="नदियाँ">प्रमुख नदियाँ</option>
+                <option value="हिमनद">हिमनद (Glaciers)</option>
+                <option value="राष्ट्रीय उद्यान / वन्यजीव">जीव आरक्षित / अभयारण्य</option>
+                <option value="झीलें और ताल">झीलें और ताल</option>
+                <option value="घास के मैदान">घास के मैदान / बुग्याल</option>
+                <option value="औद्योगिक संस्थान">औद्योगिक संस्थान</option>
+                <option value="तीर्थस्थल">प्रमुख तीर्थस्थल</option>
+                <option value="हिल स्टेशन एवं दर्रे">हिल स्टेशन एवं दर्रे</option>
+            </select>
+        </div>
+        <div class="bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full font-bold text-sm md:text-base border border-emerald-200 shadow-sm flex items-center gap-2">
+            स्कोर: <span id="score" class="text-lg">0 / 0</span>
+        </div>
+    </header>
+
+    <main class="flex-grow relative w-full h-full">
+        
+        <div id="target-box" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-[400] bg-indigo-700 text-white px-6 py-2 rounded-full shadow-lg border-2 border-indigo-300 text-center hidden min-w-[250px]">
+            <span id="cat-label" class="text-xs text-indigo-200 uppercase tracking-wider block">खोजें</span>
+            <span id="target-name" class="text-xl font-bold">मैप लोड हो रहा है...</span>
+        </div>
+
+        <div id="start-overlay" class="absolute inset-0 z-[500] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center">
+            <div id="loading-text" class="text-white text-2xl font-bold mb-4 animate-pulse">मैप लोड हो रहा है...</div>
+            <button id="start-btn" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 rounded-full font-extrabold text-2xl shadow-2xl transition transform hover:scale-105 border-4 border-white">
+                क्विज शुरू करें
+            </button>
+        </div>
+
+        <div id="map-container" class="w-full h-full z-0"></div>
+
+        <div id="feedback" class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-xl shadow-2xl font-bold text-lg text-center opacity-0 transition-opacity duration-300 pointer-events-none min-w-[300px] text-white">
+        </div>
+    </main>
+
+    <script>
+        // मास्टर डेटा
+        const districtMaster = {
+            1: { name: 'उत्तरकाशी', regex: /uttarkashi/ },
+            2: { name: 'चमोली', regex: /chamoli/ },
+            3: { name: 'रुद्रप्रयाग', regex: /rudraprayag|rudra/ },
+            4: { name: 'टिहरी गढ़वाल', regex: /tehri/ },
+            5: { name: 'देहरादून', regex: /dehradun|dehra/ },
+            6: { name: 'पौड़ी गढ़वाल', regex: /pauri|garhwal/ },
+            7: { name: 'पिथौरागढ़', regex: /pithoragarh|pithora/ },
+            8: { name: 'बागेश्वर', regex: /bageshwar/ },
+            9: { name: 'अल्मोड़ा', regex: /almora/ },
+            10: { name: 'चम्पावत', regex: /champawat/ },
+            11: { name: 'नैनीताल', regex: /nainital|naini/ },
+            12: { name: 'उधम सिंह नगर', regex: /udham|usnagar/ },
+            13: { name: 'हरिद्वार', regex: /haridwar|hardwar/ }
+        };
+
+        const poiDatabase = {
+            "नदियाँ": {
+                "गंगा": [1, 4, 6, 13], "यमुना": [1, 5], "अलकनंदा": [2, 3, 6], "भागीरथी": [1, 4],
+                "मंदाकिनी": [3], "पिंडर": [8, 2], "नंदाकिनी": [2], "धौलीगंगा": [2, 7],
+                "पश्चिमी रामगंगा": [2, 9, 6], "पूर्वी रामगंगा": [7], "कोसी": [9, 11, 12], 
+                "काली (शारदा)": [7, 10], "टोंस": [1, 5], "सरयू": [8], "गोमती": [8], 
+                "भिलंगना": [4], "नयार": [6], "गौरीगंगा": [7]
+            },
+            "हिमनद": {
+                "गंगोत्री": [1], "यमुनोत्री": [1], "पिंडारी": [8], "मिलम": [7], 
+                "सतोपंथ": [2], "खतलिंग": [4], "चोराबारी (गांधी सरोवर)": [3], "बंदरपूंछ": [1], 
+                "दूनागिरी": [2], "कफनी": [8], "सुंदरढूंगा": [8], "नामिक": [7], 
+                "रालम": [7], "हीरामणि": [7], "सोना": [7], "मेओला": [7], "पोंटिंग": [7]
+            },
+            "राष्ट्रीय उद्यान / वन्यजीव": {
+                "जिम कॉर्बेट": [11, 6], "राजाजी": [5, 13, 6], "नंदा देवी": [2], "फूलों की घाटी": [2], 
+                "गोविंद पशु विहार": [1], "गंगोत्री": [1], "केदारनाथ अभयारण्य": [3, 2], "अस्कोट": [7], 
+                "सोनानदी": [6], "बिन्सर": [9], "झिलमिल रिज़र्व": [13], "नंधौर": [11, 10], "आसन": [5], 
+                "पवलगढ़": [11], "मालण": [6]
+            },
+            "झीलें और ताल": {
+                "नैनीताल": [11], "भीमताल": [11], "नौकुचियाताल": [11], "सातताल": [11], 
+                "खुरपाताल": [11], "रूपकुंड": [2], "हेमकुंड (लोकपाल)": [2], 
+                "वासुकी ताल": [3, 4], "तड़ाग ताल": [9], "श्यामला ताल": [10], 
+                "सहस्त्रताल": [4], "डोडीताल": [1], "नचिकेता ताल": [1], 
+                "सतोपंथ ताल": [2], "चौराबाड़ी ताल": [3]
+            },
+            "घास के मैदान": {
+                "बेदनी बुग्याल": [2], "दयारा बुग्याल": [1], "औली बुग्याल": [2], 
+                "चोपता बुग्याल": [3], "पंवाली कांठा": [4], "गोर्सों बुग्याल": [2], 
+                "क्वारी बुग्याल": [2], "अली बुग्याल": [2], "नंदनकानन बुग्याल": [2], 
+                "हर की दून": [1]
+            },
+            "औद्योगिक संस्थान": {
+                "सिडकुल पंतनगर": [12], "सिडकुल हरिद्वार": [13], "सिडकुल सितारगंज": [12], 
+                "फार्मा सिटी सेलाकुई": [5], "सिगड्डी ग्रोथ सेंटर": [6], "लालकुआं (पल्प)": [11], 
+                "मुनिकीरेती": [4], "काशीपुर (IIM)": [12], "रुड़की (IIT)": [13], 
+                "देहरादून (FRI, ONGC)": [5], "ऋषिकेश (IDPL)": [5], "हल्द्वानी (मंडी)": [11]
+            },
+            "तीर्थस्थल": {
+                "बद्रीनाथ": [2], "केदारनाथ": [3], "गंगोत्री": [1], "यमुनोत्री": [1], "देवप्रयाग": [4], 
+                "रुद्रप्रयाग": [3], "कर्णप्रयाग": [2], "नंदप्रयाग": [2], "विष्णुप्रयाग": [2], 
+                "तुंगनाथ": [3], "रुद्रनाथ": [2], "मध्यमहेश्वर": [3], "कल्पेश्वर": [2], 
+                "हर की पौड़ी": [13], "ऋषिकेश": [5], "कैंची धाम": [11], "जागेश्वर": [9], 
+                "पूर्णागिरि": [10], "धारी देवी": [6]
+            },
+            "हिल स्टेशन एवं दर्रे": {
+                "मसूरी": [5], "अल्मोड़ा": [9], "रानीखेत": [9], "कौसानी": [8], 
+                "मुक्तेश्वर": [11], "लैंसडाउन": [6], "धनौल्टी": [4], 
+                "पिथौरागढ़": [7], "मुनस्यारी": [7], "चकराता": [5], 
+                "लिपुलेख दर्रा": [7], "माना दर्रा": [2], "नीति दर्रा": [2], 
+                "थांगला दर्रा": [1], "ट्रेल पास": [8, 7]
+            }
+        };
+
+        // मैप सेटअप - पूरी तरह फिक्स (ड्रैग और ज़ूम डिसेबल्ड)
+        let map = L.map('map-container', {
+            zoomControl: false,       // +/- बटन गायब
+            dragging: false,          // माउस/उंगली से खिसकाना बंद
+            scrollWheelZoom: false,   // माउस व्हील ज़ूम बंद
+            doubleClickZoom: false,   // डबल क्लिक ज़ूम बंद
+            touchZoom: false,         // उंगली से ज़ूम बंद
+            boxZoom: false,
+            keyboard: false
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '©OpenStreetMap'
+        }).addTo(map);
+
+        let geojsonLayer;
+        let districtList = [];
+        let activeQuizList = [];
+        let currentTarget = null;
+        let score = 0;
+        let attempts = 0;
+        let quizActive = false;
+
+        const geojsonUrls = [
+            'https://raw.githubusercontent.com/udit-001/india-maps-data/main/geojson/state/uttarakhand.geojson',
+            'https://raw.githubusercontent.com/shuklaneerajdev/IndiaStateTopojsonFiles/master/Uttarakhand.geojson',
+            'https://raw.githubusercontent.com/bkamapantula/pmgsy/master/uttarakhand.geojson'
+        ];
+
+        async function fetchMapData() {
+            for (let url of geojsonUrls) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) continue;
+                    const data = await response.json();
+                    
+                    geojsonLayer = L.geoJSON(data, {
+                        style: { fillColor: '#cbd5e1', weight: 2, opacity: 1, color: 'white', fillOpacity: 0.9 },
+                        onEachFeature: function (feature, layer) {
+                            const rawString = Object.values(feature.properties).join(" ");
+                            const cleanName = String(rawString).toLowerCase().replace(/[^a-z]/g, '');
+                            
+                            let assignedId = null;
+                            for (let id in districtMaster) {
+                                if (districtMaster[id].regex.test(cleanName)) {
+                                    assignedId = parseInt(id);
+                                    break;
+                                }
+                            }
+                            
+                            if (assignedId) {
+                                districtList.push({ layer: layer, id: assignedId });
+                            }
+
+                            // होवर इफेक्ट
+                            layer.on('mouseover', function () {
+                                if(layer.options.fillColor === '#cbd5e1' && quizActive) {
+                                    layer.setStyle({ fillOpacity: 1, fillColor: '#94a3b8' });
+                                }
+                            });
+                            layer.on('mouseout', function () {
+                                if(layer.options.fillColor === '#94a3b8' && quizActive) {
+                                    layer.setStyle({ fillOpacity: 0.9, fillColor: '#cbd5e1' });
+                                }
+                            });
+                            
+                            layer.on('click', function () {
+                                if (!quizActive) return;
+                                checkAnswer(layer, assignedId);
+                            });
+                        }
+                    }).addTo(map);
+
+                    // मैप को स्क्रीन के बीचों-बीच फिक्स कर देगा
+                    map.fitBounds(geojsonLayer.getBounds(), { padding: [20, 20] });
+                    
+                    document.getElementById('loading-text').style.display = 'none';
+                    document.getElementById('start-btn').style.display = 'inline-block';
+                    return;
+                } catch (err) { console.log("Failed: " + url); }
+            }
+            document.getElementById('loading-text').innerHTML = "<span class='text-red-500'>मैप लोड फेल। कृपया इंटरनेट चेक करें।</span>";
+        }
+        
+        fetchMapData();
+
+        function buildQuizList(category) {
+            let list = [];
+            if (category === "All") {
+                for (let cat in poiDatabase) {
+                    for (let poi in poiDatabase[cat]) {
+                        list.push({ name: poi, category: cat, districtIds: poiDatabase[cat][poi] });
+                    }
+                }
+            } else {
+                for (let poi in poiDatabase[category]) {
+                    list.push({ name: poi, category: category, districtIds: poiDatabase[category][poi] });
+                }
+            }
+            return list.sort(() => Math.random() - 0.5);
+        }
+
+        function nextQuestion() {
+            if (activeQuizList.length === 0) {
+                document.getElementById('target-box').classList.add('hidden');
+                document.getElementById('start-overlay').style.display = 'flex';
+                document.getElementById('start-btn').textContent = "फिर से खेलें";
+                document.getElementById('start-btn').style.display = 'inline-block';
+                quizActive = false;
+                
+                // अंत में सभी ज़िलों के नाम दिखाएं
+                districtList.forEach(d => {
+                    const hiName = districtMaster[d.id].name;
+                    d.layer.bindTooltip(hiName, { permanent: true, direction: "center", className: 'bg-transparent border-none text-slate-800 shadow-none' }).openTooltip();
+                });
+                return;
+            }
+            currentTarget = activeQuizList.pop();
+            document.getElementById('cat-label').textContent = currentTarget.category;
+            document.getElementById('target-name').textContent = currentTarget.name;
+        }
+
+        function checkAnswer(layer, clickedId) {
+            if(!clickedId) return;
+            attempts++;
+            const feedbackEl = document.getElementById('feedback');
+            
+            const isCorrect = currentTarget.districtIds.includes(clickedId);
+            const clickedHindiName = districtMaster[clickedId].name;
+            
+            if (isCorrect) {
+                score++;
+                layer.setStyle({ fillColor: '#22c55e', fillOpacity: 1 });
+                
+                feedbackEl.innerHTML = `✅ <b>${currentTarget.name}</b> ${clickedHindiName} में है।`;
+                feedbackEl.className = "absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-full shadow-2xl font-bold text-lg text-center transition-opacity duration-300 min-w-[250px] text-white bg-green-600 opacity-100";
+                
+                setTimeout(() => {
+                    layer.setStyle({ fillColor: '#cbd5e1', fillOpacity: 0.9 });
+                    feedbackEl.classList.replace('opacity-100', 'opacity-0');
+                    nextQuestion();
+                }, 1500);
+            } else {
+                layer.setStyle({ fillColor: '#ef4444', fillOpacity: 1 });
+                let correctAnswers = currentTarget.districtIds.map(id => districtMaster[id].name).join(" या ");
+                
+                feedbackEl.innerHTML = `❌ गलत! यह <b>${correctAnswers}</b> में है।`;
+                feedbackEl.className = "absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-full shadow-2xl font-bold text-lg text-center transition-opacity duration-300 min-w-[250px] text-white bg-red-600 opacity-100";
+                
+                setTimeout(() => {
+                    layer.setStyle({ fillColor: '#cbd5e1', fillOpacity: 0.9 });
+                    feedbackEl.classList.replace('opacity-100', 'opacity-0');
+                }, 2000);
+            }
+            document.getElementById('score').textContent = `${score} / ${attempts}`;
+        }
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            score = 0;
+            attempts = 0;
+            
+            districtList.forEach(d => {
+                d.layer.unbindTooltip();
+                d.layer.setStyle({ fillColor: '#cbd5e1', fillOpacity: 0.9 });
+            });
+            
+            let selectedCat = document.getElementById('category-select').value;
+            activeQuizList = buildQuizList(selectedCat);
+
+            quizActive = true;
+            document.getElementById('score').textContent = "0 / 0";
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('target-box').classList.remove('hidden');
+            
+            nextQuestion();
+        });
+    </script>
+</body>
+</html>
