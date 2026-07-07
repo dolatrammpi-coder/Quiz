@@ -8,15 +8,16 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <style>
-        /* मोबाइल पर हाईलाइट बॉक्स को छिपने से रोकने के लिए */
         .leaflet-tooltip { font-size: 14px; font-weight: bold; }
     </style>
 </head>
-<body class="bg-sky-50 h-screen w-screen overflow-hidden flex flex-col font-sans text-slate-800 m-0 p-0">
+<!-- h-[100dvh] मोबाइल ब्राउज़र बार के कटने वाली समस्या को हमेशा के लिए खत्म कर देता है -->
+<body class="bg-sky-50 h-[100dvh] w-screen overflow-hidden flex flex-col font-sans text-slate-800 m-0 p-0">
 
+    <!-- टॉप हेडर -->
     <header class="bg-white shadow-md z-10 shrink-0 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
-        <div class="flex items-center gap-3">
-            <h1 class="text-lg md:text-xl font-extrabold text-indigo-900 hidden md:block">उत्तराखंड मानचित्र क्विज</h1>
+        <div class="flex items-center gap-2 md:gap-3">
+            <h1 class="text-lg md:text-xl font-extrabold text-indigo-900 hidden md:block">उत्तराखंड मैप क्विज</h1>
             <select id="category-select" class="px-2 py-1.5 border border-slate-300 rounded bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
                 <option value="All">सभी 150+ स्थान</option>
                 <option value="नदियाँ">प्रमुख नदियाँ</option>
@@ -28,12 +29,18 @@
                 <option value="तीर्थस्थल">प्रमुख तीर्थस्थल</option>
                 <option value="हिल स्टेशन एवं दर्रे">हिल स्टेशन एवं दर्रे</option>
             </select>
+            <!-- नया शफ़ल (Shuffle) बटन -->
+            <button id="shuffle-btn" class="hidden bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1.5 rounded border border-indigo-300 text-sm font-bold shadow-sm transition-colors flex items-center gap-1" title="प्रश्न बदलें">
+                🔄 शफ़ल
+            </button>
         </div>
+        <!-- स्कोर बॉक्स -->
         <div class="bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full font-bold text-sm md:text-base border border-emerald-200 shadow-sm flex items-center gap-2">
             स्कोर: <span id="score" class="text-lg">0 / 0</span>
         </div>
     </header>
 
+    <!-- मुख्य मैप एरिया -->
     <main class="flex-grow relative w-full h-full">
         
         <div id="target-box" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-[400] bg-indigo-700 text-white px-6 py-2 rounded-full shadow-lg border-2 border-indigo-300 text-center hidden min-w-[250px]">
@@ -50,12 +57,12 @@
 
         <div id="map-container" class="w-full h-full z-0"></div>
 
-        <div id="feedback" class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-xl shadow-2xl font-bold text-lg text-center opacity-0 transition-opacity duration-300 pointer-events-none min-w-[300px] text-white">
+        <!-- मैसेज बॉक्स को bottom-24 कर दिया गया है ताकि मोबाइल में नीचे से न कटे -->
+        <div id="feedback" class="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-full shadow-2xl font-bold text-lg text-center opacity-0 transition-opacity duration-300 pointer-events-none min-w-[250px] w-11/12 max-w-md text-white flex flex-col justify-center items-center">
         </div>
     </main>
 
     <script>
-        // मास्टर डेटा
         const districtMaster = {
             1: { name: 'उत्तरकाशी', regex: /uttarkashi/ },
             2: { name: 'चमोली', regex: /chamoli/ },
@@ -127,13 +134,12 @@
             }
         };
 
-        // मैप सेटअप - पूरी तरह फिक्स (ड्रैग और ज़ूम डिसेबल्ड)
         let map = L.map('map-container', {
-            zoomControl: false,       // +/- बटन गायब
-            dragging: false,          // माउस/उंगली से खिसकाना बंद
-            scrollWheelZoom: false,   // माउस व्हील ज़ूम बंद
-            doubleClickZoom: false,   // डबल क्लिक ज़ूम बंद
-            touchZoom: false,         // उंगली से ज़ूम बंद
+            zoomControl: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            touchZoom: false,
             boxZoom: false,
             keyboard: false
         });
@@ -181,7 +187,6 @@
                                 districtList.push({ layer: layer, id: assignedId });
                             }
 
-                            // होवर इफेक्ट
                             layer.on('mouseover', function () {
                                 if(layer.options.fillColor === '#cbd5e1' && quizActive) {
                                     layer.setStyle({ fillOpacity: 1, fillColor: '#94a3b8' });
@@ -195,12 +200,18 @@
                             
                             layer.on('click', function () {
                                 if (!quizActive) return;
+                                if (!assignedId) {
+                                    const feedbackEl = document.getElementById('feedback');
+                                    feedbackEl.innerHTML = `<span>⚠️ इस जिले का डेटा मैप में ठीक से लोड नहीं हुआ।</span>`;
+                                    feedbackEl.className = "absolute bottom-24 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-xl shadow-2xl font-bold text-lg text-center transition-opacity duration-300 min-w-[250px] w-11/12 max-w-md text-white bg-orange-600 opacity-100 flex flex-col justify-center items-center pointer-events-none";
+                                    setTimeout(() => { feedbackEl.classList.replace('opacity-100', 'opacity-0'); }, 2500);
+                                    return;
+                                }
                                 checkAnswer(layer, assignedId);
                             });
                         }
                     }).addTo(map);
 
-                    // मैप को स्क्रीन के बीचों-बीच फिक्स कर देगा
                     map.fitBounds(geojsonLayer.getBounds(), { padding: [20, 20] });
                     
                     document.getElementById('loading-text').style.display = 'none';
@@ -232,12 +243,12 @@
         function nextQuestion() {
             if (activeQuizList.length === 0) {
                 document.getElementById('target-box').classList.add('hidden');
+                document.getElementById('shuffle-btn').classList.add('hidden');
                 document.getElementById('start-overlay').style.display = 'flex';
                 document.getElementById('start-btn').textContent = "फिर से खेलें";
                 document.getElementById('start-btn').style.display = 'inline-block';
                 quizActive = false;
                 
-                // अंत में सभी ज़िलों के नाम दिखाएं
                 districtList.forEach(d => {
                     const hiName = districtMaster[d.id].name;
                     d.layer.bindTooltip(hiName, { permanent: true, direction: "center", className: 'bg-transparent border-none text-slate-800 shadow-none' }).openTooltip();
@@ -248,6 +259,20 @@
             document.getElementById('cat-label').textContent = currentTarget.category;
             document.getElementById('target-name').textContent = currentTarget.name;
         }
+
+        // नया शफ़ल लॉजिक
+        document.getElementById('shuffle-btn').addEventListener('click', () => {
+            if (!quizActive || activeQuizList.length === 0) return;
+            
+            // वर्तमान सवाल को लिस्ट में वापस डालें
+            if (currentTarget) {
+                activeQuizList.push(currentTarget);
+            }
+            // लिस्ट को दोबारा रैंडम कर दें
+            activeQuizList.sort(() => Math.random() - 0.5);
+            // अगला सवाल लोड करें (स्कोर/अटेम्प्ट पर कोई असर नहीं)
+            nextQuestion();
+        });
 
         function checkAnswer(layer, clickedId) {
             if(!clickedId) return;
@@ -261,8 +286,8 @@
                 score++;
                 layer.setStyle({ fillColor: '#22c55e', fillOpacity: 1 });
                 
-                feedbackEl.innerHTML = `✅ <b>${currentTarget.name}</b> ${clickedHindiName} में है।`;
-                feedbackEl.className = "absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-full shadow-2xl font-bold text-lg text-center transition-opacity duration-300 min-w-[250px] text-white bg-green-600 opacity-100";
+                feedbackEl.innerHTML = `<span>✅ <b>${currentTarget.name}</b> ${clickedHindiName} में है।</span>`;
+                feedbackEl.className = "absolute bottom-24 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-full shadow-2xl font-bold text-lg text-center transition-opacity duration-300 min-w-[250px] w-11/12 max-w-md text-white bg-green-600 opacity-100 flex flex-col justify-center items-center pointer-events-none";
                 
                 setTimeout(() => {
                     layer.setStyle({ fillColor: '#cbd5e1', fillOpacity: 0.9 });
@@ -273,8 +298,8 @@
                 layer.setStyle({ fillColor: '#ef4444', fillOpacity: 1 });
                 let correctAnswers = currentTarget.districtIds.map(id => districtMaster[id].name).join(" या ");
                 
-                feedbackEl.innerHTML = `❌ गलत! यह <b>${correctAnswers}</b> में है।`;
-                feedbackEl.className = "absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-full shadow-2xl font-bold text-lg text-center transition-opacity duration-300 min-w-[250px] text-white bg-red-600 opacity-100";
+                feedbackEl.innerHTML = `<span>❌ गलत! यह <b>${correctAnswers}</b> में है।</span>`;
+                feedbackEl.className = "absolute bottom-24 left-1/2 transform -translate-x-1/2 z-[400] px-6 py-3 rounded-full shadow-2xl font-bold text-lg text-center transition-opacity duration-300 min-w-[250px] w-11/12 max-w-md text-white bg-red-600 opacity-100 flex flex-col justify-center items-center pointer-events-none";
                 
                 setTimeout(() => {
                     layer.setStyle({ fillColor: '#cbd5e1', fillOpacity: 0.9 });
@@ -300,6 +325,7 @@
             document.getElementById('score').textContent = "0 / 0";
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('target-box').classList.remove('hidden');
+            document.getElementById('shuffle-btn').classList.remove('hidden'); // गेम शुरू होते ही बटन दिखेगा
             
             nextQuestion();
         });
