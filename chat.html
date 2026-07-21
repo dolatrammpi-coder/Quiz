@@ -3,244 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghost Call (MQTT Continuous Stream)</title>
+    <title>Ghost Network - Live Call</title>
     
+    <!-- CryptoJS for AES-256 Encryption -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- Paho MQTT for Untraceable Routing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
     <style>
         body { font-family: Arial, sans-serif; background-color: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .container { width: 100%; max-width: 450px; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; }
-        input[type="password"] { padding: 10px; width: 80%; margin-bottom: 15px; border: 1px solid #333; border-radius: 4px; background: #2c2c2c; color: white; }
+        input[type="password"], input[type="text"] { padding: 10px; width: 80%; margin-bottom: 15px; border: 1px solid #333; border-radius: 4px; background: #2c2c2c; color: white; }
+        button { padding: 10px 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         
-        .btn-green { background-color: #03dac6; color: #121212; width: 48%; padding: 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-red { background-color: #cf6679; color: #121212; width: 48%; padding: 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        /* Specific Buttons */
+        .btn-primary { background-color: #bb86fc; color: #121212; }
+        .btn-green { background-color: #03dac6; color: #121212; width: 48%; }
+        .btn-red { background-color: #cf6679; color: #121212; width: 48%; }
         button:disabled { background-color: #555; color: #888; cursor: not-allowed; }
         
         #login-screen { display: block; }
         #chat-screen { display: none; }
         
-        #status { font-size: 15px; color: #03dac6; margin-bottom: 20px; font-weight: bold; height: 20px; }
+        #chat-box { height: 220px; border: 1px solid #333; border-radius: 4px; padding: 10px; overflow-y: auto; margin-bottom: 15px; background-color: #121212; text-align: left; }
+        .message { margin-bottom: 10px; padding: 8px; border-radius: 4px; background-color: #333; word-wrap: break-word; font-size: 14px; }
         
-        .pulse-animation {
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); color: #cf6679; }
-            100% { transform: scale(1); }
-        }
+        .call-controls { display: flex; justify-content: space-between; margin-top: 15px; }
+        #status { font-size: 14px; color: #03dac6; margin-bottom: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <!-- Access Screen -->
     <div class="container" id="login-screen">
-        <h3>Ghost Call (No WebRTC)</h3>
-        <p style="font-size: 12px; color: #aaa;">Bypass All Firewalls</p>
+        <h3>Ghost Network (Encrypted)</h3>
+        <p style="font-size: 12px; color: #aaa;">Access requires the 15-word key</p>
         <input type="password" id="pwdInput" placeholder="Enter passphrase...">
-        <br><br>
-        <button class="btn-green" style="width: 80%;" onclick="startConnection()">Connect Securely</button>
+        <br>
+        <button class="btn-primary" onclick="startConnection()">Open Secure Tunnel</button>
     </div>
 
+    <!-- Main Communication Screen -->
     <div class="container" id="chat-screen">
-        <div id="status">Connected to Encrypted Relay 🔒</div>
+        <div id="status">Connecting to Ghost Relay...</div>
         
-        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
-            <button id="callBtn" class="btn-green" onclick="initiateCall()">📞 Call</button>
-            <button id="answerBtn" class="btn-green" onclick="answerCall()" style="display:none; animation: pulse 1s infinite;">📲 Answer</button>
-            <button id="hangupBtn" class="btn-red" onclick="endCall()" disabled>❌ End</button>
+        <div id="chat-box"></div>
+        
+        <div style="display: flex;">
+            <input type="text" id="msgInput" placeholder="Secret text..." style="flex: 1; border-radius: 4px 0 0 4px; margin-bottom: 0; width: auto;">
+            <button class="btn-primary" onclick="sendTextMessage()" style="border-radius: 0 4px 4px 0;">Send</button>
         </div>
-        
-        <p style="font-size: 11px; color: #888; margin-top: 20px;">
-            Yeh call audio packets ko encrypt karke text network par bhejti hai. WebRTC ya direct connection block hone par bhi chalegi.
-        </p>
+
+        <!-- Live Call Buttons -->
+        <div class="call-controls">
+            <button id="callBtn" class="btn-green" onclick="startCall()">📞 Start Live Call</button>
+            <button id="answerBtn" class="btn-green" onclick="answerCall()" style="display:none;">📲 Answer Call</button>
+            <button id="hangupBtn" class="btn-red" onclick="hangup()" disabled>❌ End Call</button>
+        </div>
+
+        <!-- Visible Audio Player to Bypass Browser Auto-play Policy -->
+        <audio id="remoteAudio" autoplay controls style="width: 100%; margin-top: 15px; height: 35px;"></audio>
     </div>
 
     <script>
         const SECRET_PASSWORD = "quantum velocity phantom eclipse nebula horizon paradox cipher matrix catalyst zenith vortex bastion enigma cobalt"; 
+        
+        // UNIQUE ID: Taki hume khud ki aawaz aur data wapas na mile
         const myUserId = "user_" + Math.random().toString(36).substr(2, 9); 
         
         let mqttClient;
         let chatTopic;
         
-        // Continuous Audio Variables
-        let mediaRecorder;
-        let isCalling = false;
-        let audioQueue = [];
-        let isPlaying = false;
-        const RECORDING_SLICE_MS = 1000; // Har 1 second ka audio chunk jayega
+        // WebRTC Variables
+        let peerConnection;
+        let localStream;
+        let pendingCandidates = []; 
+
+        // Powerful STUN/TURN Servers (Bypasses Jio/Airtel Strict Firewalls)
+        const iceConfig = { 
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+                { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+            ] 
+        };
 
         function startConnection() {
             const enteredPwd = document.getElementById('pwdInput').value.trim();
             if (enteredPwd === SECRET_PASSWORD) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('chat-screen').style.display = 'block';
-                chatTopic = "ghost_live_stream/" + CryptoJS.SHA256(SECRET_PASSWORD).toString().substring(0, 20);
+                
+                // Room Name is also hidden via SHA256 Hash
+                chatTopic = "ghost_live/" + CryptoJS.SHA256(SECRET_PASSWORD).toString().substring(0, 20);
                 connectMQTT();
             } else {
                 alert("Incorrect Passphrase!");
             }
         }
 
+        // ================= AES ENCRYPTED SIGNALING VIA MQTT =================
         function connectMQTT() {
             mqttClient = new Paho.MQTT.Client("broker.emqx.io", 8084, myUserId);
             mqttClient.onMessageArrived = onMessageArrived;
             mqttClient.connect({
                 useSSL: true,
                 onSuccess: () => {
-                    document.getElementById('status').innerText = "Connected & Encrypted 🔒";
+                    document.getElementById('status').innerText = "Encrypted Tunnel Active 🔒";
                     mqttClient.subscribe(chatTopic);
                 }
             });
         }
 
         function sendData(payloadObj) {
-            payloadObj.senderId = myUserId;
+            payloadObj.senderId = myUserId; // Add ID to avoid echo
             const jsonStr = JSON.stringify(payloadObj);
+            
+            // Encrypt the entire package
             const encrypted = CryptoJS.AES.encrypt(jsonStr, SECRET_PASSWORD).toString();
             const message = new Paho.MQTT.Message(encrypted);
             message.destinationName = chatTopic;
             mqttClient.send(message);
         }
 
+        function sendTextMessage() {
+            const input = document.getElementById('msgInput');
+            if (input.value.trim() !== "") {
+                sendData({ type: 'text', content: input.value.trim() });
+                displayMessage(`💬 You: ${input.value.trim()}`);
+                input.value = "";
+            }
+        }
+
         function onMessageArrived(message) {
             try {
+                // Decrypt the incoming data
                 const decryptedBytes = CryptoJS.AES.decrypt(message.payloadString, SECRET_PASSWORD);
                 const decryptedStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
                 const data = JSON.parse(decryptedStr);
 
-                if (data.senderId === myUserId) return; 
+                if (data.senderId === myUserId) return; // Ignore own messages
 
-                if (data.type === 'call_ring') {
-                    handleIncomingRing();
-                } else if (data.type === 'call_accept') {
-                    handleCallAccepted();
-                } else if (data.type === 'call_end') {
-                    handleRemoteEndCall();
-                } else if (data.type === 'audio_stream') {
-                    if (isCalling) {
-                        queueAudio(data.content);
-                    }
+                if (data.type === 'text') {
+                    displayMessage(`💬 Ghost: ${data.content}`);
+                } else if (data.type === 'offer') {
+                    handleOffer(data.offer);
+                } else if (data.type === 'answer') {
+                    handleAnswer(data.answer);
+                } else if (data.type === 'ice-candidate') {
+                    handleNewICECandidateMsg(data.candidate);
                 }
             } catch (e) {
-                // Ignore noise
+                console.log("Ignored unreadable network noise.");
             }
         }
 
-        // ================= CONTINUOUS AUDIO ENGINE =================
+        function displayMessage(text) {
+            const box = document.getElementById('chat-box');
+            box.innerHTML += `<div class="message">${text}</div>`;
+            box.scrollTop = box.scrollHeight;
+        }
 
-        async function startAudioStreaming() {
+        // ================= WEBRTC LIVE CALL ENGINE =================
+        async function initWebRTC() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                isCalling = true;
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                peerConnection = new RTCPeerConnection(iceConfig);
 
-                mediaRecorder.ondataavailable = event => {
-                    if (event.data.size > 0 && isCalling) {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(event.data);
-                        reader.onloadend = () => {
-                            sendData({ type: 'audio_stream', content: reader.result });
-                        };
+                // Add mic audio to connection
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+                // Listen for partner's audio
+                peerConnection.ontrack = event => {
+                    const remoteAudio = document.getElementById('remoteAudio');
+                    remoteAudio.srcObject = event.streams[0];
+                    remoteAudio.play().catch(e => console.error("Audio blocked by browser."));
+                };
+
+                // Send network routing details securely
+                peerConnection.onicecandidate = event => {
+                    if (event.candidate) {
+                        sendData({ type: 'ice-candidate', candidate: event.candidate });
                     }
                 };
 
-                // Continuous slicing
-                mediaRecorder.start(RECORDING_SLICE_MS); 
+                // Watch connection status
+                peerConnection.oniceconnectionstatechange = () => {
+                    if (peerConnection.iceConnectionState === "connected") {
+                        document.getElementById('status').innerText = "Live Call Connected 🟢";
+                    } else if (peerConnection.iceConnectionState === "disconnected") {
+                        hangup();
+                    }
+                };
             } catch (err) {
-                alert("Microphone permission is required!");
-                endCall();
+                alert("Microphone permission is required for Live Call!");
             }
         }
 
-        function queueAudio(base64Data) {
-            audioQueue.push(base64Data);
-            if (!isPlaying) {
-                playNextAudio();
-            }
-        }
-
-        function playNextAudio() {
-            if (audioQueue.length === 0 || !isCalling) {
-                isPlaying = false;
-                return;
-            }
-
-            isPlaying = true;
-            const nextAudioBase64 = audioQueue.shift();
-            const audioObj = new Audio(nextAudioBase64);
-            
-            audioObj.play().catch(e => console.error("Audio blocked"));
-            
-            audioObj.onended = () => {
-                playNextAudio();
-            };
-        }
-
-        function stopAudioStreaming() {
-            isCalling = false;
-            audioQueue = []; // Clear remaining audio
-            isPlaying = false;
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-                mediaRecorder.stream.getTracks().forEach(track => track.stop());
-            }
-        }
-
-        // ================= CALL CONTROLS =================
-
-        function initiateCall() {
+        async function startCall() {
             document.getElementById('callBtn').disabled = true;
             document.getElementById('hangupBtn').disabled = false;
-            document.getElementById('status').innerText = "Ringing... 🔔";
+            document.getElementById('status').innerText = "Calling Securely... 🔄";
             
-            sendData({ type: 'call_ring' });
+            await initWebRTC();
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            
+            sendData({ type: 'offer', offer: offer });
+            displayMessage("📞 <i>Live Call initiated...</i>");
         }
 
-        function handleIncomingRing() {
-            if (!isCalling) {
-                document.getElementById('callBtn').style.display = 'none';
-                document.getElementById('answerBtn').style.display = 'inline-block';
-                document.getElementById('status').innerText = "Incoming Call... 📞";
-            }
+        async function handleOffer(offer) {
+            document.getElementById('callBtn').style.display = 'none';
+            document.getElementById('answerBtn').style.display = 'inline-block';
+            document.getElementById('status').innerText = "Incoming Secure Call... 🔔";
+            displayMessage("🔔 <i>Incoming Live Call...</i>");
+            
+            await initWebRTC();
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            
+            // Inject delayed network details
+            pendingCandidates.forEach(c => peerConnection.addIceCandidate(new RTCIceCandidate(c)));
+            pendingCandidates = [];
         }
 
-        function answerCall() {
+        async function answerCall() {
             document.getElementById('answerBtn').style.display = 'none';
-            document.getElementById('callBtn').style.display = 'inline-block';
-            document.getElementById('callBtn').disabled = true;
             document.getElementById('hangupBtn').disabled = false;
-            document.getElementById('status').innerText = "Call Connected 🎙️";
-            document.getElementById('status').classList.add("pulse-animation");
-
-            sendData({ type: 'call_accept' });
-            startAudioStreaming();
+            document.getElementById('status').innerText = "Connecting Voice... ⚙️";
+            
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            
+            sendData({ type: 'answer', answer: answer });
         }
 
-        function handleCallAccepted() {
-            document.getElementById('status').innerText = "Call Connected 🎙️";
-            document.getElementById('status').classList.add("pulse-animation");
-            startAudioStreaming();
+        async function handleAnswer(answer) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            
+            // Inject delayed network details
+            pendingCandidates.forEach(c => peerConnection.addIceCandidate(new RTCIceCandidate(c)));
+            pendingCandidates = [];
         }
 
-        function endCall() {
-            stopAudioStreaming();
-            sendData({ type: 'call_end' });
-            resetUI();
+        async function handleNewICECandidateMsg(candidate) {
+            if (peerConnection && peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            } else {
+                pendingCandidates.push(candidate);
+            }
         }
 
-        function handleRemoteEndCall() {
-            stopAudioStreaming();
-            resetUI();
-        }
-
-        function resetUI() {
+        function hangup() {
+            if (peerConnection) { peerConnection.close(); peerConnection = null; }
+            if (localStream) { localStream.getTracks().forEach(track => track.stop()); }
+            
             document.getElementById('callBtn').style.display = 'inline-block';
             document.getElementById('callBtn').disabled = false;
             document.getElementById('answerBtn').style.display = 'none';
             document.getElementById('hangupBtn').disabled = true;
-            document.getElementById('status').innerText = "Connected & Encrypted 🔒";
-            document.getElementById('status').classList.remove("pulse-animation");
+            
+            document.getElementById('status').innerText = "Encrypted Tunnel Active 🔒";
+            displayMessage("❌ <i>Call ended.</i>");
         }
     </script>
 </body>
