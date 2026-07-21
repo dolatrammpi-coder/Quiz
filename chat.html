@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghost Walkie-Talkie</title>
+    <title>Ghost Walkie-Talkie (Self-Destruct)</title>
     
     <!-- CryptoJS for Encryption -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -18,9 +18,17 @@
         #login-screen { display: block; }
         #chat-screen { display: none; }
         
-        #chat-box { height: 200px; border: 1px solid #333; border-radius: 4px; padding: 10px; overflow-y: auto; margin-bottom: 15px; background-color: #121212; text-align: left; }
+        #chat-box { height: 250px; border: 1px solid #333; border-radius: 4px; padding: 10px; overflow-y: auto; margin-bottom: 15px; background-color: #121212; text-align: left; }
         .message { margin-bottom: 10px; padding: 8px; border-radius: 4px; background-color: #333; word-wrap: break-word; font-size: 14px; }
-        .audio-msg { background-color: #03dac6; color: #000; font-weight: bold; cursor: pointer; padding: 10px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }
+        
+        /* Audio Button Style */
+        .audio-msg { 
+            background-color: #03dac6; color: #000; font-weight: bold; cursor: pointer; 
+            padding: 10px; border-radius: 5px; display: inline-block; margin-bottom: 10px; 
+            transition: 0.3s; user-select: none;
+        }
+        .audio-msg:active { transform: scale(0.95); }
+        .audio-trashed { background-color: #555; color: #aaa; cursor: not-allowed; font-style: italic; }
         
         /* Walkie-Talkie Button Styles */
         #ptt-btn { 
@@ -59,11 +67,14 @@
         </div>
 
         <button id="ptt-btn">HOLD<br>TO TALK</button>
-        <p style="font-size: 11px; color: #888;">Button ko daba kar rakhein aur bolein. Chhodne par aawaz chali jayegi.</p>
+        <p style="font-size: 11px; color: #888;">Button ko daba kar rakhein. Aawaz sirf 3 baar suni ja sakegi.</p>
     </div>
 
     <script>
         const SECRET_PASSWORD = "quantum velocity phantom eclipse nebula horizon paradox cipher matrix catalyst zenith vortex bastion enigma cobalt"; 
+        
+        // UNIQUE ID: Isse hum apne khud ke bheje messages ignore kar payenge
+        const myUserId = "user_" + Math.random().toString(36).substr(2, 9); 
         
         let mqttClient;
         let chatTopic;
@@ -85,8 +96,7 @@
 
         // ================= MQTT SETUP =================
         function connectMQTT() {
-            const clientId = "walkie_" + Math.random().toString(16).substr(2, 8);
-            mqttClient = new Paho.MQTT.Client("broker.emqx.io", 8084, clientId);
+            mqttClient = new Paho.MQTT.Client("broker.emqx.io", 8084, myUserId);
             mqttClient.onMessageArrived = onMessageArrived;
             mqttClient.connect({
                 useSSL: true,
@@ -98,6 +108,9 @@
         }
 
         function sendData(payloadObj) {
+            // Har message ke sath sender ki ID attach karein
+            payloadObj.senderId = myUserId; 
+            
             const jsonStr = JSON.stringify(payloadObj);
             const encrypted = CryptoJS.AES.encrypt(jsonStr, SECRET_PASSWORD).toString();
             const message = new Paho.MQTT.Message(encrypted);
@@ -109,6 +122,7 @@
             const input = document.getElementById('msgInput');
             if (input.value.trim() !== "") {
                 sendData({ type: 'text', content: input.value.trim() });
+                displayMessage(`💬 You: ${input.value.trim()}`); // Sender ko apna text dikhaye
                 input.value = "";
             }
         }
@@ -119,10 +133,13 @@
                 const decryptedStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
                 const data = JSON.parse(decryptedStr);
 
+                // FIX: Agar message maine hi bheja hai, toh use dobara mat chalao
+                if (data.senderId === myUserId) return; 
+
                 if (data.type === 'text') {
-                    displayMessage(`💬 ${data.content}`);
+                    displayMessage(`💬 Ghost: ${data.content}`);
                 } else if (data.type === 'audio') {
-                    playIncomingAudio(data.content);
+                    createSelfDestructAudio(data.content);
                 }
             } catch (e) {
                 console.log("Decryption failed or unreadable message.");
@@ -131,11 +148,14 @@
 
         function displayMessage(text) {
             const box = document.getElementById('chat-box');
-            box.innerHTML += `<div class="message">${text}</div>`;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message';
+            msgDiv.innerHTML = text;
+            box.appendChild(msgDiv);
             box.scrollTop = box.scrollHeight;
         }
 
-        // ================= WALKIE TALKIE (AUDIO RECORDING) =================
+        // ================= AUDIO RECORDING =================
         async function setupAudio() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -147,23 +167,20 @@
 
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    audioChunks = []; // Reset array
+                    audioChunks = []; 
                     
-                    // Convert Blob to Base64 (to send via MQTT)
                     const reader = new FileReader();
                     reader.readAsDataURL(audioBlob);
                     reader.onloadend = () => {
-                        const base64Audio = reader.result;
-                        sendData({ type: 'audio', content: base64Audio });
-                        displayMessage("🎙️ <i>Voice sent...</i>");
+                        sendData({ type: 'audio', content: reader.result });
+                        displayMessage("🎙️ <i>Voice note sent securely.</i>"); // Sender ko pata chale ki message chala gaya
                     };
                 };
             } catch (err) {
-                alert("Microphone ka access zaroori hai Walkie-Talkie ke liye!");
+                alert("Microphone ka access zaroori hai!");
             }
         }
 
-        // ================= PUSH TO TALK EVENTS =================
         const pttBtn = document.getElementById('ptt-btn');
 
         function startRecording(e) {
@@ -184,25 +201,49 @@
             }
         }
 
-        // Mouse Events (PC)
         pttBtn.addEventListener('mousedown', startRecording);
         pttBtn.addEventListener('mouseup', stopRecording);
-        pttBtn.addEventListener('mouseleave', stopRecording); // Agar mouse bahar chala jaye
-
-        // Touch Events (Mobile)
+        pttBtn.addEventListener('mouseleave', stopRecording); 
         pttBtn.addEventListener('touchstart', startRecording);
         pttBtn.addEventListener('touchend', stopRecording);
 
-        // ================= PLAY INCOMING AUDIO =================
-        function playIncomingAudio(base64Data) {
-            displayMessage("🔊 <i>New voice received... Playing...</i>");
-            const audio = new Audio(base64Data);
-            audio.play().catch(e => {
-                // Agar browser auto-play block kare
-                const box = document.getElementById('chat-box');
-                box.innerHTML += `<div class="audio-msg" onclick="new Audio('${base64Data}').play()">▶️ Tap to listen voice note</div>`;
-                box.scrollTop = box.scrollHeight;
-            });
+        // ================= SELF DESTRUCT AUDIO (3 PLAYS) =================
+        function createSelfDestructAudio(base64Data) {
+            const box = document.getElementById('chat-box');
+            const audioDiv = document.createElement('div');
+            
+            let playsLeft = 3;
+            const audioObj = new Audio(base64Data);
+            
+            audioDiv.className = 'audio-msg';
+            audioDiv.innerHTML = `▶️ Play Voice Note (${playsLeft} left)`;
+            
+            audioDiv.onclick = function() {
+                // Agar plays bache hain aur audio ruki hui hai
+                if (playsLeft > 0 && audioObj.paused) {
+                    audioObj.play();
+                    playsLeft--;
+                    audioDiv.innerHTML = `⏳ Playing... (${playsLeft} left)`;
+                    audioDiv.style.pointerEvents = 'none'; // Play hote waqt double click block karein
+                }
+            };
+            
+            audioObj.onended = function() {
+                if (playsLeft > 0) {
+                    audioDiv.innerHTML = `▶️ Play Voice Note (${playsLeft} left)`;
+                    audioDiv.style.pointerEvents = 'auto'; // Dobara click allow karein
+                } else {
+                    // 3 baar play hone ke baad element ko trash kar dein
+                    audioDiv.className = 'message audio-trashed';
+                    audioDiv.innerHTML = `🗑️ Voice note trashed forever.`;
+                    audioDiv.style.pointerEvents = 'none'; // Humesha ke liye click disable
+                    
+                    // Optional: Element ko puri tarah remove karne ke liye `audioDiv.remove();` use kar sakte hain
+                }
+            };
+
+            box.appendChild(audioDiv);
+            box.scrollTop = box.scrollHeight;
         }
     </script>
 </body>
