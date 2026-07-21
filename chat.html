@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghost Chat & Audio</title>
+    <title>Ghost Chat & Audio (Fixed)</title>
     
-    <!-- CryptoJS for Encryption -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- Paho MQTT for Signaling -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
     <style>
@@ -26,12 +24,11 @@
         .input-group input { flex: 1; border-radius: 4px 0 0 4px; margin-bottom: 0; width: auto; }
         .input-group button { border-radius: 0 4px 4px 0; }
         .call-controls { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #333; }
-        #status { font-size: 12px; color: #03dac6; margin-bottom: 10px; text-align: center; }
+        #status { font-size: 13px; color: #03dac6; margin-bottom: 10px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- Login Screen -->
     <div class="container" id="login-screen">
         <h3>Ghost Network</h3>
         <input type="password" id="pwdInput" placeholder="15-word passphrase...">
@@ -39,9 +36,8 @@
         <button onclick="startConnection()">Connect Securely</button>
     </div>
 
-    <!-- Main Screen -->
     <div class="container" id="chat-screen">
-        <div id="status">Connecting...</div>
+        <div id="status">Connecting to Chat...</div>
         
         <div id="chat-box"></div>
         
@@ -56,7 +52,6 @@
             <button id="hangupBtn" class="btn-red" onclick="hangup()" disabled>❌ End Call</button>
         </div>
         
-        <!-- Visible Audio Element for WebRTC (Fix for Audio not playing) -->
         <audio id="remoteAudio" autoplay controls style="margin-top: 15px; width: 100%;"></audio>
     </div>
 
@@ -66,10 +61,18 @@
         let mqttClient;
         let chatTopic;
         
-        // WebRTC Variables
         let peerConnection;
         let localStream;
-        const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }; 
+        let pendingCandidates = []; // Queue system for timing issues
+
+        // Added multiple Google STUN servers for better connectivity
+        const servers = { 
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ] 
+        }; 
 
         function startConnection() {
             const enteredPwd = document.getElementById('pwdInput').value.trim();
@@ -83,8 +86,6 @@
             }
         }
 
-        // ================= MQTT (SIGNALING & CHAT) =================
-
         function connectMQTT() {
             const clientId = "peer_" + Math.random().toString(16).substr(2, 8);
             mqttClient = new Paho.MQTT.Client("broker.emqx.io", 8084, clientId);
@@ -92,8 +93,12 @@
             mqttClient.connect({
                 useSSL: true,
                 onSuccess: () => {
-                    document.getElementById('status').innerText = "Connected & Encrypted 🔒";
+                    document.getElementById('status').innerText = "Connected to Network 🔒";
                     mqttClient.subscribe(chatTopic);
+                },
+                onFailure: () => {
+                    document.getElementById('status').innerText = "Network Connection Failed!";
+                    document.getElementById('status').style.color = "#cf6679";
                 }
             });
         }
@@ -129,7 +134,7 @@
                 } else if (data.type === 'ice-candidate') {
                     handleNewICECandidateMsg(data.candidate);
                 }
-            } catch (e) { console.log("Ignored unreadable message."); }
+            } catch (e) {}
         }
 
         function displayMessage(text) {
@@ -138,23 +143,16 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        // ================= WebRTC (AUDIO CALL) =================
-
         async function initWebRTC() {
             localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
             peerConnection = new RTCPeerConnection(servers);
 
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-            // Fix for Browser Auto-play block
             peerConnection.ontrack = event => {
                 const remoteAudio = document.getElementById('remoteAudio');
                 remoteAudio.srcObject = event.streams[0];
-                
-                remoteAudio.play().catch(error => {
-                    console.error("Browser blocked audio playback:", error);
-                    alert("Browser ne awaz block ki hai, kripya neeche diye gaye audio player par 'Play' dabayein.");
-                });
+                remoteAudio.play().catch(e => console.error("Auto-play blocked"));
             };
 
             peerConnection.onicecandidate = event => {
@@ -162,12 +160,25 @@
                     sendData({ type: 'ice-candidate', candidate: event.candidate });
                 }
             };
+
+            // Monitor connection status
+            peerConnection.oniceconnectionstatechange = () => {
+                const state = peerConnection.iceConnectionState;
+                if (state === "connected") {
+                    document.getElementById('status').innerText = "Live Call Connected 🟢";
+                    document.getElementById('status').style.color = "#03dac6";
+                } else if (state === "disconnected" || state === "failed") {
+                    document.getElementById('status').innerText = "Call Failed (Network Blocked) 🔴";
+                    document.getElementById('status').style.color = "#cf6679";
+                    hangup();
+                }
+            };
         }
 
         async function startCall() {
             document.getElementById('callBtn').disabled = true;
             document.getElementById('hangupBtn').disabled = false;
-            document.getElementById('status').innerText = "Calling...";
+            document.getElementById('status').innerText = "Ringing...";
             
             await initWebRTC();
             const offer = await peerConnection.createOffer();
@@ -183,12 +194,16 @@
             
             await initWebRTC();
             await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            
+            // Add any pending candidates that arrived early
+            pendingCandidates.forEach(c => peerConnection.addIceCandidate(new RTCIceCandidate(c)));
+            pendingCandidates = [];
         }
 
         async function answerCall() {
             document.getElementById('answerBtn').style.display = 'none';
             document.getElementById('hangupBtn').disabled = false;
-            document.getElementById('status').innerText = "Call Connected 🎙️";
+            document.getElementById('status').innerText = "Connecting Audio...";
             
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
@@ -198,12 +213,18 @@
 
         async function handleAnswer(answer) {
             await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-            document.getElementById('status').innerText = "Call Connected 🎙️";
+            
+            // Add any pending candidates that arrived early
+            pendingCandidates.forEach(c => peerConnection.addIceCandidate(new RTCIceCandidate(c)));
+            pendingCandidates = [];
         }
 
         async function handleNewICECandidateMsg(candidate) {
-            if (peerConnection) {
+            if (peerConnection && peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
                 await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            } else {
+                // If remote description isn't set yet, hold the candidate in queue
+                pendingCandidates.push(candidate);
             }
         }
 
@@ -216,6 +237,7 @@
             document.getElementById('answerBtn').style.display = 'none';
             document.getElementById('hangupBtn').disabled = true;
             document.getElementById('status').innerText = "Call Ended.";
+            document.getElementById('status').style.color = "#03dac6";
         }
     </script>
 </body>
