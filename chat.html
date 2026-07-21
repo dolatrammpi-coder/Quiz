@@ -3,98 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghost Walkie-Talkie (Self-Destruct)</title>
+    <title>Ghost Call (MQTT Continuous Stream)</title>
     
-    <!-- CryptoJS for Encryption -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- Paho MQTT for Network -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
     <style>
         body { font-family: Arial, sans-serif; background-color: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { width: 100%; max-width: 400px; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; }
-        input { padding: 10px; width: 80%; margin-bottom: 15px; border: 1px solid #333; border-radius: 4px; background: #2c2c2c; color: white; }
-        button { padding: 10px 15px; background-color: #bb86fc; color: #121212; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        .container { width: 100%; max-width: 450px; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; }
+        input[type="password"] { padding: 10px; width: 80%; margin-bottom: 15px; border: 1px solid #333; border-radius: 4px; background: #2c2c2c; color: white; }
+        
+        .btn-green { background-color: #03dac6; color: #121212; width: 48%; padding: 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-red { background-color: #cf6679; color: #121212; width: 48%; padding: 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        button:disabled { background-color: #555; color: #888; cursor: not-allowed; }
+        
         #login-screen { display: block; }
         #chat-screen { display: none; }
         
-        #chat-box { height: 250px; border: 1px solid #333; border-radius: 4px; padding: 10px; overflow-y: auto; margin-bottom: 15px; background-color: #121212; text-align: left; }
-        .message { margin-bottom: 10px; padding: 8px; border-radius: 4px; background-color: #333; word-wrap: break-word; font-size: 14px; }
+        #status { font-size: 15px; color: #03dac6; margin-bottom: 20px; font-weight: bold; height: 20px; }
         
-        /* Audio Button Style */
-        .audio-msg { 
-            background-color: #03dac6; color: #000; font-weight: bold; cursor: pointer; 
-            padding: 10px; border-radius: 5px; display: inline-block; margin-bottom: 10px; 
-            transition: 0.3s; user-select: none;
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
         }
-        .audio-msg:active { transform: scale(0.95); }
-        .audio-trashed { background-color: #555; color: #aaa; cursor: not-allowed; font-style: italic; }
-        
-        /* Walkie-Talkie Button Styles */
-        #ptt-btn { 
-            width: 120px; height: 120px; border-radius: 50%; background-color: #bb86fc; 
-            color: #121212; font-size: 16px; font-weight: bold; border: 4px solid #3700b3; 
-            outline: none; cursor: pointer; transition: 0.2s; user-select: none; margin: 20px auto; display: block;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); color: #cf6679; }
+            100% { transform: scale(1); }
         }
-        #ptt-btn:active { background-color: #cf6679; border-color: #b00020; transform: scale(0.95); }
-        .recording { background-color: #cf6679 !important; border-color: #b00020 !important; animation: pulse 1s infinite; }
-        
-        @keyframes pulse { 
-            0% { box-shadow: 0 0 0 0 rgba(207, 102, 121, 0.7); } 
-            70% { box-shadow: 0 0 0 20px rgba(207, 102, 121, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(207, 102, 121, 0); } 
-        }
-        #status { font-size: 13px; color: #03dac6; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="container" id="login-screen">
-        <h3>Ghost Walkie-Talkie</h3>
-        <input type="password" id="pwdInput" placeholder="15-word passphrase...">
+        <h3>Ghost Call (No WebRTC)</h3>
+        <p style="font-size: 12px; color: #aaa;">Bypass All Firewalls</p>
+        <input type="password" id="pwdInput" placeholder="Enter passphrase...">
         <br><br>
-        <button onclick="startConnection()">Connect Securely</button>
+        <button class="btn-green" style="width: 80%;" onclick="startConnection()">Connect Securely</button>
     </div>
 
     <div class="container" id="chat-screen">
-        <div id="status">Connecting to Network...</div>
+        <div id="status">Connected to Encrypted Relay 🔒</div>
         
-        <div id="chat-box"></div>
-        
-        <div style="display: flex;">
-            <input type="text" id="msgInput" placeholder="Secret text..." style="flex: 1; border-radius: 4px 0 0 4px; margin-bottom: 0;">
-            <button onclick="sendTextMessage()" style="border-radius: 0 4px 4px 0;">Send</button>
+        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+            <button id="callBtn" class="btn-green" onclick="initiateCall()">📞 Call</button>
+            <button id="answerBtn" class="btn-green" onclick="answerCall()" style="display:none; animation: pulse 1s infinite;">📲 Answer</button>
+            <button id="hangupBtn" class="btn-red" onclick="endCall()" disabled>❌ End</button>
         </div>
-
-        <button id="ptt-btn">HOLD<br>TO TALK</button>
-        <p style="font-size: 11px; color: #888;">Button ko daba kar rakhein. Aawaz sirf 3 baar suni ja sakegi.</p>
+        
+        <p style="font-size: 11px; color: #888; margin-top: 20px;">
+            Yeh call audio packets ko encrypt karke text network par bhejti hai. WebRTC ya direct connection block hone par bhi chalegi.
+        </p>
     </div>
 
     <script>
         const SECRET_PASSWORD = "quantum velocity phantom eclipse nebula horizon paradox cipher matrix catalyst zenith vortex bastion enigma cobalt"; 
-        
-        // UNIQUE ID: Isse hum apne khud ke bheje messages ignore kar payenge
         const myUserId = "user_" + Math.random().toString(36).substr(2, 9); 
         
         let mqttClient;
         let chatTopic;
+        
+        // Continuous Audio Variables
         let mediaRecorder;
-        let audioChunks = [];
+        let isCalling = false;
+        let audioQueue = [];
+        let isPlaying = false;
+        const RECORDING_SLICE_MS = 1000; // Har 1 second ka audio chunk jayega
 
         function startConnection() {
             const enteredPwd = document.getElementById('pwdInput').value.trim();
             if (enteredPwd === SECRET_PASSWORD) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('chat-screen').style.display = 'block';
-                chatTopic = "ghost_walkie/" + CryptoJS.SHA256(SECRET_PASSWORD).toString().substring(0, 20);
+                chatTopic = "ghost_live_stream/" + CryptoJS.SHA256(SECRET_PASSWORD).toString().substring(0, 20);
                 connectMQTT();
-                setupAudio();
             } else {
-                alert("Galat passphrase!");
+                alert("Incorrect Passphrase!");
             }
         }
 
-        // ================= MQTT SETUP =================
         function connectMQTT() {
             mqttClient = new Paho.MQTT.Client("broker.emqx.io", 8084, myUserId);
             mqttClient.onMessageArrived = onMessageArrived;
@@ -108,23 +95,12 @@
         }
 
         function sendData(payloadObj) {
-            // Har message ke sath sender ki ID attach karein
-            payloadObj.senderId = myUserId; 
-            
+            payloadObj.senderId = myUserId;
             const jsonStr = JSON.stringify(payloadObj);
             const encrypted = CryptoJS.AES.encrypt(jsonStr, SECRET_PASSWORD).toString();
             const message = new Paho.MQTT.Message(encrypted);
             message.destinationName = chatTopic;
             mqttClient.send(message);
-        }
-
-        function sendTextMessage() {
-            const input = document.getElementById('msgInput');
-            if (input.value.trim() !== "") {
-                sendData({ type: 'text', content: input.value.trim() });
-                displayMessage(`💬 You: ${input.value.trim()}`); // Sender ko apna text dikhaye
-                input.value = "";
-            }
         }
 
         function onMessageArrived(message) {
@@ -133,117 +109,138 @@
                 const decryptedStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
                 const data = JSON.parse(decryptedStr);
 
-                // FIX: Agar message maine hi bheja hai, toh use dobara mat chalao
                 if (data.senderId === myUserId) return; 
 
-                if (data.type === 'text') {
-                    displayMessage(`💬 Ghost: ${data.content}`);
-                } else if (data.type === 'audio') {
-                    createSelfDestructAudio(data.content);
+                if (data.type === 'call_ring') {
+                    handleIncomingRing();
+                } else if (data.type === 'call_accept') {
+                    handleCallAccepted();
+                } else if (data.type === 'call_end') {
+                    handleRemoteEndCall();
+                } else if (data.type === 'audio_stream') {
+                    if (isCalling) {
+                        queueAudio(data.content);
+                    }
                 }
             } catch (e) {
-                console.log("Decryption failed or unreadable message.");
+                // Ignore noise
             }
         }
 
-        function displayMessage(text) {
-            const box = document.getElementById('chat-box');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message';
-            msgDiv.innerHTML = text;
-            box.appendChild(msgDiv);
-            box.scrollTop = box.scrollHeight;
-        }
+        // ================= CONTINUOUS AUDIO ENGINE =================
 
-        // ================= AUDIO RECORDING =================
-        async function setupAudio() {
+        async function startAudioStreaming() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
-                
+                isCalling = true;
+
                 mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
+                    if (event.data.size > 0 && isCalling) {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(event.data);
+                        reader.onloadend = () => {
+                            sendData({ type: 'audio_stream', content: reader.result });
+                        };
+                    }
                 };
 
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    audioChunks = []; 
-                    
-                    const reader = new FileReader();
-                    reader.readAsDataURL(audioBlob);
-                    reader.onloadend = () => {
-                        sendData({ type: 'audio', content: reader.result });
-                        displayMessage("🎙️ <i>Voice note sent securely.</i>"); // Sender ko pata chale ki message chala gaya
-                    };
-                };
+                // Continuous slicing
+                mediaRecorder.start(RECORDING_SLICE_MS); 
             } catch (err) {
-                alert("Microphone ka access zaroori hai!");
+                alert("Microphone permission is required!");
+                endCall();
             }
         }
 
-        const pttBtn = document.getElementById('ptt-btn');
-
-        function startRecording(e) {
-            e.preventDefault();
-            if (mediaRecorder && mediaRecorder.state === "inactive") {
-                mediaRecorder.start();
-                pttBtn.classList.add("recording");
-                pttBtn.innerHTML = "RECORDING...";
+        function queueAudio(base64Data) {
+            audioQueue.push(base64Data);
+            if (!isPlaying) {
+                playNextAudio();
             }
         }
 
-        function stopRecording(e) {
-            e.preventDefault();
-            if (mediaRecorder && mediaRecorder.state === "recording") {
+        function playNextAudio() {
+            if (audioQueue.length === 0 || !isCalling) {
+                isPlaying = false;
+                return;
+            }
+
+            isPlaying = true;
+            const nextAudioBase64 = audioQueue.shift();
+            const audioObj = new Audio(nextAudioBase64);
+            
+            audioObj.play().catch(e => console.error("Audio blocked"));
+            
+            audioObj.onended = () => {
+                playNextAudio();
+            };
+        }
+
+        function stopAudioStreaming() {
+            isCalling = false;
+            audioQueue = []; // Clear remaining audio
+            isPlaying = false;
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
-                pttBtn.classList.remove("recording");
-                pttBtn.innerHTML = "HOLD<br>TO TALK";
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
             }
         }
 
-        pttBtn.addEventListener('mousedown', startRecording);
-        pttBtn.addEventListener('mouseup', stopRecording);
-        pttBtn.addEventListener('mouseleave', stopRecording); 
-        pttBtn.addEventListener('touchstart', startRecording);
-        pttBtn.addEventListener('touchend', stopRecording);
+        // ================= CALL CONTROLS =================
 
-        // ================= SELF DESTRUCT AUDIO (3 PLAYS) =================
-        function createSelfDestructAudio(base64Data) {
-            const box = document.getElementById('chat-box');
-            const audioDiv = document.createElement('div');
+        function initiateCall() {
+            document.getElementById('callBtn').disabled = true;
+            document.getElementById('hangupBtn').disabled = false;
+            document.getElementById('status').innerText = "Ringing... 🔔";
             
-            let playsLeft = 3;
-            const audioObj = new Audio(base64Data);
-            
-            audioDiv.className = 'audio-msg';
-            audioDiv.innerHTML = `▶️ Play Voice Note (${playsLeft} left)`;
-            
-            audioDiv.onclick = function() {
-                // Agar plays bache hain aur audio ruki hui hai
-                if (playsLeft > 0 && audioObj.paused) {
-                    audioObj.play();
-                    playsLeft--;
-                    audioDiv.innerHTML = `⏳ Playing... (${playsLeft} left)`;
-                    audioDiv.style.pointerEvents = 'none'; // Play hote waqt double click block karein
-                }
-            };
-            
-            audioObj.onended = function() {
-                if (playsLeft > 0) {
-                    audioDiv.innerHTML = `▶️ Play Voice Note (${playsLeft} left)`;
-                    audioDiv.style.pointerEvents = 'auto'; // Dobara click allow karein
-                } else {
-                    // 3 baar play hone ke baad element ko trash kar dein
-                    audioDiv.className = 'message audio-trashed';
-                    audioDiv.innerHTML = `🗑️ Voice note trashed forever.`;
-                    audioDiv.style.pointerEvents = 'none'; // Humesha ke liye click disable
-                    
-                    // Optional: Element ko puri tarah remove karne ke liye `audioDiv.remove();` use kar sakte hain
-                }
-            };
+            sendData({ type: 'call_ring' });
+        }
 
-            box.appendChild(audioDiv);
-            box.scrollTop = box.scrollHeight;
+        function handleIncomingRing() {
+            if (!isCalling) {
+                document.getElementById('callBtn').style.display = 'none';
+                document.getElementById('answerBtn').style.display = 'inline-block';
+                document.getElementById('status').innerText = "Incoming Call... 📞";
+            }
+        }
+
+        function answerCall() {
+            document.getElementById('answerBtn').style.display = 'none';
+            document.getElementById('callBtn').style.display = 'inline-block';
+            document.getElementById('callBtn').disabled = true;
+            document.getElementById('hangupBtn').disabled = false;
+            document.getElementById('status').innerText = "Call Connected 🎙️";
+            document.getElementById('status').classList.add("pulse-animation");
+
+            sendData({ type: 'call_accept' });
+            startAudioStreaming();
+        }
+
+        function handleCallAccepted() {
+            document.getElementById('status').innerText = "Call Connected 🎙️";
+            document.getElementById('status').classList.add("pulse-animation");
+            startAudioStreaming();
+        }
+
+        function endCall() {
+            stopAudioStreaming();
+            sendData({ type: 'call_end' });
+            resetUI();
+        }
+
+        function handleRemoteEndCall() {
+            stopAudioStreaming();
+            resetUI();
+        }
+
+        function resetUI() {
+            document.getElementById('callBtn').style.display = 'inline-block';
+            document.getElementById('callBtn').disabled = false;
+            document.getElementById('answerBtn').style.display = 'none';
+            document.getElementById('hangupBtn').disabled = true;
+            document.getElementById('status').innerText = "Connected & Encrypted 🔒";
+            document.getElementById('status').classList.remove("pulse-animation");
         }
     </script>
 </body>
