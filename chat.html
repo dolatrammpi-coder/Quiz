@@ -3,75 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Untraceable Ghost Chat</title>
+    <title>Ghost Chat & Audio</title>
     
-    <!-- CryptoJS for AES-256 End-to-End Encryption -->
+    <!-- CryptoJS for Encryption -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- Paho MQTT for Serverless/Database-less Real-time Messaging -->
+    <!-- Paho MQTT for Signaling -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            width: 100%;
-            max-width: 450px;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        input {
-            padding: 10px;
-            width: 80%;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-            border-radius: 4px;
-            background: #2c2c2c;
-            color: white;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #bb86fc;
-            color: #121212;
-            font-weight: bold;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+        body { font-family: Arial, sans-serif; background-color: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { width: 100%; max-width: 450px; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        input { padding: 10px; width: 80%; margin-bottom: 15px; border: 1px solid #333; border-radius: 4px; background: #2c2c2c; color: white; }
+        button { padding: 10px 15px; background-color: #bb86fc; color: #121212; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+        .btn-green { background-color: #03dac6; }
+        .btn-red { background-color: #cf6679; }
         #login-screen { text-align: center; }
         #chat-screen { display: none; }
-        #chat-box {
-            height: 300px;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 10px;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            background-color: #121212;
-        }
-        .message {
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 4px;
-            background-color: #333;
-            word-wrap: break-word;
-        }
-        .input-group { display: flex; }
-        .input-group input {
-            flex: 1; border-radius: 4px 0 0 4px; margin-bottom: 0; width: auto;
-        }
-        .input-group button {
-            border-radius: 0 4px 4px 0;
-        }
+        #chat-box { height: 200px; border: 1px solid #333; border-radius: 4px; padding: 10px; overflow-y: auto; margin-bottom: 10px; background-color: #121212; }
+        .message { margin-bottom: 10px; padding: 8px; border-radius: 4px; background-color: #333; word-wrap: break-word; }
+        .input-group { display: flex; margin-bottom: 15px; }
+        .input-group input { flex: 1; border-radius: 4px 0 0 4px; margin-bottom: 0; width: auto; }
+        .input-group button { border-radius: 0 4px 4px 0; }
+        .call-controls { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #333; }
         #status { font-size: 12px; color: #03dac6; margin-bottom: 10px; text-align: center; }
     </style>
 </head>
@@ -79,124 +33,186 @@
 
     <!-- Login Screen -->
     <div class="container" id="login-screen">
-        <h3>Ghost Chat (Untraceable)</h3>
-        <p>Connect karne ke liye passphrase daalein:</p>
-        <input type="password" id="pwdInput" placeholder="15-word password...">
+        <h3>Ghost Network</h3>
+        <input type="password" id="pwdInput" placeholder="15-word passphrase...">
         <br>
         <button onclick="startConnection()">Connect Securely</button>
-        <p id="error-msg" style="color: #cf6679; display: none;">Error connecting...</p>
     </div>
 
-    <!-- Chat Screen -->
+    <!-- Main Screen -->
     <div class="container" id="chat-screen">
-        <h3>Encrypted Session</h3>
-        <div id="status">Connecting to Ghost Network...</div>
+        <div id="status">Connecting...</div>
+        
         <div id="chat-box"></div>
+        
         <div class="input-group">
-            <input type="text" id="msgInput" placeholder="Secret message likhein...">
-            <button onclick="sendMessage()">Send</button>
+            <input type="text" id="msgInput" placeholder="Secret message...">
+            <button onclick="sendTextMessage()">Send</button>
         </div>
+
+        <div class="call-controls">
+            <button id="callBtn" class="btn-green" onclick="startCall()">📞 Call</button>
+            <button id="answerBtn" class="btn-green" onclick="answerCall()" style="display:none;">📲 Answer</button>
+            <button id="hangupBtn" class="btn-red" onclick="hangup()" disabled>❌ End Call</button>
+        </div>
+        <!-- Hidden Audio Element for WebRTC -->
+        <audio id="remoteAudio" autoplay></audio>
     </div>
 
     <script>
-        // Aapka strong 15-word password
         const SECRET_PASSWORD = "quantum velocity phantom eclipse nebula horizon paradox cipher matrix catalyst zenith vortex bastion enigma cobalt"; 
         
         let mqttClient;
         let chatTopic;
+        
+        // WebRTC Variables
+        let peerConnection;
+        let localStream;
+        const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }; // Free Public STUN server
 
         function startConnection() {
             const enteredPwd = document.getElementById('pwdInput').value.trim();
-            
             if (enteredPwd === SECRET_PASSWORD) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('chat-screen').style.display = 'block';
-                
-                // Password ko hash karke ek unique hidden room (topic) banate hain
-                chatTopic = "ghostchat/" + CryptoJS.SHA256(SECRET_PASSWORD).toString().substring(0, 20);
-                connectToNetwork();
+                chatTopic = "ghost_webrtc/" + CryptoJS.SHA256(SECRET_PASSWORD).toString().substring(0, 20);
+                connectMQTT();
             } else {
                 alert("Galat passphrase!");
             }
         }
 
-        function connectToNetwork() {
-            // Free public MQTT broker (No database, just routing)
-            const brokerUrl = "broker.emqx.io"; 
-            const port = 8084; // Secure WSS port for GitHub Pages
-            const clientId = "ghost_" + Math.random().toString(16).substr(2, 8); // Random ID for each user
+        // ================= MQTT (SIGNALING & CHAT) =================
 
-            mqttClient = new Paho.MQTT.Client(brokerUrl, port, clientId);
-
-            mqttClient.onConnectionLost = onConnectionLost;
+        function connectMQTT() {
+            const clientId = "peer_" + Math.random().toString(16).substr(2, 8);
+            mqttClient = new Paho.MQTT.Client("broker.emqx.io", 8084, clientId);
             mqttClient.onMessageArrived = onMessageArrived;
-
-            const options = {
+            mqttClient.connect({
                 useSSL: true,
-                onSuccess: onConnect,
-                onFailure: function (message) {
-                    document.getElementById('status').innerText = "Connection Failed. Retrying...";
-                    document.getElementById('status').style.color = "#cf6679";
+                onSuccess: () => {
+                    document.getElementById('status').innerText = "Connected & Encrypted 🔒";
+                    mqttClient.subscribe(chatTopic);
                 }
-            };
-
-            mqttClient.connect(options);
+            });
         }
 
-        function onConnect() {
-            document.getElementById('status').innerText = "Connected & Encrypted 🔒";
-            // Hidden room ko join karein
-            mqttClient.subscribe(chatTopic);
+        function sendData(payloadObj) {
+            const jsonStr = JSON.stringify(payloadObj);
+            const encrypted = CryptoJS.AES.encrypt(jsonStr, SECRET_PASSWORD).toString();
+            const message = new Paho.MQTT.Message(encrypted);
+            message.destinationName = chatTopic;
+            mqttClient.send(message);
         }
 
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                document.getElementById('status').innerText = "Disconnected. Refresh page.";
-                document.getElementById('status').style.color = "#cf6679";
-            }
-        }
-
-        function sendMessage() {
-            const msgInput = document.getElementById('msgInput');
-            const rawMessage = msgInput.value.trim();
-
-            if (rawMessage !== "") {
-                // 1. Message ko browser mein hi encrypt karein
-                const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, SECRET_PASSWORD).toString();
-                
-                // 2. Encrypted message ko network par bhejein
-                const message = new Paho.MQTT.Message(encryptedMessage);
-                message.destinationName = chatTopic;
-                mqttClient.send(message);
-
-                msgInput.value = "";
+        function sendTextMessage() {
+            const input = document.getElementById('msgInput');
+            if (input.value.trim() !== "") {
+                sendData({ type: 'chat', text: input.value.trim() });
+                input.value = "";
             }
         }
 
         function onMessageArrived(message) {
             try {
-                // 1. Network se aaye kachre (encrypted data) ko decrypt karein
                 const decryptedBytes = CryptoJS.AES.decrypt(message.payloadString, SECRET_PASSWORD);
-                const originalMessage = decryptedBytes.toString(CryptoJS.enc.Utf8);
+                const decryptedStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
+                const data = JSON.parse(decryptedStr);
 
-                if (originalMessage) {
-                    displayMessage(originalMessage);
+                if (data.type === 'chat') {
+                    displayMessage(data.text);
+                } else if (data.type === 'offer') {
+                    handleOffer(data.offer);
+                } else if (data.type === 'answer') {
+                    handleAnswer(data.answer);
+                } else if (data.type === 'ice-candidate') {
+                    handleNewICECandidateMsg(data.candidate);
                 }
-            } catch (e) {
-                // Agar koi bahar ka insan galat password se is room mein aaya, toh error aayega
-                console.log("Decryption failed. Ignoring message.");
-            }
+            } catch (e) { console.log("Ignored unreadable message."); }
         }
 
         function displayMessage(text) {
-            const chatBox = document.getElementById('chat-box');
-            const newMsgDiv = document.createElement('div');
+            const box = document.getElementById('chat-box');
+            box.innerHTML += `<div class="message">${text}</div>`;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // ================= WebRTC (AUDIO CALL) =================
+
+        async function initWebRTC() {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            peerConnection = new RTCPeerConnection(servers);
+
+            // Apni aawaz connection mein daalein
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            // Samne wale ki aawaz receive karein
+            peerConnection.ontrack = event => {
+                document.getElementById('remoteAudio').srcObject = event.streams[0];
+            };
+
+            // ICE Candidates exchange (P2P routing ke liye)
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    sendData({ type: 'ice-candidate', candidate: event.candidate });
+                }
+            };
+        }
+
+        async function startCall() {
+            document.getElementById('callBtn').disabled = true;
+            document.getElementById('hangupBtn').disabled = false;
+            document.getElementById('status').innerText = "Calling...";
             
-            newMsgDiv.classList.add('message');
-            newMsgDiv.textContent = text; 
+            await initWebRTC();
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
             
-            chatBox.appendChild(newMsgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            // Samne wale ko Offer bhejein
+            sendData({ type: 'offer', offer: offer });
+        }
+
+        async function handleOffer(offer) {
+            document.getElementById('callBtn').style.display = 'none';
+            document.getElementById('answerBtn').style.display = 'inline-block';
+            document.getElementById('status').innerText = "Incoming Call... 🔔";
+            
+            await initWebRTC();
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        }
+
+        async function answerCall() {
+            document.getElementById('answerBtn').style.display = 'none';
+            document.getElementById('hangupBtn').disabled = false;
+            document.getElementById('status').innerText = "Call Connected 🎙️";
+            
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            
+            // Call lagane wale ko Answer bhejein
+            sendData({ type: 'answer', answer: answer });
+        }
+
+        async function handleAnswer(answer) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            document.getElementById('status').innerText = "Call Connected 🎙️";
+        }
+
+        async function handleNewICECandidateMsg(candidate) {
+            if (peerConnection) {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        }
+
+        function hangup() {
+            if (peerConnection) { peerConnection.close(); peerConnection = null; }
+            if (localStream) { localStream.getTracks().forEach(track => track.stop()); }
+            
+            document.getElementById('callBtn').style.display = 'inline-block';
+            document.getElementById('callBtn').disabled = false;
+            document.getElementById('answerBtn').style.display = 'none';
+            document.getElementById('hangupBtn').disabled = true;
+            document.getElementById('status').innerText = "Call Ended.";
         }
     </script>
 </body>
