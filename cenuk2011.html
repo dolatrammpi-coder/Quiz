@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>उत्तराखण्ड जनगणना 2011 - क्विज़</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --answered: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--primary);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            text-decoration: none;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .btn-back { background: rgba(255, 255, 255, 0.2); }
+        .btn-back:hover { background: rgba(255, 255, 255, 0.3); }
+        .btn-shuffle { background: #f59e0b; color: white; }
+        .btn-shuffle:hover { background: #d97706; }
+
+        /* Quiz Area */
+        .quiz-body {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 150px; /* Space for bottom nav */
+        }
+
+        .question-number {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            background: #fff;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover:not(.locked) {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .option.correct {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .option.wrong {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+
+        .option.locked {
+            cursor: not-allowed;
+        }
+
+        /* Bottom Fixed Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 15px 20px;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-nav {
+            background: var(--primary);
+            color: white;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+        }
+        .btn-nav:hover { background: var(--primary-hover); }
+        .btn-nav:disabled { background: #9ca3af; cursor: not-allowed; }
+
+        .btn-submit { background: var(--success); color: white; padding: 12px 25px; font-size: 1.1rem;}
+        .btn-submit:hover { background: #15803d; }
+
+        /* Palette Grid */
+        .palette-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .palette-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .palette-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 5px;
+            border: 1px solid #d1d5db;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--text-main);
+            transition: 0.2s;
+        }
+
+        .palette-btn:hover { border-color: var(--primary); }
+        .palette-btn.active { border: 2px solid var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+        .palette-btn.answered { background: var(--answered); color: white; border-color: var(--answered); }
+
+        /* Result Screen */
+        .result-screen {
+            display: none;
+            padding: 20px;
+            text-align: center;
+            padding-bottom: 50px;
+        }
+        .score-card {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+        .dynamic-msg { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: var(--text-main); }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .btn-retest { background: #f59e0b; font-size: 1.1rem; padding: 12px 20px; }
+        .btn-retest:hover { background: #d97706; }
+        .btn-restart { background: var(--primary); font-size: 1.1rem; padding: 12px 20px; }
+        
+        .detailed-review { text-align: left; margin-top: 20px; }
+        .review-item {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #ccc;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .review-item.correct { border-left-color: var(--success); }
+        .review-item.wrong { border-left-color: var(--danger); }
+        .review-q { font-weight: bold; margin-bottom: 8px; }
+        .review-ans { font-size: 0.9rem; color: #4b5563; }
+        .review-correct { font-size: 0.9rem; color: var(--success); font-weight: bold; margin-top: 5px;}
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1rem; }
+            .bottom-nav { padding: 10px; }
+            .btn-nav, .btn-submit { padding: 10px 15px; font-size: 1rem; }
+            .palette-btn { width: 30px; height: 30px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <!-- Header -->
+    <div class="header">
+        <a href="uttarakhand.html" class="btn btn-back">⬅ बैक</a>
+        <h1>2011 जनगणना क्विज़</h1>
+        <div class="header-buttons">
+            <button class="btn btn-shuffle" onclick="shuffleQuiz()">🔀 शफल</button>
+        </div>
+    </div>
+
+    <!-- Quiz Area -->
+    <div class="quiz-body" id="quizArea">
+        <div class="question-number" id="qNumber">प्रश्न 1 / 30</div>
+        <div class="question-text" id="qText">लोड हो रहा है...</div>
+        <div class="options-container" id="optionsContainer">
+            <!-- Options will be injected here -->
+        </div>
+    </div>
+
+    <!-- Bottom Navigation & Palette -->
+    <div class="bottom-nav" id="bottomNav">
+        <div class="controls">
+            <button class="btn btn-nav" id="prevBtn" onclick="changeQuestion(-1)">पिछला</button>
+            <button class="btn btn-submit" id="submitBtn" onclick="confirmSubmit()" style="display: none;">सबमिट करें</button>
+            <button class="btn btn-nav" id="nextBtn" onclick="changeQuestion(1)">अगला ➡</button>
+        </div>
+        <div class="palette-title">नेविगेशन बोर्ड (Question Palette)</div>
+        <div class="palette-grid" id="paletteGrid">
+            <!-- Palette buttons will be injected here -->
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="result-screen" id="resultArea">
+        <div class="score-card">
+            <div class="score-circle" id="scoreCircle">0%</div>
+            <div class="dynamic-msg" id="dynamicMsg">परिणाम</div>
+            <p id="scoreText">आपने 30 में से 0 सही किए।</p>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-retest" id="retestBtn" onclick="startRetest()">🔄 गलत/छूटे प्रश्नों का री-टेस्ट</button>
+            <button class="btn btn-restart" onclick="restartFullQuiz()">चैप्टर रीस्टार्ट करें</button>
+        </div>
+
+        <h3 style="margin-bottom: 15px; text-align: left; color: var(--primary);">विस्तृत समीक्षा (Detailed Review)</h3>
+        <div class="detailed-review" id="detailedReview">
+            <!-- Review items will be injected here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Original Database (Strictly from provided image, 2011 Census only, highly confusing options)
+    const masterQuestions = [
+        { q: "2011 की जनगणना के अंतिम आंकड़े देहरादून में कब जारी किये गये?", opts: ["31 मई 2012", "31 मई 2013", "30 मई 2013", "31 मार्च 2013"], ans: "31 मई 2013" },
+        { q: "2011 में राज्य की कुल आबादी देश की कुल आबादी का कितना प्रतिशत थी?", opts: ["0.38%", "0.83%", "0.88%", "1.83%"], ans: "0.83%" },
+        { q: "तेलंगाना के गठन के बाद (2014 से) जनसंख्या की दृष्टि से उत्तराखण्ड का राज्यों व केंद्र शासित प्रदेशों में कौन सा स्थान है?", opts: ["19वाँ", "20वाँ", "21वाँ", "22वाँ"], ans: "21वाँ" },
+        { q: "2011 के अनुसार उत्तराखण्ड की कुल जनसंख्या में पर्वतीय आबादी का प्रतिशत कितना है?", opts: ["35.10%", "65.90%", "64.90%", "58.07%"], ans: "64.90%" },
+        { q: "2011 के अनुसार गढ़वाल और कुमाऊँ मण्डल में क्रमशः कितनी प्रतिशत आबादी निवास करती है?", opts: ["57.08% व 42.92%", "58.07% व 41.93%", "58.70% व 41.30%", "59.07% व 40.93%"], ans: "58.07% व 41.93%" },
+        { q: "2011 में राज्य की कुल आबादी में पुरुषों व स्त्रियों का प्रतिशत क्रमशः कितना है?", opts: ["50.93% व 49.07%", "51.37% व 48.63%", "52.90% व 47.10%", "51.93% व 48.07%"], ans: "50.93% व 49.07%" },
+        { q: "2011 में शिशु (0-6 आयु समूह) जनसंख्या का प्रतिशत कितना था?", opts: ["16.02%", "13.55%", "13.44%", "14.44%"], ans: "13.44%" },
+        { q: "2001-11 के दौरान राज्य की आबादी में दशकीय वृद्धि दर कितनी रही?", opts: ["20.41%", "18.81%", "18.18%", "17.70%"], ans: "18.81%" },
+        { q: "2001-11 के दौरान किन दो जिलों की दशकीय वृद्धि दर शून्य से नीचे रही?", opts: ["पौड़ी व चमोली", "चमोली व पिथौरागढ़", "टिहरी व बागेश्वर", "पौड़ी व अल्मोड़ा"], ans: "पौड़ी व अल्मोड़ा" },
+        { q: "2011 में राष्ट्रीय स्तर पर दशकीय वृद्धि दर 17.70% थी, इस वृद्धि दर में देश में उत्तराखण्ड का कौन सा स्थान था?", opts: ["17वाँ", "18वाँ", "19वाँ", "20वाँ"], ans: "18वाँ" },
+        { q: "2011 में राज्य का औसत जनघनत्व कितना था?", opts: ["159 व्यक्ति/वर्ग किमी", "198 व्यक्ति/वर्ग किमी", "189 व्यक्ति/वर्ग किमी", "382 व्यक्ति/वर्ग किमी"], ans: "189 व्यक्ति/वर्ग किमी" },
+        { q: "जनघनत्व के मामले में 2011 में उत्तराखण्ड का देश के सभी राज्यों में कौन सा स्थान था?", opts: ["24वाँ", "25वाँ", "26वाँ", "20वाँ"], ans: "25वाँ" },
+        { q: "2011 में राज्य में औसत लिंगानुपात कितना था?", opts: ["943 प्रति हजार", "962 प्रति हजार", "963 प्रति हजार", "890 प्रति हजार"], ans: "963 प्रति हजार" },
+        { q: "2011 में लिंगानुपात में देश में उत्तराखण्ड का कौन सा स्थान था?", opts: ["12वाँ", "13वाँ", "14वाँ", "17वाँ"], ans: "13वाँ" },
+        { q: "2011 में राज्य का शिशु लिंगानुपात (0-6 वर्ष) कितना था?", opts: ["868", "890", "899", "967"], ans: "890" },
+        { q: "2011 में राज्य की औसत साक्षरता कितनी थी?", opts: ["71.62%", "76.31%", "78.82%", "84.45%"], ans: "78.82%" },
+        { q: "2011 में औसत साक्षरता में देश में राज्य का स्थान कौन सा था?", opts: ["13वाँ", "15वाँ", "17वाँ", "20वाँ"], ans: "17वाँ" },
+        { q: "2011 में राज्य में पुरुष और महिला साक्षरता क्रमशः कितनी थी?", opts: ["83.30% व 59.60%", "87.40% व 70.00%", "89.05% व 68.96%", "86.62% व 66.16%"], ans: "87.40% व 70.00%" },
+        { q: "सर्वाधिक और सबसे कम जनसंख्या वाले जिले (2011) क्रमशः कौन से हैं?", opts: ["देहरादून व चम्पावत", "हरिद्वार व चम्पावत", "हरिद्वार व रुद्रप्रयाग", "देहरादून व रुद्रप्रयाग"], ans: "हरिद्वार व रुद्रप्रयाग" },
+        { q: "सर्वाधिक और सबसे कम दशकीय वृद्धि दर वाले जिले क्रमशः कौन से हैं?", opts: ["ऊधम सिंह नगर व पौड़ी", "देहरादून व अल्मोड़ा", "हरिद्वार व पौड़ी", "ऊधम सिंह नगर व अल्मोड़ा"], ans: "ऊधम सिंह नगर व पौड़ी" },
+        { q: "सर्वाधिक और सबसे कम लिंगानुपात वाले जिले क्रमशः कौन से हैं?", opts: ["रुद्रप्रयाग व देहरादून", "अल्मोड़ा व हरिद्वार", "अल्मोड़ा व ऊधम सिंह नगर", "रुद्रप्रयाग व हरिद्वार"], ans: "अल्मोड़ा व हरिद्वार" },
+        { q: "सर्वाधिक और सबसे कम जनघनत्व वाले जिले क्रमशः कौन से हैं?", opts: ["हरिद्वार व चमोली", "ऊधम सिंह नगर व उत्तरकाशी", "देहरादून व पिथौरागढ़", "हरिद्वार व उत्तरकाशी"], ans: "हरिद्वार व उत्तरकाशी" },
+        { q: "सर्वाधिक और सबसे कम साक्षरता प्रतिशत वाले जिले क्रमशः कौन से हैं?", opts: ["नैनीताल व हरिद्वार", "देहरादून व हरिद्वार", "देहरादून व ऊधम सिंह नगर", "नैनीताल व ऊधम सिंह नगर"], ans: "देहरादून व ऊधम सिंह नगर" },
+        { q: "2011 के अनुसार ग्रामीण व नगरीय जनसंख्या का प्रतिशत क्रमशः कितना है?", opts: ["70.23% व 29.77%", "69.77% व 30.23%", "68.96% व 31.04%", "69.90% व 30.10%"], ans: "69.77% व 30.23%" },
+        { q: "नगरीय जनसंख्या प्रतिशत की दृष्टि से देश में उत्तराखण्ड का कौन सा स्थान है?", opts: ["18वाँ", "19वाँ", "20वाँ", "21वाँ"], ans: "20वाँ" },
+        { q: "सर्वाधिक और सबसे कम नगरीकरण वाले जिले क्रमशः कौन से हैं?", opts: ["नैनीताल व रुद्रप्रयाग", "देहरादून व बागेश्वर", "देहरादून व उत्तरकाशी", "हरिद्वार व बागेश्वर"], ans: "देहरादून व बागेश्वर" },
+        { q: "2011 के अनुसार राज्य में 1 लाख से अधिक आबादी वाले नगरों की संख्या कितनी है?", opts: ["4", "5", "6", "7"], ans: "6" },
+        { q: "2011 के अनुसार प्रदेश की कुल जनसंख्या में कार्यशील जनसंख्या (कर्मकर) का प्रतिशत कितना है?", opts: ["38.39%", "39.38%", "61.61%", "60.61%"], ans: "38.39%" },
+        { q: "2011 के अनुसार सर्वाधिक और सबसे कम जनसंख्या वाले धर्म क्रमशः कौन से हैं?", opts: ["हिन्दू एवं बौद्ध", "हिन्दू एवं जैन", "हिन्दू एवं मुस्लिम", "हिन्दू एवं ईसाई"], ans: "हिन्दू एवं जैन" },
+        { q: "2011 के अनुसार राज्य की कुल आबादी में मुस्लिम आबादी का प्रतिशत कितना है?", opts: ["11.92%", "12.95%", "13.95%", "14.28%"], ans: "13.95%" }
+    ];
+
+    let currentQuestions = [];
+    let currentIdx = 0;
+    let userAnswers = {}; // Stores { questionIndex: 'Selected Option' }
+    let isRetestMode = false;
+
+    // Initialize Quiz
+    function initQuiz(questionsData) {
+        // Deep copy questions to avoid modifying master directly during shuffles
+        currentQuestions = JSON.parse(JSON.stringify(questionsData));
+        currentIdx = 0;
+        userAnswers = {};
+        
+        document.getElementById('quizArea').style.display = 'block';
+        document.getElementById('bottomNav').style.display = 'block';
+        document.getElementById('resultArea').style.display = 'none';
+        
+        renderPalette();
+        loadQuestion(currentIdx);
+    }
+
+    // Shuffle Array Utility (Fisher-Yates)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Shuffle Quiz button
+    function shuffleQuiz() {
+        if(Object.keys(userAnswers).length > 0) {
+            if(!confirm("शफल करने पर आपका वर्तमान प्रोग्रेस रीसेट हो जाएगा। क्या आप शफल करना चाहते हैं?")) return;
+        }
+        
+        let shuffled = JSON.parse(JSON.stringify(masterQuestions));
+        shuffleArray(shuffled);
+        // Shuffle options for each question
+        shuffled.forEach(sq => shuffleArray(sq.opts));
+        
+        initQuiz(shuffled);
+    }
+
+    function loadQuestion(index) {
+        const qData = currentQuestions[index];
+        document.getElementById('qNumber').innerText = `प्रश्न ${index + 1} / ${currentQuestions.length}`;
+        document.getElementById('qText').innerText = qData.q;
+        
+        const optsContainer = document.getElementById('optionsContainer');
+        optsContainer.innerHTML = '';
+
+        qData.opts.forEach(opt => {
+            const div = document.createElement('div');
+            div.className = 'option';
+            div.innerText = opt;
+            
+            // Check if already answered
+            if (userAnswers[index]) {
+                div.classList.add('locked');
+                if (opt === qData.ans) {
+                    div.classList.add('correct');
+                } else if (opt === userAnswers[index]) {
+                    div.classList.add('wrong');
+                }
+            } else {
+                div.onclick = () => selectOption(opt, div);
+            }
+            
+            optsContainer.appendChild(div);
+        });
+
+        updateNavButtons();
+        updatePaletteActive();
+    }
+
+    function selectOption(selectedOpt, element) {
+        if (userAnswers[currentIdx]) return; // Locked once answered
+
+        userAnswers[currentIdx] = selectedOpt;
+        const qData = currentQuestions[currentIdx];
+        
+        // Lock all options and show colors
+        const allOpts = document.getElementById('optionsContainer').children;
+        for (let optDiv of allOpts) {
+            optDiv.classList.add('locked');
+            if (optDiv.innerText === qData.ans) {
+                optDiv.classList.add('correct');
+            }
+        }
+
+        if (selectedOpt !== qData.ans) {
+            element.classList.add('wrong');
+        }
+
+        // Update Palette
+        const paletteBtn = document.getElementById(`pal-${currentIdx}`);
+        paletteBtn.classList.add('answered');
+
+        // Smart UI logic
+        updateNavButtons();
+    }
+
+    function changeQuestion(step) {
+        currentIdx += step;
+        if (currentIdx < 0) currentIdx = 0;
+        if (currentIdx >= currentQuestions.length) currentIdx = currentQuestions.length - 1;
+        loadQuestion(currentIdx);
+    }
+
+    function jumpToQuestion(index) {
+        currentIdx = index;
+        loadQuestion(currentIdx);
+    }
+
+    function updateNavButtons() {
+        document.getElementById('prevBtn').disabled = (currentIdx === 0);
+        
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (currentIdx === currentQuestions.length - 1) {
+            nextBtn.style.display = 'none';
+            submitBtn.style.display = 'inline-block';
+        } else {
+            nextBtn.style.display = 'inline-block';
+            submitBtn.style.display = 'none';
+        }
+    }
+
+    function renderPalette() {
+        const grid = document.getElementById('paletteGrid');
+        grid.innerHTML = '';
+        currentQuestions.forEach((_, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'palette-btn';
+            btn.id = `pal-${i}`;
+            btn.innerText = i + 1;
+            btn.onclick = () => jumpToQuestion(i);
+            if (userAnswers[i]) btn.classList.add('answered');
+            grid.appendChild(btn);
+        });
+    }
+
+    function updatePaletteActive() {
+        const btns = document.querySelectorAll('.palette-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`pal-${currentIdx}`);
+        if(activeBtn) {
+            activeBtn.classList.add('active');
+            activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function confirmSubmit() {
+        const attempted = Object.keys(userAnswers).length;
+        const total = currentQuestions.length;
+        const remaining = total - attempted;
+
+        if (remaining > 0) {
+            if (!confirm(`आपने ${remaining} प्रश्न छोड़ दिए हैं। क्या आप फिर भी सबमिट करना चाहते हैं?`)) {
+                return;
+            }
+        }
+        showResult();
+    }
+
+    function showResult() {
+        document.getElementById('quizArea').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.getElementById('resultArea').style.display = 'block';
+
+        let score = 0;
+        let reviewHTML = '';
+        
+        currentQuestions.forEach((q, i) => {
+            const uAns = userAnswers[i];
+            const isCorrect = (uAns === q.ans);
+            if (isCorrect) score++;
+
+            let statusClass = isCorrect ? 'correct' : 'wrong';
+            let uAnsText = uAns ? uAns : "<span style='color:#dc2626'>छोड़ दिया गया (Unattempted)</span>";
+
+            reviewHTML += `
+                <div class="review-item ${statusClass}">
+                    <div class="review-q">Q${i+1}. ${q.q}</div>
+                    <div class="review-ans">आपका उत्तर: ${uAnsText}</div>
+                    ${!isCorrect ? `<div class="review-correct">सही उत्तर: ${q.ans}</div>` : ''}
+                </div>
+            `;
+        });
+
+        const percentage = Math.round((score / currentQuestions.length) * 100);
+        document.getElementById('scoreCircle').innerText = `${percentage}%`;
+        document.getElementById('scoreText').innerText = `आपने ${currentQuestions.length} में से ${score} सही किए।`;
+
+        let msg = "अभ्यास करते रहें!";
+        if (percentage >= 90) msg = "🏆 उत्कृष्ट प्रदर्शन! आपकी तैयारी शानदार है।";
+        else if (percentage >= 70) msg = "👍 बहुत अच्छा प्रयास!";
+        else if (percentage >= 50) msg = "🙂 औसत प्रदर्शन, रिवीजन की आवश्यकता है।";
+        document.getElementById('dynamicMsg').innerText = msg;
+
+        document.getElementById('detailedReview').innerHTML = reviewHTML;
+
+        // Hide re-test button if 100%
+        document.getElementById('retestBtn').style.display = (percentage === 100) ? 'none' : 'inline-block';
+    }
+
+    function startRetest() {
+        // Filter out correct answers
+        const wrongQuestions = currentQuestions.filter((q, i) => userAnswers[i] !== q.ans);
+        initQuiz(wrongQuestions);
+    }
+
+    function restartFullQuiz() {
+        // Start fresh with original sequence
+        initQuiz(masterQuestions);
+    }
+
+    // Start on load
+    window.onload = () => {
+        initQuiz(masterQuestions);
+    };
+
+</script>
+</body>
+</html>
