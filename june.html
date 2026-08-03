@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>करेंट अफेयर्स जून 2026 - क्विज़</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Poppins', 'Noto Sans Devanagari', sans-serif;
+            background: #f0f2f5;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .option-card:hover {
+            transform: translateY(-2px);
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .option-card.correct {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            color: #166534;
+        }
+
+        .option-card.wrong {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b;
+        }
+
+        .nav-grid-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+        }
+
+        .nav-grid-item.active {
+            border: 2px solid #3b82f6;
+            transform: scale(1.1);
+        }
+
+        .nav-grid-item.answered {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .nav-grid-item.current {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="p-2 md:p-6 text-slate-800">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <a href="current_affairs.html" class="flex items-center text-blue-600 font-semibold hover:text-blue-800">
+                <i class="fas fa-arrow-left mr-2"></i> बैक (Back)
+            </a>
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800">करेंट अफेयर्स - जून 2026</h1>
+            <div class="flex gap-2">
+                <button onclick="shuffleQuiz()" class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium hover:bg-slate-50 transition border border-slate-200">
+                    🔀 शफल (Shuffle)
+                </button>
+                <button onclick="restartQuiz()" class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-red-600 hover:bg-red-50 transition border border-red-100">
+                    <i class="fas fa-redo mr-1"></i> रिस्टार्ट
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-200 rounded-full h-2 mb-6">
+            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+
+        <!-- Main Quiz Section -->
+        <div id="quiz-container" class="glass-card p-6 md:p-8 min-h-[400px]">
+            <div id="question-area" class="animate-fade">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-bold text-blue-600 uppercase tracking-wider" id="question-category">प्रश्न संख्या</span>
+                    <span class="text-sm font-medium text-slate-500" id="question-count">1/20</span>
+                </div>
+                <h2 id="question-text" class="text-lg md:text-xl font-semibold leading-relaxed mb-8">
+                    लोड हो रहा है...
+                </h2>
+                <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="flex justify-between items-center mt-6 gap-4">
+            <button id="prev-btn" onclick="prevQuestion()" class="flex-1 md:flex-none bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 disabled:opacity-50 transition">
+                <i class="fas fa-chevron-left mr-2"></i> पिछला
+            </button>
+            <button id="next-btn" onclick="nextQuestion()" class="flex-1 md:flex-none bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition">
+                अगला <i class="fas fa-chevron-right ml-2"></i>
+            </button>
+            <button id="submit-btn" onclick="checkSubmission()" class="hidden flex-1 md:flex-none bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition">
+                सबमिट क्विज़
+            </button>
+        </div>
+
+        <!-- Navigation Grid (Smart Palette) -->
+        <div class="mt-8">
+            <h3 class="text-sm font-bold text-slate-500 uppercase mb-4 tracking-widest">Question Palette</h3>
+            <div id="nav-grid" class="flex flex-wrap gap-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <!-- Grid items will be injected here -->
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <p class="text-center text-slate-400 text-xs mt-8 mb-4">
+            प्रोफेशनल सेल्फ-असेसमेंट टूल • जून 2026 एडिशन
+        </p>
+    </div>
+
+    <!-- Result Modal (Hidden by default) -->
+    <div id="result-modal" class="fixed inset-0 bg-slate-900/80 hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl w-full max-w-2xl p-6 md:p-10 my-auto shadow-2xl relative">
+            <div class="text-center mb-8">
+                <div id="result-icon" class="text-6xl mb-4">🏆</div>
+                <h2 id="result-title" class="text-3xl font-bold mb-2">शानदार प्रदर्शन!</h2>
+                <p id="result-message" class="text-slate-500">आपने क्विज़ सफलतापूर्वक पूरा कर लिया है।</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="bg-blue-50 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="total-score">0</div>
+                    <div class="text-xs text-blue-400 uppercase font-bold">कुल अंक</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-bold text-green-600" id="accuracy-rate">0%</div>
+                    <div class="text-xs text-green-400 uppercase font-bold">शुद्धता</div>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="time-taken">0:00</div>
+                    <div class="text-xs text-orange-400 uppercase font-bold">समय</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 mb-8">
+                <button onclick="retestWrongOnes()" id="retest-btn" class="flex-1 bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition">
+                    🚀 केवल गलत/छूटे हुए का री-टेस्ट
+                </button>
+                <button onclick="location.reload()" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-xl font-bold hover:bg-slate-200 transition">
+                    🔄 पूरा टेस्ट दोबारा दें
+                </button>
+            </div>
+
+            <div class="border-t border-slate-100 pt-6">
+                <h3 class="font-bold mb-4 flex items-center"><i class="fas fa-list-check mr-2 text-blue-600"></i> विस्तृत समीक्षा (Review)</h3>
+                <div id="review-list" class="space-y-4 max-h-[300px] overflow-y-auto custom-scroll pr-2">
+                    <!-- Review items -->
+                </div>
+            </div>
+            
+            <button onclick="closeResult()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz Data - Incorporating the OCR content provided
+        const allQuestions = [
+            {
+                q: "हाल ही में भारतीय नौसेना का 27वां नौसेना प्रमुख किसे नियुक्त किया गया है?",
+                options: ["दिनेश के. त्रिपाठी", "आर. हरि कुमार", "कृष्ण स्वामीनाथन", "करमबीर सिंह"],
+                correct: 0,
+                hint: "ये आर. हरि कुमार का स्थान लेंगे।"
+            },
+            {
+                q: "हाल ही में पश्चिमी नौसेना कमान का फ्लैग ऑफिसर कमांडिंग-इन-चीफ किसे नियुक्त किया गया है?",
+                options: ["संजय वात्सायन", "दिनेश के. त्रिपाठी", "कृष्ण स्वामीनाथन", "आर. हरि कुमार"],
+                correct: 0,
+                hint: "वाइस एडमिरल संजय वात्सायन।"
+            },
+            {
+                q: "हाल ही में राजस्व खुफिया निदेशालय (DRI) ने किस अभियान के तहत केरल में नशीले पदार्थ जब्त किए हैं?",
+                options: ["ऑपरेशन गरुड़", "ऑपरेशन सुरक्षा", "ऑपरेशन प्रहार", "ऑपरेशन चक्रव्यूह"],
+                correct: 3,
+                hint: "चक्रव्यूह जैसा घेरा।"
+            },
+            {
+                q: "हाल ही में 'नौसेना शौर्य वाटिका' का उद्घाटन कहाँ किया गया है?",
+                options: ["लखनऊ", "भोपाल", "जयपुर", "पटना"],
+                correct: 0,
+                hint: "उत्तर प्रदेश की राजधानी।"
+            },
+            {
+                q: "कौनसा हवाई अड्डा छत्रपति शिवाजी महाराज अंतर्राष्ट्रीय हवाई अड्डे को पीछे छोड़कर भारत का दूसरा सबसे व्यस्त घरेलू हवाई अड्डा बन गया है?",
+                options: ["इंदिरा गांधी अंतर्राष्ट्रीय हवाई अड्डा", "राजीव गांधी अंतर्राष्ट्रीय हवाई अड्डा", "केम्पेगोड़ा अंतर्राष्ट्रीय हवाई अड्डा", "चेन्नई अंतर्राष्ट्रीय हवाई अड्डा"],
+                correct: 2,
+                hint: "यह बेंगलुरु में स्थित है।"
+            },
+            {
+                q: "DRDO ने हाई-कैलिबर बम का सफल परीक्षण कहाँ किया है?",
+                options: ["राजस्थान", "ओडिशा", "गुजरात", "हरियाणा"],
+                correct: 1,
+                hint: "चांदीपुर रेंज इसी राज्य में है।"
+            },
+            {
+                q: "हाल ही में गोवा का 40वां राज्य स्थापना दिवस कब मनाया गया है?",
+                options: ["29 मई", "30 मई", "31 मई", "1 जून"],
+                correct: 1,
+                hint: "मई महीने का आखिरी से पिछला दिन।"
+            },
+            {
+                q: "हाल ही में किस समाचार पत्र के सम्मान में एक स्मारक डाक टिकट जारी किया गया है?",
+                options: ["उदंत मार्तंड", "प्रजाहितेषी", "तत्वबोधिनी", "सुधा वर्षण"],
+                correct: 0,
+                hint: "भारत का पहला हिंदी समाचार पत्र।"
+            },
+            {
+                q: "ISSF वर्ल्ड कप 2026, म्यूनिख में भारत ने कुल कितने पदक जीते हैं?",
+                options: ["2", "3", "4", "5"],
+                correct: 0,
+                hint: "एक स्वर्ण और एक रजत।"
+            },
+            {
+                q: "हाल ही में भारत के पहले 'रॉक चेक डैम' का उद्घाटन कहाँ किया गया है?",
+                options: ["लद्दाख", "हिमाचल प्रदेश", "उत्तराखंड", "जम्मू-कश्मीर"],
+                correct: 0,
+                hint: "शीत मरुस्थल के रूप में प्रसिद्ध।"
+            },
+            {
+                q: "हाल ही में 2026 UEFA मेंस चैंपियंस लीग का खिताब किसने जीता है?",
+                options: ["रियल मैड्रिड", "मेनचेस्टर सिटी", "आर्सेनल", "पेरिस सेंट-जर्मन"],
+                correct: 0,
+                hint: "इस टीम ने 15वीं बार यह खिताब जीता है।"
+            },
+            {
+                q: "2026 स्काईट्रैक्स वर्ल्ड के टॉप 100 हवाई अड्डों में किसने शीर्ष भारतीय स्थान हासिल किया है?",
+                options: ["छत्रपति शिवाजी महाराज हवाई अड्डा", "इंदिरा गांधी अंतर्राष्ट्रीय हवाई अड्डा", "केम्पेगोड़ा अंतर्राष्ट्रीय हवाई अड्डा", "मनोहर अंतर्राष्ट्रीय हवाई अड्डा"],
+                correct: 1,
+                hint: "दिल्ली का प्रमुख हवाई अड्डा।"
+            },
+            {
+                q: "आईपीएल (IPL) 2026 का खिताब किस टीम ने जीता है?",
+                options: ["गुजरात टाइटंस (GT)", "रॉयल चैलेंजर्स बेंगलुरु (RCB)", "चेन्नई सुपर किंग्स (CSK)", "मुंबई इंडियंस (MI)"],
+                correct: 1,
+                hint: "ई साला कप नमदे - आखिरकार जीत मिली!"
+            },
+            {
+                q: "हाल ही में उत्तर प्रदेश का नया पुलिस महानिदेशक (DGP) किसे नियुक्त किया गया है?",
+                options: ["प्रशांत कुमार", "राजीव कृष्णा", "मुकुल गोयल", "डी. एस. चौहान"],
+                correct: 0,
+                hint: "वह 1990 बैच के IPS अधिकारी हैं।"
+            },
+            {
+                q: "हाल ही में रक्षा अनुसंधान और विकास संगठन (DRDO) के अध्यक्ष का अतिरिक्त प्रभार किसे सौंपा गया है?",
+                options: ["समीर वी. कामत", "जी. सतीश रेड्डी", "अजय कुमार", "राजेश कुमार सिंह"],
+                correct: 3,
+                hint: "राजेश कुमार सिंह।"
+            },
+            {
+                q: "हाल ही में किस देश ने 16 साल से कम उम्र के बच्चों के लिए सोशल मीडिया पर प्रतिबंध लगाया है?",
+                options: ["मलेशिया", "नेपाल", "वियतनाम", "जापान"],
+                correct: 0,
+                hint: "दक्षिण पूर्व एशियाई देश।"
+            },
+            {
+                q: "केंद्र सरकार ने चिनाब-ब्यास लिंक सुरंग परियोजना की अनुमानित लागत कितनी तय की है?",
+                options: ["₹1,850.7 करोड़", "₹2,352.7 करोड़", "₹3,120.7 करोड़", "₹4,500.7 करोड़"],
+                correct: 2,
+                hint: "3000 करोड़ से थोड़ा अधिक।"
+            },
+            {
+                q: "हाल ही में जल शक्ति मंत्रालय ने जल अनुसंधान के लिए किसके साथ समझौता (MoU) किया है?",
+                options: ["नीति आयोग", "भारतीय मौसम विज्ञान विभाग", "IIT बॉम्बे", "भारतीय अंतरिक्ष अनुसंधान संगठन (ISRO)"],
+                correct: 3,
+                hint: "भारत की अंतरिक्ष एजेंसी।"
+            },
+            {
+                q: "किस देश के शोधकर्ताओं ने जीवित चूहे की आंख की कोशिकाओं में प्रकाश-संश्लेषण प्रदर्शित किया है?",
+                options: ["जापान", "सिंगापुर", "कोरिया", "चीन"],
+                correct: 1,
+                hint: "सिंगापुर के वैज्ञानिकों ने।"
+            },
+            {
+                q: "हाल ही में राष्ट्रीय अभियान 'खेत बचाओ अभियान' कहाँ से लॉन्च किया गया है?",
+                options: ["उत्तर प्रदेश", "राजस्थान", "मध्य प्रदेश", "महाराष्ट्र"],
+                correct: 2,
+                hint: "शिवराज सिंह चौहान ने अपने गृह राज्य से शुरू किया।"
+            }
+        ];
+
+        let quizData = [...allQuestions];
+        let currentIdx = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+        let startTime = Date.now();
+        let timerInterval;
+
+        function initQuiz() {
+            renderQuestion();
+            renderNavGrid();
+            updateProgress();
+        }
+
+        function renderQuestion() {
+            const question = quizData[currentIdx];
+            document.getElementById('question-count').innerText = `${currentIdx + 1}/${quizData.length}`;
+            document.getElementById('question-text').innerText = question.q;
+            
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+
+            question.options.forEach((opt, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 font-medium flex justify-between items-center';
+                
+                // If user already answered, show it
+                if (userAnswers[currentIdx] !== null) {
+                    if (index === question.correct) btn.classList.add('correct');
+                    if (index === userAnswers[currentIdx] && index !== question.correct) btn.classList.add('wrong');
+                }
+
+                btn.innerHTML = `
+                    <span>${opt}</span>
+                    ${userAnswers[currentIdx] !== null && index === question.correct ? '<i class="fas fa-check-circle"></i>' : ''}
+                    ${userAnswers[currentIdx] !== null && index === userAnswers[currentIdx] && index !== question.correct ? '<i class="fas fa-times-circle"></i>' : ''}
+                `;
+                
+                if (userAnswers[currentIdx] === null) {
+                    btn.onclick = () => selectOption(index);
+                }
+                optionsGrid.appendChild(btn);
+            });
+
+            // Update Nav buttons
+            document.getElementById('prev-btn').disabled = currentIdx === 0;
+            if (currentIdx === quizData.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('submit-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('submit-btn').classList.add('hidden');
+            }
+
+            renderNavGrid();
+        }
+
+        function selectOption(index) {
+            userAnswers[currentIdx] = index;
+            renderQuestion();
+            updateProgress();
+            
+            // Auto-advance after small delay
+            setTimeout(() => {
+                if (currentIdx < quizData.length - 1) {
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            if (currentIdx < quizData.length - 1) {
+                currentIdx++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIdx > 0) {
+                currentIdx--;
+                renderQuestion();
+            }
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('nav-grid');
+            grid.innerHTML = '';
+            quizData.forEach((_, i) => {
+                const item = document.createElement('div');
+                item.className = `nav-grid-item ${userAnswers[i] !== null ? 'answered' : ''} ${i === currentIdx ? 'active current' : ''}`;
+                item.innerText = i + 1;
+                item.onclick = () => {
+                    currentIdx = i;
+                    renderQuestion();
+                };
+                grid.appendChild(item);
+            });
+        }
+
+        function updateProgress() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            const percentage = (answeredCount / quizData.length) * 100;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        }
+
+        function shuffleQuiz() {
+            // Shuffle questions and their options
+            quizData = quizData.map(q => {
+                const optionsWithCorrect = q.options.map((opt, i) => ({ text: opt, isCorrect: i === q.correct }));
+                const shuffledOpts = optionsWithCorrect.sort(() => Math.random() - 0.5);
+                return {
+                    ...q,
+                    options: shuffledOpts.map(o => o.text),
+                    correct: shuffledOpts.findIndex(o => o.isCorrect)
+                };
+            }).sort(() => Math.random() - 0.5);
+
+            restartQuiz();
+        }
+
+        function restartQuiz() {
+            currentIdx = 0;
+            userAnswers = new Array(quizData.length).fill(null);
+            startTime = Date.now();
+            initQuiz();
+            alert("क्विज़ को सफलतापूर्वक रीसेट कर दिया गया है।");
+        }
+
+        function checkSubmission() {
+            const unanswered = userAnswers.filter(a => a === null).length;
+            if (unanswered > 0) {
+                if (confirm(`सावधान: अभी भी ${unanswered} प्रश्न बिना उत्तर के बचे हैं। क्या आप फिर भी सबमिट करना चाहते हैं?`)) {
+                    showResults();
+                }
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            const correctCount = userAnswers.reduce((acc, curr, idx) => {
+                return (curr === quizData[idx].correct) ? acc + 1 : acc;
+            }, 0);
+
+            const accuracy = Math.round((correctCount / quizData.length) * 100);
+            const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(timeTakenSec / 60);
+            const seconds = timeTakenSec % 60;
+
+            document.getElementById('total-score').innerText = `${correctCount}/${quizData.length}`;
+            document.getElementById('accuracy-rate').innerText = `${accuracy}%`;
+            document.getElementById('time-taken').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            // Dynamic Feedback Message
+            let title = "कोशिश जारी रखें!";
+            let icon = "🎯";
+            let msg = "आप और बेहतर कर सकते हैं। गलत प्रश्नों का दोबारा अभ्यास करें।";
+            
+            if (accuracy >= 90) { title = "असाधारण!"; icon = "💎"; msg = "आपने करंट अफेयर्स पर पूरी पकड़ बना ली है!"; }
+            else if (accuracy >= 80) { title = "उत्कृष्ट प्रदर्शन!"; icon = "🏆"; msg = "आपकी तैयारी बहुत अच्छी है।"; }
+            else if (accuracy >= 60) { title = "बहुत बढ़िया!"; icon = "🌟"; msg = "अच्छा स्कोर है, थोड़ा और ध्यान दें।"; }
+
+            document.getElementById('result-title').innerText = title;
+            document.getElementById('result-icon').innerText = icon;
+            document.getElementById('result-message').innerText = msg;
+
+            // Generate Review List
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+            quizData.forEach((q, i) => {
+                const div = document.createElement('div');
+                const isCorrect = userAnswers[i] === q.correct;
+                const isUnanswered = userAnswers[i] === null;
+                
+                div.className = `p-4 rounded-xl border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
+                div.innerHTML = `
+                    <p class="text-sm font-bold mb-1">Q${i+1}: ${q.q}</p>
+                    <div class="text-xs">
+                        <span class="text-slate-500">आपका उत्तर: </span>
+                        <span class="${isCorrect ? 'text-green-600' : 'text-red-600'} font-bold">
+                            ${isUnanswered ? 'छोड़ दिया' : q.options[userAnswers[i]]}
+                        </span>
+                    </div>
+                    <div class="text-xs mt-1">
+                        <span class="text-slate-500">सही उत्तर: </span>
+                        <span class="text-green-600 font-bold">${q.options[q.correct]}</span>
+                    </div>
+                `;
+                reviewList.appendChild(div);
+            });
+
+            document.getElementById('result-modal').classList.remove('hidden');
+            
+            // Hide/Show retest button
+            if (correctCount === quizData.length) {
+                document.getElementById('retest-btn').classList.add('hidden');
+            } else {
+                document.getElementById('retest-btn').classList.remove('hidden');
+            }
+        }
+
+        function retestWrongOnes() {
+            // Filter quizData to only include wrong or skipped questions
+            const missedIndices = [];
+            userAnswers.forEach((ans, idx) => {
+                if (ans === null || ans !== quizData[idx].correct) {
+                    missedIndices.push(idx);
+                }
+            });
+
+            if (missedIndices.length === 0) {
+                alert("सभी प्रश्न सही हैं! री-टेस्ट की आवश्यकता नहीं है।");
+                return;
+            }
+
+            // Create new set of data based on missed questions
+            const filteredData = missedIndices.map(idx => quizData[idx]);
+            quizData = [...filteredData];
+            
+            closeResult();
+            restartQuiz();
+            alert(`स्मार्ट री-टेस्ट शुरू: केवल वही ${quizData.length} प्रश्न पूछे जाएंगे जो पिछले प्रयास में गलत या छूटे थे।`);
+        }
+
+        function closeResult() {
+            document.getElementById('result-modal').classList.add('hidden');
+        }
+
+        // Start App
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
+```eof
+
+### क्विज़ की विशेषताएं (Key Highlights):
+1.  **स्मार्ट नेविगेशन ग्रिड:** नीचे दिए गए ग्रिड से आप सीधे किसी भी प्रश्न पर जा सकते हैं। हल किए गए प्रश्न नीले रंग में दिखेंगे।
+2.  **रियल-टाइम चेकिंग:** उत्तर चुनते ही आपको सही (हरा) या गलत (लाल) का संकेत मिलेगा और सिस्टम अपने आप अगले प्रश्न पर चला जाएगा।
+3.  **स्मार्ट री-टेस्ट मोड:** यह सबसे खास फीचर है। परिणाम स्क्रीन पर 'केवल गलत/छूटे हुए का री-टेस्ट' बटन दबाने पर, अगली बार केवल वही प्रश्न आएंगे जो आपने गलत किए थे, जब तक आप 100% स्कोर न कर लें।
+4.  **शफल और स्टेट सेविंग:** शफल बटन प्रश्नों और उनके विकल्पों के क्रम को बदल देता है। यदि आप 'Prev' बटन से पीछे जाते हैं, तो आपके द्वारा चुने गए विकल्प सुरक्षित रहेंगे।
+5.  **पूर्णतः रिस्पॉन्सिव:** यह मोबाइल और डेस्कटॉप दोनों पर बेहतरीन अनुभव देता है।
+
+अपनी तैयारी को परखने के लिए यह टेस्ट अभी शुरू करें! शुभकामनाएं।
