@@ -31,14 +31,21 @@
         <label class="block text-gray-700 font-semibold mb-2">JSON Data Array:</label>
         <textarea id="json-input" class="w-full h-64 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm mb-6" placeholder='Paste your JSON here...'></textarea>
 
-        <button onclick="generateAndDownloadHTML()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition flex justify-center items-center text-lg">
-            <i class="fas fa-download mr-2"></i> Generate & Download HTML
-        </button>
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4">
+            <button onclick="processHTML('download')" class="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition flex justify-center items-center text-lg">
+                <i class="fas fa-download mr-2"></i> Download HTML
+            </button>
+            <button onclick="processHTML('copy')" id="copy-btn" class="flex-1 bg-gray-800 text-white font-bold py-4 rounded-xl hover:bg-gray-900 transition flex justify-center items-center text-lg">
+                <i class="fas fa-copy mr-2"></i> Copy Code
+            </button>
+        </div>
+        
         <p id="error-msg" class="text-red-500 text-center mt-4 hidden font-medium"></p>
     </div>
 
     <script>
-        function generateAndDownloadHTML() {
+        function processHTML(action) {
             const jsonInput = document.getElementById('json-input').value;
             const errorMsg = document.getElementById('error-msg');
             const quizTitle = document.getElementById('quiz-title').value || "क्विज़";
@@ -468,19 +475,41 @@
 </body>
 </html>`;
 
-            // Combine
+            // Combine HTML
             const finalHTMLString = templatePart1 + JSON.stringify(parsedJson, null, 4) + templatePart2;
 
-            // Download
-            const blob = new Blob([finalHTMLString], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'generated_quiz.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            // Handle Action (Download vs Copy)
+            if (action === 'download') {
+                const blob = new Blob([finalHTMLString], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'generated_quiz.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else if (action === 'copy') {
+                navigator.clipboard.writeText(finalHTMLString).then(() => {
+                    const copyBtn = document.getElementById('copy-btn');
+                    const originalHTML = copyBtn.innerHTML;
+                    
+                    // Show success feedback
+                    copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Copied!';
+                    copyBtn.classList.remove('bg-gray-800', 'hover:bg-gray-900');
+                    copyBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    
+                    // Revert back after 2 seconds
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        copyBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        copyBtn.classList.add('bg-gray-800', 'hover:bg-gray-900');
+                    }, 2000);
+                }).catch(err => {
+                    alert("Copy failed. Please check console or your browser permissions.");
+                    console.error('Failed to copy: ', err);
+                });
+            }
         }
     </script>
 </body>
