@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart MCQ to JSON Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        .info-text {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        textarea {
+            width: 100%;
+            height: 250px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #downloadBtn {
+            background-color: #2196F3;
+            display: none;
+        }
+        #downloadBtn:hover {
+            background-color: #0b7dda;
+        }
+        #copyBtn {
+            background-color: #ff9800;
+            display: none;
+        }
+        #copyBtn:hover {
+            background-color: #e68a00;
+        }
+        .output-container {
+            position: relative;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            min-height: 100px;
+        }
+        .stats {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Smart MCQ to JSON Converter</h2>
+    <p class="info-text">यह टूल अंग्रेजी अनुवाद हटा देगा, डुप्लीकेट प्रश्नों को रोकेगा और बिना उत्तर (c) वाले प्रश्नों को इग्नोर करेगा।<br><b>ध्यान दें:</b> कृपया यहाँ केवल सामान्य टेक्स्ट पेस्ट करें, JSON नहीं।</p>
+    
+    <div>
+        <label for="inputText">यहाँ अपना टेक्स्ट पेस्ट करें:</label>
+        <textarea id="inputText" placeholder="उदाहरण:&#10;77. हाल ही में... By whom...&#10;a) मुंबई Mumbai&#10;b) नई दिल्ली New Delhi&#10;c) बेंगलुरु (c)"></textarea>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="convertToJSON()">Convert to JSON</button>
+        <button id="copyBtn" onclick="copyJSON()">Copy JSON</button>
+        <button id="downloadBtn" onclick="downloadJSON()">Download JSON File</button>
+    </div>
+
+    <div class="output-container">
+        <div id="statsBox" class="stats"></div>
+        <label for="outputText">JSON Output:</label>
+        <pre id="outputText">यहाँ JSON आउटपुट दिखाई देगा...</pre>
+    </div>
+
+    <script>
+        let finalJSONString = "";
+
+        function cleanEnglishTranslation(text) {
+            let cleaned = text.replace(/[a-zA-Z]/g, '');
+            cleaned = cleaned.replace(/\(\s*\)/g, ''); 
+            cleaned = cleaned.replace(/\s+/g, ' ').trim(); 
+            return cleaned;
+        }
+
+        function convertToJSON() {
+            const text = document.getElementById('inputText').value;
+            const lines = text.split('\n');
+            const result = [];
+            const seenQuestions = new Set(); 
+            
+            let currentQuestion = null;
+            let removedInvalid = 0;
+            let removedDuplicates = 0;
+
+            function saveCurrentQuestion() {
+                if (!currentQuestion) return;
+
+                const optCount = Object.keys(currentQuestion.options).length;
+                
+                if (optCount < 2 || currentQuestion.answer === null) {
+                    removedInvalid++;
+                    return; 
+                }
+
+                const normalizedText = currentQuestion.question.replace(/\s+/g, '');
+                if (seenQuestions.has(normalizedText)) {
+                    removedDuplicates++;
+                    return; 
+                }
+
+                seenQuestions.add(normalizedText);
+                result.push(currentQuestion);
+            }
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                if (!line || line.startsWith('-- Page')) continue;
+
+                const questionMatch = line.match(/^(\d+)\.\s+(.*)/);
+                if (questionMatch) {
+                    saveCurrentQuestion(); 
+                    
+                    let rawQuestionText = questionMatch[2].trim();
+                    let cleanQText = cleanEnglishTranslation(rawQuestionText); 
+
+                    currentQuestion = {
+                        id: parseInt(questionMatch[1], 10),
+                        question: cleanQText,
+                        options: {},
+                        answer: null
+                    };
+                    continue;
+                }
+
+                const optionMatch = line.match(/^([a-d])\)\s+(.*)/i);
+                if (optionMatch && currentQuestion) {
+                    const optKey = optionMatch[1].toLowerCase();
+                    let optText = optionMatch[2].trim();
+
+                    if (optText.endsWith('(c)')) {
+                        currentQuestion.answer = optKey; 
+                        optText = optText.replace(/\(c\)$/, '').trim(); 
+                    }
+
+                    optText = cleanEnglishTranslation(optText);
+                    currentQuestion.options[optKey] = optText;
+                }
+            }
+
+            saveCurrentQuestion(); 
+
+            const outputElement = document.getElementById('outputText');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const statsBox = document.getElementById('statsBox');
+
+            if (result.length > 0) {
+                finalJSONString = JSON.stringify(result, null, 4);
+                outputElement.textContent = finalJSONString;
+                downloadBtn.style.display = "block";
+                copyBtn.style.display = "block";
+                
+                statsBox.innerHTML = `सफल प्रश्न: ${result.length} | 
+                                      हटाए गए (डुप्लीकेट): ${removedDuplicates} | 
+                                      हटाए गए (इनवैलिड/बिना उत्तर): ${removedInvalid}`;
+            } else {
+                outputElement.textContent = "कोई वैध प्रश्न नहीं मिला। कृपया अपने फॉर्मेट की जाँच करें।";
+                downloadBtn.style.display = "none";
+                copyBtn.style.display = "none";
+                statsBox.innerHTML = "";
+            }
+        }
+
+        // डाउनलोड करने का फंक्शन
+        function downloadJSON() {
+            if (!finalJSONString) return;
+            const blob = new Blob([finalJSONString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "clean_mcq_data.json"; 
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // कॉपी करने का फंक्शन
+        function copyJSON() {
+            if (!finalJSONString) return;
+            navigator.clipboard.writeText(finalJSONString).then(() => {
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.innerText = "Copied!";
+                copyBtn.style.backgroundColor = "#4CAF50"; // हरा रंग
+                
+                // 2 सेकंड बाद वापस नॉर्मल कर दें
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy JSON";
+                    copyBtn.style.backgroundColor = "#ff9800"; // वापस संतरी रंग
+                }, 2000);
+            }).catch(err => {
+                alert("कॉपी करने में समस्या हुई: " + err);
+            });
+        }
+    </script>
+</body>
+</html>
