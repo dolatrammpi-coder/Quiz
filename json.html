@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart MCQ to JSON Converter</title>
+    <title>Raw Data to MCQ JSON</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f4f7f6;
             color: #333;
             max-width: 900px;
             margin: 0 auto;
@@ -15,12 +15,12 @@
         }
         h2 {
             text-align: center;
-            color: #4CAF50;
+            color: #009688;
         }
         .info-text {
             text-align: center;
             font-size: 14px;
-            color: #666;
+            color: #555;
             margin-bottom: 20px;
         }
         label {
@@ -30,10 +30,10 @@
         }
         textarea {
             width: 100%;
-            height: 250px;
+            height: 200px;
             padding: 10px;
             font-size: 14px;
-            border: 1px solid #ccc;
+            border: 2px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
             resize: vertical;
@@ -47,7 +47,7 @@
         button {
             flex: 1;
             padding: 12px;
-            background-color: #4CAF50;
+            background-color: #009688;
             color: white;
             border: none;
             border-radius: 5px;
@@ -56,7 +56,7 @@
             transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #00796b;
         }
         #downloadBtn {
             background-color: #2196F3;
@@ -92,12 +92,15 @@
 </head>
 <body>
 
-    <h2>Smart MCQ to JSON Converter</h2>
-    <p class="info-text">यह टूल अंग्रेजी अनुवाद हटा देगा, डुप्लीकेट प्रश्नों को रोकेगा और बिना उत्तर (c) वाले प्रश्नों को इग्नोर करेगा।<br><b>ध्यान दें:</b> कृपया यहाँ केवल सामान्य टेक्स्ट पेस्ट करें, JSON नहीं।</p>
+    <h2>Raw List to MCQ JSON Converter</h2>
+    <p class="info-text">
+        यहाँ अपना <b>Raw = [ ("Question", "Right Answer", ["Wrong1", "Wrong2", "Wrong3"]) ]</b> वाला डेटा पेस्ट करें। <br>
+        यह टूल अपने आप ऑप्शंस को a,b,c,d में सेट करेगा और सही उत्तर को मिक्स कर देगा।
+    </p>
     
     <div>
         <label for="inputText">यहाँ अपना टेक्स्ट पेस्ट करें:</label>
-        <textarea id="inputText" placeholder="उदाहरण:&#10;77. हाल ही में... By whom...&#10;a) मुंबई Mumbai&#10;b) नई दिल्ली New Delhi&#10;c) बेंगलुरु (c)"></textarea>
+        <textarea id="inputText" placeholder="Raw = [ (&#34;IPL 2026 किसने जीता?&#34;,&#34;रॉयल चैलेंजर्स बेंगलुरु&#34;,[&#34;गुजरात टाइटन्स&#34;,&#34;चेन्नई सुपर किंग्स&#34;,&#34;कोलकाता नाइट राइडर्स&#34;]) ]"></textarea>
     </div>
 
     <div class="btn-group">
@@ -115,80 +118,58 @@
     <script>
         let finalJSONString = "";
 
-        function cleanEnglishTranslation(text) {
-            let cleaned = text.replace(/[a-zA-Z]/g, '');
-            cleaned = cleaned.replace(/\(\s*\)/g, ''); 
-            cleaned = cleaned.replace(/\s+/g, ' ').trim(); 
-            return cleaned;
-        }
-
         function convertToJSON() {
             const text = document.getElementById('inputText').value;
-            const lines = text.split('\n');
             const result = [];
-            const seenQuestions = new Set(); 
             
-            let currentQuestion = null;
-            let removedInvalid = 0;
-            let removedDuplicates = 0;
+            // Regex to extract ("Question", "Answer", ["Wrong1", "Wrong2"])
+            // Supports both single (') and double (") quotes
+            const tupleRegex = /\(\s*(["'])(.*?)\1\s*,\s*(["'])(.*?)\3\s*,\s*\[(.*?)\]\s*\)/g;
+            let match;
+            let idCounter = 1;
 
-            function saveCurrentQuestion() {
-                if (!currentQuestion) return;
+            while ((match = tupleRegex.exec(text)) !== null) {
+                const questionText = match[2].trim();
+                const correctAnswer = match[4].trim();
+                const wrongOptionsStr = match[5];
 
-                const optCount = Object.keys(currentQuestion.options).length;
-                
-                if (optCount < 2 || currentQuestion.answer === null) {
-                    removedInvalid++;
-                    return; 
+                // Extract wrong options from the array string
+                const wrongOptions = [];
+                const optionRegex = /(["'])(.*?)\1/g;
+                let optMatch;
+                while ((optMatch = optionRegex.exec(wrongOptionsStr)) !== null) {
+                    wrongOptions.push(optMatch[2].trim());
                 }
 
-                const normalizedText = currentQuestion.question.replace(/\s+/g, '');
-                if (seenQuestions.has(normalizedText)) {
-                    removedDuplicates++;
-                    return; 
+                // Combine correct and wrong options
+                const allOptions = [correctAnswer, ...wrongOptions];
+
+                // Shuffle the options array so correct answer is at a random position
+                for (let i = allOptions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
                 }
 
-                seenQuestions.add(normalizedText);
-                result.push(currentQuestion);
-            }
+                // Map to a, b, c, d...
+                const optionKeys = ['a', 'b', 'c', 'd'];
+                const optionsObj = {};
+                let correctKey = '';
 
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
-                
-                if (!line || line.startsWith('-- Page')) continue;
-
-                const questionMatch = line.match(/^(\d+)\.\s+(.*)/);
-                if (questionMatch) {
-                    saveCurrentQuestion(); 
-                    
-                    let rawQuestionText = questionMatch[2].trim();
-                    let cleanQText = cleanEnglishTranslation(rawQuestionText); 
-
-                    currentQuestion = {
-                        id: parseInt(questionMatch[1], 10),
-                        question: cleanQText,
-                        options: {},
-                        answer: null
-                    };
-                    continue;
-                }
-
-                const optionMatch = line.match(/^([a-d])\)\s+(.*)/i);
-                if (optionMatch && currentQuestion) {
-                    const optKey = optionMatch[1].toLowerCase();
-                    let optText = optionMatch[2].trim();
-
-                    if (optText.endsWith('(c)')) {
-                        currentQuestion.answer = optKey; 
-                        optText = optText.replace(/\(c\)$/, '').trim(); 
+                allOptions.forEach((opt, index) => {
+                    const key = optionKeys[index] || `opt${index}`;
+                    optionsObj[key] = opt;
+                    if (opt === correctAnswer) {
+                        correctKey = key; // Save the key of the correct answer
                     }
+                });
 
-                    optText = cleanEnglishTranslation(optText);
-                    currentQuestion.options[optKey] = optText;
-                }
+                result.push({
+                    id: idCounter++,
+                    question: questionText,
+                    options: optionsObj,
+                    answer: correctKey
+                });
             }
-
-            saveCurrentQuestion(); 
 
             const outputElement = document.getElementById('outputText');
             const downloadBtn = document.getElementById('downloadBtn');
@@ -201,43 +182,38 @@
                 downloadBtn.style.display = "block";
                 copyBtn.style.display = "block";
                 
-                statsBox.innerHTML = `सफल प्रश्न: ${result.length} | 
-                                      हटाए गए (डुप्लीकेट): ${removedDuplicates} | 
-                                      हटाए गए (इनवैलिड/बिना उत्तर): ${removedInvalid}`;
+                statsBox.innerHTML = `सफलतापूर्वक ${result.length} प्रश्न बनाए गए!`;
             } else {
-                outputElement.textContent = "कोई वैध प्रश्न नहीं मिला। कृपया अपने फॉर्मेट की जाँच करें।";
+                outputElement.textContent = "डेटा प्रोसेस नहीं हो सका। कृपया चेक करें कि फॉर्मेट [ (\"प्र.\", \"उत्तर\", [\"ग1\", \"ग2\"]) ] जैसा हो।";
                 downloadBtn.style.display = "none";
                 copyBtn.style.display = "none";
                 statsBox.innerHTML = "";
             }
         }
 
-        // डाउनलोड करने का फंक्शन
         function downloadJSON() {
             if (!finalJSONString) return;
             const blob = new Blob([finalJSONString], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "clean_mcq_data.json"; 
+            a.download = "mcq_parsed_data.json"; 
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
-        // कॉपी करने का फंक्शन
         function copyJSON() {
             if (!finalJSONString) return;
             navigator.clipboard.writeText(finalJSONString).then(() => {
                 const copyBtn = document.getElementById('copyBtn');
                 copyBtn.innerText = "Copied!";
-                copyBtn.style.backgroundColor = "#4CAF50"; // हरा रंग
+                copyBtn.style.backgroundColor = "#4CAF50";
                 
-                // 2 सेकंड बाद वापस नॉर्मल कर दें
                 setTimeout(() => {
                     copyBtn.innerText = "Copy JSON";
-                    copyBtn.style.backgroundColor = "#ff9800"; // वापस संतरी रंग
+                    copyBtn.style.backgroundColor = "#ff9800"; 
                 }, 2000);
             }).catch(err => {
                 alert("कॉपी करने में समस्या हुई: " + err);
