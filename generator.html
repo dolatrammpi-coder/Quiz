@@ -14,7 +14,7 @@
 
     <div class="bg-white p-8 rounded-2xl shadow-xl max-w-3xl w-full">
         <h1 class="text-3xl font-bold text-gray-800 mb-2"><i class="fas fa-file-code text-blue-600 mr-2"></i>Smart Quiz Generator</h1>
-        <p class="text-gray-500 mb-6">यहाँ अपना JSON डेटा, हेडिंग और लिंक डालें। (नीचे 2 नए फीचर्स: प्रश्नों की सूची और बिना विकल्प का क्विज़ जोड़ा गया है)</p>
+        <p class="text-gray-500 mb-6">यहाँ अपना JSON डेटा, हेडिंग और लिंक डालें। (नए फीचर्स: प्रश्नों की सूची, बिना विकल्प का क्विज़ और रैंडम विकल्प क्रम)</p>
 
         <!-- Edit Options -->
         <div class="flex flex-col sm:flex-row gap-4 mb-6">
@@ -252,7 +252,8 @@
 
             const templatePart2 = `;
 
-        let questions = [...allQuestionsData];
+        // Deep copy data so original array is safe
+        let questions = JSON.parse(JSON.stringify(allQuestionsData));
         let currentIndex = 0;
         let userAnswers = {};
         let timerInterval;
@@ -260,11 +261,27 @@
 
         window.addEventListener('resize', () => { requestAnimationFrame(adjustFontSize); });
 
+        // Function to shuffle options randomly
+        function shuffleOptionsForQuestions(qs) {
+            qs.forEach(q => {
+                // Map to keep track of correct answer
+                let mapped = q.options.map((opt, i) => ({ text: opt, isCorrect: i === q.correct }));
+                
+                // Shuffle array
+                mapped.sort(() => Math.random() - 0.5);
+                
+                // Assign new shuffled array back and update correct index
+                q.options = mapped.map(m => m.text);
+                q.correct = mapped.findIndex(m => m.isCorrect);
+            });
+        }
+
         function initQuiz() { 
             if(questions.length === 0) {
                 document.getElementById('question-text').innerText = "कोई प्रश्न नहीं मिला। कृपया JSON चेक करें।";
                 return;
             }
+            shuffleOptionsForQuestions(questions); // Shuffle options on load
             renderQuestion(); renderPalette(); startTime(); 
         }
 
@@ -292,7 +309,7 @@
                 }
                 btn.className = 'option-card p-2.5 rounded-xl border-2 flex justify-between items-center mb-2 ' + extraClasses;
                 
-                btn.innerHTML = '<span class="font-medium option-text" style="font-size:15px;">' + (index + 1) + '. ' + opt + '</span>' + icon;
+                btn.innerHTML = '<span class="font-medium option-text" style="font-size:15px;">' + String.fromCharCode(65 + index) + '. ' + opt + '</span>' + icon;
                 
                 btn.onclick = () => selectOption(index);
                 optionsList.appendChild(btn);
@@ -365,6 +382,7 @@
         
         function shuffleQuiz() { 
             questions.sort(() => Math.random() - 0.5); 
+            shuffleOptionsForQuestions(questions); // Reshuffle options too
             currentIndex = 0; userAnswers = {}; 
             renderQuestion(); renderPalette(); 
         }
@@ -387,16 +405,20 @@
         }
 
         function retestWrongOnly() {
-            const wrongOrLeft = allQuestionsData.filter(q => userAnswers[q.id] !== q.correct);
+            const wrongOrLeft = questions.filter(q => userAnswers[q.id] !== q.correct);
             if(wrongOrLeft.length === 0) { alert("सभी उत्तर सही हैं! कोई गलत प्रश्न नहीं बचा।"); return; }
-            questions = wrongOrLeft;
+            
+            const idsToRetest = wrongOrLeft.map(q => q.id);
+            // Fetch fresh copy of missed questions from original data
+            questions = JSON.parse(JSON.stringify(allQuestionsData)).filter(q => idsToRetest.includes(q.id));
+            
             currentIndex = 0; userAnswers = {}; secondsElapsed = 0;
             document.getElementById('result-modal').classList.add('hidden');
             initQuiz();
         }
 
         function restartQuiz() {
-            questions = [...allQuestionsData];
+            questions = JSON.parse(JSON.stringify(allQuestionsData));
             currentIndex = 0; userAnswers = {}; secondsElapsed = 0;
             document.getElementById('result-modal').classList.add('hidden');
             initQuiz();
@@ -415,7 +437,7 @@
             listContent.innerHTML += '<div class="p-4 bg-gray-50 border border-gray-200 rounded-xl">' +
             '<p class="font-bold text-gray-800 mb-2">' + (i+1) + '. ' + q.q + '</p>' +
             
-            // यहाँ सिंटैक्स सुधारा गया है (डबल बैकस्लैश का इस्तेमाल)
+            // स्क्रैच कार्ड इफ़ेक्ट (डबल बैकस्लैश के साथ सुरक्षित)
             '<p class="font-semibold cursor-pointer bg-gray-300 text-transparent rounded-lg px-3 py-1.5 select-none transition-all duration-300 inline-block" ' + 
             'onclick="this.classList.remove(\\\'bg-gray-300\\\', \\\'text-transparent\\\'); this.classList.add(\\\'text-emerald-700\\\')" ' + 
             'title="उत्तर देखने के लिए क्लिक करें">' +
