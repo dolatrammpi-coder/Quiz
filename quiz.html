@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- टाइटल में id जोड़ दी गई है -->
     <title id="page-title">क्विज़ लोड हो रहा है...</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -24,13 +23,12 @@
         .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
     </style>
 </head>
-<body class="min-h-screen pb-20" onload="initQuiz()">
+<body class="min-h-screen pb-20">
     <header class="bg-blue-700 text-white p-2 shadow-md sticky top-0 z-50">
         <div class="max-w-4xl mx-auto flex justify-between items-center px-2">
             <a href="index.html" class="hover:bg-blue-800 p-1.5 rounded-lg transition text-sm flex items-center">
                 <i class="fas fa-arrow-left mr-1.5"></i> वापस
             </a>
-            <!-- हेडर टाइटल में id जोड़ दी गई है -->
             <h1 id="header-title" class="text-base sm:text-lg font-bold truncate px-2">लोड हो रहा है...</h1>
             
             <div class="flex items-center gap-1.5">
@@ -154,31 +152,43 @@
     </div>
 
     <script>
-        // अब डेटा एक Object है जिसमें title भी है
-        const quizData = {
-            "title": "करेंट अफेयर्स जून 2026",
-            "questions": [
-                {
-                    "id": 141,
-                    "q": "भारत की राजधानी क्या है?",
-                    "options": [
-                        "नई दिल्ली",
-                        "मुंबई",
-                        "कोलकाता",
-                        "चेन्नई"
-                    ],
-                    "correct": 0
-                }
-            ]
-        };
-
-        // प्रश्नों को JSON ऑब्जेक्ट से निकाला जा रहा है
-        let questions = JSON.parse(JSON.stringify(quizData.questions));
+        let quizData = {};
+        let questions = [];
         let currentIndex = 0;
         let userAnswers = {};
         let timerInterval;
         let secondsElapsed = 0;
         let isTimerRunning = true;
+
+        // URL से JSON लोड करने का लॉजिक
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fileName = urlParams.get('file');
+
+            if (fileName) {
+                fetch(fileName + '.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error("JSON फाइल नहीं मिली!");
+                        return response.json();
+                    })
+                    .then(data => {
+                        quizData = data;
+                        questions = JSON.parse(JSON.stringify(quizData.questions));
+                        
+                        // JSON से Title सेट करें
+                        document.getElementById('page-title').innerText = quizData.title;
+                        document.getElementById('header-title').innerText = quizData.title;
+
+                        initQuiz(); 
+                    })
+                    .catch(error => {
+                        document.getElementById('question-text').innerText = "त्रुटि: क्विज़ डेटा लोड नहीं हो सका। कृपया URL चेक करें।";
+                        console.error(error);
+                    });
+            } else {
+                document.getElementById('question-text').innerText = "कृपया URL में क्विज़ का नाम डालें। (जैसे: ?file=quiz1)";
+            }
+        };
 
         window.addEventListener('resize', () => { requestAnimationFrame(adjustFontSize); });
 
@@ -192,10 +202,6 @@
         }
 
         function initQuiz() { 
-            // नया: टाइटल को JSON से सेट करना
-            document.getElementById('page-title').innerText = quizData.title;
-            document.getElementById('header-title').innerText = quizData.title;
-
             if(questions.length === 0) {
                 document.getElementById('question-text').innerText = "कोई प्रश्न नहीं मिला। कृपया JSON चेक करें।";
                 return;
