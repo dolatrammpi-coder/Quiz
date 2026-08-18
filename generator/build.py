@@ -100,18 +100,9 @@ def build_homepage(all_quizzes):
         html = template.read_text(encoding="utf-8")
         
         latest_html = ""
+        # टॉप 5 क्विज़ निकालना (सिंगल लाइन HTML डिज़ाइन के साथ ताकि कोई एरर न आए)
         for q in reversed(all_quizzes[-5:]):
-            latest_html += f"""
-            <a href="{q['link']}" class="block bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-3 hover:shadow-md hover:border-blue-400 transition">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <span class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md mb-2 inline-block uppercase tracking-wider">{q['subject']}</span>
-                        <h3 class="font-bold text-gray-800 text-base">{q['title']}</h3>
-                    </div>
-                    <i class="fas fa-chevron-right text-gray-400"></i>
-                </div>
-            </a>
-            """
+            latest_html += f'<a href="{q["link"]}" class="block bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-3 hover:shadow-md hover:border-blue-400 transition"><div class="flex justify-between items-center"><div><span class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md mb-2 inline-block uppercase tracking-wider">{q["subject"]}</span><h3 class="font-bold text-gray-800 text-base">{q["title"]}</h3></div><i class="fas fa-chevron-right text-gray-400"></i></div></a>'
         
         if not latest_html:
             latest_html = "<p class='text-gray-500 text-sm p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center'>अभी कोई क्विज़ उपलब्ध नहीं है।</p>"
