@@ -5,7 +5,7 @@ from collections import defaultdict
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "content"
-OUTPUT = ROOT / "output"
+OUTPUT = ROOT / "docs"
 TEMPLATES = ROOT / "templates"
 
 def load_explanations(quiz_path):
@@ -92,7 +92,7 @@ def generate_subject_pages(site_data):
 
 def build_homepage():
     template = TEMPLATES / "index.html"
-    destination = DOCS / "index.html"
+    destination = OUTPUT / "index.html"
     if template.exists():
         shutil.copy2(template, destination)
 
