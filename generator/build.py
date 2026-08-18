@@ -39,6 +39,7 @@ def generate_quiz_html(data, explanations, master_template_text, depth):
         })
     questions_js_str = json.dumps(questions_json, ensure_ascii=False)
     base_url = "../" * depth
+    subject_folder = str(data.get("subject", "Uncategorized")).strip().lower().replace(" ", "-")
 
     html = master_template_text.replace("{{ title }}", str(data["title"]))
     html = html.replace("{{ description }}", str(data.get("description", "")))
@@ -46,6 +47,7 @@ def generate_quiz_html(data, explanations, master_template_text, depth):
     html = html.replace("{{ questions_json }}", questions_js_str)
     html = html.replace("{{ base_url }}", base_url)
     html = html.replace("{{ seo_content }}", str(data.get("seo_content", "")))
+    html = html.replace("{{ subject_folder }}", subject_folder)
     return html
 
 def generate_subject_pages(site_data):
