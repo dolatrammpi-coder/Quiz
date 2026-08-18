@@ -1,0 +1,38 @@
+name: Auto Build Quiz Site
+
+on:
+  push:
+    paths:
+      - 'content/**'
+      - 'templates/**'
+      - 'generator/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 1. Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 2. Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 3. Run Build Engine (build.py)
+        run: |
+          python generator/build.py
+
+      - name: 4. Commit and Push Generated HTML to docs/
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "Auto-generated HTML pages from Dashboard JSON" || echo "No changes to commit"
+          git push
