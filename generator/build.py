@@ -92,7 +92,7 @@ def generate_subject_pages(site_data):
 
 def build_homepage():
     template = TEMPLATES / "index.html"
-    destination = docs / "index.html"
+    destination = DOCS / "index.html"
     if template.exists():
         shutil.copy2(template, destination)
 
