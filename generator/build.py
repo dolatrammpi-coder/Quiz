@@ -93,11 +93,32 @@ def generate_subject_pages(site_data):
         output_file = subject_dir / "index.html"
         output_file.write_text(final_html, encoding="utf-8")
 
-def build_homepage():
+def build_homepage(all_quizzes):
     template = TEMPLATES / "index.html"
     destination = OUTPUT / "index.html"
     if template.exists():
-        shutil.copy2(template, destination)
+        html = template.read_text(encoding="utf-8")
+        
+        latest_html = ""
+        # लिस्ट को उल्टा करें और टॉप 5 चुनें
+        for q in reversed(all_quizzes[-5:]):
+            latest_html += f"""
+            <a href="{q['link']}" class="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-300 transition group">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded mb-1.5 inline-block uppercase tracking-wider">{q['subject']}</span>
+                        <h3 class="font-bold text-gray-800 group-hover:text-blue-700 transition">{q['title']}</h3>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 group-hover:text-blue-500 transition"></i>
+                </div>
+            </a>
+            """
+        
+        if not latest_html:
+            latest_html = "<p class='text-gray-500 text-sm p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center'>अभी कोई क्विज़ उपलब्ध नहीं है।</p>"
+            
+        html = html.replace("{{ latest_quizzes }}", latest_html)
+        destination.write_text(html, encoding="utf-8")
 
 def build():
     if not CONTENT.exists():
@@ -108,6 +129,7 @@ def build():
     master_template_text = quiz_template_path.read_text(encoding="utf-8")
     
     site_data = defaultdict(lambda: defaultdict(list))
+    all_quizzes = []
     quizzes = 0
 
     for path in sorted(CONTENT.rglob("*.json")):
@@ -133,10 +155,11 @@ def build():
         topic_name = data.get("topic", "General")
         quiz_link = f"{relative.parent.name}/{path.stem}/index.html"
         site_data[subject_name][topic_name].append({"title": data["title"], "link": quiz_link})
+        all_quizzes.append({"title": data["title"], "link": quiz_link, "subject": subject_name})
         quizzes += 1
 
     generate_subject_pages(site_data)
-    build_homepage()
+    build_homepage(all_quizzes)
     print(f"\nBUILD SUCCESSFUL! Generated {quizzes} quizzes.")
 
 if __name__ == "__main__":
