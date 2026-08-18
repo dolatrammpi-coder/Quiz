@@ -1,0 +1,334 @@
+from pathlib import Path
+import json
+import html
+import shutil
+from collections import defaultdict
+
+ROOT = Path(__file__).resolve().parent.parent
+CONTENT = ROOT / "content"
+OUTPUT = ROOT / "output"
+
+
+def esc(value):
+    return html.escape(str(value), quote=True)
+
+
+def validate_quiz(data, path):
+    required = ["title", "subject", "topic", "description", "questions"]
+
+    for key in required:
+        if key not in data:
+            raise ValueError(f"{path}: missing field '{key}'")
+
+    if not isinstance(data["questions"], list) or not data["questions"]:
+        raise ValueError(f"{path}: questions must be a non-empty list")
+
+    for i, q in enumerate(data["questions"], 1):
+        for key in ["question", "options", "answer", "explanation"]:
+            if key not in q:
+                raise ValueError(
+                    f"{path}: question {i}: missing '{key}'"
+                )
+
+        if not isinstance(q["options"], list) or len(q["options"]) < 2:
+            raise ValueError(
+                f"{path}: question {i}: invalid options"
+            )
+
+        if not isinstance(q["answer"], int):
+            raise ValueError(
+                f"{path}: question {i}: answer must be integer"
+            )
+
+        if q["answer"] < 0 or q["answer"] >= len(q["options"]):
+            raise ValueError(
+                f"{path}: question {i}: answer out of range"
+            )
+
+
+def quiz_page(data):
+    questions = []
+
+    for number, q in enumerate(data["questions"], 1):
+        options = []
+
+        for index, option in enumerate(q["options"]):
+            options.append(
+                f"""
+                <button class="option">
+                    {esc(option)}
+                </button>
+                """
+            )
+
+        questions.append(
+            f"""
+            <section class="question">
+                <h2>Question {number}</h2>
+                <p>{esc(q["question"])}</p>
+
+                <div class="options">
+                    {''.join(options)}
+                </div>
+
+                <div class="explanation">
+                    <strong>Explanation:</strong>
+                    {esc(q["explanation"])}
+                </div>
+            </section>
+            """
+        )
+
+    return f"""<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{esc(data["title"])}</title>
+<meta name="description" content="{esc(data["description"])}">
+
+<style>
+* {{
+    box-sizing: border-box;
+}}
+
+body {{
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    color: #172033;
+}}
+
+header {{
+    background: #172554;
+    color: white;
+    padding: 18px;
+}}
+
+.container {{
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}}
+
+header a {{
+    color: white;
+    text-decoration: none;
+}}
+
+.question {{
+    background: white;
+    margin: 22px 0;
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.06);
+}}
+
+.question h2 {{
+    margin-top: 0;
+}}
+
+.option {{
+    width: 100%;
+    text-align: left;
+    padding: 13px;
+    margin: 7px 0;
+    border: 1px solid #d9deea;
+    border-radius: 9px;
+    background: white;
+    cursor: pointer;
+}}
+
+.option:hover {{
+    background: #eef2ff;
+}}
+
+.explanation {{
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 9px;
+    background: #f1f5f9;
+}}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="container">
+        <a href="../../../index.html">← Home</a>
+    </div>
+</header>
+
+<main class="container">
+    <h1>{esc(data["title"])}</h1>
+    <p>{esc(data["description"])}</p>
+
+    {''.join(questions)}
+</main>
+
+</body>
+</html>
+"""
+
+
+def build_homepage(quizzes):
+    """
+    Build homepage from the permanent template.
+
+    templates/index.html contains the complete design.
+    The generator only replaces the Latest Quizzes placeholder.
+    """
+
+    template = Path(__file__).resolve().parent.parent / "templates" / "index.html"
+    output = OUTPUT / "index.html"
+
+    if not template.exists():
+        raise SystemExit(
+            f"HOMEPAGE TEMPLATE NOT FOUND: {template}"
+        )
+
+    html = template.read_text(encoding="utf-8")
+
+    start_marker = "<!-- LATEST_QUIZZES_START -->"
+    end_marker = "<!-- LATEST_QUIZZES_END -->"
+
+    if start_marker not in html or end_marker not in html:
+        raise SystemExit(
+            "LATEST QUIZ MARKERS NOT FOUND in templates/index.html"
+        )
+
+    latest_cards = []
+
+    # Newest quizzes first, maximum 6.
+    for quiz in reversed(quizzes[-6:]):
+        latest_cards.append(
+            f"""
+        <a class="quiz-card" href="{esc(quiz["url"])}">
+
+            <div class="quiz-meta">
+
+                <span class="badge">
+                    {esc(quiz["subject"])}
+                </span>
+
+                <div class="quiz-title">
+                    {esc(quiz["title"])}
+                </div>
+
+                <div class="quiz-topic">
+                    {esc(quiz["topic"])}
+                </div>
+
+            </div>
+
+            <span class="start-btn">
+                Start Quiz →
+            </span>
+
+        </a>
+"""
+        )
+
+    latest_html = "".join(latest_cards)
+
+    before, remaining = html.split(start_marker, 1)
+    _, after = remaining.split(end_marker, 1)
+
+    html = (
+        before
+        + start_marker
+        + latest_html
+        + "        "
+        + end_marker
+        + after
+    )
+
+    output.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    output.write_text(
+        html,
+        encoding="utf-8"
+    )
+
+    print("Homepage generated:", output)
+
+def build():
+    if not CONTENT.exists():
+        raise SystemExit("ERROR: content folder not found.")
+
+    if OUTPUT.exists():
+        shutil.rmtree(OUTPUT)
+
+    OUTPUT.mkdir(parents=True)
+
+    quizzes = []
+
+    for path in sorted(CONTENT.rglob("*.json")):
+
+        try:
+            data = json.loads(
+                path.read_text(encoding="utf-8")
+            )
+
+            validate_quiz(data, path)
+
+        except json.JSONDecodeError as e:
+            raise SystemExit(
+                f"INVALID JSON: {path}\n{e}"
+            )
+
+        except ValueError as e:
+            raise SystemExit(
+                f"VALIDATION ERROR: {e}"
+            )
+
+        relative = path.relative_to(CONTENT)
+
+        quiz_dir = (
+            OUTPUT
+            / relative.parent
+            / path.stem
+        )
+
+        quiz_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        url = str(
+            Path(relative.parent)
+            / path.stem
+            / "index.html"
+        ).replace("\\", "/")
+
+        (quiz_dir / "index.html").write_text(
+            quiz_page(data),
+            encoding="utf-8"
+        )
+
+        quizzes.append({
+            "title": data["title"],
+            "subject": data["subject"],
+            "topic": data["topic"],
+            "description": data["description"],
+            "questions": data["questions"],
+            "url": url
+        })
+
+    build_homepage(quizzes)
+
+    print()
+    print("================================")
+    print("BUILD SUCCESSFUL")
+    print("================================")
+    print(f"Quizzes generated: {len(quizzes)}")
+    print(f"Output directory: {OUTPUT}")
+    print()
+
+
+if __name__ == "__main__":
+    build()
