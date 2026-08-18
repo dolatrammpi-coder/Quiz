@@ -101,26 +101,25 @@ def build_homepage(all_quizzes):
         
         latest_html = ""
         for q in reversed(all_quizzes[-5:]):
-            # पहले डेटा को अलग वेरिएबल्स में निकाल लिया (ताकि कोई एरर न आए)
             link = q["link"]
             subject = q["subject"]
             title = q["title"]
             
-            # अब इसे एकदम साफ़ तरीके से HTML में डाल दिया
+            # Inline CSS (ब्रह्मास्त्र) - यह कभी फेल नहीं हो सकता
             latest_html += f"""
-            <a href="{link}" class="block bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-3 hover:shadow-md hover:border-blue-400 transition">
-                <div class="flex justify-between items-center">
+            <a href="{link}" style="display: block; background-color: #ffffff; padding: 1rem; border-radius: 0.75rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); border: 1px solid #e5e7eb; margin-bottom: 0.75rem; text-decoration: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <span class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md mb-2 inline-block uppercase tracking-wider">{subject}</span>
-                        <h3 class="font-bold text-gray-800 text-base">{title}</h3>
+                        <span style="font-size: 0.70rem; font-weight: bold; color: #1d4ed8; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 0.25rem 0.5rem; border-radius: 0.375rem; margin-bottom: 0.5rem; display: inline-block; text-transform: uppercase; letter-spacing: 0.05em;">{subject}</span>
+                        <h3 style="font-weight: bold; color: #1f2937; font-size: 1rem; margin: 0;">{title}</h3>
                     </div>
-                    <i class="fas fa-chevron-right text-gray-400"></i>
+                    <span style="color: #9ca3af; font-weight: bold;">❯</span>
                 </div>
             </a>
             """
         
         if not latest_html:
-            latest_html = "<p class='text-gray-500 text-sm p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center'>अभी कोई क्विज़ उपलब्ध नहीं है।</p>"
+            latest_html = "<p style='color: #6b7280; font-size: 0.875rem; padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; border: 1px dashed #d1d5db; text-align: center;'>अभी कोई क्विज़ उपलब्ध नहीं है।</p>"
             
         html = html.replace("{{ latest_quizzes }}", latest_html)
         destination.write_text(html, encoding="utf-8")
