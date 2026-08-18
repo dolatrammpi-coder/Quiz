@@ -100,16 +100,15 @@ def build_homepage(all_quizzes):
         html = template.read_text(encoding="utf-8")
         
         latest_html = ""
-        # लिस्ट को उल्टा करें और टॉप 5 चुनें
         for q in reversed(all_quizzes[-5:]):
             latest_html += f"""
-            <a href="{q['link']}" class="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-300 transition group">
+            <a href="{q['link']}" class="block bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-3 hover:shadow-md hover:border-blue-400 transition">
                 <div class="flex justify-between items-center">
                     <div>
-                        <span class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded mb-1.5 inline-block uppercase tracking-wider">{q['subject']}</span>
-                        <h3 class="font-bold text-gray-800 group-hover:text-blue-700 transition">{q['title']}</h3>
+                        <span class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md mb-2 inline-block uppercase tracking-wider">{q['subject']}</span>
+                        <h3 class="font-bold text-gray-800 text-base">{q['title']}</h3>
                     </div>
-                    <i class="fas fa-chevron-right text-gray-300 group-hover:text-blue-500 transition"></i>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
                 </div>
             </a>
             """
@@ -153,10 +152,13 @@ def build():
 
         subject_name = data.get("subject", "Uncategorized")
         topic_name = data.get("topic", "General")
-        quiz_link = f"{relative.parent.name}/{path.stem}/index.html"
-        site_data[subject_name][topic_name].append({"title": data["title"], "link": quiz_link})
-        all_quizzes.append({"title": data["title"], "link": quiz_link, "subject": subject_name})
-        quizzes += 1
+                # सब्जेक्ट पेज के लिए लिंक
+        subject_page_link = f"{relative.parent.name}/{path.stem}/index.html"
+        site_data[subject_name][topic_name].append({"title": data["title"], "link": subject_page_link})
+        
+        # होमपेज के लिए पूरा लिंक (as_posix लगाकर)
+        homepage_link = f"{relative.parent.as_posix()}/{path.stem}/index.html"
+        all_quizzes.append({"title": data["title"], "link": homepage_link, "subject": subject_name})
 
     generate_subject_pages(site_data)
     build_homepage(all_quizzes)
