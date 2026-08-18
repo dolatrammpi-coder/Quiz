@@ -45,6 +45,7 @@ def generate_quiz_html(data, explanations, master_template_text, depth):
     html = html.replace("{{ subject }}", str(data["subject"]))
     html = html.replace("{{ questions_json }}", questions_js_str)
     html = html.replace("{{ base_url }}", base_url)
+    html = html.replace("{{ seo_content }}", str(data.get("seo_content", "")))
     return html
 
 def generate_subject_pages(site_data):
