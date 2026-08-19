@@ -65,20 +65,26 @@ def generate_subject_pages(site_data):
         
         topics_html_list = []
         for topic_name, quizzes in topics.items():
+            # टॉपिक का कार्ड (फोल्डर आइकॉन के साथ और नीचे मार्जिन mb-5 के साथ)
             topic_html = f"""
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="bg-blue-50 px-5 py-3 border-b border-blue-100">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-5">
+                <div class="bg-blue-50 px-5 py-3 border-b border-blue-100 flex items-center">
+                    <i class="fas fa-folder-open text-blue-500 mr-2.5"></i>
                     <h2 class="text-lg font-bold text-blue-800">{topic_name}</h2>
                 </div>
                 <div class="p-2">
                     <ul class="divide-y divide-gray-100">
             """
             for quiz in quizzes:
+                # क्विज़ के लिंक (सुंदर बुलेट पॉइंट के साथ)
                 topic_html += f"""
                         <li>
                             <a href="{quiz['link']}" class="block px-4 py-3 hover:bg-gray-50 transition flex justify-between items-center group">
-                                <span class="text-gray-700 font-medium group-hover:text-blue-600 transition">{quiz['title']}</span>
-                                <i class="fas fa-chevron-right text-gray-300 group-hover:text-blue-500 transition"></i>
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 rounded-full bg-blue-300 mr-3 group-hover:bg-blue-600 transition-colors"></div>
+                                    <span class="text-gray-700 font-medium group-hover:text-blue-600 transition">{quiz['title']}</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-300 group-hover:text-blue-500 transition text-sm"></i>
                             </a>
                         </li>
                 """
