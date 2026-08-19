@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import shutil
+import re
 from collections import defaultdict
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,6 +49,16 @@ def generate_quiz_html(data, explanations, master_template_text, depth):
     html = html.replace("{{ base_url }}", base_url)
     html = html.replace("{{ seo_content }}", str(data.get("seo_content", "")))
     html = html.replace("{{ subject_folder }}", subject_folder)
+    
+    # 🌟 "Self-Aware" Meta Tag Injection 🌟 (HTML के अंदर डेटाबेस छुपाना)
+    meta_data = {
+        "title": str(data["title"]),
+        "subject": str(data.get("subject", "Uncategorized")),
+        "topic": str(data.get("topic", "General"))
+    }
+    meta_script = f'\n    <!-- Self-Aware Database Tag (SEO Friendly) -->\n    <script type="application/json" id="quiz-meta">{json.dumps(meta_data, ensure_ascii=False)}</script>\n</head>'
+    html = html.replace("</head>", meta_script)
+    
     return html
 
 def generate_subject_pages(site_data):
@@ -65,7 +76,6 @@ def generate_subject_pages(site_data):
         
         topics_html_list = []
         for topic_name, quizzes in topics.items():
-            # टॉपिक का कार्ड (फोल्डर आइकॉन के साथ और नीचे मार्जिन mb-5 के साथ)
             topic_html = f"""
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-5">
                 <div class="bg-blue-50 px-5 py-3 border-b border-blue-100 flex items-center">
@@ -76,7 +86,6 @@ def generate_subject_pages(site_data):
                     <ul class="divide-y divide-gray-100">
             """
             for quiz in quizzes:
-                # क्विज़ के लिंक (सुंदर बुलेट पॉइंट के साथ)
                 topic_html += f"""
                         <li>
                             <a href="{quiz['link']}" class="block px-4 py-3 hover:bg-gray-50 transition flex justify-between items-center group">
@@ -91,7 +100,7 @@ def generate_subject_pages(site_data):
             topic_html += "</ul></div></div>"
             topics_html_list.append(topic_html)
 
-        base_url = "../" # Depth is 1 for output/subject/index.html
+        base_url = "../"
         final_html = subject_template.replace("{{ subject_name }}", subject_name)
         final_html = final_html.replace("{{ topics_html }}", "\n".join(topics_html_list))
         final_html = final_html.replace("{{ base_url }}", base_url)
@@ -111,7 +120,6 @@ def build_homepage(all_quizzes):
             subject = q["subject"]
             title = q["title"]
             
-            # Inline CSS (ब्रह्मास्त्र) - यह कभी फेल नहीं हो सकता
             latest_html += f"""
             <a href="{link}" style="display: block; background-color: #ffffff; padding: 1rem; border-radius: 0.75rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); border: 1px solid #e5e7eb; margin-bottom: 0.75rem; text-decoration: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -131,49 +139,62 @@ def build_homepage(all_quizzes):
         destination.write_text(html, encoding="utf-8")
 
 def build():
-    if not CONTENT.exists():
-        raise SystemExit(f"CONTENT dir not found!")
-
     OUTPUT.mkdir(parents=True, exist_ok=True)
     quiz_template_path = TEMPLATES / "quiz.html"
     master_template_text = quiz_template_path.read_text(encoding="utf-8")
     
+    # 1. JSON से HTML बनाना (अगर JSON मौजूद हैं)
+    if CONTENT.exists():
+        for path in sorted(CONTENT.rglob("*.json")):
+            if path.name.endswith(".explanations.json"): continue
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                validate_quiz(data, path)
+                explanations = load_explanations(path)
+            except Exception as e:
+                print(f"Skipping {path}: {e}")
+                continue
+
+            relative = path.relative_to(CONTENT)
+            quiz_dir = OUTPUT / relative.parent / path.stem
+            quiz_dir.mkdir(parents=True, exist_ok=True)
+            depth = len(relative.parts)
+
+            final_html = generate_quiz_html(data, explanations, master_template_text, depth)
+            output_file = quiz_dir / "index.html"
+            output_file.write_text(final_html, encoding="utf-8")
+
+    # 2. HTML से वापस डेटाबेस पढ़ना (अब JSON पर कोई निर्भरता नहीं)
     site_data = defaultdict(lambda: defaultdict(list))
     all_quizzes = []
-    quizzes = 0
-
-    for path in sorted(CONTENT.rglob("*.json")):
-        if path.name.endswith(".explanations.json"): continue
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-            validate_quiz(data, path)
-            explanations = load_explanations(path)
-        except Exception as e:
-            print(f"Skipping {path}: {e}")
-            continue
-
-        relative = path.relative_to(CONTENT)
-        quiz_dir = OUTPUT / relative.parent / path.stem
-        quiz_dir.mkdir(parents=True, exist_ok=True)
-        depth = len(relative.parts)
-
-        final_html = generate_quiz_html(data, explanations, master_template_text, depth)
-        output_file = quiz_dir / "index.html"
-        output_file.write_text(final_html, encoding="utf-8")
-
-        subject_name = data.get("subject", "Uncategorized")
-        topic_name = data.get("topic", "General")
-                # सब्जेक्ट पेज के लिए लिंक
-        subject_page_link = f"{relative.parent.name}/{path.stem}/index.html"
-        site_data[subject_name][topic_name].append({"title": data["title"], "link": subject_page_link})
+    quizzes_found = 0
+    
+    # docs/ फोल्डर के अंदर के सभी HTML पेजों को स्कैन करना
+    for html_path in sorted(OUTPUT.rglob("index.html")):
+        if html_path.parent == OUTPUT: continue # होमपेज छोड़ें
+        if html_path.parent.parent == OUTPUT: continue # सब्जेक्ट पेज छोड़ें
         
-        # होमपेज के लिए पूरा लिंक (as_posix लगाकर)
-        homepage_link = f"{relative.parent.as_posix()}/{path.stem}/index.html"
-        all_quizzes.append({"title": data["title"], "link": homepage_link, "subject": subject_name})
+        try:
+            content_text = html_path.read_text(encoding="utf-8")
+            # छिपा हुआ Meta-Tag खोजना
+            match = re.search(r'<script type="application/json" id="quiz-meta">(.*?)</script>', content_text, re.DOTALL)
+            if match:
+                meta = json.loads(match.group(1))
+                relative_path = html_path.relative_to(OUTPUT)
+                
+                subject_page_link = "/".join(relative_path.parts[1:])
+                homepage_link = relative_path.as_posix()
+                
+                site_data[meta["subject"]][meta["topic"]].append({"title": meta["title"], "link": subject_page_link})
+                all_quizzes.append({"title": meta["title"], "link": homepage_link, "subject": meta["subject"]})
+                quizzes_found += 1
+        except Exception as e:
+            print(f"Error reading meta from {html_path}: {e}")
 
+    # 3. वेबसाइट की लिस्ट अपडेट करना (केवल HTML के दम पर)
     generate_subject_pages(site_data)
     build_homepage(all_quizzes)
-    print(f"\nBUILD SUCCESSFUL! Generated {quizzes} quizzes.")
+    print(f"\nBUILD SUCCESSFUL! Processed {quizzes_found} quizzes perfectly.")
 
 if __name__ == "__main__":
     build()
