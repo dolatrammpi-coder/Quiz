@@ -3,6 +3,7 @@ import json
 import shutil
 import re
 from collections import defaultdict
+from test_series_builder import build as build_test_series
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "content"
@@ -146,6 +147,9 @@ def build():
     # 1. JSON से HTML बनाना (अगर JSON मौजूद हैं)
     if CONTENT.exists():
         for path in sorted(CONTENT.rglob("*.json")):
+            # Test Series का content अपने dedicated builder से बनता है।
+            if "test-series" in path.relative_to(CONTENT).parts:
+                continue
             if path.name.endswith(".explanations.json"): continue
             try:
                 data = json.loads(path.read_text(encoding="utf-8"))
@@ -194,6 +198,13 @@ def build():
     # 3. वेबसाइट की लिस्ट अपडेट करना (केवल HTML के दम पर)
     generate_subject_pages(site_data)
     build_homepage(all_quizzes)
+
+    # Test Series का dedicated builder
+    try:
+        build_test_series()
+    except Exception as e:
+        print(f"WARNING: Test Series build failed: {e}")
+
     print(f"\nBUILD SUCCESSFUL! Processed {quizzes_found} quizzes perfectly.")
 
 if __name__ == "__main__":
