@@ -244,13 +244,58 @@ $("save").onclick=async()=>{
   status($("saveStatus"),"Validating...");
   const {payload,slug}=buildPayload(),c=cfg();
   const exam=$("exam").value;
+
+  if(!exam)throw new Error("Exam चुनो।");
+
+  // 1. Ensure the selected exam has series.json.
+  //    Existing series.json is NEVER overwritten.
+  const seriesPath=`content/test-series/${exam}/series.json`;
+  const existingSeries=await existingFile(seriesPath);
+
+  if(!existingSeries){
+   const selectedExam=examList.find(x=>x.slug===exam);
+   const examName=selectedExam?.name||exam;
+
+   const seriesPayload={
+    name:examName,
+    slug:exam,
+    description:`${examName} की तैयारी के लिए ऑनलाइन Test Series।`
+   };
+
+   const seriesBody={
+    message:`Add Test Series: ${examName}`,
+    content:btoa(unescape(encodeURIComponent(JSON.stringify(seriesPayload,null,2)+"\n"))),
+    branch:c.branch
+   };
+
+   await gh(seriesPath,"PUT",seriesBody);
+  }
+
+  // 2. Create the actual test JSON.
   const path=`content/test-series/${exam}/${slug}.json`;
   const old=await existingFile(path);
-  if(old)throw new Error(`यह test पहले से मौजूद है: ${slug}.json. दूसरा title/slug रखो।`);
-  const body={message:`Add ${payload.title}`,content:btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2)+"\n"))),branch:c.branch};
+
+  if(old){
+   throw new Error(`यह test पहले से मौजूद है: ${slug}.json. दूसरा title/slug रखो।`);
+  }
+
+  const body={
+   message:`Add ${payload.title}`,
+   content:btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2)+"\n"))),
+   branch:c.branch
+  };
+
   const result=await gh(path,"PUT",body);
-  status($("saveStatus"),`✓ Test GitHub पर save हो गया। Commit: ${result.commit?.sha||"created"}. GitHub Actions अब builder चला सकता है।`,"ok");
- }catch(e){status($("saveStatus"),e.message,"err")}
+
+  status(
+   $("saveStatus"),
+   `✓ Test और Test Series data GitHub पर save हो गया। Commit: ${result.commit?.sha||"created"}. GitHub Actions अब builder चला सकता है।`,
+   "ok"
+  );
+
+ }catch(e){
+  status($("saveStatus"),e.message,"err")
+ }
 };
 loadSettings();
 </script>
