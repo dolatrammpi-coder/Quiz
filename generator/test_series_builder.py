@@ -272,11 +272,18 @@ def build():
     for exam_dir in sorted(p for p in CONTENT.iterdir() if p.is_dir()):
         exam_slug = exam_dir.name
         series_path = exam_dir / "series.json"
-        if not series_path.exists():
-            print(f"Skipping {exam_dir}: series.json missing")
-            continue
-        exam = load_json(series_path)
+
+        if series_path.exists():
+            exam = load_json(series_path)
+        else:
+            exam = {
+                "name": exam_slug.replace("-", " ").title(),
+                "slug": exam_slug,
+            }
+            print(f"Info: {exam_dir}: series.json missing; using folder name.")
+
         exam.setdefault("name", exam_slug.replace("-", " ").title())
+        exam.setdefault("slug", exam_slug)
 
         tests = []
         for path in sorted(exam_dir.glob("*.json")):
