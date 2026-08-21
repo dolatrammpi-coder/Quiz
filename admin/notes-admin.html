@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notes Admin Panel V1</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf3f7;color:#172033;font-family:Arial,"Noto Sans Devanagari",sans-serif}
+.top{background:linear-gradient(135deg,#0d426d,#176b9d);color:white;padding:16px}.topin{width:min(1100px,94%);margin:auto;display:flex;justify-content:space-between;align-items:center}.brand{font-size:19px;font-weight:800}
+main{width:min(1100px,94%);margin:20px auto 40px}.card{background:#fff;border:1px solid #d5e0e8;border-radius:15px;padding:18px;margin-bottom:15px;box-shadow:0 4px 16px #173b5f0b}
+h1{margin:0 0 5px;font-size:28px}h2{font-size:18px;margin:0 0 14px}.muted{color:#68798a;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}label{font-size:12px;font-weight:800;color:#41566a;display:block;margin-bottom:5px}
+input,select,textarea{width:100%;border:1px solid #cbd8e2;border-radius:9px;padding:10px;font:inherit;background:#fff}textarea{min-height:260px;resize:vertical}
+.row{display:flex;gap:9px;align-items:end}.grow{flex:1}button{border:0;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer}button.primary{background:#17679a;color:#fff}button.secondary{background:#e7f0f6;color:#1d4e70}
+.status{padding:11px;border-radius:9px;background:#f1f6f9;font-size:13px;margin-top:12px;white-space:pre-wrap}.danger{color:#a12b2b}
+pre{background:#101b25;color:#dbeafe;padding:12px;border-radius:9px;overflow:auto;max-height:250px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.row{flex-direction:column;align-items:stretch}.topin{align-items:flex-start;gap:8px;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div class="brand">📚 Notes Admin Panel V1</div><span>Local / Termux</span></div></header>
+<main>
+<section class="card"><h1>Notes Builder</h1><p class="muted">Subject static है। Chapter और Topic directory से चुनें या नया बनाएं। JSON से standalone Topic page generate करें।</p></section>
+
+<section class="card"><h2>GitHub Connection</h2>
+<div class="grid">
+<div><label>GitHub Username</label><input id="ghUser" placeholder="username"></div>
+<div><label>Owner</label><input id="ghOwner" placeholder="owner"></div>
+<div><label>Repository</label><input id="ghRepo" value="Quiz"></div>
+<div><label>Branch</label><input id="ghBranch" value="main"></div>
+<div><label>Auth Token</label><input id="ghToken" type="password" placeholder="पहली बार ही भरें"></div>
+<div><label>Auto Fetch</label><select id="autoFetch"><option value="yes">Yes</option><option value="no">No</option></select></div>
+</div>
+<p><button class="secondary" onclick="saveSettings()">💾 Save Settings</button> <button class="secondary" onclick="loadTree()">↻ Fetch Directory</button></p>
+<div id="settingsStatus" class="status">Credentials इस browser में local settings के रूप में रखे जा रहे हैं।</div>
+</section>
+
+<section class="card"><h2>Directory</h2>
+<div class="grid">
+<div><label>Subject — Static</label><select id="subject"><option value="history">History</option></select></div>
+<div><label>Chapter</label><select id="chapter"></select></div>
+<div><label>Topic</label><select id="topic"></select></div>
+</div>
+<div class="row" style="margin-top:12px"><div class="grow"><input id="newChapter" placeholder="नया Chapter name (optional)"></div><button class="secondary" onclick="addChapterLocal()">+ Add Chapter</button><div class="grow"><input id="newTopic" placeholder="नया Topic name (optional)"></div><button class="secondary" onclick="setNewTopic()">+ Add Topic</button></div>
+<div id="treeStatus" class="status"></div>
+</section>
+
+<section class="card"><h2>Topic JSON</h2>
+<p class="muted">Paste JSON या file upload करें। V1 schema: title, description, questions[{question,answer}]।</p>
+<textarea id="jsonBox" placeholder='{"title":"1857 का विद्रोह","description":"...","questions":[{"question":"...","answer":"..."}]}'></textarea>
+<p><input type="file" id="jsonFile" accept=".json,application/json" onchange="readJsonFile(this)"></p>
+<div class="row"><div class="grow"><label>Slug (optional)</label><input id="slug" placeholder="auto-generate होगा"></div><button class="primary" onclick="generate()">Generate Topic HTML</button></div>
+<div id="result" class="status"></div>
+</section>
+
+<section class="card"><h2>Preview JSON</h2><pre id="preview">{}</pre></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let tree={subjects:[]};
+
+function saveSettings(){
+  const data={user:$('ghUser').value,owner:$('ghOwner').value,repo:$('ghRepo').value,branch:$('ghBranch').value,token:$('ghToken').value,autoFetch:$('autoFetch').value};
+  localStorage.setItem('notesAdminSettings',JSON.stringify(data));
+  $('settingsStatus').textContent='Settings saved locally. Token को page source में नहीं रखा गया है.';
+}
+function restoreSettings(){
+  try{
+    const d=JSON.parse(localStorage.getItem('notesAdminSettings')||'{}');
+    for(const k of ['user','owner','repo','branch','token','autoFetch']) if(d[k]!==undefined) $(k==='user'?'ghUser':k==='owner'?'ghOwner':k==='repo'?'ghRepo':k==='branch'?'ghBranch':k==='token'?'ghToken':'autoFetch').value=d[k];
+  }catch(e){}
+}
+async function loadTree(){
+  const r=await fetch('/api/tree'); tree=await r.json(); renderChapters(); $('treeStatus').textContent='Directory fetched.';
+}
+function renderChapters(){
+  const s=tree.subjects.find(x=>x.slug===$('subject').value);
+  $('chapter').innerHTML='<option value="">— Chapter चुनें —</option>'+(s?s.chapters.map(c=>`<option value="${c.slug}">${c.name}</option>`).join(''):'');
+  renderTopics();
+}
+function renderTopics(){
+  const s=tree.subjects.find(x=>x.slug===$('subject').value);
+  const c=s?.chapters.find(x=>x.slug===$('chapter').value);
+  $('topic').innerHTML='<option value="">— Topic चुनें —</option>'+(c?c.topics.map(t=>`<option>${t}</option>`).join(''):'');
+}
+$('subject').onchange=renderChapters;$('chapter').onchange=renderTopics;
+function addChapterLocal(){
+  const n=$('newChapter').value.trim(); if(!n)return;
+  const s=tree.subjects.find(x=>x.slug===$('subject').value); if(!s)return;
+  s.chapters.push({name:n,slug:n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''),topics:[]});
+  $('newChapter').value=''; renderChapters(); $('chapter').value=s.chapters.at(-1).slug; renderTopics();
+}
+function setNewTopic(){
+  const n=$('newTopic').value.trim(); if(!n)return;
+  $('topic').innerHTML='<option selected>'+n.replaceAll('<','&lt;')+'</option>';
+  $('newTopic').value='';
+}
+function readJsonFile(input){
+  const f=input.files[0]; if(!f)return;
+  const r=new FileReader();r.onload=()=>{$('jsonBox').value=r.result;parsePreview()};r.readAsText(f);
+}
+function parsePreview(){
+  try{$('preview').textContent=JSON.stringify(JSON.parse($('jsonBox').value),null,2)}catch(e){$('preview').textContent='Invalid JSON: '+e.message}
+}
+$('jsonBox').addEventListener('input',parsePreview);
+async function generate(){
+  let data; try{data=JSON.parse($('jsonBox').value)}catch(e){$('result').textContent='Invalid JSON: '+e.message;return}
+  const chapter=$('chapter').value, topic=$('topic').value;
+  if(!chapter){$('result').textContent='Chapter चुनें या नया Chapter बनाएं.';return}
+  if(!topic){$('result').textContent='Topic name चुनें या Add Topic करें.';return}
+  data.subject='history';data.chapter=chapter;data.slug=$('slug').value.trim()||topic;
+  const fd=new FormData();fd.append('subject','history');fd.append('chapter',chapter);fd.append('slug',data.slug);fd.append('json',JSON.stringify(data));
+  const r=await fetch('/api/generate-topic',{method:'POST',body:fd});const out=await r.json();
+  $('result').textContent=out.ok?`Generated: ${out.path}\nQuestions: ${out.question_count}`:'Error: '+out.error;
+}
+restoreSettings();loadTree();
+</script>
+</body>
+</html>
