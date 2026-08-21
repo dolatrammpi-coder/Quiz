@@ -333,7 +333,7 @@ textarea{min-height:80px;resize:vertical}
 </section>
 
 <div class="toolbar">
-<button class="btn primary" onclick="saveToGitHub()">📤 Save to GitHub</button>
+<button class="btn primary" onclick="localSaveSubject()">💾 Save to Termux</button>
 <button class="btn" onclick="loadJSON()">📂 Load JSON</button>
 <button class="btn" onclick="downloadCurrent()">⬇ Export</button>
 <button class="btn danger" onclick="deleteSubject()">Delete Subject</button>
@@ -386,6 +386,10 @@ textarea{min-height:80px;resize:vertical}
         📥 Import JSON
       </button>
 
+      <button class="btn primary" onclick="localSaveSubject()">
+        💾 Save to Termux
+      </button>
+
       <button class="btn" onclick="clearBulkJSON()">
         Clear
       </button>
@@ -406,6 +410,156 @@ textarea{min-height:80px;resize:vertical}
 <div id="status" class="status"></div>
 
 <script>
+
+const LOCAL_API = "/api/notes";
+
+async function localAPI(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  let data = null;
+
+  try {
+    data = await response.json();
+  } catch (e) {}
+
+  if (!response.ok || !data || data.success === false) {
+    throw new Error(
+      data && data.error
+        ? data.error
+        : "Local API error: " + response.status
+    );
+  }
+
+  return data;
+}
+
+function subjectFileName(subject) {
+  return slugify(subject) + ".json";
+}
+
+async function localLoadSubject(filename) {
+
+  const data = await localAPI(
+    LOCAL_API +
+    "/load?file=" +
+    encodeURIComponent(filename)
+  );
+
+  current = data.data;
+
+  if (!current.groups)
+    current.groups = [];
+
+  if (!current.chapters)
+    current.chapters = [];
+
+  renderSubjects();
+  renderEditor();
+
+  const bulk = document.getElementById("bulkJson");
+
+  if (bulk) {
+    bulk.value = JSON.stringify(
+      current,
+      null,
+      2
+    );
+  }
+
+  showStatus(
+    "Loaded: " + data.file
+  );
+}
+
+async function localSaveSubject() {
+
+  syncSubject();
+
+  if (!current) {
+    alert("पहले Subject चुनें।");
+    return;
+  }
+
+  if (!current.subject) {
+    alert("Subject Name जरूरी है।");
+    return;
+  }
+
+  const filename =
+    subjectFileName(
+      current.slug || current.subject
+    );
+
+  const result = await localAPI(
+    LOCAL_API + "/save",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        file: filename,
+        data: current
+      })
+    }
+  );
+
+  showStatus(
+    "Saved: " + result.file
+  );
+
+  githubMessage(
+    "✓ Local repo में save हुआ: " +
+    result.path,
+    true
+  );
+}
+
+async function loadLocalSubjects() {
+
+  try {
+
+    const result =
+      await localAPI(
+        LOCAL_API + "/list"
+      );
+
+    const files =
+      result.files || [];
+
+    if (!files.length) {
+      return;
+    }
+
+    subjects.length = 0;
+
+    files.forEach(file => {
+
+      const slug =
+        file.replace(/\.json$/i, "");
+
+      subjects.push({
+        name: slug,
+        file: file
+      });
+
+    });
+
+    renderSubjects();
+
+  } catch (err) {
+
+    console.error(
+      "Local subject list failed:",
+      err
+    );
+
+  }
+}
+
 const subjects = [
   {name:"History",file:"history.json"},
   {name:"Geography",file:"geography.json"},
@@ -465,26 +619,37 @@ function renderSubjects(){
   `).join("");
 }
 
-function selectSubject(i){
-  const s=subjects[i];
+async function selectSubject(i){
 
-  fetch("../../content/notes/"+s.file+"?v="+Date.now())
-    .then(r=>{
-      if(!r.ok) throw new Error();
-      return r.json();
-    })
-    .then(data=>{
-      current=data;
-      renderSubjects();
-      renderEditor();
-    })
-    .catch(()=>{
-      current=blankSubject(s.name);
-      current.slug=slugify(s.name);
-      renderSubjects();
-      renderEditor();
-      showStatus("नई Subject data तैयार है");
-    });
+  const s = subjects[i];
+
+  try {
+
+    await localLoadSubject(
+      s.file
+    );
+
+    current.subject =
+      current.subject || s.name;
+
+    renderSubjects();
+    renderEditor();
+
+  } catch (err) {
+
+    current =
+      blankSubject(s.name);
+
+    current.slug =
+      slugify(s.name);
+
+    renderSubjects();
+    renderEditor();
+
+    showStatus(
+      "नई Subject data तैयार है"
+    );
+  }
 }
 
 function newSubject(){
@@ -1456,24 +1621,9 @@ document.getElementById("githubToken")
   );
 
 function saveSubject(){
-  syncSubject();
-
-  if(!current.subject){
-    alert("Subject Name जरूरी है।");
-    return;
-  }
-
-  const blob=new Blob(
-    [JSON.stringify(current,null,2)],
-    {type:"application/json"}
-  );
-
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=(current.slug||slugify(current.subject))+".json";
-  a.click();
-
-  showStatus("JSON export हो गया");
+  localSaveSubject().catch(err=>{
+    alert("Save failed: " + err.message);
+  });
 }
 
 function downloadCurrent(){
@@ -1525,6 +1675,8 @@ restoreGitHubSettings();
 
 renderSubjects();
 renderEditor();
+
+loadLocalSubjects();
 </script>
 
 </body>

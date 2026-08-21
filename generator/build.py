@@ -4,6 +4,7 @@ import shutil
 import re
 from collections import defaultdict
 from test_series_builder import build as build_test_series
+from build_notes import build as build_notes
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "content"
@@ -147,10 +148,19 @@ def build():
     # 1. JSON से HTML बनाना (अगर JSON मौजूद हैं)
     if CONTENT.exists():
         for path in sorted(CONTENT.rglob("*.json")):
-            # Test Series का content अपने dedicated builder से बनता है।
-            if "test-series" in path.relative_to(CONTENT).parts:
+            relative = path.relative_to(CONTENT)
+
+            # Dedicated builders handle these JSON files.
+            # Generic Quiz builder must never validate/process them.
+            if "test-series" in relative.parts:
                 continue
-            if path.name.endswith(".explanations.json"): continue
+
+            if "notes" in relative.parts:
+                continue
+
+            if path.name.endswith(".explanations.json"):
+                continue
+
             try:
                 data = json.loads(path.read_text(encoding="utf-8"))
                 validate_quiz(data, path)
@@ -159,7 +169,6 @@ def build():
                 print(f"Skipping {path}: {e}")
                 continue
 
-            relative = path.relative_to(CONTENT)
             quiz_dir = OUTPUT / relative.parent / path.stem
             quiz_dir.mkdir(parents=True, exist_ok=True)
             depth = len(relative.parts)
@@ -204,6 +213,13 @@ def build():
         build_test_series()
     except Exception as e:
         print(f"WARNING: Test Series build failed: {e}")
+
+    # Subject Wise Notes का dedicated builder
+    # Notes अपने standalone static HTML pages बनाता है।
+    try:
+        build_notes()
+    except Exception as e:
+        print(f"WARNING: Notes build failed: {e}")
 
     print(f"\nBUILD SUCCESSFUL! Processed {quizzes_found} quizzes perfectly.")
 
