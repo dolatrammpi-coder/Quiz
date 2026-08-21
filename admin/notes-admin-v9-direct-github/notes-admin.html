@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Notes Admin Panel V11</title>
+<title>Notes Admin Panel V9</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#edf3f7;color:#172033;font-family:Arial,"Noto Sans Devanagari",sans-serif}
 .top{background:linear-gradient(135deg,#0d426d,#176b9d);color:#fff;padding:16px}.topin{width:min(1100px,94%);margin:auto;display:flex;justify-content:space-between;align-items:center}.brand{font-size:19px;font-weight:800}
@@ -15,9 +15,9 @@ label{font-size:12px;font-weight:800;color:#41566a;display:block;margin-bottom:5
 </style>
 </head>
 <body>
-<header class="top"><div class="topin"><div class="brand">📚 Notes Admin Panel V11</div><span>Local / Termux</span></div></header>
+<header class="top"><div class="topin"><div class="brand">📚 Notes Admin Panel V9</div><span>Local / Termux</span></div></header>
 <main>
-<section class="card"><h1>Notes Builder</h1><p class="muted">GitHub account से repositories auto-fetch करें। Subject list selected repository के Subject Wise Notes homepage से आएगी। Subject template generic है। Group optional है: Group वाले subjects में chapters group के अंदर दिखेंगे, बिना Group वाले subjects में chapters सीधे दिखेंगे। Chapter/Topic का Hindi title और English URL अलग रख सकते हैं। सभी changes सीधे GitHub पर commit होंगे।</p></section>
+<section class="card"><h1>Notes Builder</h1><p class="muted">GitHub account से repositories auto-fetch करें। Subject list selected repository के Subject Wise Notes homepage से आएगी। Chapter/Topic का Hindi title और English URL slug अलग रख सकते हैं। Generate करने पर Subject → Chapter → Topic pages और links सीधे GitHub पर commit होंगे।</p></section>
 
 <section class="card"><h2>GitHub Connection</h2>
 <div class="grid">
@@ -44,22 +44,14 @@ label{font-size:12px;font-weight:800;color:#41566a;display:block;margin-bottom:5
 <div><label>Topic</label><select id="topic"><option value="">— Topic चुनें —</option></select></div>
 </div>
 <div class="row" style="margin-top:12px">
-<div style="flex:1"><label>Chapter Group — Optional</label><input id="chapterGroup" placeholder="जैसे: Modern History (खाली छोड़ें तो direct chapter)"></div>
-<div style="flex:1"><label>Group URL — English (optional)</label><input id="chapterGroupSlug" placeholder="modern-history"></div>
-</div>
-<div class="row" style="margin-top:10px">
-<div style="flex:1"><label>Chapter Title — Hindi</label><input id="newChapter" placeholder="जैसे: 1857 का विद्रोह"></div>
-<div style="flex:1"><label>Chapter URL — English</label><input id="newChapterSlug" placeholder="revolt-of-1857"></div>
+<div style="flex:1"><label>Chapter Title — Hindi</label><input id="newChapter" placeholder="जैसे: पर्यावरण"></div>
+<div style="flex:1"><label>Chapter URL — English</label><input id="newChapterSlug" placeholder="environment"></div>
 <button class="secondary" onclick="addChapter()">+ Add Chapter</button>
 </div>
 <div class="row" style="margin-top:12px">
 <div style="flex:1"><label>Topic Title — Hindi</label><input id="newTopic" placeholder="जैसे: पर्यावरण और पारिस्थितिकी"></div>
 <div style="flex:1"><label>Topic URL — English</label><input id="newTopicSlug" placeholder="environment-and-ecology"></div>
 <button class="secondary" onclick="addTopic()">+ Add Topic</button>
-</div>
-<div class="row" style="margin-top:12px">
-<div style="flex:1"><label>Subject Description</label><input id="subjectDescription" placeholder="Subject के Chapters और Topic-wise One Liner Revision Notes..."></div>
-<button class="secondary" onclick="saveSubject()">💾 Save Subject Page</button>
 </div>
 <div id="treeStatus" class="status"></div>
 </section>
@@ -145,25 +137,11 @@ function renderSubjects(){
  if(tree.subjects.some(s=>s.slug===old))$('subject').value=old;renderChapters();
 }
 function renderChapters(){
- const s=tree.subjects.find(x=>x.slug===$('subject').value);
- let html='<option value="">— Chapter चुनें —</option>';
- if(s){
-   if(Array.isArray(s.groups)&&s.groups.length){
-     s.groups.forEach(g=>{
-       html+=`<optgroup label="${esc(g.name)}">`+
-         (g.chapters||[]).map(c=>`<option value="${esc(c.slug)}">${esc(c.title||c.name||c.slug)}</option>`).join('')+
-         `</optgroup>`;
-     });
-   }
-   html+=(s.chapters||[]).map(c=>`<option value="${esc(c.slug)}">${esc(c.title||c.name||c.slug)}</option>`).join('');
- }
- $('chapter').innerHTML=html;renderTopics();
+ const s=tree.subjects.find(x=>x.slug===$('subject').value);$('chapter').innerHTML='<option value="">— Chapter चुनें —</option>'+(s?s.chapters.map(c=>`<option value="${esc(c.slug)}">${esc(c.name)}</option>`).join(''):'');renderTopics();
 }
 function renderTopics(){
- const s=tree.subjects.find(x=>x.slug===$('subject').value);
- const chapters=[...(s?.chapters||[]), ...((s?.groups||[]).flatMap(g=>g.chapters||[]))];
- const c=chapters.find(x=>x.slug===$('chapter').value);
- $('topic').innerHTML='<option value="">— Topic चुनें —</option>'+(c?c.topics.map(t=>`<option value="${esc(t.slug)}">${esc(t.title||t.name||t.slug)}</option>`).join(''):'');
+ const s=tree.subjects.find(x=>x.slug===$('subject').value),c=s?.chapters.find(x=>x.slug===$('chapter').value);
+ $('topic').innerHTML='<option value="">— Topic चुनें —</option>'+(c?c.topics.map(t=>`<option value="${esc(t.slug)}">${esc(t.name)}</option>`).join(''):'');
 }
 $('subject').onchange=renderChapters;$('chapter').onchange=renderTopics;
 function slugPreview(v){
@@ -180,26 +158,6 @@ function githubFormBase(){
    token:$('ghToken').value.trim()||d.token||''
  };
 }
-async function saveSubject(){
- const subject=$('subject').value, g=githubFormBase();
- if(!subject){$('treeStatus').textContent='❌ पहले Subject चुनें.';return}
- if(!g.owner||!g.repo||!g.token){$('treeStatus').textContent='❌ पहले GitHub connection पूरा करें.';return}
- const s=tree.subjects.find(x=>x.slug===subject);
- const fd=new FormData();
- fd.append('subject',subject);
- fd.append('subjectName',s?.name||subject);
- fd.append('subjectDescription',$('subjectDescription').value.trim());
- Object.entries(g).forEach(([k,v])=>fd.append(k,v));
- fd.append('commitMessage',`Update subject: ${s?.name||subject}`);
- $('treeStatus').textContent='⏳ Universal Subject template GitHub पर save किया जा रहा है...';
- try{
-   const r=await fetch('/api/save-subject',{method:'POST',body:fd});
-   const o=await r.json();if(!r.ok||!o.ok)throw Error(o.error||`Server ${r.status}`);
-   $('treeStatus').textContent=`✅ Subject page template से update हो गया.\n${o.subjectPath}`;
-   await fetchDirectory();
- }catch(e){$('treeStatus').textContent='❌ Subject save failed: '+e.message}
-}
-
 async function addChapter(){
  const btn=document.querySelector('button[onclick="addChapter()"]');
  const subject=$('subject').value;
@@ -210,8 +168,6 @@ async function addChapter(){
  if(!g.owner||!g.repo||!g.token){$('treeStatus').textContent='❌ पहले GitHub connection पूरा करें.';return}
  const fd=new FormData();
  fd.append('subject',subject);fd.append('chapterTitle',title);fd.append('chapterSlug',slug);
- fd.append('groupName',$('chapterGroup').value.trim());
- fd.append('groupSlug',slugPreview($('chapterGroupSlug').value));
  Object.entries(g).forEach(([k,v])=>fd.append(k,v));
  fd.append('commitMessage',`Add chapter: ${title}`);
  if(btn) btn.disabled=true;
@@ -221,7 +177,7 @@ async function addChapter(){
    const text=await r.text();
    let o; try{o=JSON.parse(text)}catch(_){throw Error(`Server ${r.status}: ${text.slice(0,300)}`)}
    if(!r.ok||!o.ok)throw Error(o.error||`Server ${r.status}`);
-   $('newChapter').value='';$('newChapterSlug').value='';$('chapterGroup').value='';$('chapterGroupSlug').value='';
+   $('newChapter').value='';$('newChapterSlug').value='';
    $('treeStatus').textContent=`✅ Chapter बन गया और Subject page में link हो गया.\nChapter: ${o.chapterPath}\nSubject: ${o.subjectPath}`;
    await fetchDirectory();
  }catch(e){$('treeStatus').textContent='❌ Add Chapter failed: '+e.message}
@@ -250,9 +206,7 @@ async function generate(){
  let data;
  try{data=JSON.parse($('jsonBox').value)}catch(e){$('result').textContent='Invalid JSON: '+e.message;return}
  const subject=$('subject').value, chapter=$('chapter').value;
- const selectedSubject=tree.subjects.find(s=>s.slug===subject);
- const allChapters=[...(selectedSubject?.chapters||[]), ...((selectedSubject?.groups||[]).flatMap(g=>g.chapters||[]))];
- const chapterTitle=$('newChapter').value.trim() || (allChapters.find(c=>c.slug===chapter)?.title || allChapters.find(c=>c.slug===chapter)?.name || '');
+ const chapterTitle=$('newChapter').value.trim() || (tree.subjects.find(s=>s.slug===subject)?.chapters.find(c=>c.slug===chapter)?.name || '');
  const topicTitle=$('topicTitle').value.trim() || data.title;
  const topicSlug=slugPreview($('topicSlug').value || '');
  if(!subject||!chapter||!topicTitle||!topicSlug){$('result').textContent='Subject, Chapter, Topic Hindi title और English URL slug जरूरी हैं.';return}

@@ -1,0 +1,1 @@
+Notes Builder V1\n\nSource: content/notes/**/*.json\nOutput: docs/subject-wise-notes/\nGenerated HTML embeds metadata and remains usable after source JSON is deleted.\nMissing JSON never deletes existing generated HTML.\nGroups are optional: groups -> Chapter -> Topic; no groups -> Chapter -> Topic.\nExisting generator/build.py is untouched.\n
