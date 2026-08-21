@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Notes Panel — My Study Portal</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#eef3f8;
+  color:#172033;
+  font-family:Arial,"Noto Sans Devanagari",sans-serif;
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+
+.header{
+  background:linear-gradient(135deg,#0b4f86,#1769a5 55%,#0d5b92);
+  color:#fff;
+  padding:18px 0;
+}
+.wrap{width:min(1180px,94%);margin:auto}
+.header h1{margin:0;font-size:23px}
+.header p{margin:5px 0 0;opacity:.85;font-size:13px}
+
+.layout{
+  display:grid;
+  grid-template-columns:270px 1fr;
+  gap:18px;
+  margin:20px auto;
+}
+
+.panel{
+  background:#fff;
+  border:1px solid #d7e1ea;
+  border-radius:14px;
+  box-shadow:0 4px 15px rgba(31,55,79,.06);
+}
+
+.sidebar{padding:14px}
+.sidebar-title{
+  font-size:13px;
+  font-weight:800;
+  color:#64748b;
+  margin:3px 5px 10px;
+  text-transform:uppercase;
+}
+.subject-list{display:flex;flex-direction:column;gap:6px}
+.subject-btn{
+  width:100%;
+  border:1px solid transparent;
+  background:#f5f8fb;
+  padding:10px 11px;
+  border-radius:9px;
+  text-align:left;
+  color:#334155;
+  font-weight:700;
+}
+.subject-btn:hover{background:#eaf3fb}
+.subject-btn.active{
+  background:#e4f1fc;
+  border-color:#c7ddec;
+  color:#15558b;
+}
+
+.main{padding:20px}
+.toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+.btn{
+  border:1px solid #cbd8e4;
+  background:#f7fafc;
+  color:#315d8d;
+  border-radius:8px;
+  padding:8px 12px;
+  font-weight:700;
+  font-size:13px;
+}
+.btn:hover{background:#edf5fb}
+.btn.primary{
+  background:#1769a5;
+  border-color:#1769a5;
+  color:#fff;
+}
+.btn.danger{
+  color:#b42318;
+  border-color:#efcaca;
+  background:#fff7f7;
+}
+
+.section{
+  border:1px solid #dce5ed;
+  border-radius:12px;
+  margin-bottom:15px;
+  overflow:hidden;
+}
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 14px;
+  background:#f5f8fb;
+  border-bottom:1px solid #dce5ed;
+}
+.section-title{font-weight:800;color:#244f7d}
+.section-body{padding:14px}
+
+label{
+  display:block;
+  font-size:12px;
+  font-weight:800;
+  color:#526176;
+  margin:0 0 5px;
+}
+input,textarea,select{
+  width:100%;
+  border:1px solid #cbd8e4;
+  border-radius:8px;
+  padding:9px 10px;
+  outline:none;
+  background:#fff;
+  color:#172033;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:#4c8abb;
+  box-shadow:0 0 0 3px rgba(76,138,187,.10);
+}
+textarea{min-height:80px;resize:vertical}
+
+.field{margin-bottom:12px}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.item{
+  border:1px solid #dbe4ec;
+  border-radius:10px;
+  padding:11px;
+  margin-bottom:8px;
+  background:#fff;
+}
+.item-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.item-title{font-weight:800;color:#243b53}
+.item-meta{font-size:11px;color:#7a8799;margin-top:3px}
+.item-actions{display:flex;gap:5px;flex-wrap:wrap}
+.small{
+  padding:5px 8px;
+  font-size:11px;
+  border-radius:7px;
+}
+
+.question{
+  background:#f8fafc;
+  border:1px solid #dfe7ee;
+  border-radius:9px;
+  padding:11px;
+  margin-bottom:8px;
+}
+.question-num{
+  font-size:11px;
+  font-weight:800;
+  color:#3569a8;
+  margin-bottom:4px;
+}
+
+.empty{
+  padding:16px;
+  text-align:center;
+  color:#7a8799;
+  background:#fafcfd;
+  border:1px dashed #ccd8e3;
+  border-radius:9px;
+  font-size:13px;
+}
+
+.status{
+  position:fixed;
+  right:15px;
+  bottom:15px;
+  background:#173b7a;
+  color:#fff;
+  padding:9px 13px;
+  border-radius:8px;
+  font-size:12px;
+  display:none;
+}
+
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{padding:10px}
+  .subject-list{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media(max-width:560px){
+  .grid2{grid-template-columns:1fr}
+  .subject-list{grid-template-columns:1fr}
+  .main{padding:13px}
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+<div class="wrap">
+<h1>📚 Notes Builder</h1>
+<p>Subject → Group → Chapter → Questions</p>
+</div>
+</header>
+
+<div class="wrap layout">
+
+<aside class="panel sidebar">
+<div class="sidebar-title">Subjects</div>
+
+<div class="subject-list" id="subjectList"></div>
+
+<div style="margin-top:10px">
+<button class="btn primary" style="width:100%" onclick="newSubject()">
+＋ New Subject
+</button>
+</div>
+</aside>
+
+<main class="panel main">
+
+
+<section class="section github-panel">
+  <div class="section-head">
+    <span class="section-title">🔐 GitHub Connection</span>
+    <span id="githubConnectionStatus"
+          style="font-size:12px;color:#64748b">
+      Not connected
+    </span>
+  </div>
+
+  <div class="section-body">
+
+    <div class="grid2">
+
+      <div class="field">
+        <label>Repository</label>
+        <input
+          id="githubRepo"
+          placeholder="owner/repository"
+          value="">
+      </div>
+
+      <div class="field">
+        <label>Branch</label>
+        <input
+          id="githubBranch"
+          value="main">
+      </div>
+
+    </div>
+
+    <div class="field">
+      <label>GitHub Personal Access Token</label>
+
+      <input
+        id="githubToken"
+        type="password"
+        autocomplete="off"
+        placeholder="github_pat_...">
+
+      <div style="margin-top:5px;font-size:11px;color:#7a8799">
+        Token केवल इस browser session में रखा जाएगा।
+        इसे source code में save नहीं किया जाएगा।
+      </div>
+    </div>
+
+    <div class="grid2">
+
+      <div class="field">
+        <label>Notes JSON Path</label>
+
+        <input
+          id="githubPath"
+          value="content/notes/history.json">
+      </div>
+
+      <div class="field">
+        <label>Commit Message</label>
+
+        <input
+          id="githubCommitMessage"
+          value="Update notes JSON">
+      </div>
+
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+
+      <button class="btn" onclick="testGitHubConnection()">
+        🔌 Test Connection
+      </button>
+
+      <button class="btn" onclick="loadFromGitHub()">
+        📥 Load from GitHub
+      </button>
+
+      <button class="btn primary" onclick="saveToGitHub()">
+        📤 Save to GitHub
+      </button>
+
+      <button class="btn" onclick="forgetGitHubToken()">
+        Forget Token
+      </button>
+
+    </div>
+
+    <div id="githubMessage"
+         style="margin-top:10px;font-size:12px">
+    </div>
+
+  </div>
+</section>
+
+<div class="toolbar">
+<button class="btn primary" onclick="saveToGitHub()">📤 Save to GitHub</button>
+<button class="btn" onclick="loadJSON()">📂 Load JSON</button>
+<button class="btn" onclick="downloadCurrent()">⬇ Export</button>
+<button class="btn danger" onclick="deleteSubject()">Delete Subject</button>
+</div>
+
+
+<section class="section" id="bulkJsonSection">
+  <div class="section-head">
+    <span class="section-title">📦 Bulk JSON Import</span>
+  </div>
+
+  <div class="section-body">
+
+    <div class="field">
+      <label>पूरा Notes JSON यहाँ Paste करें</label>
+      <textarea
+        id="bulkJson"
+        style="min-height:280px;font-family:monospace;font-size:13px"
+        placeholder='{
+  "subject": "History",
+  "slug": "history",
+  "description": "...",
+  "groups": [
+    {
+      "title": "Modern History",
+      "chapters": [
+        {
+          "title": "1857 का विद्रोह",
+          "slug": "revolt-of-1857",
+          "description": "...",
+          "questions": [
+            {
+              "question": "...",
+              "answer": "..."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}'></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="validateBulkJSON()">
+        ✓ Validate JSON
+      </button>
+
+      <button class="btn primary" onclick="importBulkJSON()">
+        📥 Import JSON
+      </button>
+
+      <button class="btn" onclick="clearBulkJSON()">
+        Clear
+      </button>
+    </div>
+
+    <div id="bulkJsonStatus"
+         style="margin-top:10px;font-size:12px;color:#64748b"></div>
+
+  </div>
+</section>
+
+<div id="editor"></div>
+
+</main>
+</div>
+
+<input id="fileInput" type="file" accept=".json,application/json" hidden>
+<div id="status" class="status"></div>
+
+<script>
+const subjects = [
+  {name:"History",file:"history.json"},
+  {name:"Geography",file:"geography.json"},
+  {name:"Environment",file:"environment.json"},
+  {name:"Polity",file:"polity.json"},
+  {name:"Current Affairs",file:"current-affairs.json"},
+  {name:"Science",file:"science.json"},
+  {name:"Economics",file:"economics.json"},
+  {name:"Art & Culture",file:"art-and-culture.json"}
+];
+
+let current = null;
+
+function blankSubject(name="New Subject"){
+  return {
+    subject:name,
+    slug:slugify(name),
+    description:"",
+    groups:[],
+    chapters:[]
+  };
+}
+
+function slugify(v){
+  return String(v||"")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/gu,"")
+    .replace(/[\s_]+/g,"-")
+    .replace(/-+/g,"-")
+    .replace(/^-|-$/g,"") || "untitled";
+}
+
+function esc(v){
+  return String(v??"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+
+function showStatus(text){
+  const el=document.getElementById("status");
+  el.textContent=text;
+  el.style.display="block";
+  clearTimeout(showStatus.t);
+  showStatus.t=setTimeout(()=>el.style.display="none",1800);
+}
+
+function renderSubjects(){
+  const box=document.getElementById("subjectList");
+  box.innerHTML=subjects.map((s,i)=>`
+    <button class="subject-btn ${current && current.subject===s.name?"active":""}"
+      onclick="selectSubject(${i})">
+      📚 ${esc(s.name)}
+    </button>
+  `).join("");
+}
+
+function selectSubject(i){
+  const s=subjects[i];
+
+  fetch("../../content/notes/"+s.file+"?v="+Date.now())
+    .then(r=>{
+      if(!r.ok) throw new Error();
+      return r.json();
+    })
+    .then(data=>{
+      current=data;
+      renderSubjects();
+      renderEditor();
+    })
+    .catch(()=>{
+      current=blankSubject(s.name);
+      current.slug=slugify(s.name);
+      renderSubjects();
+      renderEditor();
+      showStatus("नई Subject data तैयार है");
+    });
+}
+
+function newSubject(){
+  current=blankSubject();
+  renderSubjects();
+  renderEditor();
+}
+
+function renderEditor(){
+  if(!current){
+    document.getElementById("editor").innerHTML=
+      '<div class="empty">बाएँ से Subject चुनें।</div>';
+    return;
+  }
+
+  document.getElementById("editor").innerHTML=`
+
+  <section class="section">
+    <div class="section-head">
+      <span class="section-title">Subject Details</span>
+    </div>
+    <div class="section-body">
+
+      <div class="grid2">
+        <div class="field">
+          <label>Subject Name</label>
+          <input id="subjectName" value="${esc(current.subject||"")}">
+        </div>
+
+        <div class="field">
+          <label>Slug</label>
+          <input id="subjectSlug" value="${esc(current.slug||"")}">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Description</label>
+        <textarea id="subjectDescription">${esc(current.description||"")}</textarea>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="section-title">Groups</span>
+      <button class="btn small" onclick="addGroup()">＋ Add Group</button>
+    </div>
+    <div class="section-body" id="groups"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="section-title">Direct Chapters</span>
+      <button class="btn small" onclick="addDirectChapter()">＋ Add Chapter</button>
+    </div>
+    <div class="section-body" id="directChapters"></div>
+  </section>
+  `;
+
+  renderGroups();
+  renderDirectChapters();
+}
+
+function syncSubject(){
+  if(!current)return;
+  current.subject=document.getElementById("subjectName").value.trim();
+  current.slug=document.getElementById("subjectSlug").value.trim() || slugify(current.subject);
+  current.description=document.getElementById("subjectDescription").value.trim();
+}
+
+function addGroup(){
+  syncSubject();
+  current.groups=current.groups||[];
+  current.groups.push({
+    title:"New Group",
+    slug:slugify("New Group"),
+    icon:"📚",
+    description:"",
+    chapters:[]
+  });
+  renderEditor();
+}
+
+function deleteGroup(i){
+  if(!confirm("यह Group और इसके Chapters हटाएँ?"))return;
+  current.groups.splice(i,1);
+  renderEditor();
+}
+
+function moveGroup(i,d){
+  const j=i+d;
+  if(j<0||j>=current.groups.length)return;
+  [current.groups[i],current.groups[j]]=[current.groups[j],current.groups[i]];
+  renderGroups();
+}
+
+function renderGroups(){
+  const box=document.getElementById("groups");
+  const groups=current.groups||[];
+
+  if(!groups.length){
+    box.innerHTML='<div class="empty">अभी कोई Group नहीं है।</div>';
+    return;
+  }
+
+  box.innerHTML=groups.map((g,i)=>`
+    <div class="item">
+      <div class="item-head">
+        <div>
+          <div class="item-title">${esc(g.icon||"📚")} ${esc(g.title||"Group")}</div>
+          <div class="item-meta">${(g.chapters||[]).length} Chapters</div>
+        </div>
+
+        <div class="item-actions">
+          <button class="btn small" onclick="moveGroup(${i},-1)">↑</button>
+          <button class="btn small" onclick="moveGroup(${i},1)">↓</button>
+          <button class="btn small danger" onclick="deleteGroup(${i})">Delete</button>
+        </div>
+      </div>
+
+      <div style="margin-top:11px">
+        <div class="grid2">
+          <div class="field">
+            <label>Group Title</label>
+            <input value="${esc(g.title||"")}"
+              onchange="current.groups[${i}].title=this.value">
+          </div>
+
+          <div class="field">
+            <label>Icon</label>
+            <input value="${esc(g.icon||"📚")}"
+              onchange="current.groups[${i}].icon=this.value">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Description</label>
+          <textarea onchange="current.groups[${i}].description=this.value">${esc(g.description||"")}</textarea>
+        </div>
+
+        <button class="btn small primary" onclick="addChapterToGroup(${i})">
+          ＋ Add Chapter
+        </button>
+
+        <div style="margin-top:10px">
+          ${(g.chapters||[]).map((c,j)=>chapterEditor(c,`current.groups[${i}].chapters[${j}]`,i,j)).join("") ||
+          '<div class="empty">इस Group में अभी कोई Chapter नहीं है।</div>'}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function addChapterToGroup(i){
+  current.groups[i].chapters=current.groups[i].chapters||[];
+  current.groups[i].chapters.push(blankChapter());
+  renderGroups();
+}
+
+function addDirectChapter(){
+  current.chapters=current.chapters||[];
+  current.chapters.push(blankChapter());
+  renderDirectChapters();
+}
+
+function blankChapter(){
+  return {
+    title:"New Chapter",
+    slug:"new-chapter",
+    description:"",
+    subtitle:"",
+    questions:[]
+  };
+}
+
+function chapterEditor(c,path,groupIndex=null,chapterIndex=null){
+  const id=groupIndex===null
+    ? `d${chapterIndex}`
+    : `g${groupIndex}_${chapterIndex}`;
+
+  return `
+  <div class="item" style="background:#fbfdff">
+    <div class="item-head">
+      <div>
+        <div class="item-title">📘 ${esc(c.title||"Chapter")}</div>
+        <div class="item-meta">${(c.questions||[]).length} Questions</div>
+      </div>
+
+      <div class="item-actions">
+        <button class="btn small" onclick="moveChapter(${groupIndex===null?"null":groupIndex},${chapterIndex},-1)">↑</button>
+        <button class="btn small" onclick="moveChapter(${groupIndex===null?"null":groupIndex},${chapterIndex},1)">↓</button>
+        <button class="btn small danger" onclick="deleteChapter(${groupIndex===null?"null":groupIndex},${chapterIndex})">Delete</button>
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="grid2">
+        <div class="field">
+          <label>Chapter Title</label>
+          <input value="${esc(c.title||"")}"
+            onchange="${path}.title=this.value">
+        </div>
+
+        <div class="field">
+          <label>Slug</label>
+          <input value="${esc(c.slug||"")}"
+            onchange="${path}.slug=this.value">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Description</label>
+        <textarea onchange="${path}.description=this.value">${esc(c.description||"")}</textarea>
+      </div>
+
+      <div class="field">
+        <label>Subtitle</label>
+        <input value="${esc(c.subtitle||"")}"
+          onchange="${path}.subtitle=this.value">
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="item-title" style="margin-bottom:8px">Questions</div>
+
+        ${(c.questions||[]).map((q,k)=>questionEditor(q,path,k)).join("") ||
+          '<div class="empty">अभी कोई Question नहीं है।</div>'}
+
+        <button class="btn small primary"
+          onclick="addQuestion(${groupIndex===null?"null":groupIndex},${chapterIndex})">
+          ＋ Add Question
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function questionEditor(q,path,k){
+  return `
+  <div class="question">
+    <div class="question-num">Question ${k+1}</div>
+
+    <div class="field">
+      <label>Question</label>
+      <textarea onchange="${path}.questions[${k}].question=this.value">${esc(q.question||"")}</textarea>
+    </div>
+
+    <div class="field">
+      <label>Answer</label>
+      <input value="${esc(q.answer||"")}"
+        onchange="${path}.questions[${k}].answer=this.value">
+    </div>
+
+    <button class="btn small danger"
+      onclick="deleteQuestion(${path},${k})">
+      Delete Question
+    </button>
+  </div>`;
+}
+
+function addQuestion(gi,ci){
+  const c=gi===null
+    ? current.chapters[ci]
+    : current.groups[gi].chapters[ci];
+
+  c.questions=c.questions||[];
+  c.questions.push({question:"",answer:""});
+  renderEditor();
+}
+
+function deleteQuestion(path,k){
+  if(!confirm("Question हटाएँ?"))return;
+  eval(path+".questions.splice("+k+",1)");
+  renderEditor();
+}
+
+function deleteChapter(gi,ci){
+  if(!confirm("Chapter हटाएँ?"))return;
+
+  if(gi===null)
+    current.chapters.splice(ci,1);
+  else
+    current.groups[gi].chapters.splice(ci,1);
+
+  renderEditor();
+}
+
+function moveChapter(gi,ci,d){
+  const arr=gi===null?current.chapters:current.groups[gi].chapters;
+  const j=ci+d;
+  if(j<0||j>=arr.length)return;
+  [arr[ci],arr[j]]=[arr[j],arr[ci]];
+  renderEditor();
+}
+
+function renderDirectChapters(){
+  const box=document.getElementById("directChapters");
+  const chapters=current.chapters||[];
+
+  if(!chapters.length){
+    box.innerHTML='<div class="empty">कोई Direct Chapter नहीं है।</div>';
+    return;
+  }
+
+  box.innerHTML=chapters.map((c,i)=>
+    chapterEditor(c,`current.chapters[${i}]`,null,i)
+  ).join("");
+}
+
+
+function getBulkJSON(){
+  const text = document.getElementById("bulkJson").value.trim();
+
+  if(!text){
+    throw new Error("JSON box खाली है।");
+  }
+
+  try{
+    return JSON.parse(text);
+  }catch(err){
+    throw new Error("Invalid JSON: " + err.message);
+  }
+}
+
+function validateBulkJSON(){
+  const status = document.getElementById("bulkJsonStatus");
+
+  try{
+    const data = getBulkJSON();
+
+    if(!data || typeof data !== "object" || Array.isArray(data)){
+      throw new Error("Root JSON object होना चाहिए।");
+    }
+
+    if(!data.subject){
+      throw new Error('"subject" missing है।');
+    }
+
+    if(data.groups !== undefined && !Array.isArray(data.groups)){
+      throw new Error('"groups" array होना चाहिए।');
+    }
+
+    if(data.chapters !== undefined && !Array.isArray(data.chapters)){
+      throw new Error('"chapters" array होना चाहिए।');
+    }
+
+    status.textContent =
+      "✓ JSON सही है — Subject: " +
+      data.subject;
+
+    status.style.color = "#16824a";
+
+  }catch(err){
+
+    status.textContent = "✕ " + err.message;
+    status.style.color = "#b42318";
+  }
+}
+
+function importBulkJSON(){
+
+  try{
+
+    const data = getBulkJSON();
+
+    if(!data.subject){
+      throw new Error('"subject" missing है।');
+    }
+
+    if(!Array.isArray(data.groups)){
+      data.groups = [];
+    }
+
+    if(!Array.isArray(data.chapters)){
+      data.chapters = [];
+    }
+
+    current = data;
+
+    if(!current.slug){
+      current.slug = slugify(current.subject);
+    }
+
+    renderSubjects();
+    renderEditor();
+
+    document.getElementById("bulkJsonStatus").textContent =
+      "✓ JSON successfully imported.";
+
+    document.getElementById("bulkJsonStatus").style.color =
+      "#16824a";
+
+    showStatus("Bulk JSON imported");
+
+  }catch(err){
+
+    document.getElementById("bulkJsonStatus").textContent =
+      "✕ " + err.message;
+
+    document.getElementById("bulkJsonStatus").style.color =
+      "#b42318";
+
+    alert(err.message);
+  }
+}
+
+function clearBulkJSON(){
+  document.getElementById("bulkJson").value = "";
+  document.getElementById("bulkJsonStatus").textContent = "";
+}
+
+
+/* ============================================================
+   GITHUB CONNECTION
+   ============================================================ */
+
+const GITHUB_API = "https://api.github.com";
+const GITHUB_API_VERSION = "2022-11-28";
+
+function githubSettings(){
+
+  const repo =
+    document.getElementById("githubRepo").value.trim();
+
+  const branch =
+    document.getElementById("githubBranch").value.trim() || "main";
+
+  const token =
+    document.getElementById("githubToken").value.trim();
+
+  const path =
+    document.getElementById("githubPath").value.trim();
+
+  const message =
+    document.getElementById("githubCommitMessage").value.trim()
+    || "Update notes JSON";
+
+  if(!repo){
+    throw new Error("Repository डालें। Example: owner/repository");
+  }
+
+  if(!repo.includes("/")){
+    throw new Error("Repository format owner/repository होना चाहिए।");
+  }
+
+  if(!token){
+    throw new Error("GitHub Token डालें।");
+  }
+
+  if(!path){
+    throw new Error("JSON Path खाली है।");
+  }
+
+  return {
+    repo,
+    branch,
+    token,
+    path,
+    message
+  };
+}
+
+function githubHeaders(token){
+
+  return {
+    "Accept":"application/vnd.github+json",
+    "Authorization":"Bearer " + token,
+    "X-GitHub-Api-Version":GITHUB_API_VERSION,
+    "Content-Type":"application/json"
+  };
+
+}
+
+function githubPath(path){
+
+  return path
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/");
+}
+
+async function githubRequest(url, options={}){
+
+  const response =
+    await fetch(url, options);
+
+  let data = null;
+
+  try{
+    data = await response.json();
+  }catch(e){}
+
+  if(!response.ok){
+
+    let message =
+      data && data.message
+      ? data.message
+      : "GitHub API error (" + response.status + ")";
+
+    if(response.status === 401){
+      message =
+        "Authentication failed — Token गलत या expired है।";
+    }
+
+    if(response.status === 403){
+      message =
+        "GitHub ने request reject की। Token permission / repository access check करें।";
+    }
+
+    if(response.status === 404){
+      message =
+        "Repository या file नहीं मिली। owner/repo और path check करें।";
+    }
+
+    if(response.status === 409){
+      message =
+        "GitHub conflict आया। File दोबारा Load करके फिर Save करें।";
+    }
+
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+function githubMessage(text, success=false){
+
+  const el =
+    document.getElementById("githubMessage");
+
+  el.textContent = text;
+
+  el.style.color =
+    success ? "#16824a" : "#b42318";
+}
+
+function githubConnection(text, connected=false){
+
+  const el =
+    document.getElementById("githubConnectionStatus");
+
+  el.textContent = text;
+
+  el.style.color =
+    connected ? "#16824a" : "#64748b";
+}
+
+function rememberGitHubSettings(){
+
+  const repo =
+    document.getElementById("githubRepo").value.trim();
+
+  const branch =
+    document.getElementById("githubBranch").value.trim();
+
+  const path =
+    document.getElementById("githubPath").value.trim();
+
+  sessionStorage.setItem(
+    "notes_github_repo",
+    repo
+  );
+
+  sessionStorage.setItem(
+    "notes_github_branch",
+    branch
+  );
+
+  sessionStorage.setItem(
+    "notes_github_path",
+    path
+  );
+
+}
+
+function restoreGitHubSettings(){
+
+  const repo =
+    sessionStorage.getItem("notes_github_repo");
+
+  const branch =
+    sessionStorage.getItem("notes_github_branch");
+
+  const path =
+    sessionStorage.getItem("notes_github_path");
+
+  if(repo)
+    document.getElementById("githubRepo").value = repo;
+
+  if(branch)
+    document.getElementById("githubBranch").value = branch;
+
+  if(path)
+    document.getElementById("githubPath").value = path;
+
+  const token =
+    sessionStorage.getItem("notes_github_token");
+
+  if(token)
+    document.getElementById("githubToken").value = token;
+}
+
+function rememberGitHubToken(){
+
+  const token =
+    document.getElementById("githubToken").value.trim();
+
+  if(token){
+
+    sessionStorage.setItem(
+      "notes_github_token",
+      token
+    );
+
+  }
+
+}
+
+function forgetGitHubToken(){
+
+  sessionStorage.removeItem(
+    "notes_github_token"
+  );
+
+  document.getElementById("githubToken").value = "";
+
+  githubConnection("Token forgotten");
+
+  githubMessage(
+    "Token browser session से हटा दिया गया।",
+    true
+  );
+
+}
+
+async function testGitHubConnection(){
+
+  try{
+
+    const cfg = githubSettings();
+
+    rememberGitHubSettings();
+    rememberGitHubToken();
+
+    githubMessage("GitHub connection test हो रहा है...");
+
+    const url =
+      GITHUB_API +
+      "/repos/" +
+      cfg.repo;
+
+    const data =
+      await githubRequest(
+        url,
+        {
+          method:"GET",
+          headers:githubHeaders(cfg.token)
+        }
+      );
+
+    githubConnection(
+      "Connected ✓",
+      true
+    );
+
+    githubMessage(
+      "Connected: " +
+      data.full_name,
+      true
+    );
+
+    showStatus("GitHub connected");
+
+  }catch(err){
+
+    githubConnection("Not connected");
+
+    githubMessage(
+      "✕ " + err.message
+    );
+
+  }
+
+}
+
+async function getGitHubFile(){
+
+  const cfg =
+    githubSettings();
+
+  rememberGitHubSettings();
+  rememberGitHubToken();
+
+  const url =
+    GITHUB_API +
+    "/repos/" +
+    cfg.repo +
+    "/contents/" +
+    githubPath(cfg.path) +
+    "?ref=" +
+    encodeURIComponent(cfg.branch);
+
+  return await githubRequest(
+    url,
+    {
+      method:"GET",
+      headers:githubHeaders(cfg.token)
+    }
+  );
+
+}
+
+function decodeGitHubContent(encoded){
+
+  const clean =
+    encoded.replace(/\n/g,"");
+
+  const binary =
+    atob(clean);
+
+  const bytes =
+    Uint8Array.from(
+      binary,
+      c => c.charCodeAt(0)
+    );
+
+  return new TextDecoder(
+    "utf-8"
+  ).decode(bytes);
+
+}
+
+function encodeGitHubContent(text){
+
+  const bytes =
+    new TextEncoder().encode(text);
+
+  let binary = "";
+
+  const chunk = 0x8000;
+
+  for(
+    let i=0;
+    i<bytes.length;
+    i+=chunk
+  ){
+
+    binary += String.fromCharCode(
+      ...bytes.subarray(
+        i,
+        Math.min(i+chunk,bytes.length)
+      )
+    );
+
+  }
+
+  return btoa(binary);
+}
+
+async function loadFromGitHub(){
+
+  try{
+
+    const cfg =
+      githubSettings();
+
+    githubMessage(
+      "GitHub से JSON load हो रहा है..."
+    );
+
+    const file =
+      await getGitHubFile();
+
+    const text =
+      decodeGitHubContent(
+        file.content
+      );
+
+    const data =
+      JSON.parse(text);
+
+    if(!data.subject){
+      throw new Error(
+        '"subject" missing है।'
+      );
+    }
+
+    if(!Array.isArray(data.groups))
+      data.groups=[];
+
+    if(!Array.isArray(data.chapters))
+      data.chapters=[];
+
+    current=data;
+
+    renderSubjects();
+    renderEditor();
+
+    document.getElementById("bulkJson").value =
+      JSON.stringify(
+        current,
+        null,
+        2
+      );
+
+    githubConnection(
+      "Connected ✓",
+      true
+    );
+
+    githubMessage(
+      "✓ Loaded " +
+      cfg.path +
+      "  •  SHA: " +
+      file.sha.slice(0,10) +
+      "...",
+      true
+    );
+
+    showStatus("Loaded from GitHub");
+
+  }catch(err){
+
+    githubMessage(
+      "✕ " + err.message
+    );
+
+  }
+
+}
+
+async function saveToGitHub(){
+
+  try{
+
+    syncSubject();
+
+    if(!current){
+      throw new Error(
+        "पहले Subject load/import करें।"
+      );
+    }
+
+    if(!current.subject){
+      throw new Error(
+        "Subject Name जरूरी है।"
+      );
+    }
+
+    const cfg =
+      githubSettings();
+
+    rememberGitHubSettings();
+    rememberGitHubToken();
+
+    githubMessage(
+      "GitHub में save हो रहा है..."
+    );
+
+    /*
+      First GET the current file.
+
+      This gives us the latest SHA.
+      We deliberately do this immediately
+      before PUT to reduce update conflicts.
+    */
+
+    let existing = null;
+
+    try{
+
+      existing =
+        await getGitHubFile();
+
+    }catch(err){
+
+      if(
+        !err.message.includes("नहीं मिली")
+      ){
+        throw err;
+      }
+
+    }
+
+    const text =
+      JSON.stringify(
+        current,
+        null,
+        2
+      ) + "\n";
+
+    const body = {
+      message:cfg.message,
+      content:encodeGitHubContent(text),
+      branch:cfg.branch
+    };
+
+    if(existing && existing.sha){
+
+      body.sha=existing.sha;
+
+    }
+
+    const url =
+      GITHUB_API +
+      "/repos/" +
+      cfg.repo +
+      "/contents/" +
+      githubPath(cfg.path);
+
+    const result =
+      await githubRequest(
+        url,
+        {
+          method:"PUT",
+          headers:githubHeaders(cfg.token),
+          body:JSON.stringify(body)
+        }
+      );
+
+    githubConnection(
+      "Connected ✓",
+      true
+    );
+
+    githubMessage(
+      "✓ GitHub commit successful — " +
+      result.commit.sha.slice(0,10) +
+      "...",
+      true
+    );
+
+    showStatus(
+      existing
+      ? "Saved to GitHub"
+      : "Created on GitHub"
+    );
+
+  }catch(err){
+
+    githubMessage(
+      "✕ Save failed: " +
+      err.message
+    );
+
+  }
+
+}
+
+/*
+  Save settings whenever the user edits them.
+*/
+
+["githubRepo","githubBranch","githubPath"]
+.forEach(id=>{
+
+  document.getElementById(id)
+    ?.addEventListener(
+      "change",
+      rememberGitHubSettings
+    );
+
+});
+
+document.getElementById("githubToken")
+  ?.addEventListener(
+    "change",
+    rememberGitHubToken
+  );
+
+function saveSubject(){
+  syncSubject();
+
+  if(!current.subject){
+    alert("Subject Name जरूरी है।");
+    return;
+  }
+
+  const blob=new Blob(
+    [JSON.stringify(current,null,2)],
+    {type:"application/json"}
+  );
+
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=(current.slug||slugify(current.subject))+".json";
+  a.click();
+
+  showStatus("JSON export हो गया");
+}
+
+function downloadCurrent(){
+  saveSubject();
+}
+
+function loadJSON(){
+  document.getElementById("fileInput").click();
+}
+
+document.getElementById("fileInput").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+
+  const reader=new FileReader();
+
+  reader.onload=()=>{
+    try{
+      current=JSON.parse(reader.result);
+
+      if(!current.groups)current.groups=[];
+      if(!current.chapters)current.chapters=[];
+
+      renderSubjects();
+      renderEditor();
+      showStatus("JSON loaded");
+    }catch(err){
+      alert("Invalid JSON");
+    }
+  };
+
+  reader.readAsText(file);
+});
+
+function deleteSubject(){
+  if(!current)return;
+
+  if(!confirm(
+    "Panel से current Subject data हटानी है?\\n\\n"+
+    "यह अभी browser memory से हटेगा।"
+  ))return;
+
+  current=null;
+  renderSubjects();
+  renderEditor();
+}
+
+restoreGitHubSettings();
+
+renderSubjects();
+renderEditor();
+</script>
+
+</body>
+</html>
