@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import shutil
 import re
+import html
 from collections import defaultdict
 from test_series_builder import build as build_test_series
 from build_notes import build as build_notes
@@ -10,6 +11,64 @@ ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "content"
 OUTPUT = ROOT / "docs"
 TEMPLATES = ROOT / "templates"
+
+SUBJECT_LABELS_HI = {
+    "History": "इतिहास",
+    "Geography": "भूगोल",
+    "Environment": "पर्यावरण",
+    "Art & Culture": "कला व संस्कृति",
+    "Polity": "राजव्यवस्था",
+    "Current Affairs": "करंट अफेयर्स",
+    "Science": "विज्ञान",
+    "Economy": "अर्थव्यवस्था",
+    "Economics": "अर्थशास्त्र",
+    "Hindi": "हिंदी",
+    "English": "अंग्रेजी",
+    "UP GK": "उत्तर प्रदेश सामान्य ज्ञान",
+    "Uttarakhand GK": "उत्तराखंड सामान्य ज्ञान",
+    "Miscellaneous GK": "विविध सामान्य ज्ञान",
+}
+
+SUBJECT_PAGE_NAMES = (
+    "History",
+    "Geography",
+    "Environment",
+    "Art & Culture",
+    "Polity",
+    "Current Affairs",
+    "Science",
+    "Economy",
+    "Hindi",
+    "English",
+    "UP GK",
+    "Uttarakhand GK",
+    "Miscellaneous GK",
+)
+
+SUBJECT_FOLDERS = {
+    "Art & Culture": "art-culture",
+    "UP GK": "uttar-pradesh-gk",
+    "Uttarakhand GK": "uttarakhand-gk",
+}
+
+TOPIC_LABELS_HI = {
+    "Constitutional Evolution": "संवैधानिक विकास",
+    "Features of Constitution": "संविधान की विशेषताएँ",
+    "Economic Planning in India": "भारत में आर्थिक नियोजन",
+    "Economic Planning In India": "भारत में आर्थिक नियोजन",
+    "Monthly Current Affairs": "मासिक करंट अफेयर्स",
+    "Modern India": "आधुनिक भारत",
+}
+
+
+def escape_html(value):
+    return html.escape(str(value or ""), quote=True)
+
+
+def hindi_label(value, labels):
+    value = str(value or "").strip()
+    return labels.get(value, value)
+
 
 def load_explanations(quiz_path):
     explanation_path = quiz_path.with_name(quiz_path.stem + ".explanations.json")
@@ -64,49 +123,79 @@ def generate_quiz_html(data, explanations, master_template_text, depth):
     return html
 
 def generate_subject_pages(site_data):
-    subject_template_path = TEMPLATES / "subject.html"
+    subject_template_path = TEMPLATES / "subject-page.html"
     if not subject_template_path.exists():
-        print("WARNING: subject.html not found.")
+        print("WARNING: subject-page.html not found.")
         return
 
     subject_template = subject_template_path.read_text(encoding="utf-8")
 
     for subject_name, topics in site_data.items():
-        subject_folder = subject_name.strip().lower().replace(" ", "-")
+        if subject_name in {"Test Series", "Subject Wise Notes"}:
+            continue
+
+        subject_folder = SUBJECT_FOLDERS.get(
+            subject_name,
+            re.sub(
+                r"-+",
+                "-",
+                re.sub(r"\s+", "-", subject_name.strip().lower()),
+            ).strip("-"),
+        )
         subject_dir = OUTPUT / subject_folder
         subject_dir.mkdir(parents=True, exist_ok=True)
-        
-        topics_html_list = []
-        for topic_name, quizzes in topics.items():
-            topic_html = f"""
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-5">
-                <div class="bg-blue-50 px-5 py-3 border-b border-blue-100 flex items-center">
-                    <i class="fas fa-folder-open text-blue-500 mr-2.5"></i>
-                    <h2 class="text-lg font-bold text-blue-800">{topic_name}</h2>
-                </div>
-                <div class="p-2">
-                    <ul class="divide-y divide-gray-100">
-            """
-            for quiz in quizzes:
-                topic_html += f"""
-                        <li>
-                            <a href="{quiz['link']}" class="block px-4 py-3 hover:bg-gray-50 transition flex justify-between items-center group">
-                                <div class="flex items-center">
-                                    <div class="w-2 h-2 rounded-full bg-blue-300 mr-3 group-hover:bg-blue-600 transition-colors"></div>
-                                    <span class="text-gray-700 font-medium group-hover:text-blue-600 transition">{quiz['title']}</span>
-                                </div>
-                                <i class="fas fa-chevron-right text-gray-300 group-hover:text-blue-500 transition text-sm"></i>
-                            </a>
-                        </li>
-                """
-            topic_html += "</ul></div></div>"
-            topics_html_list.append(topic_html)
 
-        base_url = "../"
-        final_html = subject_template.replace("{{ subject_name }}", subject_name)
-        final_html = final_html.replace("{{ topics_html }}", "\n".join(topics_html_list))
-        final_html = final_html.replace("{{ base_url }}", base_url)
-        
+        chapters_html = []
+        for topic_name, quizzes in topics.items():
+            quiz_links = []
+            for number, quiz in enumerate(quizzes, 1):
+                quiz_links.append(
+                    f'<a class="topic" href="/Quiz/{escape_html(subject_folder)}/{escape_html(quiz["link"])}">'
+                    '<span class="topic-left">'
+                    f'<span class="topic-num">{number:02d}</span>'
+                    f'<span class="topic-name">{escape_html(quiz["title"])}'
+                    '<span class="topic-note">क्विज़ शुरू करें</span>'
+                    '</span></span><span class="arrow">›</span></a>'
+                )
+
+            if quiz_links:
+                chapters_html.append(
+                    '<section class="chapter-card">'
+                    '<div class="chapter-head"><div>'
+                    f'<div class="chapter-title">{escape_html(hindi_label(topic_name, TOPIC_LABELS_HI))}</div>'
+                    '</div></div><div class="topic-list">'
+                    + "\n".join(quiz_links)
+                    + "</div></section>"
+                )
+
+        subject_hi = hindi_label(subject_name, SUBJECT_LABELS_HI)
+        values = {
+            "SUBJECT_TITLE_EN": subject_name,
+            "SUBJECT_TITLE_HI": subject_hi,
+            "SUBJECT_NAME": subject_name,
+            "SUBJECT_DESCRIPTION": f"{subject_hi} के अध्याय और अभ्यास क्विज़।",
+            "SUBJECT_ICON": "📚",
+            "CHAPTER_SECTION_TITLE": f"{subject_hi} के अध्याय",
+            "CHAPTERS_HTML": "\n".join(chapters_html) or (
+                '<div class="no-results" style="display:block">'
+                "अभी कोई अध्याय उपलब्ध नहीं है।</div>"
+            ),
+            "INFO_TITLE": f"{subject_hi} क्विज़ कैसे उपयोग करें?",
+            "INFO_DESCRIPTION": f"{subject_hi} के अध्याय चुनकर संबंधित क्विज़ का अभ्यास करें।",
+            "HOME_URL": "/Quiz/index.html",
+            "NOTES_HOME_URL": "/Quiz/subject-wise-notes/index.html",
+            "TEST_SERIES_URL": "/Quiz/test-series/index.html",
+            "ABOUT_URL": "/Quiz/about/index.html",
+            "PRIVACY_URL": "/Quiz/privacy-policy/index.html",
+            "DISCLAIMER_URL": "/Quiz/disclaimer/index.html",
+            "CONTACT_URL": "/Quiz/contact/index.html",
+            "TERMS_URL": "/Quiz/terms-and-conditions/index.html",
+        }
+
+        final_html = subject_template
+        for token, value in values.items():
+            final_html = final_html.replace("{{" + token + "}}", str(value))
+
         output_file = subject_dir / "index.html"
         output_file.write_text(final_html, encoding="utf-8")
 
@@ -205,6 +294,9 @@ def build():
             print(f"Error reading meta from {html_path}: {e}")
 
     # 3. वेबसाइट की लिस्ट अपडेट करना (केवल HTML के दम पर)
+    for subject_name in SUBJECT_PAGE_NAMES:
+        site_data.setdefault(subject_name, defaultdict(list))
+
     generate_subject_pages(site_data)
     build_homepage(all_quizzes)
 
