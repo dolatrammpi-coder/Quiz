@@ -60,6 +60,22 @@ TOPIC_LABELS_HI = {
     "Modern India": "आधुनिक भारत",
 }
 
+SUBJECT_ICONS = {
+    "History": "📜",
+    "Geography": "🌍",
+    "Environment": "🌿",
+    "Art & Culture": "🪔",
+    "Polity": "⚖️",
+    "Current Affairs": "📰",
+    "Science": "🔬",
+    "Economy": "💰",
+    "Hindi": "अ",
+    "English": "A",
+    "UP GK": "🏛️",
+    "Uttarakhand GK": "🏔️",
+    "Miscellaneous GK": "🧠",
+}
+
 
 def escape_html(value):
     return html.escape(str(value or ""), quote=True)
@@ -174,7 +190,7 @@ def generate_subject_pages(site_data):
             "SUBJECT_TITLE_HI": subject_hi,
             "SUBJECT_NAME": subject_name,
             "SUBJECT_DESCRIPTION": f"{subject_hi} के अध्याय और अभ्यास क्विज़।",
-            "SUBJECT_ICON": "📚",
+            "SUBJECT_ICON": SUBJECT_ICONS.get(subject_name, "📚"),
             "CHAPTER_SECTION_TITLE": f"{subject_hi} के अध्याय",
             "CHAPTERS_HTML": "\n".join(chapters_html) or (
                 '<div class="no-results" style="display:block">'
@@ -195,6 +211,25 @@ def generate_subject_pages(site_data):
         final_html = subject_template
         for token, value in values.items():
             final_html = final_html.replace("{{" + token + "}}", str(value))
+
+        quiz_page_replacements = {
+            f"<title>{subject_name} Notes — Subject Wise Notes | My Study Portal</title>":
+                f"<title>{subject_hi} Quiz | My Study Portal</title>",
+            '<a href="/Quiz/subject-wise-notes/index.html" class="active-nav">Notes</a>':
+                '<a href="/Quiz/index.html" class="active-nav">Quiz</a>',
+            '<a href="/Quiz/subject-wise-notes/index.html">Subject Wise Notes</a><span>›</span>':
+                "",
+            '<div class="kicker">📚 Subject Wise Notes</div>':
+                '<div class="kicker">📝 विषयवार क्विज़</div>',
+            f"<h1>{values['SUBJECT_ICON']} {subject_name} Notes</h1>":
+                f"<h1>{values['SUBJECT_ICON']} {subject_hi} क्विज़</h1>",
+            'placeholder="Topic खोजें..." aria-label="Topic खोजें"':
+                'placeholder="क्विज़ खोजें..." aria-label="क्विज़ खोजें"',
+            "विषयवार नोट्स, One Liner Revision और Practice सामग्री।":
+                "विषयवार Online Quiz और Practice सामग्री।",
+        }
+        for old, new in quiz_page_replacements.items():
+            final_html = final_html.replace(old, new)
 
         output_file = subject_dir / "index.html"
         output_file.write_text(final_html, encoding="utf-8")
