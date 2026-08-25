@@ -6,23 +6,39 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>{{ title }} | My Study Portal</title>
     <meta content="{{ description }}" name="description"/>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; }
-        .glass-morphism { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .option-card { transition: all 0.2s ease; cursor: pointer; border: 2px solid transparent; }
-        .option-card:hover { transform: translateY(-2px); background-color: #f8fafc; border-color: #cbd5e1; }
-        .option-correct { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
-        .option-wrong { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
-        .palette-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; border-radius: 8px; transition: all 0.2s; font-size: 0.85rem; }
-        .palette-answered { background-color: #2563eb !important; color: white; }
-        .palette-current { outline: 3px solid #fbbf24; outline-offset: 2px; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
+        *{box-sizing:border-box}html{scroll-behavior:smooth}
+        body{margin:0;background:#f1f5f9;color:#172033;font-family:Arial,"Noto Sans Devanagari",sans-serif;line-height:1.55}
+        a{text-decoration:none;color:inherit}
+        .container{width:min(1080px,92%);margin:auto}
+        .site-header{background:linear-gradient(135deg,#0b4f86,#1769a5 55%,#0d5b92);color:#fff;padding:15px 0;position:sticky;top:0;z-index:50;box-shadow:0 4px 18px rgba(8,48,82,.18)}
+        .header-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:58px}
+        .brand{display:flex;align-items:center;gap:9px;color:#fff;font-size:20px;font-weight:800}
+        .brand-mark{font-size:23px}
+        .top-nav{display:flex;gap:5px}
+        .top-nav a{color:#fff;padding:8px 12px;border-radius:8px;font-size:14px;font-weight:650}
+        .top-nav a:hover{background:rgba(255,255,255,.16)}
+        .timer{background:#064fbf;padding:8px 13px;border-radius:9px;font-weight:900;font-family:monospace;font-size:15px;color:#fff}
+        .breadcrumb{padding:18px 0 0;color:#64748b;font-size:13px}
+        .breadcrumb a{color:#3569a8}
+        .quiz-shell{background:#e4e9f1;border-radius:20px;padding:9px;margin:12px 0}
+        .quiz-card{background:#fff;border-radius:16px;padding:17px;min-height:500px;display:flex;flex-direction:column}
+        .qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .badge{background:#e4efff;color:#075be7;border-radius:999px;padding:7px 12px;font-weight:800;font-size:13px}
+        .question{border-bottom:2px solid #eef0f3;padding:13px 0;font-size:19px;font-weight:700;line-height:1.6}
+        .options{padding:14px 0;display:grid;gap:10px}
+        .option{width:100%;text-align:left;border:2px solid #e3e7ed;background:#fff;border-radius:13px;padding:13px 14px;font-size:16px;cursor:pointer;transition:.15s}
+        .option:hover{background:#f8fafc;border-color:#cbd5e1}
+        .option.selected{border-color:#1769d2;background:#eef5ff;font-weight:700}
+        .option.correct{border-color:#22c55e;background:#dcfce7}
+        .option.wrong{border-color:#ef4444;background:#fee2e2}
+        .nav-buttons{margin-top:auto;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;gap:7px}
+        .nav-buttons button{flex:1;border:0;border-radius:11px;padding:12px;font-size:15px;font-weight:800;cursor:pointer}
+        .prev{background:#e5e7eb;color:#475569}.submit{background:#ff3341;color:#fff}.next{background:#0968e8;color:#fff}
+        .site-footer{margin-top:42px;background:linear-gradient(145deg,#102f4d,#16486d 52%,#0e3a5d);color:#dbeafe;padding:28px 0;text-align:center}
+        .footer-links{display:flex;gap:17px;flex-wrap:wrap;justify-content:center;font-size:13px}
+        .footer-links a{color:#e2edf7}.footer-copy{color:#c3d4e5;font-size:12px;margin-top:17px}
+        @media(max-width:700px){.question{font-size:17px}.option{padding:11px}.container{width:min(100% - 24px,680px)}}
     </style>
 <link rel="stylesheet" href="/Quiz/style-common.css">
 <base href="/Quiz/">
@@ -30,28 +46,17 @@
 <body class="min-h-screen flex flex-col justify-between" onload="initQuiz()">
     <div>
         <!-- 1. Header with dynamic back link -->
-        <header class="bg-blue-700 text-white p-2 sm:p-3 shadow-md sticky top-0 z-50">
-            <div class="max-w-4xl mx-auto flex justify-between items-center px-2">
-                <div class="flex items-center space-x-2">
-                    <a class="hover:bg-blue-800 p-1.5 rounded-lg transition text-sm flex items-center text-white" href="{{ base_url }}index.html">
-                        <i class="fas fa-arrow-left mr-1.5"></i> वापस
-                    </a>
-                    <span class="font-extrabold text-base sm:text-xl text-yellow-300 tracking-wider">My Study Portal</span>
-                </div>
-                <h1 class="text-xs sm:text-base font-semibold truncate hidden sm:block px-2">{{ title }}</h1>
-                <div class="bg-blue-600 px-2.5 py-1 rounded font-mono text-xs sm:text-sm font-bold shadow-inner" id="timer">00:00</div>
+        <header class="site-header">
+            <div class="container header-inner">
+                <a class="brand" href="{{ base_url }}index.html"><span class="brand-mark">📚</span><span>My Study Portal</span></a>
+                <nav class="top-nav"><a href="{{ base_url }}index.html">Home</a><a href="{{ base_url }}subject-wise-notes/index.html">Notes</a><a href="{{ base_url }}test-series/index.html">Test Series</a></nav>
+                <div class="timer" id="timer">00:00</div>
             </div>
         </header>
 
         <!-- 2. Breadcrumb Nav with dynamic links -->
-        <nav class="bg-white border-b border-gray-200 text-xs sm:text-sm py-2 px-4 shadow-sm">
-            <div class="max-w-4xl mx-auto text-gray-600 flex items-center space-x-2">
-                <a class="hover:text-blue-600 font-medium transition" href="{{ base_url }}index.html">Home</a> 
-                <span class="text-gray-400">&gt;</span>
-                <a class="hover:text-blue-600 font-medium transition breadcrumb-category" href="{{ base_url }}{{ subject_folder }}/index.html">{{ subject }}</a> 
-                <span class="text-gray-400">&gt;</span>
-                <span class="text-gray-900 font-medium truncate">{{ title }}</span>
-            </div>
+        <nav class="container breadcrumb">
+            <a href="{{ base_url }}index.html">Home</a> › <a href="{{ base_url }}{{ subject_folder }}/index.html">{{ subject }}</a> › <span>{{ title }}</span>
         </nav>
 
         <main class="max-w-4xl mx-auto p-4 mt-2">
@@ -446,7 +451,8 @@
         function prevFc() { if(fcIndex > 0) { fcIndex--; renderFc(); } }
     </script>
 
-    <footer id="custom-footer" style="margin-top: 50px; text-align: center; background-color: #202124; color: #fff; padding: 30px 20px; border-top: 4px solid #d93025;">
+    <footer class="site-footer">
+        <div class="footer-links">
         <div style="margin-bottom: 15px;">
             <a href="{{ base_url }}index.html" style="color: #8ab4f8; text-decoration: none; margin: 0 12px; font-size: 14px;">Home</a>
             <a href="{{ base_url }}about.html" style="color: #8ab4f8; text-decoration: none; margin: 0 12px; font-size: 14px;">About</a>
