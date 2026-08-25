@@ -72,7 +72,7 @@ def generate_quiz_pages():
         subject_out.mkdir(parents=True, exist_ok=True)
         subject_home = subject_out / "index.html"
         
-        chapter_card = f'<a class="card" href="{subject_slug}/{chapter_slug}/index.html"><span class="icon">📝</span><span><span class="name">{chapter_title}</span><span class="desc">{description}</span></span><span class="arrow">›</span></a>'
+        chapter_card = f'<section class="chapter-card"><div class="chapter-head"><div><div class="chapter-title">{chapter_title}</div><div class="chapter-desc">{description}</div></div></div><div class="topic-list"><a class="topic" href="{subject_slug}/{chapter_slug}/index.html"><span class="topic-left"><span class="topic-name">Start Quiz<span class="topic-note">क्विज़ शुरू करें</span></span></span><span class="arrow">›</span></a></div></section>'
         if subject_home.exists():
             existing = subject_home.read_text(encoding="utf-8")
             if f'href="{subject_slug}/{chapter_slug}/index.html"' not in existing:
