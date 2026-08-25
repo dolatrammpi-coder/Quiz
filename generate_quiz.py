@@ -81,7 +81,16 @@ def generate_quiz_pages():
                 qz_slug = qz.get("quiz_slug", "")
                 questions = qz.get("questions", [])
                 
-                quiz_data_json = json.dumps(questions, ensure_ascii=False)
+                converted_questions = []
+                for q in questions:
+                    converted_questions.append({
+                        "id": q.get("id", len(converted_questions)+1),
+                        "q": q.get("question", q.get("q", "")),
+                        "options": q.get("options", []),
+                        "correct": q.get("correct", q.get("answer", 0)),
+                        "explanation": q.get("explanation", "")
+                    })
+                quiz_data_json = json.dumps(converted_questions, ensure_ascii=False)
                 
                 quiz_page = quiz_tpl.replace("{{ title }}", qz_title)
                 quiz_page = quiz_page.replace("{{ description }}", qz.get("description", qz_title))
