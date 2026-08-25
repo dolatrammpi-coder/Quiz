@@ -90,7 +90,7 @@ def generate_quiz_pages():
                 quiz_page = quiz_page.replace("{{ subject }}", ch_title)
                 quiz_page = quiz_page.replace("{{ subject_folder }}", f"/Quiz/{subject_slug}/{ch_slug}/index.html")
                 quiz_page = quiz_page.replace("--", str(len(questions)))
-                quiz_page = quiz_page.replace("QUIZ_DATA", quiz_data_json)
+                quiz_page = quiz_page.replace("{{ questions_json }}", quiz_data_json)
                 
                 quiz_dir = chapter_dir / qz_slug
                 quiz_dir.mkdir(parents=True, exist_ok=True)
