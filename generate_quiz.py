@@ -72,12 +72,24 @@ def generate_quiz_pages():
         subject_out.mkdir(parents=True, exist_ok=True)
         subject_home = subject_out / "index.html"
         
-        if not subject_home.exists():
+        chapter_card = f'<a class="card" href="{subject_slug}/{chapter_slug}/index.html"><span class="icon">📝</span><span><span class="name">{chapter_title}</span><span class="desc">{description}</span></span><span class="arrow">›</span></a>'
+        if subject_home.exists():
+            existing = subject_home.read_text(encoding="utf-8")
+            if f'href="{subject_slug}/{chapter_slug}/index.html"' not in existing:
+                if '<div class="grid">' in existing:
+                    existing = existing.replace('<div class="grid">', f'<div class="grid">{chapter_card}', 1)
+                else:
+                    existing = existing.replace('</main>', f'{chapter_card}</main>')
+                subject_home.write_text(existing, encoding="utf-8")
+                print(f"✅ {subject_slug}/index.html (updated)")
+            else:
+                print(f"⏭️ {subject_slug}/index.html (already exists)")
+        else:
             home_page = home_tpl.replace("{{SUBJECT_NAME}}", subject)
             home_page = home_page.replace("{{SUBJECT_DESCRIPTION}}", description)
-            home_page = home_page.replace("{{CHAPTERS_HTML}}", f'<a class="card" href="{chapter_slug}/index.html"><span class="icon">📝</span><span><span class="name">{chapter_title}</span><span class="desc">{description}</span></span><span class="arrow">›</span></a>')
+            home_page = home_page.replace("{{CHAPTERS_HTML}}", chapter_card)
             subject_home.write_text(home_page, encoding="utf-8")
-            print(f"✅ {subject_slug}/index.html")
+            print(f"✅ {subject_slug}/index.html (created)")
         
         # Generate Chapter page
         chapter_out = subject_out / chapter_slug
