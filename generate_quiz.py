@@ -5,7 +5,7 @@ def generate_quiz_pages():
     content_dir = Path("content/quiz")
     template_home = Path("templates/quiz-subject-home.html")
     template_chapter = Path("templates/quiz-chapter.html")
-    template_quiz = Path("templates/quiz-page.html")
+    template_quiz = Path("templates/quiz.html")
     output_base = Path("docs")
     
     if not content_dir.exists():
@@ -41,7 +41,7 @@ def generate_quiz_pages():
             ch_icon = ch.get("icon", "📝")
             chapters_html += f'<a class="card" href="{subject_slug}/{ch_slug}/index.html"><span class="icon">{ch_icon}</span><span><span class="name">{ch_title}</span><span class="desc">{ch_desc}</span></span><span class="arrow">›</span></a>'
         
-        home_page = home_tpl.replace("{{SUBJECT_NAME}}", subject)
+        home_page = home_tpl.replace("{{ subject }}", subject)
         home_page = home_page.replace("{{SUBJECT_DESCRIPTION}}", subject_desc)
         home_page = home_page.replace("{{CHAPTERS_HTML}}", chapters_html)
         
@@ -64,9 +64,9 @@ def generate_quiz_pages():
                 qz_count = len(qz.get("questions", []))
                 quizzes_html += f'<a class="quiz-card" href="{ch_slug}/{qz_slug}/index.html"><span class="qnum">{i:02d}</span><span class="qinfo"><h3>{qz_title}</h3><p>{qz_count} प्रश्न</p></span><span class="arrow">›</span></a>'
             
-            chapter_page = chapter_tpl.replace("{{SUBJECT_NAME}}", subject)
-            chapter_page = chapter_page.replace("{{SUBJECT_URL}}", f"/Quiz/{subject_slug}/index.html")
-            chapter_page = chapter_page.replace("{{CHAPTER_NAME}}", ch_title)
+            chapter_page = chapter_tpl.replace("{{ subject }}", subject)
+            chapter_page = chapter_page.replace("{{ subject_folder }}", f"/Quiz/{subject_slug}/index.html")
+            chapter_page = chapter_page.replace("{{ subject }}", ch_title)
             chapter_page = chapter_page.replace("{{CHAPTER_DESCRIPTION}}", ch_desc)
             chapter_page = chapter_page.replace("{{QUIZZES_HTML}}", quizzes_html)
             
@@ -83,14 +83,14 @@ def generate_quiz_pages():
                 
                 quiz_data_json = json.dumps(questions, ensure_ascii=False)
                 
-                quiz_page = quiz_tpl.replace("{{QUIZ_TITLE}}", qz_title)
-                quiz_page = quiz_page.replace("{{QUIZ_DESCRIPTION}}", qz.get("description", qz_title))
-                quiz_page = quiz_page.replace("{{SUBJECT_NAME}}", subject)
-                quiz_page = quiz_page.replace("{{SUBJECT_URL}}", f"/Quiz/{subject_slug}/index.html")
-                quiz_page = quiz_page.replace("{{CHAPTER_NAME}}", ch_title)
-                quiz_page = quiz_page.replace("{{CHAPTER_URL}}", f"/Quiz/{subject_slug}/{ch_slug}/index.html")
-                quiz_page = quiz_page.replace("{{TOTAL_QUESTIONS}}", str(len(questions)))
-                quiz_page = quiz_page.replace("{{QUIZ_DATA_JSON}}", quiz_data_json)
+                quiz_page = quiz_tpl.replace("{{ title }}", qz_title)
+                quiz_page = quiz_page.replace("{{ description }}", qz.get("description", qz_title))
+                quiz_page = quiz_page.replace("{{ subject }}", subject)
+                quiz_page = quiz_page.replace("{{ subject_folder }}", f"/Quiz/{subject_slug}/index.html")
+                quiz_page = quiz_page.replace("{{ subject }}", ch_title)
+                quiz_page = quiz_page.replace("{{ subject_folder }}", f"/Quiz/{subject_slug}/{ch_slug}/index.html")
+                quiz_page = quiz_page.replace("--", str(len(questions)))
+                quiz_page = quiz_page.replace("QUIZ_DATA", quiz_data_json)
                 
                 quiz_dir = chapter_dir / qz_slug
                 quiz_dir.mkdir(parents=True, exist_ok=True)
