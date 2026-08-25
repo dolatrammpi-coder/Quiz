@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Upload Panel | My Study Portal</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f4f8;color:#172033;font-family:Arial,"Noto Sans Devanagari",sans-serif}header{background:#173b7a;color:#fff;padding:18px 0}.wrap{width:min(900px,94%);margin:auto}.head{display:flex;justify-content:space-between;align-items:center}.head h1{font-size:22px;margin:0}.card{background:#fff;border:1px solid #e3e8ef;border-radius:14px;padding:20px;margin:16px 0}.card h2{font-size:18px;margin:0 0 14px}label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}input,textarea{width:100%;border:1px solid #d8dee8;border-radius:10px;padding:11px;font:inherit;margin-bottom:12px}textarea{min-height:120px;resize:vertical;font-family:monospace;font-size:12px}.row{display:flex;gap:12px}.row>div{flex:1}button{border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}.primary{background:#173b7a;color:#fff}.green{background:#059669;color:#fff}.gray{background:#e5e7eb;color:#334155}.status{padding:10px;border-radius:8px;background:#f1f5f9;margin-top:10px}.ok{background:#ecfdf5;color:#166534}.err{background:#fef2f2;color:#991b1b}.tabs{display:flex;gap:8px;margin-bottom:15px}.tab{padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700;background:#e5e7eb}.tab.active{background:#173b7a;color:#fff}.hidden{display:none!important}pre{white-space:pre-wrap;background:#0f172a;color:#e2e8f0;padding:13px;border-radius:10px;font-size:12px;overflow:auto}.help{font-size:12px;color:#64748b;line-height:1.6}.file-upload{border:2px dashed #cbd5e1;border-radius:12px;padding:20px;text-align:center;cursor:pointer;margin-bottom:12px}.file-upload:hover{border-color:#173b7a}
+</style>
+</head>
+<body>
+<header><div class="wrap head"><h1>📝 Quiz Upload Panel</h1><span>GitHub Direct</span></div></header>
+<main class="wrap">
+
+<div class="card">
+<h2>🔐 GitHub Settings</h2>
+<div class="row">
+<div><label>GitHub Token</label><input id="token" type="password" placeholder="github_pat_..."></div>
+<div><label>Repository</label><input id="repo" value="dolatrammpi-coder/Quiz"></div>
+</div>
+<div class="row">
+<div><label>Branch</label><input id="branch" value="main"></div>
+<div><label>Token Settings</label><button class="gray" onclick="saveToken()">💾 Save Token</button></div>
+</div>
+<div id="authStatus" class="status">Token browser me save hoga (localStorage)</div>
+</div>
+
+<div class="card">
+<h2>📄 Quiz Metadata + MCQs (JSON)</h2>
+<label>File Name (e.g., polity-basic-quiz.json)</label>
+<input id="quizFileName" placeholder="polity-basic-quiz.json">
+<label>Quiz JSON Content</label>
+<textarea id="quizJson" placeholder='{"subject":"Polity","chapter_title":"संविधान","quiz_title":"संविधान - Basic Quiz","slug":"polity-constitution-basic-quiz","questions":[...]}'></textarea>
+</div>
+
+<div class="card">
+<h2>💡 Explanations (Optional JSON)</h2>
+<label>File Name (e.g., polity-basic-quiz-explanations.json)</label>
+<input id="explFileName" placeholder="polity-basic-quiz-explanations.json">
+<label>Explanations JSON</label>
+<textarea id="explJson" placeholder='{"1":"Explanation 1","2":"Explanation 2"}'></textarea>
+</div>
+
+<div class="card">
+<h2>📝 Overview (Optional TXT)</h2>
+<label>File Name (e.g., polity-basic-quiz-overview.txt)</label>
+<input id="overviewFileName" placeholder="polity-basic-quiz-overview.txt">
+<label>Overview Content</label>
+<textarea id="overviewText" placeholder="Quiz ka overview yaha..."></textarea>
+</div>
+
+<div class="card">
+<button class="primary" onclick="uploadAll()">🚀 Upload All Files</button>
+<div id="uploadStatus" class="status">Ready</div>
+</div>
+
+</main>
+<script>
+const TOKEN_KEY = "quiz_panel_token";
+const REPO_KEY = "quiz_panel_repo";
+
+function getToken() {
+    return localStorage.getItem(TOKEN_KEY) || "";
+}
+
+function saveToken() {
+    localStorage.setItem(TOKEN_KEY, document.getElementById("token").value);
+    localStorage.setItem(REPO_KEY, document.getElementById("repo").value);
+    document.getElementById("authStatus").innerHTML = "✅ Token saved!";
+}
+
+// Load saved
+document.getElementById("token").value = localStorage.getItem(TOKEN_KEY) || "";
+document.getElementById("repo").value = localStorage.getItem(REPO_KEY) || "dolatrammpi-coder/Quiz";
+
+async function uploadFile(path, content, token, repo, branch) {
+    const url = `https://api.github.com/repos/${repo}/contents/${path}`;
+    
+    // Check if file exists
+    let sha = null;
+    try {
+        const checkRes = await fetch(url, {headers: {Authorization: `token ${token}`}});
+        if (checkRes.ok) {
+            const data = await checkRes.json();
+            sha = data.sha;
+        }
+    } catch(e) {}
+    
+    const body = {
+        message: `Upload ${path} via Quiz Panel`,
+        content: btoa(unescape(encodeURIComponent(content))),
+        branch: branch
+    };
+    if (sha) body.sha = sha;
+    
+    const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Authorization": `token ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+    });
+    
+    if (res.ok) {
+        return {success: true, path: path};
+    } else {
+        const err = await res.json();
+        return {success: false, path: path, error: err.message};
+    }
+}
+
+async function uploadAll() {
+    const token = document.getElementById("token").value;
+    const repo = document.getElementById("repo").value;
+    const branch = document.getElementById("branch").value;
+    
+    if (!token) {
+        document.getElementById("uploadStatus").innerHTML = "❌ Token required!";
+        document.getElementById("uploadStatus").className = "status err";
+        return;
+    }
+    
+    const results = [];
+    document.getElementById("uploadStatus").innerHTML = "⏳ Uploading...";
+    document.getElementById("uploadStatus").className = "status";
+    
+    // Quiz JSON
+    const quizFileName = document.getElementById("quizFileName").value;
+    const quizJson = document.getElementById("quizJson").value;
+    if (quizFileName && quizJson) {
+        results.push(await uploadFile(`content/quiz/${quizFileName}`, quizJson, token, repo, branch));
+    }
+    
+    // Explanations JSON
+    const explFileName = document.getElementById("explFileName").value;
+    const explJson = document.getElementById("explJson").value;
+    if (explFileName && explJson) {
+        results.push(await uploadFile(`content/quiz/${explFileName}`, explJson, token, repo, branch));
+    }
+    
+    // Overview TXT
+    const overviewFileName = document.getElementById("overviewFileName").value;
+    const overviewText = document.getElementById("overviewText").value;
+    if (overviewFileName && overviewText) {
+        results.push(await uploadFile(`content/quiz/${overviewFileName}`, overviewText, token, repo, branch));
+    }
+    
+    const success = results.filter(r => r.success);
+    const failed = results.filter(r => !r.success);
+    
+    document.getElementById("uploadStatus").innerHTML = `✅ Uploaded: ${success.length} | ❌ Failed: ${failed.length}`;
+    document.getElementById("uploadStatus").className = success.length > 0 ? "status ok" : "status err";
+    
+    if (success.length > 0) {
+        alert("Upload successful! GitHub Actions will build pages in 2-3 minutes.");
+    }
+}
+</script>
+</body>
+</html>
