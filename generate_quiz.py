@@ -93,6 +93,20 @@ def generate_quiz_pages():
         print(f"✅ {subject_slug}/{chapter_slug}/index.html")
         
         # Generate Quiz page
+        # Normalize question format
+        for q in questions:
+            if 'question' in q and 'q' not in q:
+                q['q'] = q.pop('question')
+            if 'answer' in q and 'correct' not in q:
+                ans = q.pop('answer')
+                opts = q.get('options', [])
+                if isinstance(ans, int):
+                    q['correct'] = ans
+                elif ans in opts:
+                    q['correct'] = opts.index(ans)
+                else:
+                    q['correct'] = 0
+        
         quiz_data_json = json.dumps(questions, ensure_ascii=False)
         
         quiz_page = quiz_tpl.replace("{{ base_url }}", "/Quiz/")
