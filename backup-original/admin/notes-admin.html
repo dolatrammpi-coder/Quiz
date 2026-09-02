@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notes Admin Panel V11</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf3f7;color:#172033;font-family:Arial,"Noto Sans Devanagari",sans-serif}
+.top{background:linear-gradient(135deg,#0d426d,#176b9d);color:#fff;padding:16px}.topin{width:min(1100px,94%);margin:auto;display:flex;justify-content:space-between;align-items:center}.brand{font-size:19px;font-weight:800}
+main{width:min(1100px,94%);margin:20px auto 40px}.card{background:#fff;border:1px solid #d5e0e8;border-radius:15px;padding:18px;margin-bottom:15px;box-shadow:0 4px 16px #173b5f0b}
+h1{margin:0 0 5px;font-size:28px}h2{font-size:18px;margin:0 0 14px}.muted{color:#68798a;font-size:13px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+label{font-size:12px;font-weight:800;color:#41566a;display:block;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid #cbd8e2;border-radius:9px;padding:10px;font:inherit;background:#fff}textarea{min-height:250px;resize:vertical}
+.row{display:flex;gap:9px;align-items:end}button{border:0;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer}button.primary{background:#17679a;color:#fff}button.secondary{background:#e7f0f6;color:#1d4e70}
+.status{padding:11px;border-radius:9px;background:#f1f6f9;font-size:13px;margin-top:12px;white-space:pre-wrap}.source{font-weight:800;color:#17679a}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.row{flex-direction:column;align-items:stretch}.topin{align-items:flex-start;gap:8px;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div class="brand">📚 Notes Admin Panel V11</div><span>Local / Termux</span></div></header>
+<main>
+<section class="card"><h1>Notes Builder</h1><p class="muted">GitHub account से repositories auto-fetch करें। Subject list selected repository के Subject Wise Notes homepage से आएगी। Subject template generic है। Group optional है: Group वाले subjects में chapters group के अंदर दिखेंगे, बिना Group वाले subjects में chapters सीधे दिखेंगे। Chapter/Topic का Hindi title और English URL अलग रख सकते हैं। सभी changes सीधे GitHub पर commit होंगे।</p></section>
+
+<section class="card"><h2>GitHub Connection</h2>
+<div class="grid">
+<div><label>GitHub Username</label><input id="ghUser" placeholder="GitHub username"></div>
+<div><label>Auth Token <span class="muted">(private repo के लिए)</span></label><input id="ghToken" type="password" placeholder="token"></div>
+<div><label>Repository</label><select id="ghRepo"><option value="">— Repository auto-fetch करें —</option></select></div>
+<div><label>Owner</label><input id="ghOwner" readonly></div>
+<div><label>Branch</label><input id="ghBranch" readonly></div>
+<div><label>Fetch Source</label><select id="fetchSource"><option value="github">GitHub</option><option value="local">Local Termux</option></select></div>
+</div>
+<p>
+<button class="secondary" onclick="saveSettings()">💾 Save Settings</button>
+<button class="secondary" onclick="loadRepos()">🔄 Fetch Repositories</button>
+<button class="secondary" onclick="testGithub()">🔌 Test Connection</button>
+<button class="primary" onclick="fetchDirectory()">↻ Fetch Directory</button>
+</p>
+<div id="settingsStatus" class="status">पहले GitHub Username डालकर Fetch Repositories दबाएँ।</div>
+</section>
+
+<section class="card"><h2>Directory</h2>
+<div class="grid">
+<div><label>Subject — Homepage से</label><select id="subject"><option value="">— Subject चुनें —</option></select></div>
+<div><label>Chapter</label><select id="chapter"><option value="">— Chapter चुनें —</option></select></div>
+<div><label>Topic</label><select id="topic"><option value="">— Topic चुनें —</option></select></div>
+</div>
+<div class="row" style="margin-top:12px">
+<div style="flex:1"><label>Chapter Group — Optional</label><input id="chapterGroup" placeholder="जैसे: Modern History (खाली छोड़ें तो direct chapter)"></div>
+<div style="flex:1"><label>Group URL — English (optional)</label><input id="chapterGroupSlug" placeholder="modern-history"></div>
+</div>
+<div class="row" style="margin-top:10px">
+<div style="flex:1"><label>Chapter Title — Hindi</label><input id="newChapter" placeholder="जैसे: 1857 का विद्रोह"></div>
+<div style="flex:1"><label>Chapter URL — English</label><input id="newChapterSlug" placeholder="revolt-of-1857"></div>
+<button class="secondary" onclick="addChapter()">+ Add Chapter</button>
+</div>
+<div class="row" style="margin-top:12px">
+<div style="flex:1"><label>Topic Title — Hindi</label><input id="newTopic" placeholder="जैसे: पर्यावरण और पारिस्थितिकी"></div>
+<div style="flex:1"><label>Topic URL — English</label><input id="newTopicSlug" placeholder="environment-and-ecology"></div>
+<button class="secondary" onclick="addTopic()">+ Add Topic</button>
+</div>
+<div class="row" style="margin-top:12px">
+<div style="flex:1"><label>Subject Description</label><input id="subjectDescription" placeholder="Subject के Chapters और Topic-wise One Liner Revision Notes..."></div>
+<button class="secondary" onclick="saveSubject()">💾 Save Subject Page</button>
+</div>
+<div id="treeStatus" class="status"></div>
+</section>
+
+<section class="card"><h2>Topic JSON</h2><p class="muted">V1 schema: title, description, questions[{question,answer}]</p>
+<textarea id="jsonBox" placeholder='{"title":"1857 का विद्रोह","description":"...","questions":[{"question":"...","answer":"..."}]}'></textarea>
+<p><input type="file" id="jsonFile" accept=".json,application/json" onchange="readJsonFile(this)"></p>
+<div class="row"><div style="flex:1"><label>Topic Title — Hindi</label><input id="topicTitle" placeholder="जैसे: पर्यावरण और पारिस्थितिकी"></div><div style="flex:1"><label>Topic URL — English</label><input id="topicSlug" placeholder="environment-and-ecology"></div></div>
+<div class="row" style="margin-top:10px"><div style="flex:1"><label>Commit message</label><input id="commitMessage" placeholder="Add subject notes topic"></div><button class="primary" onclick="generate()">🚀 Generate & Push to GitHub</button></div>
+<div id="result" class="status"></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);let tree={subjects:[]};
+function settings(){try{return JSON.parse(localStorage.getItem('notesAdminSettings')||'{}')}catch(e){return {}}}
+function saveSettings(){
+ const d={user:$('ghUser').value.trim(),owner:$('ghOwner').value.trim(),repo:$('ghRepo').value.trim(),branch:$('ghBranch').value.trim()||'main',token:$('ghToken').value.trim(),fetchSource:$('fetchSource').value};
+ localStorage.setItem('notesAdminSettings',JSON.stringify(d));
+ $('settingsStatus').textContent='Settings saved locally.';
+}
+function restoreSettings(){
+ const d=settings();
+ $('ghUser').value=d.user||'';
+ $('ghOwner').value=d.owner||'';
+ $('ghToken').value=d.token||'';
+ $('fetchSource').value=d.fetchSource||'github';
+}
+function esc(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function params(){
+ return `username=${encodeURIComponent($('ghUser').value.trim())}&token=${encodeURIComponent($('ghToken').value.trim())}`;
+}
+async function loadRepos(){
+ const username=$('ghUser').value.trim();
+ if(!username){$('settingsStatus').textContent='GitHub Username भरें.';return}
+ $('settingsStatus').textContent='Repositories fetch हो रही हैं...';
+ try{
+   const r=await fetch('/api/github-repos?'+params());
+   const o=await r.json(); if(!o.ok) throw Error(o.error);
+   $('ghRepo').innerHTML='<option value="">— Repository चुनें —</option>'+
+     o.repos.map(x=>`<option value="${esc(x.name)}" data-owner="${esc(x.full_name.split('/')[0])}" data-branch="${esc(x.default_branch)}">${esc(x.name)}${x.private?' 🔒':''}</option>`).join('');
+   const saved=settings();
+   if(saved.repo && o.repos.some(x=>x.name===saved.repo)) $('ghRepo').value=saved.repo;
+   applyRepo();
+   $('settingsStatus').textContent=`✓ ${o.repos.length} repositories fetched.`;
+ }catch(e){$('settingsStatus').textContent='Repository fetch failed: '+e.message}
+}
+function applyRepo(){
+ const opt=$('ghRepo').selectedOptions[0];
+ if(!opt || !opt.value){$('ghOwner').value='';$('ghBranch').value='';return}
+ $('ghOwner').value=opt.dataset.owner||$('ghUser').value.trim();
+ $('ghBranch').value=opt.dataset.branch||'main';
+}
+$('ghRepo').onchange=()=>{applyRepo();saveSettings()};
+async function testGithub(){
+ const owner=$('ghOwner').value.trim(),repo=$('ghRepo').value.trim();
+ if(!owner||!repo){$('settingsStatus').textContent='पहले Repository चुनें.';return}
+ $('settingsStatus').textContent='Testing GitHub connection...';
+ try{
+   const r=await fetch('/api/test-github?owner='+encodeURIComponent(owner)+'&repo='+encodeURIComponent(repo)+'&token='+encodeURIComponent($('ghToken').value.trim()));
+   const o=await r.json();if(!o.ok)throw Error(o.error);
+   $('settingsStatus').textContent=`✓ Connected: ${o.owner}/${o.repo} · branch ${o.default_branch}`;
+   $('ghBranch').value=o.default_branch||'main';saveSettings();
+ }catch(e){$('settingsStatus').textContent='Connection failed: '+e.message}
+}
+async function fetchDirectory(){
+ const source=$('fetchSource').value;let url='/api/tree?source='+encodeURIComponent(source);
+ if(source==='github'){
+   const owner=$('ghOwner').value.trim(),repo=$('ghRepo').value.trim();
+   if(!owner||!repo){$('treeStatus').textContent='पहले Repository चुनें.';return}
+   url+='&owner='+encodeURIComponent(owner)+'&repo='+encodeURIComponent(repo)+'&branch='+encodeURIComponent($('ghBranch').value.trim()||'main')+'&token='+encodeURIComponent($('ghToken').value.trim());
+ }
+ $('treeStatus').textContent='Fetching...';
+ try{
+   const r=await fetch(url);const o=await r.json();if(!o.ok)throw Error(o.error);
+   tree=o;renderSubjects();$('treeStatus').textContent=`${o.source} · ${tree.subjects.length} subjects fetched.`;
+ }catch(e){$('treeStatus').textContent='Fetch failed: '+e.message}
+}
+restoreSettings();
+if($('ghUser').value) loadRepos();
+
+function renderSubjects(){
+ const old=$('subject').value;$('subject').innerHTML='<option value="">— Subject चुनें —</option>'+tree.subjects.map(s=>`<option value="${esc(s.slug)}">${esc(s.name)}</option>`).join('');
+ if(tree.subjects.some(s=>s.slug===old))$('subject').value=old;renderChapters();
+}
+function renderChapters(){
+ const s=tree.subjects.find(x=>x.slug===$('subject').value);
+ let html='<option value="">— Chapter चुनें —</option>';
+ if(s){
+   if(Array.isArray(s.groups)&&s.groups.length){
+     s.groups.forEach(g=>{
+       html+=`<optgroup label="${esc(g.name)}">`+
+         (g.chapters||[]).map(c=>`<option value="${esc(c.slug)}">${esc(c.title||c.name||c.slug)}</option>`).join('')+
+         `</optgroup>`;
+     });
+   }
+   html+=(s.chapters||[]).map(c=>`<option value="${esc(c.slug)}">${esc(c.title||c.name||c.slug)}</option>`).join('');
+ }
+ $('chapter').innerHTML=html;renderTopics();
+}
+function renderTopics(){
+ const s=tree.subjects.find(x=>x.slug===$('subject').value);
+ const chapters=[...(s?.chapters||[]), ...((s?.groups||[]).flatMap(g=>g.chapters||[]))];
+ const c=chapters.find(x=>x.slug===$('chapter').value);
+ $('topic').innerHTML='<option value="">— Topic चुनें —</option>'+(c?c.topics.map(t=>`<option value="${esc(t.slug)}">${esc(t.title||t.name||t.slug)}</option>`).join(''):'');
+}
+$('subject').onchange=renderChapters;$('chapter').onchange=renderTopics;
+function slugPreview(v){
+ return String(v||'').trim().toLowerCase()
+   .replace(/[^a-z0-9\s-]/g,'')
+   .replace(/[\s_-]+/g,'-').replace(/^-+|-+$/g,'');
+}
+function githubFormBase(){
+ const d=settings();
+ return {
+   owner:$('ghOwner').value.trim()||d.owner||'',
+   repo:$('ghRepo').value.trim()||d.repo||'',
+   branch:$('ghBranch').value.trim()||d.branch||'main',
+   token:$('ghToken').value.trim()||d.token||''
+ };
+}
+async function saveSubject(){
+ const subject=$('subject').value, g=githubFormBase();
+ if(!subject){$('treeStatus').textContent='❌ पहले Subject चुनें.';return}
+ if(!g.owner||!g.repo||!g.token){$('treeStatus').textContent='❌ पहले GitHub connection पूरा करें.';return}
+ const s=tree.subjects.find(x=>x.slug===subject);
+ const fd=new FormData();
+ fd.append('subject',subject);
+ fd.append('subjectName',s?.name||subject);
+ fd.append('subjectDescription',$('subjectDescription').value.trim());
+ Object.entries(g).forEach(([k,v])=>fd.append(k,v));
+ fd.append('commitMessage',`Update subject: ${s?.name||subject}`);
+ $('treeStatus').textContent='⏳ Universal Subject template GitHub पर save किया जा रहा है...';
+ try{
+   const r=await fetch('/api/save-subject',{method:'POST',body:fd});
+   const o=await r.json();if(!r.ok||!o.ok)throw Error(o.error||`Server ${r.status}`);
+   $('treeStatus').textContent=`✅ Subject page template से update हो गया.\n${o.subjectPath}`;
+   await fetchDirectory();
+ }catch(e){$('treeStatus').textContent='❌ Subject save failed: '+e.message}
+}
+
+async function addChapter(){
+ const btn=document.querySelector('button[onclick="addChapter()"]');
+ const subject=$('subject').value;
+ const title=$('newChapter').value.trim();
+ const slug=slugPreview($('newChapterSlug').value);
+ const g=githubFormBase();
+ if(!subject||!title||!slug){$('treeStatus').textContent='❌ Subject, Chapter Hindi title और English URL slug भरें.';return}
+ if(!g.owner||!g.repo||!g.token){$('treeStatus').textContent='❌ पहले GitHub connection पूरा करें.';return}
+ const fd=new FormData();
+ fd.append('subject',subject);fd.append('chapterTitle',title);fd.append('chapterSlug',slug);
+ fd.append('groupName',$('chapterGroup').value.trim());
+ fd.append('groupSlug',slugPreview($('chapterGroupSlug').value));
+ Object.entries(g).forEach(([k,v])=>fd.append(k,v));
+ fd.append('commitMessage',`Add chapter: ${title}`);
+ if(btn) btn.disabled=true;
+ $('treeStatus').textContent='⏳ Chapter page और Subject link सीधे GitHub पर बनाए जा रहे हैं...';
+ try{
+   const r=await fetch('/api/add-chapter',{method:'POST',body:fd});
+   const text=await r.text();
+   let o; try{o=JSON.parse(text)}catch(_){throw Error(`Server ${r.status}: ${text.slice(0,300)}`)}
+   if(!r.ok||!o.ok)throw Error(o.error||`Server ${r.status}`);
+   $('newChapter').value='';$('newChapterSlug').value='';$('chapterGroup').value='';$('chapterGroupSlug').value='';
+   $('treeStatus').textContent=`✅ Chapter बन गया और Subject page में link हो गया.\nChapter: ${o.chapterPath}\nSubject: ${o.subjectPath}`;
+   await fetchDirectory();
+ }catch(e){$('treeStatus').textContent='❌ Add Chapter failed: '+e.message}
+ finally{if(btn)btn.disabled=false}
+}
+async function addTopic(){
+ const subject=$('subject').value, chapter=$('chapter').value;
+ const title=$('newTopic').value.trim(), slug=slugPreview($('newTopicSlug').value);
+ const g=githubFormBase();
+ if(!subject||!chapter||!title||!slug){$('treeStatus').textContent='Subject, Chapter, Topic Hindi title और English URL slug भरें.';return}
+ if(!g.owner||!g.repo||!g.token){$('treeStatus').textContent='पहले GitHub connection पूरा करें.';return}
+ const fd=new FormData();
+ fd.append('subject',subject);fd.append('chapter',chapter);fd.append('topicTitle',title);fd.append('topicSlug',slug);
+ Object.entries(g).forEach(([k,v])=>fd.append(k,v));
+ $('treeStatus').textContent='Topic link GitHub पर बनाया जा रहा है...';
+ try{
+   const r=await fetch('/api/add-topic',{method:'POST',body:fd});
+   const o=await r.json();if(!o.ok)throw Error(o.error);
+   $('newTopic').value='';$('newTopicSlug').value='';
+   $('treeStatus').textContent=`✓ Topic link बन गया: ${o.chapterPath} → ${slug}`;
+   await fetchDirectory();
+ }catch(e){$('treeStatus').textContent='Add Topic failed: '+e.message}
+}
+function readJsonFile(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('jsonBox').value=r.result};r.readAsText(f)}
+async function generate(){
+ let data;
+ try{data=JSON.parse($('jsonBox').value)}catch(e){$('result').textContent='Invalid JSON: '+e.message;return}
+ const subject=$('subject').value, chapter=$('chapter').value;
+ const selectedSubject=tree.subjects.find(s=>s.slug===subject);
+ const allChapters=[...(selectedSubject?.chapters||[]), ...((selectedSubject?.groups||[]).flatMap(g=>g.chapters||[]))];
+ const chapterTitle=$('newChapter').value.trim() || (allChapters.find(c=>c.slug===chapter)?.title || allChapters.find(c=>c.slug===chapter)?.name || '');
+ const topicTitle=$('topicTitle').value.trim() || data.title;
+ const topicSlug=slugPreview($('topicSlug').value || '');
+ if(!subject||!chapter||!topicTitle||!topicSlug){$('result').textContent='Subject, Chapter, Topic Hindi title और English URL slug जरूरी हैं.';return}
+ const g=githubFormBase();
+ if(!g.owner||!g.repo||!g.token){$('result').textContent='GitHub Owner, Repository और Auth Token जरूरी हैं.';return}
+ data.title=topicTitle;data.subject=subject;data.chapter=chapter;
+ const fd=new FormData();
+ fd.append('subject',subject);fd.append('chapter',chapter);
+ fd.append('chapterTitle',chapterTitle);
+ fd.append('topicTitle',topicTitle);fd.append('topicSlug',topicSlug);
+ fd.append('json',JSON.stringify(data));fd.append('pushGithub','true');
+ Object.entries(g).forEach(([k,v])=>fd.append(k,v));
+ fd.append('commitMessage',$('commitMessage').value.trim()||`Add topic: ${topicTitle}`);
+ $('result').textContent='Subject → Chapter → Topic GitHub पर बनाया/updated किया जा रहा है...';
+ try{
+   const r=await fetch('/api/generate-topic',{method:'POST',body:fd});
+   const o=await r.json();if(!o.ok)throw Error(o.error);
+   $('result').textContent=`✓ GitHub पर सब बन गया: Subject link → ${o.subjectPath} · Chapter link → ${o.chapterPath} · Topic → ${o.topicPath}`;
+   await fetchDirectory();
+ }catch(e){$('result').textContent='Push failed: '+e.message}
+}
+
+restoreSettings();
+</script>
+</body></html>
