@@ -348,6 +348,29 @@
   font-size:20px!important;
 }
 
+.artifact-question-tools button{
+  border:0!important;
+  background:transparent!important;
+  padding:2px 4px!important;
+  margin:0!important;
+  color:#64748b!important;
+  font-size:20px!important;
+  line-height:1!important;
+  cursor:pointer!important;
+}
+
+.artifact-question-tools button:hover{
+  color:#1769d2!important;
+}
+
+.artifact-question-tools button.active-favorite{
+  color:#ef4444!important;
+}
+
+.artifact-question-tools button.active-review{
+  color:#1769d2!important;
+}
+
 #q-text-container{
   width:100%!important;
   height:auto!important;
@@ -1127,8 +1150,8 @@ main > section:first-child p{
                     <span class="artifact-q-label" id="artifact-q-label">प्रश्न 1</span>
 
                     <div class="artifact-question-tools">
-                        <span aria-hidden="true">♡</span>
-                        <span aria-hidden="true">⚐</span>
+                        <button id="favorite-btn" type="button" title="Favourite" aria-label="Favourite">♡</button>
+                        <button id="review-btn" type="button" title="Review" aria-label="Review">☆</button>
                     </div>
                 </div>
 
@@ -1441,6 +1464,81 @@ main > section:first-child p{
         let timerInterval;
         let secondsElapsed = 0;
 
+        /* QUESTION ACTIONS: Favourite persists; Review is session-only */
+        const favoriteStorageKey = 'quiz_favorites_v1:' + window.location.pathname;
+        const reviewedQuestions = new Set();
+
+        function getFavoriteQuestions() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(favoriteStorageKey) || '[]');
+                return new Set(Array.isArray(saved) ? saved.map(String) : []);
+            } catch(e) {
+                return new Set();
+            }
+        }
+
+        function saveFavoriteQuestions(set) {
+            try {
+                localStorage.setItem(favoriteStorageKey, JSON.stringify([...set]));
+            } catch(e) {}
+        }
+
+        function updateQuestionTools(q) {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const reviewBtn = document.getElementById('review-btn');
+            if (!favoriteBtn || !reviewBtn || !q) return;
+
+            const qid = String(q.id);
+            const favorites = getFavoriteQuestions();
+            const isFavorite = favorites.has(qid);
+            const isReviewed = reviewedQuestions.has(qid);
+
+            favoriteBtn.textContent = isFavorite ? '♥' : '♡';
+            favoriteBtn.classList.toggle('active-favorite', isFavorite);
+            favoriteBtn.title = isFavorite ? 'Favourite हटाएँ' : 'Favourite में जोड़ें';
+            favoriteBtn.setAttribute('aria-label', favoriteBtn.title);
+
+            reviewBtn.textContent = isReviewed ? '★' : '☆';
+            reviewBtn.classList.toggle('active-review', isReviewed);
+            reviewBtn.title = isReviewed ? 'Review हटाएँ' : 'Review के लिए चिह्नित करें';
+            reviewBtn.setAttribute('aria-label', reviewBtn.title);
+        }
+
+        function toggleFavorite() {
+            const q = questions[currentIndex];
+            if (!q) return;
+
+            const favorites = getFavoriteQuestions();
+            const qid = String(q.id);
+
+            if (favorites.has(qid)) {
+                favorites.delete(qid);
+            } else {
+                favorites.add(qid);
+            }
+
+            saveFavoriteQuestions(favorites);
+            updateQuestionTools(q);
+        }
+
+        function toggleReview() {
+            const q = questions[currentIndex];
+            if (!q) return;
+
+            const qid = String(q.id);
+
+            if (reviewedQuestions.has(qid)) {
+                reviewedQuestions.delete(qid);
+            } else {
+                reviewedQuestions.add(qid);
+            }
+
+            updateQuestionTools(q);
+        }
+
+        document.getElementById('favorite-btn').onclick = toggleFavorite;
+        document.getElementById('review-btn').onclick = toggleReview;
+
         /* ARTIFACT UI: expose live quiz state safely */
                 window.__artifactQuizState = {
                     get questions(){ return questions; },
@@ -1462,6 +1560,7 @@ main > section:first-child p{
         function renderQuestion() {
             if(questions.length === 0) return;
             const q = questions[currentIndex];
+            updateQuestionTools(q);
             const qContainer = document.getElementById('q-text-container');
             qContainer.style.opacity = '0';
             
