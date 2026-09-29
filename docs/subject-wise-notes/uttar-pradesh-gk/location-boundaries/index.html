@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Location Boundaries">
+<title>Location Boundaries</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+.no-results.visible { display: block; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Subject-wise Notes</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Subject-Wise Notes</div>
+    <h1>Location Boundaries</h1>
+    <p class="topic-subtitle"></p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+<section class="qa-section" id="section-qa-1">
+  <div class="qa-header">
+    <h2>भौगोलिक स्थिति, अक्षांशीय एवं देशांतरीय विस्तार</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश भारत के किस भौगोलिक भाग में स्थित एक भू-आवेष्ठित (Landlocked) राज्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भारत के <strong class='highlight'>उत्तर-मध्य भाग</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का अक्षांशीय विस्तार (Latitudinal Extent) किन अक्षांशों के मध्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>23°52' उत्तरी अक्षांश से 30°24' उत्तरी अक्षांश</strong> तक</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कुल अक्षांशीय विस्तार कितना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>7°32' (7 डिग्री 32 मिनट)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का देशांतरीय विस्तार (Longitudinal Extent) किन देशांतरों के मध्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>77°05' पूर्वी देशांतर से 84°38' पूर्वी देशांतर</strong> तक</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कुल देशांतरीय विस्तार कितना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>7°33' (7 डिग्री 33 मिनट)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत की मानक समय रेखा (82°30' पूर्वी देशांतर) उत्तर प्रदेश के किस जिले से होकर गुजरती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रयागराज (नैनी / मिर्जापुर)</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय मानक समय (IST) रेखा उत्तर प्रदेश के कुल कितने जिलों से होकर गुजरती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>5 जिलों से</strong> (मिर्जापुर, प्रयागराज, भदोही, जौनपुर व सोनभद्र सीमांत)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय मानक समय (IST) ग्रीनविच माध्य समय (GMT) से कितना आगे है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>5 घंटे 30 मिनट आगे</strong> (+5:30)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के सुदूर पूर्वी (बलिया) तथा सुदूर पश्चिमी (शामली) बिंदु के मध्य समय का अनुमानित अंतर</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>30 से 32 मिनट</strong> (लगभग 7.5 डिग्री देशांतर अंतर के कारण)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कर्क रेखा (23°30' N) के संदर्भ में उत्तर प्रदेश की स्थिति क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">उत्तर प्रदेश पूर्णतः <strong class='highlight'>कर्क रेखा के उत्तर में</strong> स्थित है (कर्क रेखा उ.प्र. से नहीं गुजरती)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का दक्षिणी छोर (सोनभद्र) कर्क रेखा से लगभग कितनी दूरी पर स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>22 मिनट (अत्यंत निकट)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश ग्लोब पर किस गोलार्ध में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तरी-पूर्वी गोलार्ध</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश भूगर्भिक दृष्टि से किस प्राचीनतम भूखंड का एक अभिन्न भाग है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गोंडवानालैंड (Gondwanaland)</strong> का</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का भौगोलिक आकार (Shape) किस प्रकार का है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लम्बवत (Vertical / Rectangular)</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-1">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश: स्थिति, विस्तार एवं क्षेत्रफल के मूल संकेतक</div>
+    <div class="table-title-sub">भौगोलिक घटक, उत्तर प्रदेश के वास्तविक मान एवं राष्ट्रीय तुलना</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>भौगोलिक घटक</th>
+          <th>उत्तर प्रदेश के वास्तविक मान</th>
+          <th>विशिष्ट भौगोलिक तथ्य</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">अक्षांशीय विस्तार</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">23°52' N से 30°24' N</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कुल विस्तार 7°32', समशीतोष्ण कटिबंधीय स्थिति</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">देशांतरीय विस्तार</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">77°05' E से 84°38' E</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कुल विस्तार 7°33', पूर्वी व पश्चिमी छोर में ~30 मिनट अंतर</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मानक समय रेखा (IST)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">82°30' पूर्वी देशांतर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">प्रयागराज (नैनी/मिर्जापुर) से होकर गुजरती है</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">पूर्व से पश्चिम लंबाई</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लगभग 650 किलोमीटर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बलिया से शामली तक विस्तृत</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">उत्तर से दक्षिण चौड़ाई</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लगभग 240 किलोमीटर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर से सोनभद्र तक विस्तृत</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">कुल क्षेत्रफल</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">2,40,928 वर्ग किलोमीटर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">भारत के कुल क्षेत्रफल का 7.33% (चौथा स्थान)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">भौगोलिक सीमाएं</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">8 राज्य + 1 UT + 1 देश</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">देश में सर्वाधिक राज्यों को स्पर्श करने वाला राज्य</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-2">
+  <div class="qa-header">
+    <h2>क्षेत्रफल, आकार एवं देश में स्थान</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कुल भौगोलिक क्षेत्रफल कितना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>2,40,928 वर्ग किलोमीटर</strong> (93,023 वर्ग मील)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का क्षेत्रफल भारत के कुल भौगोलिक क्षेत्रफल (32,87,263 वर्ग किमी) का कितने प्रतिशत है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>7.33%</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्षेत्रफल की दृष्टि से भारत के सभी राज्यों में उत्तर प्रदेश का कौन-सा स्थान है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>चौथा स्थान (4th Rank)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्षेत्रफल में उत्तर प्रदेश से बड़े भारत के तीन राज्य क्रमशः कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राजस्थान (प्रथम), मध्य प्रदेश (द्वितीय) तथा महाराष्ट्र (तृतीय)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>2 जून 2014 को आंध्र प्रदेश से तेलंगाना के अलग होने से पूर्व क्षेत्रफल में उ.प्र. का स्थान कौन-सा था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पाँचवाँ स्थान</strong> (आंध्र प्रदेश पूर्व में बड़ा था)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की पूर्व से पश्चिम दिशा में अधिकतम लंबाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>650 किलोमीटर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की उत्तर से दक्षिण दिशा में अधिकतम चौड़ाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>240 किलोमीटर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्षेत्रफल की दृष्टि से उत्तर प्रदेश का सबसे बड़ा जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखीमपुर खीरी</strong> (7,680 वर्ग किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्षेत्रफल की दृष्टि से उत्तर प्रदेश का दूसरा सबसे बड़ा जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सोनभद्र</strong> (6,788 वर्ग किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्षेत्रफल की दृष्टि से उत्तर प्रदेश का तीसरा सबसे बड़ा जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>हरदोई</strong> (5,986 वर्ग किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्षेत्रफल की दृष्टि से उत्तर प्रदेश का सबसे छोटा जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>हापुड़</strong> (लगभग 660 वर्ग किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>हापुड़ के बाद उत्तर प्रदेश के अन्य सबसे छोटे जिले कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>भदोही (संत रविदास नगर - 1015 वर्ग किमी) तथा शामली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कुल क्षेत्रफल का नगरीय (शहरी) क्षेत्रफल कितना प्रतिशत है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>2.70%</strong> (6,558 वर्ग किमी)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-3">
+  <div class="qa-header">
+    <h2>सीमावर्ती राज्य एवं सीमा विस्तार (8 राज्य + 1 केंद्रशासित प्रदेश)</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की सीमाएं कुल कितने राज्यों एवं केंद्रशासित प्रदेशों को स्पर्श करती हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>9 इकाइयों को (8 राज्य + 1 केंद्रशासित प्रदेश दिल्ली)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत में सर्वाधिक राज्यों की सीमाओं को स्पर्श करने वाला राज्य कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के सीमावर्ती 8 राज्य कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तराखंड, हिमाचल प्रदेश, हरियाणा, राजस्थान, मध्य प्रदेश, छत्तीसगढ़, झारखंड और बिहार</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की सीमा को स्पर्श करने वाला एकमात्र केंद्रशासित प्रदेश कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राष्ट्रीय राजधानी क्षेत्र दिल्ली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के साथ सबसे लंबी अंतर-राज्यीय सीमा साझा करने वाला राज्य कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मध्य प्रदेश</strong> (कुल 11 जिलों को स्पर्श करता है)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के साथ सबसे छोटी सीमा साझा करने वाला राज्य कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>हिमाचल प्रदेश</strong> (मात्र एक जिला - सहारनपुर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कितने जिले मध्य प्रदेश की सीमा को स्पर्श करते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>11 जिले</strong> (आगरा, इटावा, जालौन, झांसी, ललितपुर, महोबा, बाँदा, चित्रकूट, प्रयागराज, मिर्जापुर, सोनभद्र)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कितने जिले बिहार राज्य की सीमा को स्पर्श करते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>7 जिले</strong> (सोनभद्र, चंदौली, गाजीपुर, बलिया, देवरिया, कुशीनगर, महराजगंज)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कितने जिले उत्तराखंड राज्य की सीमा को स्पर्श करते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>7 जिले</strong> (सहारनपुर, मुजफ्फरनगर, बिजनौर, मुरादाबाद, रामपुर, बरेली, पीलीभीत)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कितने जिले हरियाणा राज्य की सीमा को स्पर्श करते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>6 जिले</strong> (सहारनपुर, शामली, बागपत, गौतमबुद्ध नगर, अलीगढ़, मथुरा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कितने जिले राजस्थान राज्य की सीमा को स्पर्श करते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>2 जिले</strong> (मथुरा और आगरा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कितने जिले दिल्ली (केंद्रशासित प्रदेश) की सीमा को स्पर्श करते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>2 जिले</strong> (गाजियाबाद एवं गौतमबुद्ध नगर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>छत्तीसगढ़ और झारखंड की सीमा को स्पर्श करने वाला उत्तर प्रदेश का एकमात्र जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सोनभद्र जिला</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कौन-सा जिला तीन ओर से मध्य प्रदेश राज्य से घिरा हुआ है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ललितपुर जिला</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-2">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश के सीमावर्ती राज्य एवं उनसे जुड़े जिले</div>
+    <div class="table-title-sub">सीमावर्ती राज्य / UT, दिशा, स्पर्श करने वाले जिलों की संख्या एवं नाम</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>सीमावर्ती राज्य / संघ राज्य</th>
+          <th>दिशा एवं जिलों की संख्या</th>
+          <th>उत्तर प्रदेश के संबंधित सीमावर्ती जिले</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">मध्य प्रदेश</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">दक्षिण दिशा (11 जिले)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सोनभद्र, मिर्जापुर, प्रयागराज, चित्रकूट, बाँदा, महोबा, झांसी, ललितपुर, जालौन, इटावा, आगरा</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">बिहार</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पूर्व दिशा (7 जिले)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सोनभद्र, चंदौली, गाजीपुर, बलिया, देवरिया, कुशीनगर, महराजगंज</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">उत्तराखंड</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">उत्तर दिशा (7 जिले)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर, मुजफ्फरनगर, बिजनौर, मुरादाबाद, रामपुर, बरेली, पीलीभीत</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">हरियाणा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पश्चिम दिशा (6 जिले)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर, शामली, बागपत, गौतमबुद्ध नगर, अलीगढ़, मथुरा</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">राजस्थान</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पश्चिम दिशा (2 जिले)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मथुरा, आगरा</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">दिल्ली (UT)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पश्चिम दिशा (2 जिले)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गाजियाबाद, गौतमबुद्ध नगर</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">छत्तीसगढ़</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">दक्षिण दिशा (1 जिला)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सोनभद्र</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">झारखंड</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">दक्षिण-पूर्व (1 जिला)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सोनभद्र</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">हिमाचल प्रदेश</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">उत्तर दिशा (1 जिला)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-4">
+  <div class="qa-header">
+    <h2>नेपाल के साथ अंतरराष्ट्रीय सीमा एवं सीमावर्ती 7 जिले</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश किस एकमात्र पड़ोसी संप्रभु राष्ट्र के साथ अंतरराष्ट्रीय सीमा साझा करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नेपाल</strong> के साथ</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश और नेपाल के मध्य अंतरराष्ट्रीय सीमा की कुल लंबाई लगभग कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>579 किलोमीटर (551 से 579 किमी)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कुल कितने जिले नेपाल की अंतरराष्ट्रीय सीमा को स्पर्श करते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>7 जिले</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नेपाल सीमा को स्पर्श करने वाले 7 जिलों का पश्चिम से पूर्व की ओर सही भौगोलिक क्रम</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>1. पीलीभीत 2. लखीमपुर खीरी 3. बहराइच 4. श्रावस्ती 5. बलरामपुर 6. सिद्धार्थनगर 7. महराजगंज</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कौन-सा जिला उत्तराखंड और नेपाल दोनों की सीमाओं को स्पर्श करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पीलीभीत जिला</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कौन-सा जिला बिहार और नेपाल दोनों की सीमाओं को स्पर्श करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>महराजगंज जिला</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत-नेपाल सीमा पर स्थित उत्तर प्रदेश का प्रमुख एकीकृत चेकपोस्ट (ICP) कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बहराइच जिले में स्थित <strong class='highlight'>रूपईडीहा (Rupaidiha)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>महराजगंज जिले में भारत-नेपाल सीमा पर स्थित प्रसिद्ध व्यापारिक सीमा चौकी कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सोनौली (Sonauli)</strong> बॉर्डर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत-नेपाल सीमा की सुरक्षा का दायित्व किस केंद्रीय सशस्त्र अर्धसैनिक बल पर है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सशस्त्र सीमा बल (SSB)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नेपाल सीमावर्ती उत्तर प्रदेश के जिले मुख्य रूप से किस प्राकृतिक क्षेत्र में आते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>तराई क्षेत्र (Tarai Region)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शारदा नदी (काली नदी) भारत और नेपाल के मध्य किस जिले के समीप सीमा बनाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पीलीभीत</strong> जिले के बनबासा क्षेत्र में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंडक नदी (नारायणी नदी) नेपाल से निकलकर उत्तर प्रदेश के किस जिले से सीमा बनाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>महराजगंज एवं कुशीनगर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सिद्धार्थनगर जिले में भारत-नेपाल सीमा पर स्थित प्रमुख व्यापारिक स्थल कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बढ़नी (Barhni)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नेपाल सीमावर्ती जिलों में रहने वाली उत्तर प्रदेश की प्रमुख अनुसूचित जनजाति कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>थारू जनजाति</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-5">
+  <div class="qa-header">
+    <h2>चरम बिंदु (Extreme Points) एवं अंतःस्थ जिले</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का सबसे उत्तरी (Northernmost) जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सहारनपुर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का सबसे दक्षिणी (Southernmost) जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सोनभद्र</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का सबसे पूर्वी (Easternmost) जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बलिया</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का सबसे पश्चिमी (Westernmost) जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>शामली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत का एकमात्र ऐसा जिला कौन-सा है जो 4 राज्यों की सीमाओं को स्पर्श करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">उत्तर प्रदेश का <strong class='highlight'>सोनभद्र जिला</strong> (बिहार, झारखंड, छत्तीसगढ़, मध्य प्रदेश)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सहारनपुर जिला कुल कितने राज्यों की सीमाओं को स्पर्श करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>3 राज्यों को</strong> (उत्तराखंड, हिमाचल प्रदेश और हरियाणा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में ऐसे जिले जो किसी भी अन्य राज्य या देश की सीमा को नहीं छूते, क्या कहलाते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अंतःस्थ जिले (Landlocked / Interior Districts)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कौन-सा जिला सर्वाधिक 9 अन्य जिलों की सीमाओं को स्पर्श करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बदायूँ जिला</strong> (तथा हरदोई 8 जिलों को)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की राजधानी लखनऊ की सीमा कुल कितने जिलों को स्पर्श करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>5 जिलों को</strong> (सीतापुर, बाराबंकी, रायबरेली, उन्नाव, हरदोई)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कौन-सा जिला केवल एक ही अन्य जिले की सीमा को स्पर्श करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ललितपुर जिला</strong> (केवल झांसी जिले को स्पर्श करता है)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बलिया जिला तीन ओर से किस राज्य की सीमाओं से घिरा हुआ है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बिहार राज्य</strong> से (गंगा और घाघरा नदियों के संगम कोण पर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कौन-सा जिला राष्ट्रीय राजधानी क्षेत्र (NCR) का सबसे पश्चिमी सीमांत जिला है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>शामली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोनभद्र जिले के किस छोर पर छत्तीसगढ़ राज्य की सीमा स्पर्श करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सोनभद्र के <strong class='highlight'>सुदूर दक्षिणी छोर पर</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-3">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश के चारों चरम बिंदु (Extreme Points)</div>
+    <div class="table-title-sub">दिशा, चरम जिले का नाम, अक्षांश/देशांतर एवं सीमावर्ती राज्य</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>चरम भौगोलिक दिशा</th>
+          <th>चरम जिला</th>
+          <th>सीमावर्ती राज्य / देश</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">उत्तरी बिंदु (Northernmost)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">हिमाचल प्रदेश, उत्तराखंड, हरियाणा (3 राज्य)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">दक्षिणी बिंदु (Southernmost)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सोनभद्र</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">छत्तीसगढ़, मध्य प्रदेश, झारखंड, बिहार (4 राज्य)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">पूर्वी बिंदु (Easternmost)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बलिया</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बिहार (भोजपुर, छपरा व सीवान जिले)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">पश्चिमी बिंदु (Westernmost)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">शामली</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">हरियाणा (करनाल व पानीपत जिले)</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-6">
+  <div class="qa-header">
+    <h2>प्राकृतिक विभाजन: भाबर एवं तराई क्षेत्र</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भौगोलिक एवं धरातलीय बनावट के आधार पर उत्तर प्रदेश को कितने मुख्य भौतिक भागों में बाँटा गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">तीन प्रमुख भौतिक भागों में: <strong class='highlight'>1. भाबर एवं तराई क्षेत्र 2. गंगा का विशाल मैदान 3. दक्षिण का पठारी क्षेत्र</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शिवालिक की तलहटी में कंकड़-पत्थरों और बजरी से निर्मित संकरी भू-पट्टी क्या कहलाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>भाबर क्षेत्र (Bhabar Region)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भाबर क्षेत्र की मुख्य जल-वैज्ञानिक (Hydrological) विशेषता क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कंकड़-पत्थरों की अत्यधिक पारगम्यता के कारण <strong class='highlight'>नदियाँ धरातल के नीचे विलीन हो जाती हैं</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में भाबर पेटी की चौड़ाई किस दिशा में अधिक और किस दिशा में संकरी होती जाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पश्चिम (सहारनपुर) में अधिक चौड़ी (~34 किमी)</strong> तथा पूर्व की ओर जाने पर संकरी होती जाती है</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भाबर क्षेत्र के ठीक दक्षिण में स्थित महीन कणों, दलदली एवं नम भूमि वाली पट्टी कहलाती है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>तराई क्षेत्र (Tarai Region)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भाबर में लुप्त हुई नदियाँ किस क्षेत्र में पुनः धरातल पर प्रकट हो जाती हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>तराई क्षेत्र</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तराई क्षेत्र की प्रमुख जलवायु एवं भौगोलिक विशेषताएं क्या हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अत्यधिक वर्षा (150-200 सेमी), उच्च आर्द्रता, दलदली मिट्टी एवं घने वन</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तराई क्षेत्र में मुख्य रूप से किन दो फसलों की कृषि सर्वाधिक बड़े पैमाने पर होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>धान (चावल) और गन्ना</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तराई क्षेत्र की दलदली और नम भूमि के कारण यह क्षेत्र किस बीमारी के प्रति अत्यधिक संवेदनशील रहा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मलेरिया एवं जापानी इंसेफेलाइटिस (दिमागी बुखार)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तराई पेटी की चौड़ाई उत्तर प्रदेश के किस भाग में सर्वाधिक पाई जाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पूर्वी उत्तर प्रदेश</strong> (कुशीनगर, महराजगंज, गोरखपुर, सिद्धार्थनगर क्षेत्र)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तराई क्षेत्र में पाए जाने वाले मुख्य प्राकृतिक वृक्ष कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>साल (साखू), सेमल, शीशम, जामुन और लंबी कांस व मूंज घासें</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तराई क्षेत्र को साफ करके शरणार्थियों को बसाने हेतु स्वतंत्रता के बाद कहाँ कृषि फार्म विकसित हुए?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पीलीभीत, लखीमपुर खीरी और तराई भाबर क्षेत्र</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का एकमात्र राष्ट्रीय उद्यान (दुधवा) किस प्राकृतिक क्षेत्र में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>तराई क्षेत्र</strong> (लखीमपुर खीरी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भाबर और तराई क्षेत्र का विस्तार राज्य में पश्चिम से पूर्व किन जिलों तक फैला है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सहारनपुर से लेकर कुशीनगर/महराजगंज</strong> तक</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-7">
+  <div class="qa-header">
+    <h2>गंगा का विशाल मैदानी भाग एवं गंगा-यमुना दोआब</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के कुल क्षेत्रफल का सबसे बड़ा भौतिक भाग कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा का विशाल मैदानी भाग (Gangetic Plain)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा के मैदान का निर्माण किन नदियों द्वारा लाए गए अवसादों (कॉप/जलोढ़ मिट्टी) के निक्षेप से हुआ?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा, यमुना, घाघरा, राप्ती, रामगंगा, गंडक, गोमती व बेतवा</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा के मैदान को भौगोलिक एवं कृषि-पारिस्थितिक दृष्टि से कितने उप-भागों में बाँटा गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">तीन उप-भागों में: <strong class='highlight'>ऊपरी गंगा मैदान, मध्य गंगा मैदान तथा पूर्वी गंगा मैदान</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा और यमुना नदियों के मध्य स्थित अत्यंत उपजाऊ भूभाग को क्या कहा जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा-यमुना दोआब (Ganga-Yamuna Doab)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा-यमुना दोआब को तीन भागों में किस प्रकार वर्गीकृत किया जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ऊपरी दोआब (सहारनपुर से बुलंदशहर), मध्य दोआब (अलीगढ़ से कानपुर) व निचला दोआब (फतेहपुर से प्रयागराज)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मैदानी भाग में नदियों द्वारा प्रतिवर्ष बाढ़ के समय बिछाई जाने वाली नवीन उपजाऊ जलोढ़ मिट्टी</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>खादर (Khadar) मिट्टी</strong> कहलाती है</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मैदानी भाग में ऊंचे धरातल पर स्थित पुरानी जलोढ़ मिट्टी जहाँ बाढ़ का पानी नहीं पहुँच पाता</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बांगर (Bangar) मिट्टी</strong> कहलाती है</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बांगर मिट्टी में चूनेदार कंकड़ों और गांठों की उपस्थिति क्या कहलाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कंकड़ (Kankar nodules)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के मैदानी भाग की समुद्र तल से औसत ऊंचाई (Mean Sea Level) कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>80 मीटर से 300 मीटर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के मैदान का सामान्य ढाल (Slope) किस दिशा से किस दिशा की ओर है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर-पश्चिम से दक्षिण-पूर्व दिशा</strong> की ओर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>अत्यधिक सिंचाई और जलभराव के कारण बांगर भूमि पर जमने वाली सफेद लवणीय परत कहलाती है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रेह या कल्लर (ऊसर भूमि)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा के मैदान में नदियों के कटाव से निर्मित बलुई मिट्टी के ऊंचे टीलों को स्थानीय भाषा में क्या कहते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>भूँड़ (Bhur)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के मैदानी भाग में बहने वाली नदियों द्वारा छोड़े गए विसर्पों से निर्मित झीलें कहलाती हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गोखुर झीलें / छाड़न झीलें (Oxbow Lakes / ताल)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा का मैदान विश्व के सर्वाधिक सघन जनसंख्या वाले क्षेत्रों में क्यों गिना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">समतल उपजाऊ जलोढ़ मृदा, <strong class='highlight'>अनुकूल जलवायु तथा प्रचुर जल संसाधनों की उपलब्धता</strong> के कारण</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-4">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश के तीन प्रमुख प्राकृतिक प्रदेशों का तुलनात्मक स्वरूप</div>
+    <div class="table-title-sub">प्राकृतिक प्रदेश, भौगोलिक विस्तार, मुख्य मिट्टी एवं कृषि स्वरूप</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>प्राकृतिक प्रदेश</th>
+          <th>भौगोलिक विस्तार एवं जिले</th>
+          <th>मिट्टी, जलवायु एवं मुख्य फसलें</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">भाबर एवं तराई क्षेत्र</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर, बिजनौर, खीरी, बहराइच, श्रावस्ती, महराजगंज</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कंकरीली (भाबर) व दलदली जलोढ़ (तराई), अधिक वर्षा, गन्ना व धान</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">गंगा का मैदानी भाग</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मध्य, पश्चिम व पूर्वी उप्र के अधिकांश जिले (दोआब)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बांगर व खादर जलोढ़ मृदा, अनुकूल जलवायु, गेहूँ, धान, आलू, दालें</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">दक्षिणी पठारी (बुंदेलखंड) भाग</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">झांसी, ललितपुर, जालौन, हमीरपुर, महोबा, बाँदा, चित्रकूट, सोनभद्र</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लाल व काली (मार/काबर) मिट्टी, कम वर्षा, चना, तिलहन, ज्वार, बाजरा</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-8">
+  <div class="qa-header">
+    <h2>दक्षिणी पठारी एवं बुंदेलखंड क्षेत्र की भौगोलिक स्थिति</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का दक्षिणी पठारी क्षेत्र किस विशाल भारतीय भौगोलिक पठार का उत्तरी विस्तार है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रायद्वीपीय दक्कन पठार (Peninsular Plateau)</strong> का</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के दक्षिणी पठारी क्षेत्र को सामान्यतः किस नाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बुंदेलखंड एवं विंध्य पठारी क्षेत्र</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड क्षेत्र के अंतर्गत उत्तर प्रदेश के कुल कितने जिले सम्मिलित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>7 जिले</strong> (झांसी, ललितपुर, जालौन, हमीरपुर, महोबा, बाँदा, चित्रकूट)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड पठार का निर्माण मुख्यतः किन प्राचीनतम चट्टानों से हुआ है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्री-कैम्ब्रियन काल के नीस एवं बुंदेलखंड ग्रेनाइट (Granite & Gneiss)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड क्षेत्र की समुद्र तल से औसत ऊंचाई लगभग कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>300 मीटर</strong> (दक्षिण में कैमूर व विंध्याचल की पहाड़ियां 600 मीटर तक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मिर्जापुर और सोनभद्र में स्थित विंध्याचल पर्वतमाला की प्रमुख पहाड़ियों के नाम</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कैमूर श्रेणी और सोनपार पहाड़ियां</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड क्षेत्र में पाई जाने वाली स्थानीय काली मिट्टी को किस नाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मार (माड़) एवं काबर (Kabar)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड में पाई जाने वाली लाल और हल्की बलुई मिट्टी को क्या कहा जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>परवा (पड़वा) एवं राकर (Rakar)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड पठारी क्षेत्र का सामान्य ढाल किस दिशा की ओर है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>दक्षिण से उत्तर एवं उत्तर-पूर्व दिशा</strong> की ओर (यमुना नदी की ओर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड क्षेत्र से होकर प्रवाहित होने वाली प्रमुख नदियाँ कौन-सी हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>चंबल, बेतवा, केन, धसान, सिंध और पहुज</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चंबल और यमुना नदियों के किनारे निर्मित अत्यधिक गहरे खड्ड क्या कहलाते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बीहड़ (Ravines / अवनालिका अपरदन)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के किन दो जिलों में बीहड़ और अवनालिका अपरदन (Gully Erosion) सर्वाधिक पाया जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>इटावा और आगरा</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड क्षेत्र कम वर्षा और विषम स्थलाकृति के कारण किस समस्या से निरंतर ग्रस्त रहता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सूखा (Drought) एवं जल संकट</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड की जलवायु दशाओं के कारण यह क्षेत्र किस प्रकार की फसलों हेतु उपयुक्त है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>दलहन (चना, अरहर, मसूर) एवं तिलहन (तिल, सरसों)</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-9">
+  <div class="qa-header">
+    <h2>पूर्वांचल एवं विंध्याचल क्षेत्र की भौगोलिक सीमाएं</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का पूर्वी भाग जो बिहार की सीमा से सटा हुआ है, सामान्यतः क्या कहलाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पूर्वांचल क्षेत्र (Purvanchal Region)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वांचल क्षेत्र में उत्तर प्रदेश के कितने प्रमुख जिले सम्मिलित माने जाते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>28 जिले</strong> (वाराणसी, गोरखपुर, आजमगढ़, बस्ती, प्रयागराज, मिर्जापुर संभाग)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विंध्य क्षेत्र के अंतर्गत मुख्य रूप से उत्तर प्रदेश के कौन-से जिले आते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मिर्जापुर, सोनभद्र तथा प्रयागराज का दक्षिणी भाग</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोनभद्र जिले के दक्षिण से होकर बहने वाली प्रमुख नदी कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सोन नदी (तथा रिहंद नदी)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोनभद्र और मिर्जापुर जिले किस खनिज संपदा की दृष्टि से उत्तर प्रदेश में सर्वाधिक संपन्न हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>चूना पत्थर, डोलोमाइट, कोयला और बालू-पत्थर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश और बिहार के मध्य प्राकृतिक सीमा बनाने वाली नदियाँ कौन-सी हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा, गंडक और कर्मनाशा नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश और हरियाणा के मध्य अधिकांश प्राकृतिक पश्चिमी सीमा कौन-सी नदी निर्धारित करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>यमुना नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के उत्तरी सीमांत पर स्थित प्राकृतिक सीमा कौन-सी पर्वत श्रृंखला बनाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>शिवालिक पर्वत श्रेणी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वांचल का कौन-सा जिला गंगा नदी के सर्वाधिक तीव्र घुमावदार मोड़ों पर बसा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बलिया जिला</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मिर्जापुर का विंध्याचल धाम किस पर्वतमाला की तलहटी में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>विंध्य पर्वतमाला (Vindhya Range)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोनभद्र जिले में स्थित कैमूर पहाड़ियों में कौन-से प्रागैतिहासिक साक्ष्य मिले हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्राचीन शैलचित्र (Cave Rock Paintings)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के किस भू-आकृतिक भाग में प्रतिवर्ष विनाशकारी बाढ़ की विभीषिका अधिक रहती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पूर्वांचल का मैदानी भाग</strong> (घाघरा, राप्ती और गंडक बेसिन)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विंध्य क्षेत्र में बलुआ पत्थर के विशाल भंडार किस प्रसिद्ध ऐतिहासिक नगरी के समीप हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>चुनार (मिर्जापुर)</strong> - जहाँ से अशोक स्तंभों हेतु पत्थर लाए गए</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-10">
+  <div class="qa-header">
+    <h2>राष्ट्रीय राजधानी क्षेत्र (NCR) एवं प्रशासनिक सीमांत</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राष्ट्रीय राजधानी क्षेत्र (NCR) में उत्तर प्रदेश के कुल कितने जिले वर्तमान में सम्मिलित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>8 जिले</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>NCR में शामिल उत्तर प्रदेश के आठों जिले कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>1. गाजियाबाद 2. गौतमबुद्ध नगर 3. बुलंदशहर 4. मेरठ 5. बागपत 6. हापुड़ 7. मुजफ्फरनगर 8. शामली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>NCR में शामिल होने वाला उत्तर प्रदेश का 8वाँ एवं नवीनतम जिला कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>शामली</strong> (दिसंबर 2017 में शामिल)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>NCR में शामिल करने हेतु उत्तर प्रदेश के कौन-से जिले प्रस्तावित / विचारधीन हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मथुरा, अलीगढ़, हाथरस और सहारनपुर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कुल कितने प्रतिशत क्षेत्रफल राष्ट्रीय राजधानी क्षेत्र (NCR) के अंतर्गत आता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>14,826 वर्ग किमी (कुल क्षेत्रफल का लगभग 6.1%)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की राजधानी लखनऊ के चतुर्दिक नियोजित विकास हेतु किस क्षेत्र का गठन किया गया?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राज्य राजधानी क्षेत्र (State Capital Region - SCR)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य राजधानी क्षेत्र (UP SCR) में लखनऊ सहित कितने जिले सम्मिलित किए गए हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>6 जिले</strong> (लखनऊ, उन्नाव, हरदोई, रायबरेली, सीतापुर और बाराबंकी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में कुल कितने प्रशासनिक मंडल (Divisions) और जिले (Districts) हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>18 मंडल और 75 जिले</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का 18वाँ एवं सबसे नवीनतम गठित मंडल कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अलीगढ़ मंडल</strong> (वर्ष 2008 में सृजित)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में 6-6 जिलों वाले सबसे बड़े तीन प्रशासनिक मंडल कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखनऊ, कानपुर और मेरठ मंडल</strong> (प्रत्येक में 6 जिले)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में 3-3 जिलों वाले सबसे छोटे मंडल कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सहारनपुर, मिर्जापुर, आजमगढ़, बस्ती और झांसी मंडल</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में तहसीलों की कुल संख्या वर्तमान में लगभग कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>351 तहसीलें</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में कुल कितने नगर निगम कार्यरत हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>17 नगर निगम</strong> (नवीनतम: शाहजहांपुर 2018)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड राज्य का गठन उत्तर प्रदेश के कितने पर्वतीय जिलों को काटकर 9 नवंबर 2000 को किया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>13 पर्वतीय जिलों को</strong> काटकर (आरंभिक नाम: उत्तरांचल)</div>
+      </div>
+    </article>
+  </div>
+</section></div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

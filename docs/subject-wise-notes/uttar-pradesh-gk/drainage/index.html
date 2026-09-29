@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Drainage">
+<title>Drainage</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+.no-results.visible { display: block; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Subject-wise Notes</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Subject-Wise Notes</div>
+    <h1>Drainage</h1>
+    <p class="topic-subtitle"></p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+<section class="qa-section" id="section-qa-1">
+  <div class="qa-header">
+    <h2>उत्तर प्रदेश के अपवाह तंत्र का स्वरूप एवं वर्गीकरण</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की अधिकांश नदियों का सामान्य प्रवाह किस दिशा से किस दिशा की ओर है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर-पश्चिम से दक्षिण-पूर्व दिशा</strong> की ओर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उद्गम स्रोतों के आधार पर उत्तर प्रदेश की नदियों को कितने मुख्य वर्गों में विभाजित किया जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">तीन वर्गों में: <strong class='highlight'>हिमालय से निकलने वाली, मैदानी भाग से निकलने वाली तथा दक्षिणी पठार से निकलने वाली नदियाँ</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>हिमालयी नदियों की मुख्य जल प्रवाह प्रकृति किस प्रकार की होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सदावाहिनी (बारहमासी)</strong> - बर्फ पिघलने तथा मानसूनी वर्षा दोनों से जल प्राप्त</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के मैदानी भाग (झीलों व दलदलों) से निकलने वाली नदियों की जल प्रकृति कैसी होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गैर-सदावाहिनी / बरसाती</strong> - ग्रीष्म ऋतु में जलप्रवाह अत्यधिक कम हो जाता है</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>दक्षिणी पठारी भाग (प्रायद्वीपीय भारत) से आने वाली नदियों की प्रमुख विशेषता क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ग्रीष्म ऋतु में प्रायः सूख जाना तथा वर्षा ऋतु में तीव्र प्रवाह</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का संपूर्ण अपवाह तंत्र अंततः किस विशाल नदी द्रोणी (Basin) का भाग है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा नदी द्रोणी (Ganga River Basin)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में प्रवाहित होने वाली सबसे लंबी नदी कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के मैदानी भाग में नदियों द्वारा किस प्रकार के अपवाह प्रतिरूप (Drainage Pattern) का निर्माण होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>वृक्षाकार अपवाह प्रतिरूप (Dendritic Pattern)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की किन दो प्रमुख नदियों के मध्य का भूभाग 'गंगा-यमुना दोआब' कहलाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा और यमुना नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा-यमुना दोआब को कृषि उत्पादकता के आधार पर कितने उप-भागों में बाँटा गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">तीन भागों में: <strong class='highlight'>ऊपरी दोआब, मध्य दोआब तथा निचला दोआब</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की कौन-सी नदी अपने गहरे बीहड़ों (Ravines) और अवनालिका अपरदन के लिए कुख्यात है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>चंबल नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के किस भूभाग की नदियाँ ग्रीष्मकाल में जल संकट उत्पन्न करती हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बुंदेलखंड एवं विंध्य पठारी क्षेत्र</strong> की नदियाँ</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की कौन-सी नदी मैदानी झील से निकलकर गंगा में विलीन होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गोमती नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में जल प्रदूषण निवारण तथा नियंत्रण बोर्ड का गठन किस वर्ष हुआ था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1975</strong> में (वर्तमान में उ.प्र. प्रदूषण नियंत्रण बोर्ड)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-1">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उद्गम स्रोत के आधार पर उत्तर प्रदेश की नदियों का वर्गीकरण</div>
+    <div class="table-title-sub">उद्गम संवर्ग, प्रमुख नदियाँ एवं उनकी प्रवाह विशेषताएं</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>उद्गम संवर्ग</th>
+          <th>प्रमुख नदियाँ</th>
+          <th>जल प्रवाह एवं मुख्य विशेषता</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">हिमालय पर्वत से उद्गमित</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगा, यमुना, रामगंगा, घाघरा, राप्ती, गंडक, शारदा (काली)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सदावाहिनी, हिमनद एवं वर्षा पोषित, अत्यधिक अवसाद व बाढ़ कारक</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मैदानी क्षेत्र (झीलों) से उद्गमित</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गोमती, सई, वरुणा, पांडो, ईशन, रिंद</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">झीलों व भूजल स्रोतों से पोषित, ग्रीष्मकाल में क्षीण, शांत प्रवाह</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">दक्षिणी पठारी भाग से उद्गमित</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">चंबल, बेतवा, केन, सोन, टोंस (तमसा), रिहंद, कन्हार</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">प्रायद्वीपीय पठारी नदियाँ, मौसमी, पथरीला तल, तीव्र वेग व बीहड़</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-2">
+  <div class="qa-header">
+    <h2>गंगा नदी तंत्र</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा नदी का उद्गम उत्तराखंड के उत्तरकाशी जिले में किस हिमनद से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">गंगोत्री हिमनद के <strong class='highlight'>गोमुख</strong> से (आरंभिक नाम: भागीरथी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>देवप्रयाग में किन दो नदियों के पावन संगम के पश्चात यह संयुक्त धारा 'गंगा' कहलाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>भागीरथी और अलकनंदा</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा नदी उत्तर प्रदेश के किस जिले से राज्य के मैदानी भाग में सर्वप्रथम प्रवेश करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बिजनौर</strong> जिला</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा नदी उत्तर प्रदेश के किस अंतिम सीमावर्ती जिले से होकर बिहार राज्य में प्रवेश करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बलिया</strong> जिला</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा नदी उत्तर प्रदेश के कुल कितने जिलों से होकर प्रवाहित होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>28 जिलों</strong> से होकर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा नदी की कुल लंबाई 2525 किमी में से उत्तर प्रदेश में इसकी लंबाई लगभग कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>1450 किलोमीटर</strong> (सर्वाधिक प्रवाह उ.प्र. में)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के किस जिले में गंगा नदी का तटवर्ती विस्तार सबसे लंबा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बदायूँ</strong> जिला</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा में बाईं ओर से मिलने वाली उत्तर प्रदेश की प्रमुख सहायक नदियाँ कौन-सी हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रामगंगा, गोमती और घाघरा</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा में दाईं ओर से मिलने वाली सबसे प्रमुख सहायक नदी कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>यमुना नदी</strong> (प्रयागराज में संगम)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>रामगंगा नदी उत्तर प्रदेश के किस जिले के निकट गंगा में विलीन होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कन्नौज</strong> के निकट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोमती नदी का गंगा में संगम किस स्थान पर होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">गाजीपुर के <strong class='highlight'>कैथी (औड़िहार)</strong> के निकट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>टोंस (तमसा) नदी गंगा में किस स्थल पर मिलती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्रयागराज के <strong class='highlight'>सिरसा</strong> के निकट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत का राष्ट्रीय जलमार्ग संख्या-1 (NW-1) किन दो शहरों के मध्य गंगा नदी पर स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रयागराज (इलाहाबाद) से हल्दिया</strong> (लंबाई: 1620 किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा नदी को भारत सरकार द्वारा 'राष्ट्रीय नदी' का दर्जा किस वर्ष प्रदान किया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>2008</strong> (4 नवंबर 2008) में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंगा नदी के प्रदूषण निवारण एवं समग्र संरक्षण हेतु शुरू किया गया फ्लैगशिप राष्ट्रीय मिशन</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नमामि गंगे कार्यक्रम</strong> (वर्ष 2014)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-3">
+  <div class="qa-header">
+    <h2>यमुना नदी तंत्र</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना नदी का उद्गम उत्तराखंड के उत्तरकाशी में किस हिमनद से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बंदरपूंछ चोटी के निकट स्थित <strong class='highlight'>यमुनोत्री हिमनद</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना नदी उत्तर प्रदेश के किस जिले से राज्य की सीमा में प्रवेश करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सहारनपुर जिले के <strong class='highlight'>फैजाबाद</strong> नामक स्थान से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना नदी उत्तर प्रदेश के कितने जिलों से होकर प्रवाहित होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>19 जिलों</strong> से होकर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना नदी उत्तर प्रदेश और हरियाणा राज्य के मध्य प्राकृतिक सीमा किन जिलों में बनाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सहारनपुर, शामली, बागपत और गौतमबुद्ध नगर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना नदी की कुल लंबाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>1376 किलोमीटर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना नदी गंगा में किस ऐतिहासिक पावन स्थल पर मिलती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्रयागराज के <strong class='highlight'>त्रिवेणी संगम</strong> पर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना में बाईं ओर से मिलने वाली प्रमुख मैदानी सहायक नदी कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>हिंडन नदी</strong> (नोएडा के निकट संगम)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना में दाईं ओर से मिलने वाली प्रायद्वीपीय पठार की प्रमुख सहायक नदियाँ कौन-सी हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>चंबल, सिंध, बेतवा और केन</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चंबल नदी यमुना में किस स्थान के निकट मिलती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">इटावा जिले के <strong class='highlight'>मुरादगंज / भरेह (पंचनद)</strong> के पास</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बेतवा नदी का यमुना में संगम किस जिले के निकट होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>हमीरपुर</strong> जिले के निकट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केन नदी यमुना में किस स्थल पर समाहित होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बाँदा जिले के <strong class='highlight'>चिल्ला घाट (भोजहा)</strong> के निकट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना नदी अत्यधिक औद्योगिक अपशिष्ट एवं सीवेज के कारण दिल्ली से आगरा के मध्य क्या कहलाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>खुला नाला (Open Drain)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना के तट पर स्थित उत्तर प्रदेश के प्रमुख ऐतिहासिक व धार्मिक नगर कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मथुरा, वृंदावन, आगरा, इटावा, कालपी, हमीरपुर और कौशाम्बी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सूर्यपुत्री, यम की बहन और 'कालिंदी' किस नदी के पौराणिक उपनाम हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>यमुना नदी</strong> के</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-2">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश की प्रमुख नदियाँ: उद्गम, संगम एवं कुल लंबाई</div>
+    <div class="table-title-sub">नदी का नाम, उद्गम स्थल, संगम / मुहाना एवं अनुमानित कुल लंबाई</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>नदी का नाम</th>
+          <th>उद्गम स्थल</th>
+          <th>संगम स्थल एवं कुल लंबाई</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">गंगा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगोत्री हिमनद (गोमुख, उत्तराखंड)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बंगाल की खाड़ी (कुल 2525 किमी, उ.प्र. में 1450 किमी)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">यमुना</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">यमुनोत्री हिमनद (बंदरपूंछ, उत्तराखंड)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगा में संगम (प्रयागराज) - 1376 किमी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">घाघरा (सरयू)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मापचाचुंगो हिमनद (तिब्बत)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगा में संगम (छपरा, बिहार) - 1080 किमी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">चंबल</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">जानापाव पहाड़ी (इंदौर, मध्य प्रदेश)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">यमुना में संगम (इटावा) - 965 किमी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">गोमती</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">फुलहर झील (पीलीभीत, उत्तर प्रदेश)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगा में संगम (कैथी, गाजीपुर) - 940 किमी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">रामगंगा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">दूधातोली श्रेणी (पौड़ी गढ़वाल)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगा में संगम (कन्नौज) - 596 किमी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">बेतवा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कुमरा गांव (रायसेन, मध्य प्रदेश)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">यमुना में संगम (हमीरपुर) - 480 किमी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">केन</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कैमूर पहाड़ियां (कटनी, मध्य प्रदेश)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">यमुना में संगम (चिल्ला, बाँदा) - 427 किमी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">राप्ती</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">रुकुमकोट (धौलागिरि, नेपाल)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">घाघरा में संगम (बरहज, देवरिया) - 640 किमी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">सोन</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अमरकंटक पहाड़ी (मध्य प्रदेश)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगा में संगम (पटना के निकट) - 784 किमी</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-4">
+  <div class="qa-header">
+    <h2>गोमती एवं सई नदी तंत्र</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोमती नदी का उद्गम उत्तर प्रदेश के किस जिले और झील से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">पीलीभीत जिले के माधोटांडा स्थित <strong class='highlight'>फुलहर झील (गोमत ताल)</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोमती नदी की कुल प्रवाह लंबाई लगभग कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>940 से 960 किलोमीटर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोमती नदी उत्तर प्रदेश के किन प्रमुख जनपदों से होकर प्रवाहित होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पीलीभीत, शाहजहांपुर, खीरी, सीतापुर, लखनऊ, सुल्तानपुर और जौनपुर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की राजधानी लखनऊ किस नदी के पावन तट पर बसी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गोमती नदी</strong> के तट पर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जौनपुर नगर में गोमती नदी के ऊपर 16वीं सदी में निर्मित प्रसिद्ध ऐतिहासिक पुल कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>शाही पुल (अकबरी पुल)</strong> - निर्माता मुनीम खां</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोमती नदी की प्रमुख सहायक नदी कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सई नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सई नदी का उद्गम उत्तर प्रदेश के किस जिले से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">हरदोई जिले के <strong class='highlight'>भिजवान झील</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सई नदी किन प्रमुख नगरों से होकर बहती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रतापगढ़ (बेल्हा) और रायबरेली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सई नदी का गोमती में विलय किस स्थान पर होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जौनपुर के निकट <strong class='highlight'>राजघाट (त्रिलोचन महादेव)</strong> पर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोमती नदी का गंगा नदी में संगम किस जिले में होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गाजीपुर</strong> जिले के कैथी (मार्कंडेय महादेव स्थल) पर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>लखनऊ में गोमती नदी के किनारे विकसित आधुनिक पर्यटन एवं मनोरंजन स्थल कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गोमती रिवरफ्रंट</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जैव-विविधता की दृष्टि से गोमती नदी में कौन-सा दुर्लभ जलीय स्तनपायी पाया जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा डॉल्फिन (सूँस)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की किस नदी को अत्यधिक नगरीय व औद्योगिक प्रदूषण के कारण 'जैविक रूप से मृत' घोषित किया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गोमती नदी</strong> (लखनऊ से जौनपुर खंड)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-5">
+  <div class="qa-header">
+    <h2>घाघरा (सरयू) एवं राप्ती नदी तंत्र</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>घाघरा नदी का उद्गम तिब्बत के पठार में किस हिमनद से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मापचाचुंगो हिमनद</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नेपाल में पर्वतीय क्षेत्र में घाघरा नदी को किस नाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कर्णाली नदी</strong> (Karnali River)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>घाघरा नदी उत्तर प्रदेश के किस जिले से राज्य में प्रवेश करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखीमपुर खीरी और बहराइच</strong> की सीमा से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश सरकार द्वारा वर्ष 2020 में घाघरा नदी का नाम बदलकर संपूर्ण राज्य में क्या किया गया?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सरयू नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भगवान श्रीराम की पावन जन्मस्थली अयोध्या किस नदी के पावन तट पर स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सरयू नदी</strong> के तट पर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>घाघरा नदी जल प्रवाह एवं आयतन (Water Volume) की दृष्टि से उत्तर प्रदेश की कैसी नदी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सर्वाधिक जल प्रवाह वाली नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राप्ती नदी का उद्गम स्थल कहाँ है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">नेपाल के धौलागिरि श्रेणी के निकट <strong class='highlight'>रुकुमकोट</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राप्ती नदी उत्तर प्रदेश के किस जिले से राज्य में प्रवेश करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>श्रावस्ती</strong> जिले से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वी उत्तर प्रदेश का प्रमुख ऐतिहासिक एवं औद्योगिक नगर गोरखपुर किस नदी के तट पर बसा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राप्ती नदी</strong> (तथा रोहिणी नदी का संगम)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राप्ती नदी घाघरा नदी में किस स्थान पर विलीन होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">देवरिया जिले के <strong class='highlight'>बरहज</strong> नामक स्थान पर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राप्ती नदी की प्रमुख सहायक नदी कौन-सी है जो गोरखपुर में बाढ़ का कारण बनती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रोहिणी नदी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>घाघरा नदी का गंगा नदी में अंतिम संगम कहाँ होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बिहार के सारण जिले के <strong class='highlight'>छपरा</strong> के निकट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वी उत्तर प्रदेश में देवरिया और कुशीनगर से प्रवाहित होने वाली 'छोटी गंडक' किसकी सहायक नदी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>घाघरा नदी</strong> की</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शारदा (काली) नदी घाघरा में किस स्थान पर मिलती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सीतापुर जिले के <strong class='highlight'>बहरामघाट</strong> के निकट</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-6">
+  <div class="qa-header">
+    <h2>प्रायद्वीपीय पठारी नदियाँ: चंबल, बेतवा, केन एवं पचनद</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चंबल नदी का उद्गम मध्य प्रदेश के महू के निकट किस पहाड़ी से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">विंध्य पर्वतमाला की <strong class='highlight'>जानापाव पहाड़ी</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चंबल नदी उत्तर प्रदेश के किन प्रमुख जिलों में सीमा बनाती हुई प्रवाहित होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>आगरा और इटावा</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चंबल राष्ट्रीय अभयारण्य किन तीन दुर्लभ जलीय जीवों के संरक्षण हेतु प्रसिद्ध है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>घड़ियाल, मगरमच्छ और गंगा डॉल्फिन</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बेतवा नदी का प्राचीन संस्कृत नाम क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>वेत्रवती</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बेतवा नदी मध्य प्रदेश के रायसेन जिले के किस गांव से निकलती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कुमरा गांव</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बेतवा नदी उत्तर प्रदेश के किस जिले से राज्य में सर्वप्रथम प्रवेश करती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ललितपुर</strong> जिला</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बेतवा नदी पर ललितपुर में स्थित प्रसिद्ध बहुउद्देश्यीय बांध कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>माताटीला बांध (रानी लक्ष्मीबाई बांध) और राजघाट बांध</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>झांसी के निकट बेतवा नदी पर कौन-सा प्रमुख जलाशय एवं ताप विद्युत केंद्र स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पारीछा बांध (Parichha Dam)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केन नदी का उद्गम मध्य प्रदेश के कटनी जिले में किस पहाड़ी से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कैमूर की पहाड़ियों</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केन नदी का प्राचीन पौराणिक नाम क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कर्णावती</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केन नदी उत्तर प्रदेश के किस जिले से होकर बहती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बाँदा जिला</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत की प्रथम राष्ट्रीय नदी जोड़ो परियोजना (River Interlinking Project) कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>केन-बेतवा लिंक परियोजना</strong> (दिसंबर 2021 स्वीकृत)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केन-बेतवा लिंक परियोजना से उत्तर प्रदेश के किस क्षेत्र को सर्वाधिक सिंचाई व पेयजल लाभ मिलेगा?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बुंदेलखंड क्षेत्र</strong> (बाँदा, महोबा, झांसी, ललितपुर आदि)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के इटावा और जालौन की सीमा पर स्थित 'पचनद संगम' में कौन-सी 5 नदियाँ मिलती हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>यमुना, चंबल, सिंध, पहुज और क्वारी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पचनद संगम स्थल को बुंदेलखंड में किस उपनाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>महातीर्थ / बुंदेलखंड का प्रयाग</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-7">
+  <div class="qa-header">
+    <h2>सोन, रिहंद, टोंस एवं अन्य सहायक नदियाँ</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोन नदी का उद्गम मध्य प्रदेश की किस पर्वत श्रृंखला से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मैकाल पर्वत की <strong class='highlight'>अमरकंटक पहाड़ी</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोन नदी उत्तर प्रदेश के एकमात्र किस जिले से होकर प्रवाहित होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सोनभद्र</strong> जिला</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोन नदी की प्रमुख सहायक नदी कौन-सी है जो छत्तीसगढ़ के मतिरंगा पहाड़ी से निकलती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रिहंद नदी</strong> (प्राचीन नाम: रेणुका)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोनभद्र जिले के पिपरी में रिहंद नदी पर कौन-सा विशाल बांध बनाया गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रिहंद बांध (गोविंद बल्लभ पंत सागर)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोविंद बल्लभ पंत सागर भारत की कैसी झील है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भारत की <strong class='highlight'>सबसे बड़ी मानव निर्मित (कृत्रिम) मीठे पानी की झील</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कन्हार नदी किस नदी की सहायक है और इसका बांध किस जिले में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सोन की सहायक, बांध <strong class='highlight'>सोनभद्र (दुद्धी तहसील)</strong> में स्थित है</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>टोंस (तमसा) नदी का उद्गम मध्य प्रदेश के मैहर में किस कुंड से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कैमूर श्रेणी के <strong class='highlight'>तमसा कुंड</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>टोंस नदी पर मिर्जापुर-प्रयागराज सीमा पर स्थित प्रमुख प्राकृतिक जलप्रपात</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पूर्वा एवं चचाई जलप्रपात</strong> (निकटवर्ती जलप्रपात)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश और बिहार के मध्य सीमा बनाने वाली अपवित्र मानी जाने वाली नदी</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कर्मनाशा नदी</strong> (मान्यता: इसके जल को छूने से शुभ कर्म नष्ट हो जाते हैं)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कर्मनाशा नदी का उद्गम किस पहाड़ी से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बिहार के कैमूर जिले की <strong class='highlight'>सारोदाग पहाड़ी</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सहारनपुर की शाकंभरी देवी पहाड़ी (शिवालिक) से निकलने वाली पश्चिमी उप्र की प्रमुख नदी</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>हिंडन नदी</strong> (प्राचीन नाम: हरनंदी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>हिंडन नदी के तट पर सिंधु घाटी सभ्यता का कौन-सा सबसे पूर्वी पुरातात्विक स्थल स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>आलमगीरपुर</strong> (मेरठ)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>रामगंगा नदी का उद्गम उत्तराखंड के किस जिले की पहाड़ियों से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">पौड़ी गढ़वाल की <strong class='highlight'>दूधातोली श्रेणी</strong> से (जिम कॉर्बेट नेशनल पार्क से होकर प्रवाह)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-3">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश की नदियों के किनारे स्थित प्रमुख नगर</div>
+    <div class="table-title-sub">नदी का नाम, प्रमुख तटवर्ती नगर एवं विशिष्ट ऐतिहासिक / धार्मिक पहचान</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>नदी का नाम</th>
+          <th>प्रमुख तटवर्ती नगर</th>
+          <th>विशेष पहचान</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">गंगा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कानपुर, प्रयागराज, वाराणसी, मिर्जापुर, गाजीपुर, कन्नौज, फर्रुखाबाद, गढ़मुक्तेश्वर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">धार्मिक तीर्थ, औद्योगिक व व्यापारिक केंद्र</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">यमुना</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मथुरा, वृंदावन, आगरा, इटावा, कालपी, हमीरपुर, कौशाम्बी</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">ब्रज संस्कृति, ताजमहल, बीहड़ व जैन तीर्थ</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">गोमती</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लखनऊ, जौनपुर, सुल्तानपुर, लखीमपुर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">राज्य राजधानी, शर्की स्थापत्य व अवध संस्कृति</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">सरयू (घाघरा)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अयोध्या, गोला गोकर्णनाथ (समीप), बरहज</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">श्रीराम जन्मभूमि, दीपोत्सव व पावन घाट</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">राप्ती</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गोरखपुर, श्रावस्ती (प्राचीन तट), बस्ती</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गोरखनाथ पीठ व बौद्ध तीर्थ</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">रामगंगा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मुरादाबाद, बरेली, बदायूँ</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पीतल नगरी एवं रुहेलखंड का केंद्र</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">बेतवा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">ललितपुर, झांसी (ओरछा निकट), हमीरपुर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बुंदेला स्थापत्य व बांध जलाशय</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">हिंडन</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गाजियाबाद, नोएडा, सहारनपुर, मेरठ</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">राष्ट्रीय राजधानी क्षेत्र (NCR) का औद्योगिक हब</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">साई (सई)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">प्रतापगढ़ (बेल्हा देवी), रायबरेली</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">आंवला पट्टी एवं धार्मिक मेला स्थल</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-8">
+  <div class="qa-header">
+    <h2>प्रमुख संगम, जलप्रपात एवं नदी जल विवाद</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>प्रयागराज में किन तीन पवित्र नदियों का संगम माना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा, यमुना और अदृश्य सरस्वती</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>प्रयागराज के त्रिवेणी संगम पर प्रत्येक 12 वर्ष में कौन-सा विशाल पर्व आयोजित होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>महाकुंभ मेला</strong> (प्रत्येक 6 वर्ष में कुंभ/अर्धकुंभ)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चंबल नदी यमुना नदी में उत्तर प्रदेश के किस जिले में विलीन होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>इटावा</strong> जिला (भरेह के निकट)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मिर्जापुर जिले में विंध्य पहाड़ियों पर स्थित प्रसिद्ध प्राकृतिक जलप्रपात कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>विंढम जलप्रपात (Windham Falls) एवं सिरसी जलप्रपात</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के चंदौली जिले में कर्मनाशा नदी की सहायक चंद्रप्रभा नदी पर कौन-सा जलप्रपात है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राजदरी एवं देवदरी जलप्रपात</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोनभद्र जिले में बेलन नदी पर स्थित प्रसिद्ध जलप्रपात कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मुक्खा जलप्रपात</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यमुना जल विवाद किन राज्यों के मध्य समझौता वार्ता का विषय रहा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश, हरियाणा, दिल्ली, राजस्थान और हिमाचल प्रदेश</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>रिहंद जल विद्युत परियोजना किन दो राज्यों की संयुक्त परियोजना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश और मध्य प्रदेश</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राजघाट बांध परियोजना किन दो राज्यों की संयुक्त बहुउद्देश्यीय परियोजना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश और मध्य प्रदेश</strong> (बेतवा नदी पर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गंडक नदी परियोजना किन दो राज्यों तथा एक पड़ोसी देश की संयुक्त परियोजना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश, बिहार और नेपाल</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में नदियों को आपस में जोड़ने (River Linking) की राज्य स्तरीय योजना का नाम</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नदी जोड़ो अभियान</strong> (केन-बेतवा, गोमती-शारदा लिंक आदि)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वाराणसी नगर किन दो नदियों के मध्य स्थित होने के कारण 'वाराणसी' कहलाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>वरुणा और असी</strong> नदियाँ</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कालिंदी किस नदी का सर्वाधिक प्रसिद्ध पौराणिक एवं काव्यात्मक नाम है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>यमुना नदी</strong> का</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में बाढ़ की विभीषिका के कारण किस नदी को 'गोरखपुर का शोक' कहा जाता था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राप्ती और रोहिणी नदी</strong> को</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-9">
+  <div class="qa-header">
+    <h2>उत्तर प्रदेश की प्रमुख नहरें एवं सिंचाई तंत्र</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की सबसे लंबी और विशालतम नहर प्रणाली कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>शारदा नहर प्रणाली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शारदा नहर का निर्माण किस वर्ष से किस वर्ष के मध्य कराया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1920 से 1928</strong> के मध्य</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शारदा नहर का उद्गम नेपाल सीमा के निकट किस स्थान से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">पीलीभीत-चंपावत सीमा पर <strong class='highlight'>बनबासा (शारदा बैराज)</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शाखाओं-प्रशाखाओं सहित शारदा नहर की कुल लंबाई लगभग कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>12,368 किलोमीटर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की सबसे पुरानी आधुनिक नहर कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पूर्वी यमुना नहर</strong> (मूल निर्माण: शाहजहाँ, ब्रिटिश जीर्णोद्धार: 1830)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वी यमुना नहर यमुना नदी से किस स्थान से निकाली गई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सहारनपुर के <strong class='highlight'>फैजाबाद</strong> नामक स्थान से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ऊपरी गंगा नहर का निर्माण किस ब्रिटिश इंजीनियर के नेतृत्व में कराया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">इंजीनियर <strong class='highlight'>सर पी. टी. कॉटले</strong> (वर्ष 1842-1854)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ऊपरी गंगा नहर गंगा नदी से किस स्थान से निकाली गई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">हरिद्वार के निकट <strong class='highlight'>भीमगोड़ा बैराज</strong> से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>निचली गंगा नहर का उद्गम गंगा नदी पर किस स्थल से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बुलंदशहर जिले के <strong class='highlight'>नरोरा</strong> नामक स्थान से (1878 ई.)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आगरा नहर यमुना नदी से किस स्थान से निकाली गई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">दिल्ली के निकट <strong class='highlight'>ओखला बैराज</strong> से (1874 ई.)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बेतवा नहर उत्तर प्रदेश के किस जिले में पारीछा नामक स्थान से निकाली गई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>झांसी</strong> जिले से (1885 ई.)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केन नहर किन दो राज्यों की संयुक्त नहर प्रणाली है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश और मध्य प्रदेश</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>दिसंबर 2021 में प्रधानमंत्री द्वारा राष्ट्र को समर्पित 'सरयू नहर राष्ट्रीय परियोजना' की कुल लंबाई</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>6,623 किलोमीटर</strong> (9 जिलों को लाभ)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सरयू नहर राष्ट्रीय परियोजना में किन 5 प्रमुख नदियों को आपस में जोड़ा गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>घाघरा, सरयू, राप्ती, बाणगंगा और रोहिणी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मध्य गंगा नहर परियोजना गंगा नदी पर किस जिले में बैराज बनाकर निकाली गई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बिजनौर</strong> जिले में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में कुल सिंचित क्षेत्रफल में नलकूपों (Tubewells) का योगदान लगभग कितना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>73% से 75%</strong> (सर्वाधिक सिंचाई नलकूपों द्वारा)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-4">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश की प्रमुख नहर प्रणालियाँ</div>
+    <div class="table-title-sub">नहर प्रणाली का नाम, उद्गम नदी / स्थल एवं लाभान्वित प्रमुख जिले</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>नहर प्रणाली</th>
+          <th>उद्गम नदी एवं स्थल</th>
+          <th>प्रमुख लाभान्वित जिले</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">शारदा नहर</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">शारदा नदी (बनबासा बैराज, पीलीभीत सीमा)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पीलीभीत, बरेली, शाहजहांपुर, खीरी, सीतापुर, हरदोई, लखनऊ, उन्नाव, रायबरेली</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">ऊपरी गंगा नहर</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगा नदी (भीमगोड़ा बैराज, हरिद्वार)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर, मुजफ्फरनगर, मेरठ, गाजियाबाद, बुलंदशहर, अलीगढ़, मथुरा, आगरा</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">निचली गंगा नहर</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गंगा नदी (नरोरा बैराज, बुलंदशहर)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बुलंदशहर, अलीगढ़, एटा, फिरोजाबाद, मैनपुरी, इटावा, कानपुर, फतेहपुर</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">पूर्वी यमुना नहर</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">यमुना नदी (फैजाबाद, सहारनपुर)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर, शामली, मुजफ्फरनगर, मेरठ, बागपत, गाजियाबाद</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">आगरा नहर</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">यमुना नदी (ओखला बैराज, दिल्ली)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मथुरा, आगरा, राजस्थान (भरतपुर) व हरियाणा (फरीदाबाद)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">बेतवा नहर</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बेतवा नदी (पारीछा, झांसी)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">झांसी, जालौन, हमीरपुर</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">सरयू राष्ट्रीय नहर</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">घाघरा-सरयू-राप्ती इंटरलिंक</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बहराइच, श्रावस्ती, बलरामपुर, गोंडा, सिद्धार्थनगर, बस्ती, संतकबीरनगर, गोरखपुर, महराजगंज</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-10">
+  <div class="qa-header">
+    <h2>उत्तर प्रदेश की प्रमुख झीलें, ताल एवं रामसर आर्द्रभूमियाँ</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में अंतरराष्ट्रीय महत्व की कुल कितनी रामसर आर्द्रभूमियाँ (Ramsar Sites) घोषित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>10 रामसर स्थल</strong> (देश में तमिलनाडु के बाद दूसरे स्थान पर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का प्रथम घोषित रामसर स्थल कौन-सा था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ऊपरी गंगा नदी खिंचाव (बृजघाट से नरोरा)</strong> - वर्ष 2005 में घोषित</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आगरा में स्थित सूर सरोवर पक्षी विहार किस अन्य लोकप्रिय नाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कीठम झील</strong> (रामसर स्थल)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>संत कबीर नगर जिले में स्थित विशाल मीठे पानी की प्राकृतिक झील जिसे रामसर स्थल घोषित किया गया</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बखीरा झील (बखीरा वन्यजीव अभयारण्य)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>हैदरपुर वेटलैंड उत्तर प्रदेश के किन दो जिलों की सीमा पर गंगा नदी के बाढ़ क्षेत्र में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मुजफ्फरनगर और बिजनौर</strong> (रामसर स्थल)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>रायबरेली जिले में स्थित प्रसिद्ध प्रवासी पक्षी शरणस्थली वाली झील कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>समसपुर पक्षी विहार / झील</strong> (रामसर स्थल)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>हरदोई जिले में स्थित प्राकृतिक झील जो रामसर स्थल के रूप में संरक्षित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सांडी पक्षी अभयारण्य / सांडी झील</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उन्नाव जिले में स्थित उत्तर प्रदेश का प्रथम पक्षी विहार नवाबगंज अब किस नाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>शहीद चंद्रशेखर आजाद पक्षी अभयारण्य</strong> (रामसर स्थल)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोंडा जिले में स्थित दो परस्पर जुड़े अर्धचंद्राकार ताल जो रामसर स्थल हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पार्वती-अरगा पक्षी अभयारण्य</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मैनपुरी जिले में स्थित सारस क्रेन (राज्य पक्षी) का प्रमुख प्राकृतिक वास स्थल</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>समन पक्षी अभयारण्य / समन झील</strong> (रामसर स्थल)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>इटावा जिले में स्थित प्राकृतिक आर्द्रभूमि जो रामसर स्थल घोषित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सरसई नावर झील</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बलिया जिले में गंगा नदी के छाड़न (Ox-bow) से निर्मित विशाल सुरहा ताल किस नाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>जयप्रकाश नारायण (लोकनायक) पक्षी विहार</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोरखपुर नगर में स्थित प्रसिद्ध एवं विशाल प्राकृतिक ताल कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रामगढ़ ताल</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>झांसी में ओरछा के राजा बीर सिंह देव द्वारा निर्मित प्रसिद्ध ऐतिहासिक झील</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बरुआ सागर झील</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>महोबा जिले में चंदेल राजाओं द्वारा निर्मित प्रसिद्ध विशाल कृत्रिम झीलें कौन-सी हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बेला सागर, मदन सागर, विजय सागर और कीरत सागर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पीलीभीत जिले में गोमती नदी का उद्गम स्थल मानी जाने वाली प्राकृतिक झील</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>फुलहर झील (गोमत ताल)</strong></div>
+      </div>
+    </article>
+  </div>
+</section></div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

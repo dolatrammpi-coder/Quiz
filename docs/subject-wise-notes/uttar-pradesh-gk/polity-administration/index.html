@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Polity Administration">
+<title>Polity Administration</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+.no-results.visible { display: block; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Subject-wise Notes</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Subject-Wise Notes</div>
+    <h1>Polity Administration</h1>
+    <p class="topic-subtitle"></p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+<section class="qa-section" id="section-qa-1">
+  <div class="qa-header">
+    <h2>संवैधानिक स्थिति, राज्यपाल एवं कार्यपालिका शक्तियाँ</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय संविधान के किस भाग एवं किन अनुच्छेदों में राज्य कार्यपालिका का उल्लेख है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भाग VI, <strong class='highlight'>अनुच्छेद 153 से 167</strong> तक</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>संविधान के किस अनुच्छेद के अनुसार प्रत्येक राज्य के लिए एक राज्यपाल का प्रावधान है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>153</strong> (7वें संशोधन 1956 द्वारा एक ही व्यक्ति दो या अधिक राज्यों का राज्यपाल हो सकता है)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य की समस्त कार्यपालिका शक्तियाँ संविधान के किस अनुच्छेद के तहत राज्यपाल में निहित होती हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>154(1)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के राज्यपाल की नियुक्ति किसके द्वारा की जाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भारत के <strong class='highlight'>राष्ट्रपति</strong> द्वारा (अनुच्छेद 155)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्यपाल पद हेतु भारतीय संविधान में क्या न्यूनतम आयु सीमा निर्धारित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">न्यूनतम <strong class='highlight'>35 वर्ष</strong> (भारत का नागरिक होना अनिवार्य)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के राज्यपाल को पद एवं गोपनीयता की शपथ कौन दिलाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>इलाहाबाद उच्च न्यायालय के मुख्य न्यायाधीश</strong> (अनुच्छेद 159)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्यपाल का सामान्य कार्यकाल कितना होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">पदभार ग्रहण से <strong class='highlight'>5 वर्ष (राष्ट्रपति के प्रसादपर्यंत - Pleasure of the President)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्यपाल अपना त्यागपत्र किसे संबोधित करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भारत के <strong class='highlight'>राष्ट्रपति</strong> को</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य विधानमंडल का सत्र न चलने की स्थिति में राज्यपाल किस अनुच्छेद के तहत अध्यादेश (Ordinance) जारी करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>213</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्यपाल द्वारा जारी अध्यादेश को विधानमंडल के पुनः समवेत होने के कितने समय के भीतर पारित होना अनिवार्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>6 सप्ताह</strong> के भीतर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>संविधान के किस अनुच्छेद के तहत राज्यपाल को क्षमादान (Pardon) की विधिक शक्ति प्राप्त है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>161</strong> (मृत्युदंड और सैन्य अदालत के दंड को क्षमा करने का अधिकार नहीं)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश (संयुक्त प्रांत) की प्रथम महिला राज्यपाल कौन थीं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">श्रीमती <strong class='highlight'>सरोजिनी नायडू</strong> (15 अगस्त 1947 से 2 मार्च 1949)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>स्वतंत्र भारत में किसी भी भारतीय राज्य की प्रथम महिला राज्यपाल बनने का गौरव किसे प्राप्त है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>श्रीमती सरोजिनी नायडू</strong> को</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के राज्यपाल का आधिकारिक निवास स्थल कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राजभवन (Raj Bhavan), लखनऊ</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-1">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश के प्रमुख राज्यपाल एवं ऐतिहासिक तथ्य</div>
+    <div class="table-title-sub">राज्यपाल का नाम, कार्यकाल एवं प्रमुख ऐतिहासिक / प्रशासनिक संदर्भ</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>राज्यपाल का नाम</th>
+          <th>कार्यकाल (अवधि)</th>
+          <th>प्रमुख ऐतिहासिक संदर्भ व विशिष्टता</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">सरोजिनी नायडू</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1947 - 1949</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">स्वतंत्र भारत एवं उत्तर प्रदेश की प्रथम महिला राज्यपाल</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">एच. पी. मोदी</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1949 - 1952</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">24 जनवरी 1950 को 'उत्तर प्रदेश' नामकरण के समय राज्यपाल</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">कन्हैयालाल माणिकलाल मुंशी</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1952 - 1957</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">संविधान सभा के सदस्य, प्रख्यात विधिवेत्ता एवं साहित्यकार</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">वी. वी. गिरि</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1957 - 1960</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कालांतर में भारत के चौथे राष्ट्रपति निर्वाचित</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">डॉ. बी. गोपाल रेड्डी</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1967 - 1972</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">उ.प्र. में प्रथम राष्ट्रपति शासन (1968) के समय राज्यपाल</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मोहम्मद शफी कुरैशी</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1996 - 1998</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">विधानसभा चुनाव उपरांत खंडित जनादेश काल</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">राम नाईक</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">2014 - 2019</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">'उत्तर प्रदेश दिवस' (24 जनवरी) का विधिवत शुभारंभ कराने वाले</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">आनंदीबेन पटेल</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">2019 से वर्तमान</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गुजरात की पूर्व मुख्यमंत्री, वर्तमान सेवारत राज्यपाल</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-2">
+  <div class="qa-header">
+    <h2>मुख्यमंत्री, मंत्रिपरिषद एवं महाधिवक्ता (Advocate General)</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य की मंत्रिपरिषद का वास्तविक प्रशासनिक एवं राजनीतिक प्रधान कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मुख्यमंत्री (Chief Minister)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>संविधान के किस अनुच्छेद के तहत राज्यपाल द्वारा मुख्यमंत्री की नियुक्ति की जाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>164(1)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मुख्यमंत्री की सलाह पर अन्य मंत्रियों की नियुक्ति कौन करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">राज्य का <strong class='highlight'>राज्यपाल</strong> (अनुच्छेद 164)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य मंत्रिपरिषद सामूहिक रूप से किसके प्रति उत्तरदायी होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">राज्य <strong class='highlight'>विधानसभा (Legislative Assembly)</strong> के प्रति (अनुच्छेद 164(2))</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मंत्रिपरिषद के सदस्य व्यक्तिगत रूप से किसके प्रति उत्तरदायी होते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">राज्य के <strong class='highlight'>राज्यपाल</strong> के प्रति</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>91वें संविधान संशोधन अधिनियम 2003 के अनुसार उत्तर प्रदेश मंत्रिपरिषद में मंत्रियों की अधिकतम संख्या कितनी हो सकती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">विधानसभा की कुल सदस्य संख्या (403) का <strong class='highlight'>अधिकतम 15% (अर्थात् अधिकतम 60 मंत्री)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के प्रथम मुख्यमंत्री कौन थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">पंडित <strong class='highlight'>गोविंद बल्लभ पंत</strong> (1946 से 1954 तक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश एवं भारत के किसी भी राज्य की प्रथम महिला मुख्यमंत्री कौन बनी थीं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सुचेता कृपलानी</strong> (1963 से 1967)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में सर्वाधिक चार बार मुख्यमंत्री पद की शपथ लेने वाली एकमात्र महिला नेत्री</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सुश्री मायावती</strong> (1995, 1997, 2002, 2007)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के वे दो मुख्यमंत्री जो बाद में भारत के प्रधानमंत्री बने</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>चौधरी चरण सिंह एवं विश्वनाथ प्रताप सिंह (वी.पी. सिंह)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में सबसे कम उम्र (38 वर्ष) में मुख्यमंत्री पद संभालने वाले व्यक्ति</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अखिलेश यादव</strong> (वर्ष 2012)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>लगातार दो पूर्ण कार्यकाल (5 वर्ष से अधिक) पूरे करने वाले उत्तर प्रदेश के प्रथम मुख्यमंत्री</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>योगी आदित्यनाथ</strong> (2017 से निरंतर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय संविधान के किस अनुच्छेद के तहत राज्य में 'महाधिवक्ता' (Advocate General) की नियुक्ति होती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>165</strong> (राज्यपाल द्वारा नियुक्ति)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य सरकार का सर्वोच्च कानूनी सलाहकार एवं प्रथम विधि अधिकारी कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>महाधिवक्ता (Advocate General)</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-3">
+  <div class="qa-header">
+    <h2>उत्तर प्रदेश विधानमंडल: द्विसदनीय व्यवस्था एवं विधान भवन</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का विधानमंडल किस प्रकार की व्यवस्था पर आधारित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>द्विसदनीय व्यवस्था (Bicameral Legislature)</strong> - विधानसभा एवं विधान परिषद</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में द्विसदनीय विधानमंडल की स्थापना किस अधिनियम के तहत हुई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>भारत सरकार अधिनियम 1935 (Government of India Act 1935)</strong> के तहत (जुलाई 1937 में गठित)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>संविधान के किस अनुच्छेद के तहत उत्तर प्रदेश में विधान परिषद का अस्तित्व है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>168 एवं 169</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधान भवन (विधानसभा भवन, लखनऊ) का शिलान्यास किस वर्ष हुआ था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1922</strong> में (गवर्नर सर स्पेंसर हरकोर्ट बटलर द्वारा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>लखनऊ स्थित विधान भवन का भव्य उद्घाटन किस वर्ष संपन्न हुआ था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>21 फरवरी 1928</strong> को (गवर्नर विलियम मॉरिस द्वारा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधान भवन के मुख्य वास्तुकार (Architect) कौन थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सर स्विंटन जैकब एवं हीरा सिंह</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधान भवन किस स्थापत्य शैली का उत्कृष्ट समन्वय उदाहरण है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>यूरोपीय एवं इंडो-सारसेनिक (राजपूत-मुगल) समन्वय शैली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानमंडल के दोनों सदनों का संयुक्त अधिवेशन कौन आहूत करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">राज्य का <strong class='highlight'>राज्यपाल</strong> (अनुच्छेद 174)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वर्ष के प्रथम सत्र के आरंभ में विधानमंडल के दोनों सदनों को संयुक्त रूप से कौन संबोधित करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">राज्य का <strong class='highlight'>राज्यपाल</strong> (अनुच्छेद 176 - विशेष अभिभाषण)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधानमंडल के किसी भी सदन की बैठक हेतु आवश्यक न्यूनतम गणपूर्ति (Quorum) क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल सदस्य संख्या का <strong class='highlight'>1/10 भाग अथवा 10 सदस्य (जो भी अधिक हो)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानसभा ने कार्यवाही को पेपरलेस बनाने हेतु कौन-सी डिजिटल प्रणाली अपनाई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ई-विधान प्रणाली (NeVA - National eVidhan Application)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ई-विधान प्रणाली लागू करने के मामले में बड़े राज्यों में उत्तर प्रदेश का स्थान</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अग्रणी शीर्ष राज्यों में</strong> (मई 2022 से पूर्णतः डिजिटल सदन)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधानसभा और विधान परिषद की बैठकों के मध्य अधिकतम कितने समय का अंतराल हो सकता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अधिकतम <strong class='highlight'>6 माह</strong> (वर्ष में न्यूनतम दो सत्र अनिवार्य)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में बजट सर्वप्रथम किस सदन में प्रस्तुत किया जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">केवल <strong class='highlight'>विधानसभा</strong> में</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-2">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश विधानमंडल: विधानसभा एवं विधान परिषद की तुलना</div>
+    <div class="table-title-sub">संवैधानिक प्रावधान, सदस्य संख्या, निर्वाचन पद्धति एवं प्रमुख शक्तियाँ</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>तुलनात्मक मापदंड</th>
+          <th>विधानसभा (निम्न सदन / लोकप्रिय सदन)</th>
+          <th>विधान परिषद (उच्च सदन / स्थायी सदन)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">संवैधानिक अनुच्छेद</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अनुच्छेद 170</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अनुच्छेद 171</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">कुल सदस्य संख्या</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">403 सीटें (देश में सर्वाधिक)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">100 सीटें (देश में सर्वाधिक)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">सदन का स्वरूप व कार्यकाल</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अस्थायी सदन (सामान्य कार्यकाल: 5 वर्ष)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">स्थायी सदन (विघटन नहीं, 1/3 सदस्य प्रति 2 वर्ष सेवानिवृत्त)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">सदस्यों का कार्यकाल</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">5 वर्ष (या सदन भंग होने तक)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">6 वर्ष</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">न्यूनतम आयु सीमा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">25 वर्ष</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">30 वर्ष</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">निर्वाचन पद्धति</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">जनता द्वारा प्रत्यक्ष मतदान (वयस्क मताधिकार)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अप्रत्यक्ष निर्वाचन एवं 1/6 राज्यपाल द्वारा मनोनीत</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">धन विधेयक पर शक्ति</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सर्वोच्च अधिकार, पहले यहीं पेश होता है</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मात्र 14 दिन तक रोक सकती है, खारिज नहीं</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-4">
+  <div class="qa-header">
+    <h2>उत्तर प्रदेश विधानसभा (Vidhan Sabha): संरचना एवं चुनाव</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानसभा में कुल निर्वाचित सदस्यों (सीटों) की संख्या कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>403 सदस्य</strong> (भारत में सर्वाधिक विधानसभा सीटें)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>104वें संविधान संशोधन अधिनियम 2019 द्वारा किस मनोनीत सीट के प्रावधान को समाप्त किया गया?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>1 आंग्ल-भारतीय (Anglo-Indian) मनोनीत सीट</strong> (पूर्व में 403 + 1 = 404 सीटें थीं)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड राज्य के गठन (नवंबर 2000) से पूर्व अविभाजित उत्तर प्रदेश विधानसभा में कुल कितनी सीटें थीं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>425 सीटें</strong> (403 उ.प्र. + 22 उत्तराखंड)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानसभा में अनुसूचित जाति (SC) हेतु कुल कितनी सीटें आरक्षित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>84 सीटें</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानसभा में अनुसूचित जनजाति (ST) हेतु कुल कितनी सीटें आरक्षित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>2 सीटें</strong> (ओबरा और दुद्धी - दोनों सोनभद्र जिले में)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानसभा में कुल आरक्षित सीटों (SC + ST) की संख्या कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>86 सीटें</strong> (84 SC + 2 ST)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानसभा के प्रथम अध्यक्ष (स्पीकर) कौन थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">राजर्षि <strong class='highlight'>पुरुषोत्तम दास टंडन</strong> (1937 से 1950 तक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानसभा में सर्वाधिक तीन बार अध्यक्ष पद पर रहने वाले व्यक्ति</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>आत्माराम गोविंद खेर एवं केशरी नाथ त्रिपाठी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधानसभा अध्यक्ष अपना त्यागपत्र किसे सौंपता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">विधानसभा के <strong class='highlight'>उपाध्यक्ष (Deputy Speaker)</strong> को</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधानसभा में किसी विधेयक पर पक्ष-विपक्ष में बराबर मत आने पर निर्णायक मत (Casting Vote) कौन देता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>विधानसभा अध्यक्ष (Speaker)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कोई विधेयक 'धन विधेयक' (Money Bill) है या नहीं, इसका अंतिम निर्णय कौन करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>विधानसभा अध्यक्ष</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नई विधानसभा के गठन के पश्चात नवनिर्वाचित विधायकों को शपथ दिलाने हेतु नियुक्त अध्यक्ष कहलाता है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रोटेम स्पीकर (Pro-tem Speaker)</strong> - राज्यपाल द्वारा नियुक्त</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का कौन-सा जिला सर्वाधिक 12 विधानसभा सीटों वाला जिला है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रयागराज (इलाहाबाद)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के सबसे कम (2-2) विधानसभा सीटों वाले तीन जिले कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>श्रावस्ती, महोबा और चित्रकूट</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-5">
+  <div class="qa-header">
+    <h2>उत्तर प्रदेश विधान परिषद (Vidhan Parishad): संरचना एवं निर्वाचन कोटा</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधान परिषद में कुल सदस्यों की संख्या कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>100 सदस्य</strong> (देश की विशालतम विधान परिषद)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड राज्य के गठन (2000) से पूर्व उत्तर प्रदेश विधान परिषद में कुल कितने सदस्य थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>108 सदस्य</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधान परिषद के कुल सदस्यों का कितना भाग विधानसभा सदस्यों (MLAs) द्वारा चुना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल सदस्यों का <strong class='highlight'>1/3 भाग (लगभग 38 सदस्य)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>स्थानीय निकायों (नगर निगम, जिला पंचायत, क्षेत्र पंचायत आदि) द्वारा कितने सदस्य चुने जाते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल सदस्यों का <strong class='highlight'>1/3 भाग (लगभग 36 सदस्य)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्यपाल द्वारा साहित्य, विज्ञान, कला, सहकारिता और समाज सेवा क्षेत्र से कितने सदस्य मनोनीत होते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल सदस्यों का <strong class='highlight'>1/6 भाग (लगभग 10 सदस्य)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>न्यूनतम 3 वर्ष पुराने पंजीकृत स्नातकों (Graduates) द्वारा कितने सदस्य चुने जाते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल सदस्यों का <strong class='highlight'>1/12 भाग (लगभग 8 सदस्य)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>माध्यमिक विद्यालयों के न्यूनतम 3 वर्ष अनुभवी शिक्षकों द्वारा कितने सदस्य चुने जाते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल सदस्यों का <strong class='highlight'>1/12 भाग (लगभग 8 सदस्य)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधान परिषद के प्रथम सभापति (Chairman) कौन थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">स्वतंत्रता पूर्व: <strong class='highlight'>डॉ. सर सीताराम</strong> (1925), स्वतंत्रता पश्चात: <strong class='highlight'>श्री चंद्रभाल</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधान परिषद के सभापति एवं उप-सभापति का चुनाव कौन करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">विधान परिषद के सदस्य <strong class='highlight'>अपने ही सदस्यों में से</strong> चुनते हैं</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधान परिषद किसी सामान्य विधेयक को अधिकतम कितने समय तक रोक सकती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अधिकतम <strong class='highlight'>4 माह</strong> (प्रथम बार में 3 माह + द्वितीय बार में 1 माह)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधान परिषद किसी धन विधेयक (Money Bill) को अधिकतम कितने दिनों तक रोक सकती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अधिकतम <strong class='highlight'>14 दिन</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्या विधान परिषद किसी विधेयक को पूर्णतः खारिज या निरस्त कर सकती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नहीं</strong> (यह केवल विलंबकारी सदन है)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विधान परिषद के कितने सदस्य प्रत्येक दो वर्ष पर सेवानिवृत्त हो जाते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल सदस्यों के <strong class='highlight'>1/3 सदस्य</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-3">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश विधान परिषद के 100 सदस्यों का निर्वाचन कोटा</div>
+    <div class="table-title-sub">निर्वाचक मंडल श्रेणी, संवैधानिक अनुपात, निर्धारित सीटों की संख्या एवं निर्वाचन पद्धति</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>निर्वाचक मंडल / प्राधिकारी</th>
+          <th>संवैधानिक अनुपात</th>
+          <th>सीटों की संख्या व निर्वाचन स्वरूप</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">विधानसभा सदस्यों द्वारा (MLA कोटा)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1/3 भाग</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">38 सीटें (एकल संक्रमणीय मत द्वारा अप्रत्यक्ष चुनाव)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">स्थानीय प्राधिकारी (निकाय कोटा)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1/3 भाग</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">36 सीटें (नगर निगम, नगर पालिका, जिला पंचायत जनप्रतिनिधियों द्वारा)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">राज्यपाल द्वारा मनोनयन कोटा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1/6 भाग</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">10 सीटें (साहित्य, कला, विज्ञान, सहकारिता, समाज सेवा)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">स्नातक निर्वाचक मंडल (Graduates)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1/12 भाग</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">8 सीटें (3 वर्ष पूर्व पंजीकृत स्नातकों द्वारा प्रत्यक्ष)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">शिक्षक निर्वाचक मंडल (Teachers)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1/12 भाग</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">8 सीटें (माध्यमिक व उच्च शिक्षण संस्थानों के शिक्षकों द्वारा)</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-6">
+  <div class="qa-header">
+    <h2>राज्य सचिवालय, मुख्य सचिव एवं प्रशासनिक तंत्र</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश शासन का प्रशासनिक हृदय स्थल एवं नीति निर्माण की सर्वोच्च संस्था कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राज्य सचिवालय (State Secretariat), लखनऊ</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का नया आधुनिक प्रशासनिक सचिवालय भवन किस नाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लोक भवन (Lok Bhavan)</strong>, विधानसभा मार्ग, लखनऊ</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य प्रशासन का सर्वोच्च प्रशासनिक अधिकारी और सिविल सेवा का प्रमुख कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मुख्य सचिव (Chief Secretary)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मुख्य सचिव की नियुक्ति किसके द्वारा की जाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">राज्य के <strong class='highlight'>मुख्यमंत्री द्वारा (वरिष्ठतम आईएएस अधिकारियों में से)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मुख्य सचिव राज्य मंत्रिमंडल की बैठकों में किस भूमिका में भाग लेता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मंत्रिमंडल के <strong class='highlight'>पदेन सचिव (Secretary to the Cabinet)</strong> के रूप में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य में संकट या आपदा के समय समग्र राहत कार्यों का मुख्य समन्वयक अधिकारी कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मुख्य सचिव</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नीति निर्माण (सचिवालय) और नीति क्रियान्वयन (फील्ड) के मध्य की संस्था क्या कहलाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>विभागाध्यक्ष / निदेशालय (Directorate)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सचिवालय में प्रशासनिक विभाग का प्रशासनिक प्रमुख कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अपर मुख्य सचिव (ACS) / प्रमुख सचिव (Principal Secretary)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सचिवालय प्रशासन में अधिकारियों का पदानुक्रम क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रमुख सचिव -> सचिव -> विशेष सचिव -> संयुक्त सचिव -> उप सचिव -> अनुभाग अधिकारी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य सरकार के विभिन्न विभागों के कार्यों का आवंटन किसके द्वारा किया जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मुख्यमंत्री की सलाह पर <strong class='highlight'>राज्यपाल</strong> द्वारा (कार्य आवंटन नियम)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में प्रशासनिक सुधारों और ई-गवर्नेंस हेतु कौन-सा विभाग कार्यरत है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रशासनिक सुधार विभाग</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के प्रथम मुख्य सचिव कौन थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>श्री भोलानाथ झा (1947)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नागरिकों की शिकायतों के त्वरित डिजिटल समाधान हेतु मुख्यमंत्री कार्यालय का आधिकारिक पोर्टल</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>जनसुनवाई - आईजीआरएस (IGRS) पोर्टल</strong> (हेल्पलाइन: 1076)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-7">
+  <div class="qa-header">
+    <h2>संभागीय (मंडल) एवं जिला प्रशासन: कमिश्नर, डीएम एवं एसडीएम</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश को प्रशासनिक विकेंद्रीकरण हेतु कुल कितने मंडलों (संभागों) में बाँटा गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>18 मंडल (Divisions)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का सबसे नवीनतम एवं 18वाँ मंडल कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अलीगढ़ मंडल</strong> (वर्ष 2008 में सृजित - अलीगढ़, एटा, हाथरस, कासगंज)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>प्रशासनिक मंडल का सर्वोच्च प्रशासनिक प्रमुख कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मंडलायुक्त (Divisional Commissioner / कमिश्नर)</strong> - वरिष्ठ आईएएस</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कमिश्नर मंडल स्तर पर राजस्व मामलों में किस रूप में कार्य करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सर्वोच्च राजस्व अपीलीय न्यायालय</strong> के रूप में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में 6-6 जिलों वाले सबसे बड़े तीन प्रशासनिक मंडल कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखनऊ, कानपुर और मेरठ मंडल</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में 3-3 जिलों वाले सबसे छोटे मंडल कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सहारनपुर, झांसी, मिर्जापुर, आजमगढ़ और बस्ती मंडल</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जिला प्रशासन की धुरी और जिले का सर्वोच्च प्रशासनिक अधिकारी कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>जिलाधिकारी / जिला मजिस्ट्रेट / कलेक्टर (DM)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कलेक्टर के रूप में जिलाधिकारी का मुख्य दायित्व क्या होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>भू-राजस्व की वसूली एवं सरकारी भूमि का संरक्षण</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जिला मजिस्ट्रेट (DM) के रूप में उसका प्राथमिक कार्य क्या होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जिले में <strong class='highlight'>शांति एवं कानून-व्यवस्था (Law & Order) बनाए रखना</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जिले में समस्त विकास योजनाओं और ग्रामीण विकास का प्रभारी मुख्य अधिकारी कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मुख्य विकास अधिकारी (Chief Development Officer - CDO)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तहसील स्तर पर उप-संभाग का प्रशासनिक प्रमुख कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उपजिलाधिकारी (SDM / Sub-Divisional Magistrate)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तहसील में राजस्व प्रशासन का मुख्य कार्यकारी अधिकारी कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>तहसीलदार एवं नायब तहसीलदार</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में वर्तमान में कुल जिलों एवं तहसीलों की संख्या कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>75 जिले एवं 351 तहसीलें</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ग्राम स्तर पर भू-अभिलेखों (खतौनी, खसरा) को अद्यतन रखने वाला राजस्व कर्मी कहलाता है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लेखपाल (पूर्व नाम: पटवारी)</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-4">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश के 18 प्रशासनिक मंडल एवं संबंधित जिले</div>
+    <div class="table-title-sub">मंडल का नाम, मुख्यालय एवं उसके अंतर्गत समाविष्ट जनपदों की सूची</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>प्रशासनिक मंडल</th>
+          <th>मुख्यालय</th>
+          <th>समाविष्ट जिले (जिलों की संख्या)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">लखनऊ मंडल (6 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लखनऊ</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लखनऊ, उन्नाव, रायबरेली, सीतापुर, हरदोई, लखीमपुर खीरी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">कानपुर मंडल (6 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कानपुर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कानपुर नगर, कानपुर देहात, इटावा, औरैया, फर्रुखाबाद, कन्नौज</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मेरठ मंडल (6 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मेरठ</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मेरठ, गाजियाबाद, बुलंदशहर, गौतमबुद्ध नगर, बागपत, हापुड़</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">अयोध्या मंडल (5 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अयोध्या</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अयोध्या, बाराबंकी, सुल्तानपुर, अमेठी, अंबेडकर नगर</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">वाराणसी मंडल (4 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">वाराणसी</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">वाराणसी, जौनपुर, गाजीपुर, चंदौली</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">गोरखपुर मंडल (4 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गोरखपुर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गोरखपुर, महराजगंज, देवरिया, कुशीनगर</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">प्रयागराज मंडल (4 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">प्रयागराज</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">प्रयागराज, कौशाम्बी, फतेहपुर, प्रतापगढ़</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">आगरा मंडल (4 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">आगरा</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">आगरा, मथुरा, फिरोजाबाद, मैनपुरी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">बरेली मंडल (4 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बरेली</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बरेली, बदायूँ, पीलीभीत, शाहजहांपुर</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मुरादाबाद मंडल (5 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मुरादाबाद</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मुरादाबाद, बिजनौर, रामपुर, अमरोहा, संभल</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">अलीगढ़ मंडल (4 जिले - 18वाँ)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अलीगढ़</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अलीगढ़, एटा, हाथरस, कासगंज</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">चित्रकूट मंडल (4 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बाँदा</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बाँदा, चित्रकूट, हमीरपुर, महोबा</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">सहारनपुर मंडल (3 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सहारनपुर, मुजफ्फरनगर, शामली</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">झांसी मंडल (3 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">झांसी</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">झांसी, ललितपुर, जालौन</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मिर्जापुर मंडल (3 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मिर्जापुर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मिर्जापुर, सोनभद्र, भदोही</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">आजमगढ़ मंडल (3 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">आजमगढ़</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">आजमगढ़, मऊ, बलिया</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">बस्ती मंडल (3 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बस्ती</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बस्ती, सिद्धार्थनगर, संत कबीर नगर</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">देवीपाटन मंडल (4 जिले)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गोंडा</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गोंडा, बलरामपुर, श्रावस्ती, बहराइच</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-8">
+  <div class="qa-header">
+    <h2>संवैधानिक एवं सांविधिक संस्थाएं: UPPSC, लोकायुक्त व वित्त आयोग</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश लोक सेवा आयोग (UPPSC) की स्थापना किस तिथि को हुई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>1 अप्रैल 1937</strong> को (मुख्यालय: प्रयागराज)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>संविधान के किस अनुच्छेद के तहत राज्य लोक सेवा आयोग के गठन का प्रावधान है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>315</strong> (कार्य: अनुच्छेद 320)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>UPPSC के अध्यक्ष एवं सदस्यों की नियुक्ति और पदमुक्ति किसके द्वारा की जाती है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">नियुक्ति: <strong class='highlight'>राज्यपाल द्वारा</strong>, पदमुक्ति: केवल <strong class='highlight'>राष्ट्रपति द्वारा (अनुच्छेद 317)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>UPPSC के अध्यक्ष एवं सदस्यों का कार्यकाल कितना होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>6 वर्ष अथवा 62 वर्ष की आयु</strong> (जो भी पहले हो)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में लोकायुक्त एवं उप-लोकायुक्त अधिनियम किस वर्ष पारित हुआ था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1975</strong> में (प्रभावी: 1977)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के प्रथम लोकायुक्त कौन बने थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">न्यायमूर्ति <strong class='highlight'>विशंभर दयाल</strong> (14 सितंबर 1977)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में लोकायुक्त का कार्यकाल वर्ष 2012 में संशोधित कर कितना किया गया?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>8 वर्ष</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्या उत्तर प्रदेश के मुख्यमंत्री लोकायुक्त के जांच के अधिकार क्षेत्र के अंतर्गत आते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नहीं</strong> (मुख्यमंत्री को लोकायुक्त के जांच के दायरे से बाहर रखा गया है)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पंचायतों एवं नगर निकायों की वित्तीय स्थिति के पुनर्विलोकन हेतु 'राज्य वित्त आयोग' का गठन किस अनुच्छेद में है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>243-I (पंचायतों हेतु) तथा 243-Y (नगरपालिकाओं हेतु)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में राज्य वित्त आयोग का गठन कितने वर्षों के अंतराल पर राज्यपाल द्वारा होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्रत्येक <strong class='highlight'>5 वर्ष</strong> के अंतराल पर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में प्रथम राज्य वित्त आयोग का गठन किस वर्ष हुआ था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1994</strong> में (अध्यक्ष: भालचंद्र शुक्ल)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>स्थानीय निकायों के चुनाव निष्पक्ष कराने हेतु 'राज्य निर्वाचन आयोग' का संवैधानिक उपबंध</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>243-K एवं 243-ZA</strong> (स्थापना: 23 अप्रैल 1994)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के प्रथम राज्य निर्वाचन आयुक्त कौन थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>आर. के. भार्गव</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-9">
+  <div class="qa-header">
+    <h2>पारदर्शिता, सूचना का अधिकार (RTI) एवं प्रशासनिक जवाबदेही</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य सूचना आयोग का गठन किस अधिनियम के अंतर्गत हुआ?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सूचना का अधिकार अधिनियम 2005 की धारा 15</strong> के तहत</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य सूचना आयोग की स्थापना किस तिथि को हुई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>14 सितंबर 2005</strong> को (मुख्यालय: आरटीआई भवन, गोमती नगर, लखनऊ)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के प्रथम राज्य मुख्य सूचना आयुक्त कौन थे?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">न्यायमूर्ति <strong class='highlight'>एम. ए. खान</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य मुख्य सूचना आयुक्त एवं अन्य सूचना आयुक्तों की नियुक्ति कौन करता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मुख्यमंत्री की अध्यक्षता वाली चयन समिति की सिफारिश पर <strong class='highlight'>राज्यपाल द्वारा</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>RTI संशोधन अधिनियम 2019 के अनुसार राज्य सूचना आयुक्तों का कार्यकाल कितना निर्धारित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>3 वर्ष अथवा 65 वर्ष की आयु</strong> (केंद्र सरकार द्वारा अधिसूचित)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सूचना का अधिकार अधिनियम के अंतर्गत सामान्य मामलों में सूचना कितने दिनों में मिलनी अनिवार्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">आवेदन प्राप्ति के <strong class='highlight'>30 दिनों के भीतर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यदि मांगी गई सूचना व्यक्ति के जीवन अथवा स्वतंत्रता से संबंधित हो, तो कितने समय में देना अनिवार्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>48 घंटे के भीतर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>समय पर सूचना न देने या भ्रामक सूचना देने पर राज्य सूचना आयोग कितना जुर्माना लगा सकता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>₹250 प्रतिदिन</strong> (अधिकतम ₹25,000 तक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में नागरिकों को सरकारी सेवाओं की समयबद्ध डिलीवरी सुनिश्चित करने वाला कानून</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश जनहित गारंटी अधिनियम 2011</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जनहित गारंटी अधिनियम के तहत जाति, आय व निवास प्रमाण पत्र किस पोर्टल से ऑनलाइन मिलते हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ई-डिस्ट्रिक्ट (e-District UP) पोर्टल</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भ्रष्टाचार की ऑनलाइन शिकायत और ट्रैकिंग हेतु उत्तर प्रदेश सरकार का आधिकारिक पोर्टल</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>एंटी-करप्शन पोर्टल / जनसुनवाई समाधान</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य प्रशासनिक अधिकरण (State Administrative Tribunal) की स्थापना कब हुई?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1976</strong> में (सरकारी सेवकों के सेवा विवादों के त्वरित निपटारे हेतु)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में ई-ऑफिस (e-Office) प्रणाली सर्वप्रथम किस विभाग और कलेक्ट्रेट में लागू हुई?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सचिवालय एवं कन्नौज कलेक्ट्रेट</strong> में</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-10">
+  <div class="qa-header">
+    <h2>संसदीय प्रतिनिधित्व एवं राजनीतिक सांख्यिकी</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>लोकसभा (संसद के निम्न सदन) में उत्तर प्रदेश का प्रतिनिधित्व कुल कितनी सीटों से है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>80 सीटें</strong> (भारत के किसी भी राज्य में सर्वाधिक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की 80 लोकसभा सीटों में से अनुसूचित जाति (SC) हेतु कितनी सीटें आरक्षित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>17 सीटें</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>क्या उत्तर प्रदेश में लोकसभा की कोई सीट अनुसूचित जनजाति (ST) हेतु आरक्षित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नहीं (शून्य)</strong> - एसटी हेतु कोई लोकसभा सीट आरक्षित नहीं है</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्यसभा (संसद के उच्च सदन) में उत्तर प्रदेश का कुल कितना प्रतिनिधित्व है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>31 सीटें</strong> (देश में सर्वाधिक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में कुल मतदाताओं की संख्या लगभग कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>15.3 करोड़ से अधिक मतदाता</strong> (देश में सर्वाधिक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मतदाताओं की संख्या की दृष्टि से उत्तर प्रदेश का सबसे बड़ा लोकसभा क्षेत्र कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गाजियाबाद</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मतदाताओं की संख्या की दृष्टि से उत्तर प्रदेश का सबसे छोटा लोकसभा क्षेत्र कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बागपत</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में अब तक कुल कितनी बार राष्ट्रपति शासन (अनुच्छेद 356) लागू किया जा चुका है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>10 बार</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में प्रथम बार राष्ट्रपति शासन कब लागू किया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>25 फरवरी 1968 से 26 फरवरी 1969</strong> तक (मुख्यमंत्री: चरण सिंह के इस्तीफे पर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में 10वीं एवं अंतिम बार राष्ट्रपति शासन किस वर्ष लगा था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>2002</strong> में (मार्च 2002 से मई 2002 तक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में सबसे लंबे समय तक चलने वाला राष्ट्रपति शासन किस वर्ष लागू हुआ था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1992-1993 में</strong> (बाबरी ढांचा विध्वंस के बाद, लगभग 1 वर्ष)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विधानमंडल के सदस्यों के विशेषाधिकार संविधान के किस अनुच्छेद में वर्णित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अनुच्छेद <strong class='highlight'>194</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के नीति आयोग की तर्ज पर राज्य के थिंक टैंक के रूप में गठित नया आयोग</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राज्य परिवर्तन आयोग (State Transformation Commission - STC)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य परिवर्तन आयोग (STC) का पदेन अध्यक्ष कौन होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">उत्तर प्रदेश के <strong class='highlight'>मुख्यमंत्री</strong></div>
+      </div>
+    </article>
+  </div>
+</section></div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

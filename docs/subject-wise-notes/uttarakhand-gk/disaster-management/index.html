@@ -1,0 +1,2583 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Disaster Management">
+<title>Disaster Management</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+.no-results.visible { display: block; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Subject-wise Notes</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Subject-Wise Notes</div>
+    <h1>Disaster Management</h1>
+    <p class="topic-subtitle"></p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>उत्तराखंड में आपदा संवेदनशीलता, भूकंपीय जोन एवं प्रमुख ऐतिहासिक भूकंप</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय मानक ब्यूरो (BIS) के अनुसार उत्तराखंड किन भूकंपीय जोनों में स्थित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जोन IV एवं जोन V</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भूकंपीय संवेदनशीलता की दृष्टि से सर्वाधिक खतरनाक जोन</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जोन V (अति उच्च जोखिम)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड के कौन से जनपद पूर्णतः जोन V के अंतर्गत आते हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">चमोली, रुद्रप्रयाग, पिथौरागढ़, बागेश्वर, चंपावत</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>देहरादून, टिहरी, उत्तरकाशी, पौड़ी व हरिद्वार किस भूकंपीय जोन में हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जोन IV (उच्च जोखिम)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड हिमालय में विवर्तनिक हलचलों का मुख्य भू-वैज्ञानिक कारण</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भारतीय प्लेट का यूरेशियन में संचलन</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>लघु हिमालय और महान हिमालय को विभाजित करने वाली मुख्य भ्रंश रेखा</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मेन सेंट्रल थ्रस्ट (MCT)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शिवालिक और लघु हिमालय को अलग करने वाली प्रमुख भ्रंश रेखा</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मेन बाउंड्री थ्रस्ट (MBT)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शिवालिक को उत्तरी गंगा मैदान से अलग करने वाली अग्रवर्ती भ्रंश रेखा</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">हिमालयन फ्रंटल फॉल्ट (HFF)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड के इतिहास का सबसे विनाशकारी महाभूकंप कब आया था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">1 सितंबर 1803</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>1803 के ऐतिहासिक गढ़वाल भूकंप की अनुमानित रिक्टर तीव्रता</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग 7.7 से 8.0</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>1803 के भूकंप में बद्रीनाथ मंदिर के क्षतिग्रस्त होने पर जीर्णोद्धार किसने कराया</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ग्वालियर के दौलतराव सिंधिया</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>1803 के भूकंप में देवप्रयाग का कौन सा ऐतिहासिक मंदिर बुरी तरह क्षतिग्रस्त हुआ</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">रघुनाथ मंदिर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तरकाशी में विनाशकारी भूकंप किस तिथि को आया था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">20 अक्टूबर 1991</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>1991 के उत्तरकाशी भूकंप की रिक्टर पैमाने पर तीव्रता</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">6.8 रिक्टर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चमोली जनपद में भयंकर भूकंप किस तिथि को घटित हुआ</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">29 मार्च 1999</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>1999 के चमोली भूकंप की रिक्टर पैमाने पर तीव्रता</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">6.8 रिक्टर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>धारचूला (पिथौरागढ़) में भीषण भूकंप किस वर्ष आया था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष 1958 एवं 1980</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कपिलेश्वरी (अल्मोड़ा) का ऐतिहासिक भूकंप किस वर्ष दर्ज हुआ</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष 1720</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में भूकंप की पूर्व चेतावनी प्रणाली (Early Warning System) विकसित करने वाला संस्थान</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">आईआईटी (IIT) रुड़की</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>'उत्तराखंड भूकंप अलर्ट' मोबाइल ऐप जारी करने वाला देश का प्रथम राज्य</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">उत्तराखंड (वर्ष 2021)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड भूकंप अलर्ट ऐप किस संस्थान के सहयोग से विकसित किया गया</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">आईआईटी रुड़की एवं USDMA</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भूकंपीय तरंगों में सर्वप्रथम सतह पर पहुँचने वाली प्राथमिक तरंगें</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">पी-तरंगें (P-Waves)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भूकंप की तीव्रता मापने हेतु प्रयुक्त पैमाना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">रिक्टर पैमाना (सीस्मोग्राफ)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भूकंप से हुए भौतिक विनाश (प्रचंडता) को मापने का पैमाना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मरकेली पैमाना</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वाडिया हिमालय भू-विज्ञान संस्थान (WIHG) देहरादून का मुख्य भूकंपीय कार्य</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">टेक्टोनिक व सीस्मिक निगरानी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड के किस क्षेत्र को 'सीस्मिक गैप' (Seismic Gap) माना जाता है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">केंद्रीय हिमालयी क्षेत्र</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केंद्रीय हिमालय में लंबे समय से महाभूकंप न आने के कारण उत्पन्न भू-वैज्ञानिक आशंका</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ऊर्जा संचयन व भावी महाभूकंप</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य में भूकंप से सर्वाधिक असुरक्षित पारंपरिक ढाँचे</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बिना गारे-सीमेंट की शुष्क चिनाई</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में भूकंप रोधी भवन निर्माण हेतु अनिवार्य राष्ट्रीय संहिता</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">राष्ट्रीय भवन निर्माण संहिता (NBC)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विद्यालयों में आपदा से बचाव हेतु आयोजित होने वाली नियमित ड्रिल</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मॉक ड्रिल (Mock Drill)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य में प्रतिवर्ष आपदा न्यूनीकरण सप्ताह किस माह में मनाया जाता है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अक्टूबर माह</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भूकंप के समय खुले मैदान में जाने या मेज के नीचे छिपने का सुरक्षा नियम</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ड्रॉप, कवर एवं होल्ड ऑन</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आपदा पूर्व तैयारियों हेतु गठित ग्रामीण स्तर की प्राथमिक समिति</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ग्राम आपदा प्रबंधन समिति</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड राज्य आपातकालीन संचालन केंद्र (SEOC) कहाँ स्थापित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सचिवालय, देहरादून</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जिला स्तर पर चौबीसों घंटे सक्रिय आपातकालीन संचालन केंद्र</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">डीईओसी (DEOC)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="table-section">
+  <div class="table-title">
+    <div class="table-title-main">उत्तराखंड के प्रमुख ऐतिहासिक भूकंप एवं उनका प्रभाव</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>भूकंपीय घटना</th>
+          <th>वर्ष एवं तीव्रता</th>
+          <th>प्रमुख प्रभावित क्षेत्र एवं क्षति</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">गढ़वाल महाभूकंप</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1 सितंबर 1803 (7.7-8.0)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बद्रीनाथ, श्रीनगर व देवप्रयाग तबाह, व्यापक जनहानि</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">धारचूला भूकंप</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">28 दिसंबर 1958 (6.2)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पिथौरागढ़ सीमांत क्षेत्र, अनेक मकान ध्वस्त</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">उत्तरकाशी भूकंप</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">20 अक्टूबर 1991 (6.8)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">उत्तरकाशी, टिहरी व चमोली, 700 से अधिक मौतें</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">चमोली भूकंप</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">29 मार्च 1999 (6.8)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">चमोली व रुद्रप्रयाग, गोपेश्वर में भारी तबाही, 100+ मौतें</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">पिथौरागढ़ भूकंप</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1980 (6.1)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">धारचूला-मुनस्यारी बेल्ट, तीव्र भूस्खलन</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>भूस्खलन, बादल फटना, अचानक बाढ़ एवं हिमस्खलन</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में वर्षा ऋतु में सर्वाधिक जन-धन हानि पहुँचाने वाली प्राकृतिक आपदा</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भूस्खलन (Landslide)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय भू-वैज्ञानिक सर्वेक्षण (GSI) के अनुसार उत्तराखंड का कितना भाग भूस्खलन संवेदी है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अधिकांश पर्वतीय ढलान</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>17-18 अगस्त 1998 को पिथौरागढ़ में घटित प्रलयंकारी भूस्खलन</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मालपा भूस्खलन त्रासदी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मालपा भूस्खलन किस नदी की संकरी घाटी में घटित हुआ था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">काली नदी घाटी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मालपा भूस्खलन में काल-कवलित होने वाली प्रसिद्ध ओडिसी नृत्यांगना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्रोतिमा बेदी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मालपा त्रासदी में किस प्रसिद्ध यात्रा का दल मलबे में समा गया था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कैलास मानसरोवर यात्रा दल</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>अगस्त 1998 में रुद्रप्रयाग जनपद में घटित विनाशकारी भूस्खलन</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ऊखीमठ भूस्खलन</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वर्ष 1893 में चमोली की बिरही गंगा पर भूस्खलन से बनी विशाल झील</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">गौना झील (Gohna Lake)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गौना झील का प्राकृतिक बाँध टूटकर अलकनंदा में प्रलयंकारी बाढ़ कब आई</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष 1970 (अलकनंदा बाढ़)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मौसम विज्ञान विभाग (IMD) के अनुसार 'बादल फटना' (Cloudburst) क्या है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्रति घंटा 100 मिमी वर्षा</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बादल फटने की घटना सामान्यतः कितने सीमित क्षेत्रफल में होती है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">20 से 30 वर्ग किमी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में बादल फटने की घटनाएं मुख्य रूप से किन महीनों में घटती हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जुलाई एवं अगस्त</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>अगस्त 2012 में उत्तरकाशी जनपद में किस नदी में बादल फटने से तबाही मची</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">असीगंगा नदी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>असीगंगा आपदा में किस महत्वपूर्ण जलविद्युत परियोजना के टरबाइन बह गए थे</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">असीगंगा लघु जलविद्युत परियोजना</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>अचानक आई अत्यधिक तीव्र और अल्पकालिक बाढ़ को क्या कहते हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">फ्लैश फ्लड (Flash Flood)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पर्वतीय संकीर्ण नदी घाटियों में अचानक बाढ़ आने का मुख्य भौतिक कारक</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मलबे से अवरोध व टूटना</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पहाड़ी ढलानों पर जमी विशाल बर्फ की परतों का तेजी से नीचे गिरना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">हिमस्खलन (Avalanche)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>अक्टूबर 2022 में उत्तरकाशी के किस शिखर पर भीषण हिमस्खलन हुआ था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">द्रौपदी का डांडा-II (Draupadi Ka Danda)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>द्रौपदी का डांडा हिमस्खलन में किस प्रतिष्ठित संस्थान के प्रशिक्षु पर्वतारोही हताहत हुए</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">नेहरू पर्वतारोहण संस्थान (NIM)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>द्रौपदी का डांडा हादसे में जान गंवाने वाली प्रख्यात एवरेस्ट विजेता प्रशिक्षक</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सविता कंसवाल</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>हिमस्खलन एवं बर्फ अध्ययन हेतु भारत की प्रमुख वैज्ञानिक संस्था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">डीजीआरई (पूर्व में SASE)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>डीजीआरई (DGRE) का पूर्ण रूप क्या है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">डिफेंस जियोइन्फॉर्मेटिक्स रिसर्च एस्टेब्लिशमेंट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नैनीताल नगर की बलियानाला पहाड़ी पर निरंतर हो रहा भूस्खलन</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बलियानाला भूस्खलन संकट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नैनीताल में वर्ष 1880 के ऐतिहासिक भूस्खलन में किस मंदिर का विनाश हुआ था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्राचीन नैना देवी मंदिर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भूस्खलन संभावित ढलानों को स्थिर करने हेतु लगाई जाने वाली लोहे की जाली</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">गेबियन वॉल (Gabion Wall)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ढलानों पर वर्षा जल के तीव्र कटाव को रोकने हेतु बनी पक्की नालियां</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कैचवाटर एवं ड्रेनेज ड्रेन</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भूस्खलन रोकथाम हेतु मिट्टी बांधने वाले विशेष पौधों का रोपण क्या कहलाता है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बायो-इंजीनियरिंग तकनीक</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बायो-इंजीनियरिंग में पर्वतीय ढलानों पर प्रयुक्त मुख्य घास</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वेटीवर घास (खस)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सड़क निर्माण के दौरान कटे असुरक्षित ढलानों पर कंक्रीट का छिड़काव</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">शॉटक्रीट तकनीक</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में भूस्खलन पूर्व चेतावनी प्रणाली प्रायोगिक तौर पर कहाँ स्थापित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कोटद्वार-दुगड्डा मार्ग व रुद्रप्रयाग</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में 'भूस्खलन न्यूनीकरण एवं प्रबंधन केंद्र' (ULMMC) कहाँ स्थित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">देहरादून</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पर्वतीय ढलानों पर अत्यधिक भारी निर्माण कार्य से उत्पन्न संकट</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भू-धंसाव (Land Subsidence)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जनवरी 2023 में भू-धंसाव व दरारों के कारण आपदाग्रस्त घोषित नगर</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जोशीमठ (ज्योतिर्मठ)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जोशीमठ के नीचे भू-धंसाव का मुख्य भू-आकृतिक कारण</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्राचीन हिमोढ़ (मोरेन) पर बसाव</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वर्ष 1976 में जोशीमठ में निर्माण कार्यों पर रोक की सिफारिश करने वाली समिति</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">महेश चंद्र मिश्रा कमेटी</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="table-section">
+  <div class="table-title">
+    <div class="table-title-main">उत्तराखंड की प्रमुख भूस्खलन, जल-प्रलय एवं हिमानी आपदाएं</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>आपदा / घटना</th>
+          <th>स्थान एवं वर्ष</th>
+          <th>प्रमुख कारण एवं प्रबंधन प्रभाव</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">मालपा भूस्खलन त्रासदी</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पिथौरागढ़ (1998)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पहाड़ दरकना, कैलास यात्री हताहत, हेली-रेस्क्यू</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">केदारनाथ जल प्रलय</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">रुद्रप्रयाग (जून 2013)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अतिवृष्टि व चोराबाड़ी ताल टूटना, मंदाकिनी बाढ़</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">असीगंगा आपदा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">उत्तरकाशी (अगस्त 2012)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बादल फटना, असीगंगा बाढ़, पुल व पावर हाउस ध्वस्त</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">ऋषिगंगा चमोली आपदा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">चमोली (फरवरी 2021)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">रौंटी हिमनद शैल-स्खलन, 200+ हताहत, GLOF</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">द्रौपदी का डांडा हिमस्खलन</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">उत्तरकाशी (अक्टूबर 2022)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पर्वतारोहण दल पर हिमस्खलन, 29 पर्वतारोही हताहत</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">जोशीमठ भू-धंसाव</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">चमोली (जनवरी 2023)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">असंतुलित जल निकासी व मोरेन धंसाव, विस्थापन</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>2013 केदारनाथ जल प्रलय एवं 2021 चमोली (ऋषिगंगा) आपदा</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केदारनाथ धाम में प्रलयंकारी जल आपदा किस तिथि को घटित हुई</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">16-17 जून 2013</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केदारनाथ आपदा का मुख्य हिमानी व मौसमी कारण</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अतिवृष्टि व चोराबाड़ी झील टूटना</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चोराबाड़ी झील को अन्य किस ऐतिहासिक नाम से जाना जाता है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">गांधी सरोवर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केदारनाथ मंदिर के ठीक पीछे विशाल शिला जिसने मंदिर की गर्भगृह से रक्षा की</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भीम शिला</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केदारनाथ आपदा में किस नदी ने अपने जलस्तर में अप्रत्याशित वृद्धि कर तबाही मचाई</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मंदाकिनी नदी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केदारनाथ आपदा में मंदाकिनी नदी के तट पर स्थित कौन सा कस्बा पूरी तरह बह गया</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">रामबाड़ा</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>2013 की केदारनाथ आपदा में भारतीय वायुसेना द्वारा संचालित बचाव अभियान</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ऑपरेशन राहत (Operation Rahat)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>2013 आपदा में भारतीय थलसेना द्वारा चलाया गया बचाव अभियान</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ऑपरेशन सूर्य होप (Surya Hope)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ऑपरेशन राहत के दौरान राहत कार्य में क्रैश हुआ वायुसेना का बड़ा हेलीकॉप्टर</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">एमआई-17 वी5 (Mi-17 V5)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>2013 आपदा में वायुसेना, एनडीआरएफ व आईटीबीपी के शहीदों की स्मृति में निर्मित स्मारक</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">शौर्य स्थल (गौरीकुंड मार्ग)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केदारनाथ पुनर्निर्माण कार्य की जिम्मेदारी किस केंद्रीय सार्वजनिक उपक्रम को दी गई</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">नेहरू पर्वतारोहण संस्थान (NIM)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केदारनाथ में पुनर्निर्माण कार्यों का सफल नेतृत्व करने वाले कर्नल</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कर्नल अजय कोठियाल</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केदारनाथ पुनर्निर्माण का नया मास्टर प्लान किसके मार्गदर्शन में लागू हुआ</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्रधानमंत्री नरेंद्र मोदी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चमोली के रैणी क्षेत्र में भीषण हिमानी आपदा किस तिथि को आई</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">7 फरवरी 2021</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>7 फरवरी 2021 की चमोली आपदा का मुख्य भू-वैज्ञानिक कारण</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">रौंटी पीक से शैल-हिमस्खलन</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चमोली आपदा 2021 में कौन सी दो नदियाँ उफान पर आ गईं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ऋषिगंगा एवं धौलीगंगा</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चमोली आपदा में पूर्णतः नष्ट हुई निजी क्षेत्र की जलविद्युत परियोजना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ऋषिगंगा हाइडल प्रोजेक्ट (13.2 MW)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>चमोली आपदा 2021 में एनटीपीसी (NTPC) की किस निर्माणाधीन परियोजना को भारी क्षति पहुँची</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">तपोवन-विष्णुगाड जलविद्युत परियोजना</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तपोवन परियोजना की किस संरचना में दर्जनों श्रमिक मलबे में फंस गए थे</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मुख्य इंटेक टनल (सुरंग)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>तपोवन सुरंग में राहत कार्यों हेतु किस तकनीक का प्रयोग किया गया</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ड्रोन, रिमोट सेंसिंग व भारी ड्रेजिंग</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>हिमनदी झीलों के टूटने से आने वाली प्रलयंकारी बाढ़ का तकनीकी नाम</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ग्लोफ (GLOF)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ग्लोफ (GLOF) का पूर्ण रूप क्या है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ग्लेशियल लेक आउटबर्स्ट फ्लड</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में संवेदनशील हिमनदी झीलों की मैपिंग करने वाली शीर्ष अंतरिक्ष संस्था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">इसरो (ISRO - NRSC)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वाडिया हिमालय भू-विज्ञान संस्थान द्वारा निगरानी की जाने वाली प्रमुख हिमानी झील</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वासुधारा व सतोपंथ झील</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उच्च हिमालयी क्षेत्रों में प्राकृतिक झीलों पर पूर्व चेतावनी सेंसर लगाने की पहल</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अर्ली वार्निंग ऑटोमेटिक स्टेशन</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में आपदाओं के त्वरित विश्लेषण हेतु उपयोग किया जाने वाला उपग्रह डेटा</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कार्टोसैट एवं रिसोर्ससैट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आपदा के दौरान नदियों में जलस्तर वृद्धि की त्वरित सूचना देने वाले यंत्र</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वाटर लेवल राडार सेंसर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>अलकनंदा एवं भागीरथी बेसिन में स्थापित स्वचालित मौसम केंद्र</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ऑटोमैटिक वेदर स्टेशन (AWS)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आपदा पश्चात महामारी फैलने से रोकने हेतु उत्तरदायी स्वास्थ्य शाखा</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">एपिडेमिक रिस्पॉन्स सेल</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आपदा प्रभावितों को त्वरित वित्तीय सहायता हेतु निर्धारित केंद्रीय कोष</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">एसडीआरएफ (SDRF फंड)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राष्ट्रीय स्तर पर आपदा राहत हेतु वित्त पोषित कोष</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">एनडीआरएफ (NDRF फंड)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आपदा न्यूनीकरण हेतु विश्व बैंक संपोषित 'उत्तराखंड डिजास्टर रिकवरी प्रोजेक्ट' का वर्ष</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष 2014</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आपदा जोखिम न्यूनीकरण के लिए 2015-2030 का वैश्विक समझौता</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सेंडाई फ्रेमवर्क (Sendai Framework)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सेंडाई फ्रेमवर्क के लक्ष्यों को लागू करने वाला अग्रणी राज्य</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">उत्तराखंड राज्य</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में आपदा मित्रों (Aapda Mitra) का मुख्य कार्य</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सामुदायिक स्तर पर त्वरित बचाव</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="table-section">
+  <div class="table-title">
+    <div class="table-title-main">आपदा प्रबंधन की प्रमुख संस्थाएं, बल एवं संपर्क सूत्र</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>संस्था / बल / प्रणाली</th>
+          <th>मुख्यालय / स्थापना</th>
+          <th>प्रमुख दायित्व एवं अधिकार क्षेत्र</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">USDMA (राज्य आपदा प्रबंधन प्राधिकरण)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">देहरादून (अध्यक्ष: मुख्यमंत्री)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">राज्य में आपदा नीति निर्धारण, समन्वय व राहत</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">SDRF (राज्य आपदा मोचन बल)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">जॉली ग्रांट (स्थापना: 2013)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">विशेष खोज एवं बचाव अभियान, क्विक रिस्पॉन्स</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">DMMC (आपदा न्यूनीकरण केंद्र)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सचिवालय परिसर, देहरादून</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">वैज्ञानिक अध्ययन, आपदा डेटा व जन-जागरूकता</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">NDRF 15वीं वाहिनी</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गदरपुर (उधम सिंह नगर)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">राष्ट्रीय स्तर का विशिष्ट खोज एवं राहत बल</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">राज्य आपातकालीन केंद्र (SEOC)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">देहरादून (हेल्पलाइन: 1070)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">24x7 आपदा निगरानी, सूचना संचरण व समन्वय</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">आपदा मित्र योजना</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">समस्त 13 जनपद</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">स्थानीय युवाओं को प्राथमिक खोज-राहत प्रशिक्षण</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>आपदा प्रबंधन संस्थाएँ, SDRF, पूर्व चेतावनी एवं पर्वतीय सुरक्षा रणनीति</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में पृथक आपदा प्रबंधन मंत्रालय गठित करने वाला वर्ष</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष 2001</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>देश में पृथक आपदा प्रबंधन मंत्रालय गठित करने वाला प्रथम राज्य</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">उत्तराखंड</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड का आपदा प्रबंधन ढाँचा मुख्य रूप से किस देश के मॉडल पर आधारित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">ऑस्ट्रेलियाई आपदा प्रबंधन मॉडल</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत का राष्ट्रीय आपदा प्रबंधन अधिनियम किस वर्ष पारित हुआ</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष 2005</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राष्ट्रीय आपदा प्रबंधन प्राधिकरण (NDMA) के पदेन अध्यक्ष कौन होते हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्रधानमंत्री</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड राज्य आपदा प्रबंधन प्राधिकरण (USDMA) के पदेन अध्यक्ष कौन होते हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मुख्यमंत्री</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जिला आपदा प्रबंधन प्राधिकरण (DDMA) के अध्यक्ष कौन होते हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जिला मजिस्ट्रेट (जिलाधिकारी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड राज्य आपदा मोचन बल (SDRF) का विधिवत गठन कब हुआ</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">9 अक्टूबर 2013</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड एसडीआरएफ (SDRF) का गठन किस बल के कर्मियों से किया गया</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">उत्तराखंड पुलिस एवं पीएसी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड एसडीआरएफ का केंद्रीय मुख्यालय कहाँ स्थित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">जॉली ग्रांट (देहरादून)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>एसडीआरएफ का आदर्श वाक्य (ध्येय वाक्य) क्या है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">आपदार्थे सेवामहे</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उच्च हिमालयी दुर्गम क्षेत्रों में बचाव हेतु एसडीआरएफ की विशिष्ट टीम</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">हाई एल्टीट्यूड रेस्क्यू टीम</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में एनडीआरएफ (NDRF) की 15वीं वाहिनी का मुख्यालय कहाँ है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">गदरपुर (उधम सिंह नगर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड राज्य आपदा न्यूनीकरण एवं प्रबंधन केंद्र (DMMC) कहाँ स्थित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">देहरादून</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राज्य स्तरीय आपदा नियंत्रण कक्ष का आपातकालीन टोल फ्री नंबर</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">1070</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जिला स्तरीय आपदा नियंत्रण कक्ष का आपातकालीन नंबर</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">1077</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में एकीकृत आपातकालीन हेल्पलाइन नंबर</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">112 (ERSS)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में मौसम की सटीक चेतावनी हेतु कितने डॉप्लर रडार स्थापित हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">तीन डॉप्लर रडार</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में तीन डॉप्लर रडार किन स्थानों पर स्थापित किए गए हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">मुक्तेश्वर, सुरकंडा देवी एवं लैंसडाउन</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>डॉप्लर मौसम रडार की सामान्य निगरानी सीमा (त्रिज्या)</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग 100 किलोमीटर</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड के पर्वतीय क्षेत्रों में प्रचलित भूकंपरोधी पारंपरिक स्थापत्य शैली</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कोटि बनाल शैली (काष्ठ-कुणी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कोटि बनाल शैली के बहुमंजिला भवन मुख्य रूप से किन घाटियों में पाए जाते हैं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">यमुना एवं टोंस घाटी (रवांई-जौनसार)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कोटि बनाल भवन निर्माण में भूकंप से सुरक्षा की मुख्य तकनीक</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">काष्ठ एवं पाषाण की क्षैतिज इंटरलॉकिंग</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कोटि बनाल भवनों में प्रयुक्त मुख्य लकड़ी</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">देवदार की लकड़ी</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पर्वतीय क्षेत्रों में भारी वर्षा के जल को पहाड़ियों से दूर ले जाने वाली ड्रेनेज प्रणाली</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सतही जल निकासी नेटवर्क</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में वनाग्नि (दावानल) से सुरक्षा हेतु गठित विशेष ग्राम स्तरीय संगठन</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वन पंचायतें</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वनाग्नि की उपग्रह आधारित निगरानी करने वाली प्रमुख भारतीय संस्था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">भारतीय वन सर्वेक्षण (FSI, देहरादून)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में तीर्थयात्रियों की रियल-टाइम ट्रैकिंग हेतु अनिवार्य व्यवस्था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">क्यूआर कोड एवं रिस्ट बैंड रजिस्ट्रेशन</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पर्वतीय राजमार्गों पर भूस्खलन मलबे को त्वरित हटाने हेतु तैनात विशेष दल</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बीआरओ एवं लोक निर्माण क्विक टीम</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड राज्य आपदा प्रबंधन संस्थान (UIDM) की स्थापना कहाँ प्रस्तावित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">टिहरी गढ़वाल</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आपदा जोखिम प्रबंधन में महिलाओं की भागीदारी हेतु संचालित कार्यक्रम</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">महिला मंगल दल प्रशिक्षण</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आपदा प्रभावित क्षेत्रों में अस्थायी पेयजल आपूर्ति हेतु प्रयुक्त त्वरित शोधन यंत्र</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">क्विक वॉटर प्यूरीफायर यूनिट</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड में नदी तटों से कितनी दूरी तक निर्माण कार्य पूर्णतः प्रतिबंधित है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बाढ़ मैदान परिक्षेत्र नियम अनुसार</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तराखंड बाढ़ मैदान परिक्षेत्रण अधिनियम किस वर्ष लागू किया गया</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष 2012</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पर्वतीय नगरों की सुरक्षित वहन क्षमता का वैज्ञानिक अध्ययन क्या कहलाता है</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कैरिंग कैपेसिटी असेसमेंट</div>
+      </div>
+    </article>
+  </div>
+</section></div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

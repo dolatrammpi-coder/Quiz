@@ -1,0 +1,2875 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Spelling">
+<title>Spelling</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+.no-results.visible { display: block; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Subject-wise Notes</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Subject-Wise Notes</div>
+    <h1>Spelling</h1>
+    <p class="topic-subtitle"></p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+<section class="table-section" id="table-section">
+  <div class="table-title">
+    <div class="table-title-main">Frequently Misspelled Words with Correct Forms</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>Incorrect/Confused Form</th>
+          <th>Correct Form</th>
+          <th>Meaning/Usage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">Accomodate</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Accommodate</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Provide lodging or adjust to</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Embarass</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Embarrass</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Cause awkward feeling or shame</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Occurence</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Occurrence</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">An incident or happening</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Seperate</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Separate</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Disconnected or set apart</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Mispell</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Misspell</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Spell a word wrongly</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Definately</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Definitely</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Without any doubt whatsoever</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Recieve</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Receive</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Be given or accept</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Priviledge</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Privilege</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">A special entitlement or right</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Maintanance</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Maintenance</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Preservation and regular upkeep</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Collegue</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Colleague</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">A co-worker or associate</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Harrass</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Harass</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Torment or intimidate persistently</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Millenium</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Millennium</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Period of one thousand years</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Questionaire</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Questionnaire</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Set of survey questions</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Bizzare</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Bizarre</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Extremely unusual or strange</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Supercede</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Supersede</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Take the place of</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Consceintious</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Conscientious</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Wishing to do right</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Liaison</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Liaison</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Close working relationship bridge</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Surveilance</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Surveillance</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Close continuous observation</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="table-section" id="table-section">
+  <div class="table-title">
+    <div class="table-title-main">Commonly Confused Spelling and Homophone Pairs</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>Incorrect/Confused Form</th>
+          <th>Correct Form</th>
+          <th>Meaning/Usage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">Stationary vs Stationery</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Stationary / Stationery</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Motionless state versus writing materials</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Principle vs Principal</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Principal / Principle</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Head of school versus fundamental rule</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Complement vs Compliment</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Complement / Compliment</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Something completing versus expressing praise</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Council vs Counsel</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Council / Counsel</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Administrative committee versus legal advice</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Dessert vs Desert</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Dessert / Desert</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Sweet dish versus arid wasteland</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Elicit vs Illicit</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Elicit / Illicit</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Evoke response versus illegal action</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Altar vs Alter</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Altar / Alter</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Sacred table versus to change</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Canvas vs Canvass</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Canvas / Canvass</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Heavy fabric versus seek votes</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Censure vs Censor</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Censure / Censor</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Severe disapproval versus suppress content</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Brake vs Break</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Brake / Break</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Vehicle stopping device versus fracture</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Coarse vs Course</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Coarse / Course</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Rough texture versus direction/study program</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">Allusion vs Illusion</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Allusion / Illusion</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">Indirect reference versus false perception</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>Fundamental Spelling Rules: Vowels, Stems &amp; Consonants</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>The classic 'i before e' spelling rule</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">I before e except after c.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of 'i before e' rule</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Believe, achieve, and thief.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of 'ei' following the letter 'c'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Receive, ceiling, and deceit.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Exception to 'i before e' rule sounding like 'ay'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Neighbor and weigh.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Notable exception to 'i before e' rule</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Weird, seize, and leisure.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Rule for doubling final consonant of a monosyllabic word</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Doubled before vowel suffix (run -> running).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Rule for doubling consonant in two-syllable words</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Doubled if second syllable is stressed.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of doubling consonant due to stress</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Occur becomes occurred.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of not doubling consonant due to unstressed syllable</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Benefit becomes benefited.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>British English rule for final 'l' before vowel suffixes</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Always doubled (travel -> travelled).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>American English rule for final 'l' in travel</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Single 'l' (traveled).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Rule for dropping final silent 'e' before vowel suffixes</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'e' is dropped.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of dropping silent 'e'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Hope becomes hoping.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Rule for retaining silent 'e' before consonant suffixes</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'e' is retained.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of retaining silent 'e'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Hope becomes hopeful.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Exception where final silent 'e' is retained after 'c' or 'g'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Retained before 'a' or 'o'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of retaining 'e' to preserve soft 'c' sound</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Noticeable.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of retaining 'e' to preserve soft 'g' sound</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Courageous.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Exception where silent 'e' is dropped before consonant suffix</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Truly, argument, and awful.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Rule for words ending in consonant + 'y' before suffixes</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">'Y' changes to 'i'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Example of 'y' changing to 'i'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Beauty becomes beautiful.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Exception to 'y' changing to 'i' when suffix begins with 'i'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">'Y' is kept (hurry -> hurrying).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Rule for words ending in vowel + 'y'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">'Y' is retained (play -> played).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Exception to vowel + 'y' rule</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Day becomes daily.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Rule for words ending in 'ie' before suffix '-ing'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">'Ie' changes to 'y' (die -> dying).</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>Silent Letters &amp; Etymological Peculiarities</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Doubt'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'b'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Subtle'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'b'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Debt'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'b'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Muscle'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'c'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Acquire'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'c'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Wednesday'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'd'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Handsome'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'd'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Pledge'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'd'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Foreign'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'g'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Sign'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'g'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Rhythm'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'h'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Rhyme'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'h'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Echo'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'h'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Knee'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'k'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Knack'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'k'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Calm'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'l'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Salmon'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'l'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Autumn'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'n'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Hymn'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'n'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Psychology'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'p'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Pneumonia'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'p'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Receipt'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 'p'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Island'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 's'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Aisle'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 's'.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Silent letter in the word 'Whistle'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Silent 't'.</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>Suffixes, Prefixes &amp; Plural/Past Formations</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of prefix 'dis-' added to 'satisfied'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Dissatisfied (double 's').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of prefix 'mis-' added to 'spell'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Misspell (double 's').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of prefix 'un-' added to 'necessary'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Unnecessary (double 'n').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of prefix 'il-' added to 'legible'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Illegible (double 'l').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of prefix 'im-' added to 'mortal'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Immortal (double 'm').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of prefix 'ir-' added to 'relevant'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Irrelevant (double 'r').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of noun ending in 'o' preceded by consonant</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Adds '-es' (potato -> potatoes).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Exception to 'o' plural rule for musical terms</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Adds '-s' (piano -> pianos, solo -> solos).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of noun ending in 'o' preceded by vowel</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Adds '-s' (radio -> radios).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of noun ending in '-f' or '-fe'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Changes to '-ves' (leaf -> leaves).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Exception to '-f' plural rule retaining '-fs'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Chief -> chiefs, roof -> roofs.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of Greek noun ending in '-is'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Changes to '-es' (crisis -> crises).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of Greek noun ending in '-on'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Changes to '-a' (criterion -> criteria).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of Latin noun ending in '-um'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Changes to '-a' (datum -> data).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of Latin noun ending in '-us'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Changes to '-i' (radius -> radii).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of Latin noun ending in '-a'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Changes to '-ae' (formula -> formulae).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of compound noun 'father-in-law'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Fathers-in-law.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Plural form of compound noun 'passer-by'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Passers-by.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct suffix choice between '-able' and '-ible'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">'-able' is more productive in English.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling of adjective form of 'access'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Accessible.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling of adjective form of 'depend'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Dependable.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling of adjective form of 'resist'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Resistible.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of noun form ending in '-ance' for 'perform'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Performance.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of noun form ending in '-ence' for 'occur'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Occurrence.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of noun form ending in '-ance' for 'maintain'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Maintenance.</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>High-Frequency Competitive Exam Spelling Corrections — Part 1</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Accomodate'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Accommodate (double c, double m).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Embarass'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Embarrass (double r, double s).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Harrass'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Harass (single r, double s).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Occured'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Occurred (double c, double r).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Militery'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Military.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Bizzare'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Bizarre (single z, double r).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Maintanance'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Maintenance.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Questionaire'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Questionnaire (double n).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Priviledge'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Privilege.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Seperate'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Separate.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Definately'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Definitely.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Recieve'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Receive.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Colleague'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Colleague.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Commitee'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Committee (double m, double t, double e).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Millenium'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Millennium (double l, double n).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Gaurantee'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Guarantee.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Liaison'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Liaison (i-a-i).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Bureacracy'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Bureaucracy.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Consceintious'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Conscientious.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Surveilance'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Surveillance (double l).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Diarhea'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Diarrhea or Diarrhoea.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Hemorrhage'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Hemorrhage or Haemorrhage.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Veterinery'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Veterinary.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Renaissance'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Renaissance (single n, double s).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Supercede'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Supersede (spelled with 's').</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>High-Frequency Competitive Exam Spelling Corrections — Part 2</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Asassin'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Assassin (double s, double s).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Posession'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Possession (double s, double s).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Exagerate'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Exaggerate (double g).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Vacum'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Vacuum (single c, double u).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Carribean'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Caribbean (single r, double b).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Hierachy'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Hierarchy.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Mischievious'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Mischievous (three syllables, no 'i' after v).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Grievence'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Grievance.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Lieutenant'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Lieutenant.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Pronounciation'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Pronunciation (no 'o' in nun).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Enviroment'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Environment (silent 'n').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Goverment'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Government (silent 'n').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Parliament'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Parliament (contains 'ia').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Restaurant'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Restaurant (contains 'au').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Ammateur'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Amateur.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Bouquet'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Bouquet.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Chauffeur'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Chauffeur.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Sovereignty'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Sovereignty.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Inoculate'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Inoculate (single n).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Discrepency'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Discrepancy.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Fahrenheit'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Fahrenheit.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Fluorescent'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Fluorescent (starts with 'fluo').</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Manoeuvre'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Manoeuvre or Maneuver.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Paralleled'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Paralleled (single 'l' in suffix).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Correct spelling of 'Tyranny'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Tyranny (single r, double n).</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="qna-section">
+  <div class="qa-header">
+    <h2>Homophones, British vs American Spelling &amp; Exam Pitfalls</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling difference in British vs American for 'color'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Colour (UK) vs Color (US).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling difference in British vs American for 'centre'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Centre (UK) vs Center (US).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling difference in British vs American for 'theatre'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Theatre (UK) vs Theater (US).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling difference in British vs American for 'organise'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Organise (UK) vs Organize (US).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling difference for noun vs verb 'practice' in British English</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Practice (noun) vs Practise (verb).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling difference for noun vs verb 'advice' in British English</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Advice (noun) vs Advise (verb).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling difference for noun vs verb 'license' in British English</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Licence (noun) vs License (verb).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Spelling difference for noun vs verb 'device' in British English</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Device (noun) vs Devise (verb).</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Stationary' and 'Stationery'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Stationary means still; stationery writing materials.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Principal' and 'Principle'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Principal is head; principle is rule.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Complement' and 'Compliment'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Complement completes; compliment praises.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Dessert' and 'Desert'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Dessert is sweet; desert is arid.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Council' and 'Counsel'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Council is committee; counsel is advice.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Canvas' and 'Canvass'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Canvas is fabric; canvass seeks votes.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Altar' and 'Alter'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Altar is platform; alter means change.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Censure' and 'Censor'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Censure criticizes; censor suppresses content.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Elicit' and 'Illicit'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Elicit evokes; illicit is illegal.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Coarse' and 'Course'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Coarse is rough; course is path.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Allusion' and 'Illusion'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Allusion is reference; illusion false perception.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Brake' and 'Break'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Brake stops; break fractures.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Foreword' and 'Forward'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Foreword is preface; forward is onward.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Weather' and 'Whether'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Weather is climate; whether expresses choice.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Difference between 'Hoard' and 'Horde'</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Hoard stockpiles; horde is large crowd.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Common trap: selecting American spelling over British standard</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Competitive exams in India follow British.</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>Master technique for answering spelling questions in exams</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">Write word independently before looking options.</div>
+      </div>
+    </article>
+  </div>
+</section></div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

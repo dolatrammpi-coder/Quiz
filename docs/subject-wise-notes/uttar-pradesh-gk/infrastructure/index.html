@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Infrastructure">
+<title>Infrastructure</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+.no-results.visible { display: block; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Subject-wise Notes</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Subject-Wise Notes</div>
+    <h1>Infrastructure</h1>
+    <p class="topic-subtitle"></p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+<section class="qa-section" id="section-qa-1">
+  <div class="qa-header">
+    <h2>उत्तर प्रदेश के प्रमुख एक्सप्रेसवे नेटवर्क</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत में सर्वाधिक एक्सप्रेसवे नेटवर्क वाला 'एक्सप्रेसवे प्रदेश' कौन-सा राज्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश</strong> (6 क्रियाशील एवं 7 निर्माणाधीन/प्रस्तावित)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में एक्सप्रेसवे और औद्योगिक गलियारों के निर्माण हेतु शीर्ष राज्य प्राधिकरण</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>यूपीडा (UPEIDA - उत्तर प्रदेश एक्सप्रेसवेज औद्योगिक विकास प्राधिकरण)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यूपीडा (UPEIDA) की स्थापना किस वर्ष की गई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>2007</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का सबसे लंबा वर्तमान में संचालित एक्सप्रेसवे कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पूर्वांचल एक्सप्रेसवे</strong> (कुल लंबाई: 340.82 किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वांचल एक्सप्रेसवे किन दो प्रमुख जनपदों को आपस में जोड़ता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखनऊ (चांद सराय) से गाजीपुर (हैदरिया)</strong> तक</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वांचल एक्सप्रेसवे उत्तर प्रदेश के कुल कितने जिलों से होकर गुजरता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>9 जिलों</strong> से (लखनऊ, बाराबंकी, अमेठी, सुल्तानपुर, अयोध्या, अंबेडकर नगर, आजमगढ़, मऊ, गाजीपुर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वांचल एक्सप्रेसवे पर भारतीय वायुसेना के लड़ाकू विमानों की लैंडिंग हेतु एयरस्ट्रिप कहाँ बनाई गई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सुल्तानपुर जिले के <strong class='highlight'>कूरेभार</strong> के निकट (3.2 किमी लंबी एयरस्ट्रिप)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड एक्सप्रेसवे की कुल लंबाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>296.07 किलोमीटर</strong> (4 लेन, 6 लेन तक विस्तारणीय)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड एक्सप्रेसवे का विस्तार किन दो स्थलों के मध्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">चित्रकूट जिले के <strong class='highlight'>भरतकूप से इटावा के कुदरैल</strong> (आगरा-लखनऊ एक्सप्रेसवे मिलन बिंदु)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड एक्सप्रेसवे कितने जिलों से होकर प्रवाहित होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>7 जिलों</strong> से (चित्रकूट, बाँदा, महोबा, हमीरपुर, जालौन, औरैया, इटावा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आगरा-लखनऊ एक्सप्रेसवे की कुल लंबाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>302.22 किलोमीटर</strong> (6 लेन, ग्रीनफील्ड एक्सप्रेसवे)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आगरा-लखनऊ एक्सप्रेसवे पर लड़ाकू विमानों की आपात लैंडिंग हेतु एयरस्ट्रिप किस जिले में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उन्नाव</strong> जिले में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ग्रेटर नोएडा से आगरा को जोड़ने वाले यमुना एक्सप्रेसवे की कुल लंबाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>165.53 किलोमीटर</strong> (पूर्व नाम: ताज एक्सप्रेसवे)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>निर्माणाधीन 'गंगा एक्सप्रेसवे' की कुल लंबाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>593.94 किलोमीटर</strong> (लगभग 594 किमी) - मेरठ से प्रयागराज</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-1">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश के प्रमुख क्रियाशील एवं निर्माणाधीन एक्सप्रेसवे</div>
+    <div class="table-title-sub">एक्सप्रेसवे का नाम, कुल लंबाई, कनेक्टिंग जिले एवं लेन क्षमता</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>एक्सप्रेसवे का नाम</th>
+          <th>कुल लंबाई एवं लेन</th>
+          <th>मार्ग विस्तार (शुरुआत से अंत) व जिले</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">पूर्वांचल एक्सप्रेसवे</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">340.82 किमी (6 लेन)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लखनऊ (चांद सराय) से गाजीपुर (हैदरिया) - 9 जिले</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">आगरा-लखनऊ एक्सप्रेसवे</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">302.22 किमी (6 लेन)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">आगरा से लखनऊ (मोहनलालगंज) - 10 जिले</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">बुंदेलखंड एक्सप्रेसवे</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">296.07 किमी (4 लेन)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">चित्रकूट (भरतकूप) से इटावा (कुदरैल) - 7 जिले</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">यमुना एक्सप्रेसवे</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">165.53 किमी (6 लेन)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">ग्रेटर नोएडा से आगरा (कुबेरपुर) - 5 जिले</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">गंगा एक्सप्रेसवे (निर्माणाधीन)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">593.94 किमी (6 लेन)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">मेरठ (बिजौली) से प्रयागराज (जुड़ापुर डांडू) - 12 जिले</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">गोरखपुर लिंक एक्सप्रेसवे</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">91.35 किमी (4 लेन)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">गोरखपुर (जैतपुर) से आजमगढ़ (सलारपुर, पूर्वांचल एक्सप्रेसवे लिंक)</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-2">
+  <div class="qa-header">
+    <h2>राष्ट्रीय एवं राज्य राजमार्ग तथा सड़क परिवहन</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राष्ट्रीय राजमार्गों (National Highways) की कुल लंबाई की दृष्टि से उत्तर प्रदेश का देश में स्थान</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>द्वितीय स्थान</strong> (महाराष्ट्र के बाद, 12,000+ किमी से अधिक)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश से होकर गुजरने वाला सबसे लंबा राष्ट्रीय राजमार्ग कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राष्ट्रीय राजमार्ग 19 (NH-19)</strong> - पूर्व में NH-2 (दिल्ली-कोलकाता मार्ग)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर-दक्षिण (North-South) और पूर्व-पश्चिम (East-West) राष्ट्रीय गलियारे का मिलन बिंदु उत्तर प्रदेश में कहाँ है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>झांसी</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य सड़क परिवहन निगम (UPSRTC) की विधिवत स्थापना किस वर्ष हुई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>1 जून 1972</strong> को (सड़क परिवहन निगम अधिनियम 1950 के तहत)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य सड़क परिवहन निगम का केंद्रीय मुख्यालय कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखनऊ</strong> (परिवहन भवन) में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ग्रामीण क्षेत्रों में पक्की सड़कों के निर्माण हेतु संचालित फ्लैगशिप केंद्रीय योजना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रधानमंत्री ग्राम सड़क योजना (PMGSY)</strong> - 25 दिसंबर 2000</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य राजमार्ग प्राधिकरण (UPSHA) का गठन किस वर्ष किया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>2004</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>UPSHA का मुख्य दायित्व क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राज्य राजमार्गों (State Highways) का उच्चीकरण एवं पीपीपी मॉडल पर विकास</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में महिलाओं की सुरक्षित यात्रा हेतु UPSRTC द्वारा संचालित विशिष्ट गुलाबी बस सेवा</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पिंक बस सेवा (Pink Bus Service)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सड़क दुर्घटनाओं में पीड़ितों की सहायता और त्वरित अस्पताल पहुँचाने हेतु शुरू की गई योजना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गुड सेमेरिटन (नेक नागरिक) प्रोत्साहन योजना</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के सुदूर गांवों को विकास खंड व जिला मुख्यालय से जोड़ने वाली राज्य बस सेवा</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लोहिया ग्रामीण बस सेवा / साधारण ग्रामीण सेवा</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सड़क मार्गों की गुणवत्ता जांचने और गड्ढामुक्त अभियान की निगरानी हेतु राज्य का मोबाइल ऐप</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सड़क सुरक्षा / गड्ढामुक्त सड़क ऐप</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में वाहनों के प्रदूषण नियंत्रण हेतु किस मानक के वाहन अनिवार्य हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बीएस-VI (Bharat Stage VI)</strong> मानक</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-3">
+  <div class="qa-header">
+    <h2>रेल परिवहन एवं समर्पित माल गलियारा (Dedicated Freight Corridor)</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में प्रथम रेलगाड़ी किस वर्ष और किन दो स्टेशनों के मध्य चलाई गई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1859 में प्रयागराज (इलाहाबाद) से कानपुर</strong> के मध्य (मार्च 1859)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत में सर्वाधिक रेल नेटवर्क (रेलवे ट्रैक लंबाई) वाला राज्य कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश</strong> (9,000+ मार्ग किलोमीटर, देश का लगभग 13.5%)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर मध्य रेलवे (NCR - North Central Railway) का क्षेत्रीय मुख्यालय कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रयागराज (इलाहाबाद)</strong> में (स्थापना: 1 अप्रैल 2003)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वोत्तर रेलवे (NER - North Eastern Railway) का जोनल मुख्यालय कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गोरखपुर</strong> में (स्थापना: 14 अप्रैल 1952)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर रेलवे (Northern Railway) का सबसे प्रमुख मंडल कार्यालय उत्तर प्रदेश में कहाँ है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखनऊ (चारबाग)</strong> एवं मुरादाबाद</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पूर्वी समर्पित माल गलियारा (EDFC) उत्तर प्रदेश में कहाँ से कहाँ तक विस्तृत है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सहारनपुर से पं. दीनदयाल उपाध्याय जंक्शन</strong> होते हुए बिहार सीमा तक (1,058 किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ईस्टर्न (EDFC) और वेस्टर्न (WDFC) फ्रेट कॉरिडोर का जंक्शन उत्तर प्रदेश में कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>दादरी (ग्रेटर नोएडा)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बनारस रेल इंजन कारखाना (BLW - पूर्व नाम DLW) उत्तर प्रदेश के किस जिले में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मड़ुआडीह, वाराणसी</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आधुनिक रेल डिब्बा कारखाना (Modern Coach Factory - MCF) कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लालगंज, रायबरेली</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय रेलवे का केंद्रीय विद्युत कर्षण प्रशिक्षण संस्थान कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>कानपुर</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत की पहली सेमी-हाई स्पीड ट्रेन 'वंदे भारत एक्सप्रेस' किन दो शहरों के मध्य प्रारंभ हुई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नई दिल्ली से वाराणसी</strong> के मध्य (15 फरवरी 2019)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर रेलवे का ऐतिहासिक चारबाग रेलवे स्टेशन (लखनऊ) किस स्थापत्य शैली का उत्कृष्ट उदाहरण है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>इंडो-सारसेनिक (राजपूत-मुगल-गोथिक) समन्वय शैली</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>एशिया का सबसे बड़ा रेलवे मार्शलिंग यार्ड उत्तर प्रदेश में कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पं. दीनदयाल उपाध्याय जंक्शन</strong> (पूर्व नाम: मुगलसराय)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>रेलवे सुरक्षा बल (RPF) का केंद्रीय प्रशिक्षण अकादमी संस्थान उत्तर प्रदेश में कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>जगजीवन राम आरपीएफ अकादमी</strong>, लखनऊ</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-2">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश के प्रमुख अंतरराष्ट्रीय एवं घरेलू हवाई अड्डे</div>
+    <div class="table-title-sub">हवाई अड्डे का नाम, अवस्थिति (शहर) एवं वर्तमान परिचालन दर्जा</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>हवाई अड्डे का नाम</th>
+          <th>अवस्थिति (शहर)</th>
+          <th>प्रकार एवं वर्तमान स्थिति</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">चौधरी चरण सिंह अंतरराष्ट्रीय हवाई अड्डा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लखनऊ (अमौसी)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">क्रियाशील अंतरराष्ट्रीय हवाई अड्डा</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">लाल बहादुर शास्त्री अंतरराष्ट्रीय हवाई अड्डा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">वाराणसी (बाबतपुर)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">क्रियाशील अंतरराष्ट्रीय हवाई अड्डा</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">कुशीनगर अंतरराष्ट्रीय हवाई अड्डा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कुशीनगर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">क्रियाशील अंतरराष्ट्रीय हवाई अड्डा (बौद्ध सर्किट)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">महर्षि वाल्मीकि अंतरराष्ट्रीय हवाई अड्डा</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अयोध्या धाम</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">क्रियाशील अंतरराष्ट्रीय हवाई अड्डा (लोकार्पण: 2023)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">नोएडा अंतरराष्ट्रीय हवाई अड्डा (जेवर)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">ग्रेटर नोएडा (गौतमबुद्ध नगर)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">निर्माणाधीन ग्रीनफील्ड अंतरराष्ट्रीय हवाई अड्डा (पीपीपी)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">बमरोली हवाई अड्डा / सिविल एन्क्लेव</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">प्रयागराज</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">क्रियाशील घरेलू हवाई अड्डा (नागरिक टर्मिनल)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">चकेरी हवाई अड्डा / नया सिविल एन्क्लेव</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कानपुर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">क्रियाशील घरेलू हवाई अड्डा</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-4">
+  <div class="qa-header">
+    <h2>नागरिक उड्डयन: अंतरराष्ट्रीय एवं क्षेत्रीय हवाई अड्डे</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत का पहला राज्य कौन-सा है जहाँ 5 अंतरराष्ट्रीय हवाई अड्डे विकसित किए जा रहे हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के 5 अंतरराष्ट्रीय हवाई अड्डे कौन-से हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखनऊ, वाराणसी, कुशीनगर, अयोध्या धाम और जेवर (नोएडा)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>पीपीपी मॉडल पर विकसित हो रहा देश का विशालतम ग्रीनफील्ड एयरपोर्ट कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नोएडा अंतरराष्ट्रीय हवाई अड्डा, जेवर</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>जेवर अंतरराष्ट्रीय हवाई अड्डे का विकास किस अंतरराष्ट्रीय कंपनी द्वारा किया जा रहा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">स्विट्जरलैंड की <strong class='highlight'>ज्यूरिख एयरपोर्ट इंटरनेशनल एजी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>अयोध्या में नवनिर्मित अंतरराष्ट्रीय हवाई अड्डे का आधिकारिक नाम क्या रखा गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>महर्षि वाल्मीकि अंतरराष्ट्रीय हवाई अड्डा, अयोध्या धाम</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कुशीनगर अंतरराष्ट्रीय हवाई अड्डे का मुख्य उद्देश्य किस पर्यटन सर्किट को सीधे जोड़ना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बौद्ध तीर्थ सर्किट (Buddhist Circuit)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>लखनऊ स्थित अंतरराष्ट्रीय हवाई अड्डे का नाम किस पूर्व प्रधानमंत्री के नाम पर है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>चौधरी चरण सिंह अंतरराष्ट्रीय हवाई अड्डा</strong> (अमौसी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वाराणसी स्थित अंतरराष्ट्रीय हवाई अड्डे का आधिकारिक नाम क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लाल बहादुर शास्त्री अंतरराष्ट्रीय हवाई अड्डा</strong> (बाबतपुर)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>केंद्र सरकार की क्षेत्रीय संपर्क योजना 'उड़ान' (UDAN) का पूर्ण रूप क्या है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उड़े देश का आम नागरिक</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उड़ान योजना के तहत हाल ही में उत्तर प्रदेश के किन शहरों से घरेलू उड़ानें शुरू हुई हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बरेली, हिंडन (गाजियाबाद), प्रयागराज, कानपुर, अलीगढ़, आजमगढ़, चित्रकूट, श्रावस्ती व मुरादाबाद</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राष्ट्रीय विमानन विश्वविद्यालय (RGNAU) उत्तर प्रदेश में कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>फुरसतगंज (अमेठी)</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>इंदिरा गांधी राष्ट्रीय उड़ान अकादमी (IGRUA) उत्तर प्रदेश के किस जिले में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>फुरसतगंज, अमेठी</strong> (पायलट प्रशिक्षण का शीर्ष राष्ट्रीय संस्थान)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय वायुसेना का रणनीतिक हिंडन एयरफोर्स स्टेशन किस जिले में स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गाजियाबाद</strong> में</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-5">
+  <div class="qa-header">
+    <h2>मेट्रो रेल एवं नमो भारत (RRTS) परियोजनाएं</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के विभिन्न शहरों में मेट्रो रेल परियोजनाओं के क्रियान्वयन हेतु नोडल संस्था</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश मेट्रो रेल कॉर्पोरेशन (UPMRC)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में सर्वप्रथम मेट्रो रेल सेवा किस शहर में शुरू हुई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नोएडा (DMRC विस्तार) तथा लखनऊ में स्वतंत्र रूप से (5 सितंबर 2017)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>लखनऊ मेट्रो का प्रथम चरण (अमौसी एयरपोर्ट से मुंशीपुलिया) किस नाम से जाना जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रेड लाइन (नॉर्थ-साउथ कॉरिडोर, 22.87 किमी)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>कानपुर मेट्रो के प्राथमिक खंड (आईआईटी कानपुर से मोतीझील) का उद्घाटन कब हुआ?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>28 दिसंबर 2021</strong> को (प्रधानमंत्री नरेंद्र मोदी द्वारा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आगरा मेट्रो के प्राथमिक भूमिगत व एलिवेटेड कॉरिडोर (ताज पूर्वी गेट से मनकामेश्वर) का शुभारंभ कब हुआ?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>मार्च 2024</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नोएडा और ग्रेटर नोएडा को आपस में जोड़ने वाली स्वतंत्र मेट्रो लाइन कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>एक्वा लाइन (Aqua Line - नोएडा मेट्रो रेल कॉर्पोरेशन द्वारा संचालित)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत की पहली क्षेत्रीय त्वरित पारगमन प्रणाली (RRTS) का आधिकारिक नाम क्या रखा गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नमो भारत (Namo Bharat / रैपिड रेल)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>देश के प्रथम आरआरटीएस (RRTS) कॉरिडोर का विस्तार किन दो शहरों के मध्य है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>दिल्ली-गाजियाबाद-मेरठ कॉरिडोर</strong> (कुल लंबाई: 82.15 किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नमो भारत ट्रेन के 17 किमी के प्राथमिक खंड (साहिबाबाद से दुहाई डिपो) का उद्घाटन कब हुआ?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>20 अक्टूबर 2023</strong> को</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नमो भारत (RRTS) ट्रेनों की अधिकतम परिचालन गति (Operational Speed) कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>160 किमी प्रति घंटा</strong> (डिजाइन गति: 180 किमी/घंटा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वाराणसी में सार्वजनिक परिवहन हेतु देश की पहली अर्बन रोप-वे प्रणाली कहाँ से कहाँ तक बन रही है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>वाराणसी कैंट रेलवे स्टेशन से गोदौलिया चौक</strong> तक</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सार्वजनिक परिवहन के लिए अर्बन रोप-वे अपनाने वाला भारत विश्व का कौन-सा देश बना?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>तीसरा देश</strong> (बोलीविया और मैक्सिको के बाद)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>गोरखपुर में किस प्रकार की आधुनिक हल्की पारगमन प्रणाली प्रस्तावित की गई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गोरखपुर मेट्रोलाइट (Metrolite)</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-6">
+  <div class="qa-header">
+    <h2>अंतर्देशीय जलमार्ग एवं जल परिवहन (Inland Waterways)</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत का राष्ट्रीय जलमार्ग संख्या-1 (National Waterway-1 / NW-1) किन दो शहरों के मध्य स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रयागराज (उत्तर प्रदेश) से हल्दिया (पश्चिम बंगाल)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राष्ट्रीय जलमार्ग-1 किस नदी तंत्र पर विकसित किया गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>गंगा-भागीरथी-हुगली नदी तंत्र</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>राष्ट्रीय जलमार्ग-1 की कुल लंबाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>1,620 किलोमीटर</strong> (भारत का सबसे लंबा राष्ट्रीय जलमार्ग)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>NW-1 को राष्ट्रीय जलमार्ग का दर्जा किस वर्ष प्रदान किया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">अक्टूबर <strong class='highlight'>1986</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>NW-1 के विकास हेतु केंद्र सरकार द्वारा किस बहुपक्षीय बैंक के सहयोग से 'जल मार्ग विकास परियोजना' चलाई गई?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>विश्व बैंक (World Bank)</strong> के वित्तीय सहयोग से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में गंगा नदी पर प्रथम मल्टी-मॉडल टर्मिनल (MMT) कहाँ निर्मित किया गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रामनगर (राल्हूपुर), वाराणसी</strong> में (नवंबर 2018 में उद्घाटित)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>विश्व का सबसे लंबा नदी क्रूज 'एमवी गंगा विलास' (MV Ganga Vilas) किन दो शहरों के मध्य संचालित हुआ?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>वाराणसी (उत्तर प्रदेश) से डिब्रूगढ़ (असम)</strong> तक (3,200 किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>एमवी गंगा विलास लग्जरी क्रूज को हरी झंडी दिखाकर कब रवाना किया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>13 जनवरी 2023</strong> को (प्रधानमंत्री नरेंद्र मोदी द्वारा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारतीय अंतर्देशीय जलमार्ग प्राधिकरण (IWAI) का क्षेत्रीय कार्यालय उत्तर प्रदेश में कहाँ है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>वाराणसी एवं नोएडा (मुख्यालय: नोएडा, सेक्टर-1)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में अयोध्या में सरयू नदी पर पर्यटन हेतु संचालित सौर संचालित क्रूज नौका</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>'जटायु' एवं 'पुष्पक' क्रूज सेवा</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>वाराणसी में पर्यटकों हेतु गंगा में संचालित पर्यावरण अनुकूल हाइड्रोजन-ईंधन व इलेक्ट्रिक नौकाएं</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>ई-कैटामारन एवं सौर नौकाएं</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य अंतर्देशीय जलमार्ग प्राधिकरण का गठन किस वर्ष किया गया?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>2023</strong> में (नदियों में जल परिवहन को बढ़ावा देने हेतु)</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-3">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश की प्रमुख विद्युत उत्पादन परियोजनाएं</div>
+    <div class="table-title-sub">परियोजना का नाम, अवस्थिति (जिला), प्रकार एवं मुख्य उत्पादन क्षमता</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>विद्युत परियोजना</th>
+          <th>अवस्थिति (जिला)</th>
+          <th>संयंत्र प्रकार एवं प्रमुख विवरण</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">नरोरा परमाणु ऊर्जा केंद्र (NAPS)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बुलंदशहर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">नाभिकीय ऊर्जा (440 मेगावाट - 220 MW x 2, दाबित भारी जल रिएक्टर)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">अनपरा ताप विद्युत संयंत्र</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सोनभद्र</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कोयला आधारित थर्मल पावर (UPRVUNL, 2,630 मेगावाट)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">ओबरा ताप विद्युत संयंत्र</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सोनभद्र</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">थर्मल पावर (ओबरा 'डी' सुपरक्रिटिकल संयंत्र निर्माणाधीन)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">रिहंद सुपर थर्मल पावर प्रोजेक्ट</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सोनभद्र</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">एनटीपीसी (NTPC) कोयला आधारित, 3,000 मेगावाट क्षमता</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">रिहंद जल विद्युत परियोजना</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">पिंपरी (सोनभद्र)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">जल विद्युत (गोविंद बल्लभ पंत सागर, 300 मेगावाट)</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मेजा सुपर थर्मल पावर स्टेशन</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">प्रयागराज</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">एनटीपीसी व UPRVUNL संयुक्त उपक्रम, 1,320 मेगावाट</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">घाटमपुर ताप विद्युत परियोजना</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">कानपुर नगर</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">सुपरक्रिटिकल थर्मल पावर (नेवेली लिग्नाइट व उ.प्र. उपक्रम, 1,980 MW)</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-7">
+  <div class="qa-header">
+    <h2>विद्युत उत्पादन एवं ऊर्जा अवसंरचना (Thermal, Hydro &amp; Nuclear)</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का एकमात्र परमाणु ऊर्जा केंद्र (Nuclear Power Plant) कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नरोरा</strong>, बुलंदशहर जिला (गंगा नदी तट)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नरोरा परमाणु ऊर्जा संयंत्र (NAPS) की कुल स्थापित विद्युत उत्पादन क्षमता कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>440 मेगावाट</strong> (220 मेगावाट की दो दाबित भारी जल रिएक्टर इकाइयाँ - PHWR)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नरोरा परमाणु संयंत्र की प्रथम इकाई ने व्यावसायिक उत्पादन किस वर्ष प्रारंभ किया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1991</strong> में (द्वितीय इकाई: 1992)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश राज्य विद्युत उत्पादन निगम लिमिटेड (UPRVUNL) का मुख्यालय कहाँ है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखनऊ</strong> (शक्ति भवन) में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश पावर कॉर्पोरेशन लिमिटेड (UPPCL) की स्थापना विद्युत सुधार अधिनियम के तहत कब हुई?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>14 जनवरी 2000</strong> को</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश के किस जिले को राज्य की 'ऊर्जा राजधानी' (Energy Capital) कहा जाता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सोनभद्र</strong> (विशाल कोयला भंडार, एनटीपीसी व राज्य थर्मल संयंत्रों के कारण)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सोनभद्र जिले के ओबरा ताप विद्युत गृह का निर्माण किस देश के तकनीकी सहयोग से हुआ था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पूर्व सोवियत संघ (रूस)</strong> के सहयोग से</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>एनटीपीसी (NTPC) का देश का सबसे बड़ा सुपर थर्मल पावर स्टेशन उत्तर प्रदेश में कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">सोनभद्र जिले के <strong class='highlight'>शक्तिनगर (सिंगरौली सुपर थर्मल)</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की सबसे बड़ी जल विद्युत परियोजना कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रिहंद जल विद्युत परियोजना</strong>, सोनभद्र (300 मेगावाट)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बेतवा नदी पर स्थित माताटीला जल विद्युत परियोजना किन दो राज्यों की संयुक्त परियोजना है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश और मध्य प्रदेश</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में गैस आधारित विद्युत संयंत्र एनटीपीसी द्वारा कहाँ संचालित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>औरैया, दादरी (गौतमबुद्ध नगर) और आंवला (बरेली)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में विद्युत वितरण व्यवस्था कितने डिस्कॉम (DISCOMs) में विभाजित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>5 वितरण कंपनियों</strong> में (पूर्वांचल, पश्चिमांचल, मध्यांचल, दक्षिणांचल और केस्को)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश विद्युत नियामक आयोग (UPERC) की स्थापना किस वर्ष हुई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1998</strong> में</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-8">
+  <div class="qa-header">
+    <h2>सौर ऊर्जा एवं नवीकरणीय ऊर्जा अवसंरचना (Renewable Energy)</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में नवीकरणीय एवं गैर-पारंपरिक ऊर्जा के विकास हेतु नोडल एजेंसी कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>यूपीनेडा (UPNEDA - उत्तर प्रदेश नवीन एवं नवीकरणीय ऊर्जा विकास अभिकरण)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>यूपीनेडा (UPNEDA) की स्थापना किस वर्ष की गई थी?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1983</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश सौर ऊर्जा नीति 2022 के अंतर्गत अगले 5 वर्षों में सौर ऊर्जा उत्पादन का लक्ष्य</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>22,000 मेगावाट (22 GW)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश सरकार द्वारा किस पावन नगरी को राज्य की प्रथम 'मॉडल सोलर सिटी' के रूप में विकसित किया गया?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अयोध्या</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>अयोध्या को सोलर सिटी बनाने हेतु सरयू तट पर कितने मेगावाट का सौर संयंत्र स्थापित किया गया?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>40 मेगावाट क्षमता</strong> का सौर संयंत्र (NTPC ग्रीन एनर्जी द्वारा)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड क्षेत्र में अल्ट्रा मेगा सोलर पावर पार्क कहाँ विकसित किए जा रहे हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>जालौन, बाँदा, झांसी, ललितपुर और चित्रकूट</strong> में (कुल 4000+ मेगावाट)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश का सबसे बड़ा तैरता हुआ सौर ऊर्जा संयंत्र (Floating Solar Plant) कहाँ स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रिहंद जलाशय (दिवियापुर/सोनभद्र)</strong> पर (लगभग 150 मेगावाट)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>घरों की छतों पर सोलर पैनल लगाने को प्रोत्साहित करने वाली राष्ट्रीय योजना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पीएम सूर्य घर: मुफ्त बिजली योजना</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>किसानों को सिंचाई हेतु सौर पंप उपलब्ध कराने वाली प्रमुख योजना कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पीएम-कुसुम योजना (PM-KUSUM)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश जैव ऊर्जा नीति (Bio-Energy Policy) किस वर्ष अधिसूचित की गई?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>2022</strong> में (बायो-सीएनजी, सीबीजी व बायो-कोल संवर्धन)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>एशिया का सबसे बड़ा कम्प्रेस्ड बायो-गैस (CBG) संयंत्र उत्तर प्रदेश के किस जिले में स्थापित हुआ?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लहरागागा निकट बदायूँ / झांसी क्षेत्र</strong> में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में सौर पार्कों के विकास हेतु गठित संयुक्त उपक्रम कंपनी का नाम</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>लखनऊ सोलर पावर डेवलपमेंट कॉर्पोरेशन (LSPDC)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>प्रदेश के सरकारी भवनों को सौर ऊर्जा से संतृप्त करने हेतु कौन-सा अभियान चलाया जा रहा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>रूफटॉप सोलर अभियान</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-9">
+  <div class="qa-header">
+    <h2>सिंचाई अवसंरचना एवं विशाल नहर प्रणालियाँ</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में सिंचाई का सबसे प्रमुख एवं विशालतम साधन कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>नलकूप (Tubewells)</strong> - कुल सिंचित क्षेत्र का लगभग 73% से 75%</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की सबसे लंबी और विशालतम नहर प्रणाली कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>शारदा नहर प्रणाली</strong> (शाखाओं सहित कुल लंबाई: 12,368 किमी)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शारदा नहर का निर्माण किस वर्ष से किस वर्ष के मध्य कराया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1920 से 1928</strong> के मध्य (बनबासा बैराज से उद्गमित)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश की सबसे प्राचीन आधुनिक नहर प्रणाली कौन-सी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पूर्वी यमुना नहर</strong> (1830 में ब्रिटिश काल में जीर्णोद्धार, मूल निर्माण शाहजहाँ)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ऊपरी गंगा नहर का निर्माण किस ब्रिटिश इंजीनियर की देखरेख में हुआ था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>सर पी. टी. कॉटले</strong> (वर्ष 1842-1854, हरिद्वार से निकास)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>निचली गंगा नहर का उद्गम गंगा नदी पर किस स्थल से होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">बुलंदशहर जिले के <strong class='highlight'>नरोरा बैराज</strong> से (1878)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>आगरा नहर का उद्गम यमुना नदी से किस स्थान पर होता है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">दिल्ली के निकट <strong class='highlight'>ओखला बैराज</strong> से (1874)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>दिसंबर 2021 में राष्ट्र को समर्पित 'सरयू नहर राष्ट्रीय परियोजना' की कुल नहर लंबाई कितनी है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">लगभग <strong class='highlight'>6,623 किलोमीटर</strong> (पूर्वी उप्र के 9 जिलों को सिंचाई लाभ)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सरयू नहर राष्ट्रीय परियोजना में किन 5 प्रमुख नदियों को आपस में जोड़ा गया है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>घाघरा, सरयू, राप्ती, बाणगंगा और रोहिणी</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>मध्य गंगा नहर परियोजना गंगा नदी पर किस जिले में बैराज बनाकर निकाली गई है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बिजनौर</strong> जिले में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में प्रथम नलकूप (Tubewell) किस वर्ष और कहाँ लगाया गया था?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">वर्ष <strong class='highlight'>1930 में मेरठ</strong> जिले में</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड क्षेत्र में सिंचाई सुविधा बढ़ाने हेतु बेतवा नदी पर कौन-सा विशाल बांध स्थित है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>माताटीला बांध (रानी लक्ष्मीबाई बांध) एवं राजघाट बांध</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>खेत के पानी को खेत में रोकने और भूजल संवर्धन हेतु राज्य में संचालित योजना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>खेत तालाब योजना (Khet Talab Yojana)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सूक्ष्म सिंचाई (ड्रिप एवं स्प्रिंकलर) को बढ़ावा देने हेतु संचालित राष्ट्रीय मिशन</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>प्रधानमंत्री कृषि सिंचाई योजना (PMKSY - प्रति बूंद अधिक फसल)</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="table-section" id="section-table-4">
+  <div class="table-title">
+    <div class="table-title-kicker">त्वरित संदर्भ</div>
+    <div class="table-title-main">उत्तर प्रदेश के प्रमुख लॉजिस्टिक्स एवं औद्योगिक पार्क</div>
+    <div class="table-title-sub">परियोजना / पार्क का नाम, अवस्थिति (जिला) एवं प्रमुख कार्यक्षेत्र</div>
+  </div>
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>औद्योगिक / लॉजिस्टिक्स पार्क</th>
+          <th>अवस्थिति (जिला)</th>
+          <th>प्रमुख कार्यक्षेत्र व विशिष्ट सुविधाएं</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="primary-cell">मल्टी-मॉडल लॉजिस्टिक्स हब (MMLH)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">दादरी (ग्रेटर नोएडा)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">EDFC व WDFC जंक्शन, कंटेनर डिपो, रेल-सड़क फ्रेट हब</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मल्टी-मॉडल ट्रांसपोर्ट हब (MMTH)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">बोड़ाकी (ग्रेटर नोएडा)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">रेल, मेट्रो व अंतरराज्यीय बस टर्मिनल का एकीकृत जंक्शन</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">पीएम मित्र मेगा टेक्सटाइल पार्क</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">लखनऊ-हरदोई (मलिहाबाद)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">1000 एकड़ में विश्वस्तरीय वस्त्र विनिर्माण, कताई व निर्यात</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मेडिकल डिवाइस पार्क</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">यमुना एक्सप्रेसवे (सेक्टर 28)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">अत्याधुनिक चिकित्सा उपकरण, एमआरआई, सीटी स्कैन निर्माण</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">मेगा लेदर क्लस्टर</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">रमाईपुर (कानपुर नगर)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">प्रदूषण मुक्त एकीकृत चर्म शोधन, फुटवियर व सीईटीपी</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><div class="primary-cell">फार्मा पार्क (Pharma Park)</div></td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">ललितपुर (बुंदेलखंड)</div>
+            </div>
+          </td>
+          <td>
+            <div class="table-answer">
+              <div class="table-cover">उत्तर देखें</div>
+              <div class="table-answer-text">2000 एकड़ में बल्क ड्रग्स व जीवनरक्षक दवाओं का हब</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="qa-section" id="section-qa-10">
+  <div class="qa-header">
+    <h2>शहरी अवसंरचना, स्मार्ट सिटी एवं जल जीवन मिशन</h2>
+  </div>
+  <div class="qa-list">
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>भारत सरकार के राष्ट्रीय 'स्मार्ट सिटी मिशन' (Smart Cities Mission) में उत्तर प्रदेश के कितने शहर चयनित हैं?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">कुल <strong class='highlight'>10 शहर</strong> (लखनऊ, कानपुर, वाराणसी, प्रयागराज, आगरा, अलीगढ़, बरेली, झांसी, सहारनपुर, मुरादाबाद)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश सरकार द्वारा अपने संसाधनों से शेष नगर निगमों को किस योजना के तहत स्मार्ट बनाया जा रहा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>राज्य स्मार्ट सिटी योजना (7 अतिरिक्त नगर निगम)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>स्मार्ट शहरों में यातायात, सुरक्षा और नागरिक सेवाओं की निगरानी हेतु स्थापित आधुनिक नियंत्रण कक्ष</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>इंटीग्रेटेड कमांड एंड कंट्रोल सेंटर (ICCC)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>ग्रामीण क्षेत्रों में प्रत्येक घर तक नल से जल पहुँचाने हेतु संचालित महाभियान</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>जल जीवन मिशन (हर घर जल योजना)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>देश में सर्वाधिक ग्रामीण नल कनेक्शन देने में अग्रणी राज्य कौन-सा है?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश</strong> (2 करोड़ से अधिक ग्रामीण परिवारों को नल कनेक्शन)</div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>बुंदेलखंड और विंध्य क्षेत्र के शुद्ध पेयजल संकट के स्थायी समाधान हेतु संचालित महत्वाकांक्षी परियोजना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बुंदेलखंड पाइप पेयजल परियोजना (हर घर नल योजना)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>शहरी क्षेत्रों में पेयजल, सीवरेज और पार्क विकास हेतु संचालित केंद्र प्रायोजित मिशन</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>अमृत 2.0 (AMRUT - अटल नवीकरण और शहरी परिवर्तन मिशन)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>प्रधानमंत्री आवास योजना (शहरी) के क्रियान्वयन में देश में प्रथम स्थान किस राज्य को मिला?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>उत्तर प्रदेश</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>नगरीय ठोस अपशिष्ट प्रबंधन में कचरे के पहाड़ों के निस्तारण हेतु संचालित तकनीक</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>बायो-माइनिंग एवं सैनिटरी लैंडफिल</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में नगरीय निकायों के समग्र विकास हेतु संचालित आकांक्षी नगर योजना</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>आकांक्षी नगर निकाय योजना (Aspirational Cities Scheme)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में गंगा एक्सप्रेसवे के दोनों किनारों पर विकसित किए जा रहे औद्योगिक संकुल</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>इंडस्ट्रियल क्लस्टर्स एवं लॉजिस्टिक्स पार्क</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>सड़क और राजमार्ग निर्माण में टिकाऊ और पर्यावरण-अनुकूल सामग्री के रूप में किसका प्रयोग अनिवार्य किया गया?</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text"><strong class='highlight'>पुनर्चक्रित प्लास्टिक अपशिष्ट एवं फ्लाई ऐश (Fly Ash)</strong></div>
+      </div>
+    </article>
+    <article class="qa-row">
+      <div class="qa-q">
+        <button class="star-btn" type="button" aria-label="प्रश्न स्टार करें">☆</button>
+        <span>उत्तर प्रदेश में जल संकटग्रस्त क्षेत्रों में जल संरक्षण हेतु बनाए गए अमृत सरोवरों की संख्या</span>
+      </div>
+      <div class="qa-a">
+        <div class="cover">उत्तर देखें</div>
+        <div class="answer-text">प्रत्येक जिले में न्यूनतम <strong class='highlight'>75 अमृत सरोवर (कुल 15,000+ सरोवर)</strong></div>
+      </div>
+    </article>
+  </div>
+</section></div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>
