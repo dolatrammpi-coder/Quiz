@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="भुगतान संतुलन Part 1">
+<title>भुगतान संतुलन Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / भुगतान संतुलन Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>भुगतान संतुलन Part 1</h1>
+    <p class="topic-subtitle">भुगतान संतुलन की मूल अवधारणा, व्यापार संतुलन, दृश्य व अदृश्य मदें तथा चालू खाते के घटकों का समष्टिगत विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">भुगतान संतुलन Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>भुगतान संतुलन मद</th><th>प्रमुख विशेषता</th><th>भुगतान संतुलन पर प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">दृश्य वस्तु व्यापार (Merchandise Trade / BoT)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भौतिक रूप से स्पर्शनीय व सीमा शुल्क चौकियों पर दर्ज होने वाली वस्तुओं (कच्चा तेल, सोना, इलेक्ट्रॉनिक्स, मशीनरी) का आयात-निर्यात।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत में संरचनात्मक रूप से लगातार घाटे (Trade Deficit) में रहता है, जो चालू खाता घाटे (CAD) का मुख्य चालक बनता है।</div></div></td></tr><tr><td><div class="primary-cell">सॉफ्टवेयर एवं व्यावसायिक सेवाएं (Non-Factor Services)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सूचना प्रौद्योगिकी (IT), बीपीओ, परामर्श, वित्तीय व विधिक सेवाओं का सीमा-पार निर्यात, जिसमें भौतिक उपस्थिति आवश्यक नहीं होती।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अदृश्य खाते में भारी शुद्ध अधिशेष (Surplus) उत्पन्न करता है, जो वस्तु व्यापार घाटे के एक बड़े हिस्से की प्रभावी भरपाई करता है।</div></div></td></tr><tr><td><div class="primary-cell">निजी अंतरण / प्रेषण (Unilateral Private Remittances)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विदेशों में कार्यरत भारतीय प्रवासियों द्वारा स्वदेश भेजे जाने वाले पारिवारिक भरण-पोषण धन (बिना किसी प्रत्यक्ष प्रतिफल के एकतरफा प्रवाह)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत को विश्व का शीर्ष प्रेषण प्राप्तकर्ता बनाता है; चालू खाते के अदृश्य अधिशेष को सुदृढ़ कर बाह्य स्थिरता प्रदान करता है।</div></div></td></tr><tr><td><div class="primary-cell">प्राथमिक आय / साधन आय (Factor Income - Net Primary Income)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विदेशी ऋणों व जमाओं पर ब्याज, इक्विटी पर लाभांश (Dividends), तथा बहुराष्ट्रीय कंपनियों द्वारा अपने गृह देश भेजे गए लाभ का शुद्ध प्रवाह।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत के संदर्भ में निरंतर ऋणात्मक (Net Outflow) रहता है, क्योंकि भारत में विदेशी देनदारियां और संचित विदेशी निवेश बाह्य आस्तियों से अधिक हैं।</div></div></td></tr><tr><td><div class="primary-cell">आधिकारिक अनुदान एवं सहायता (Official Grants)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विदेशी सरकारों अथवा अंतरराष्ट्रीय बहुपक्षीय संस्थाओं द्वारा बिना पुनर्भुगतान दायित्व के दिए जाने वाले एकतरफा वित्तीय अंतरण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">चालू खाते के द्वितीयक आय खाते में जमा (Credit) होते हैं, हालांकि समग्र BoP परिमाण में इनका हिस्सा बहुत सीमित है।</div></div></td></tr><tr><td><div class="primary-cell">यात्रा एवं पर्यटन सेवाएं (Travel &amp; Tourism)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विदेशी पर्यटकों, चिकित्सा यात्रियों (Medical Tourism) और छात्रों द्वारा भारत में किए गए व्यय तथा भारतीयों द्वारा विदेश यात्रा पर व्यय का शुद्ध संतुलन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विदेशी मुद्रा अर्जन का महत्वपूर्ण सेवा स्रोत; वैश्विक आर्थिक गतिशीलता और भू-राजनीतिक स्थिरता पर अत्यधिक संवेदनशील।</div></div></td></tr><tr><td><div class="primary-cell">परिवहन एवं बीमा सेवाएं (Transportation &amp; Insurance)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">समुद्री जहाजरानी, एयर कार्गो भाड़ा तथा अंतरराष्ट्रीय व्यापारिक माल पर वहन किए जाने वाले बीमा प्रीमियम का लेन-देन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत द्वारा विदेशी मर्चेंट जहाजों पर भारी निर्भरता के कारण यह मद सामान्यतः शुद्ध बहिर्वाह (Net Debit) दर्शाती है।</div></div></td></tr><tr><td><div class="primary-cell">चालू खाता घाटा (Current Account Deficit - CAD)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जब वस्तुओं, सेवाओं और प्राथमिक व द्वितीयक आय के कुल भुगतानों (Debits) का मूल्य कुल प्राप्तियों (Credits) से अधिक हो जाता है।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">यह दर्शाता है कि देश घरेलू उत्पादन से अधिक उपभोग/निवेश कर रहा है, जिसकी भरपाई पूंजी खाते से विदेशी पूंजी आकर्षित कर करनी पड़ती है।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय मुद्रा कोष (IMF) के अनुसार 'भुगतान संतुलन' (Balance of Payments - BoP) की प्रामाणिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी देश के आर्थिक निवासियों (Residents) और शेष विश्व (Rest of the World) के बीच एक निश्चित समयावधि (सामान्यतः एक वर्ष) में निष्पादित समस्त आर्थिक लेन-देन का एक व्यवस्थित एवं क्रमबद्ध सांख्यिकीय लेखा-जोखा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन लेखांकन में किस वित्तीय प्रणाली का उपयोग किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दोहरा लेखा प्रणाली (Double-Entry Bookkeeping System), जहां प्रत्येक अंतरराष्ट्रीय लेन-देन को क्रेडिट (जमा) और डेबिट (नाम) दोनों पक्षों में दर्ज किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दोहरा लेखा प्रणाली के अनुसार सैद्धांतिक रूप से भुगतान संतुलन (BoP) का अंतिम योग सदैव क्या होना चाहिए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सदैव शून्य (सदा संतुलित, Sum = 0); अर्थात् कुल क्रेडिट सदैव कुल डेबिट के बराबर होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन में 'क्रेडिट' (Credit / Positive Items) प्रविष्टियों के अंतर्गत किन लेन-देनों को दर्ज किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश में विदेशी मुद्रा के सभी अंतर्प्रवाहों (Inflows) को; जैसे वस्तुओं व सेवाओं का निर्यात, प्रेषण प्राप्ति, विदेशी निवेश और विदेशी ऋण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन में 'डेबिट' (Debit / Negative Items) प्रविष्टियों के तहत क्या दर्ज होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश से विदेशी मुद्रा के सभी बहिर्प्रवाहों (Outflows) को; जैसे वस्तुओं व सेवाओं का आयात, विदेशों को उपहार/अनुदान, विदेशी ऋणों का पुनर्भुगतान और विदेशों में निवेश।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन के संदर्भ में 'आर्थिक निवासी' (Economic Resident) किसे माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोई भी व्यक्ति, उपक्रम या संस्था जिसका आर्थिक हित का मुख्य केंद्र (Center of Economic Interest) उस देश की घरेलू सीमा में स्थित हो, चाहे उसकी नागरिकता कुछ भी हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या भारत में स्थित विदेशी दूतावासों और उनके विदेशी राजनयिकों के आर्थिक लेन-देन को भारत के निवासियों का लेन-देन माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं, उन्हें शेष विश्व (Non-resident) का भाग माना जाता है; अतः उनके साथ होने वाले लेन-देन BoP में दर्ज होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय स्तर पर भुगतान संतुलन के संकलन हेतु IMF द्वारा जारी नवीनतम नियमावली कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">BPM6 (Balance of Payments and International Investment Position Manual - Sixth Edition)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में भुगतान संतुलन के आधिकारिक आंकड़े संकलित, विश्लेषित और प्रकाशित करने वाली सर्वोच्च संस्था कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक (Reserve Bank of India - RBI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI द्वारा भारत के BoP आंकड़े किस आवृत्ति पर औपचारिक रूप से जारी किए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">त्रैमासिक आधार पर (Quarterly) तथा वित्तीय वर्ष के अंत में वार्षिक आधार पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'स्वायत्त लेन-देन' (Autonomous Transactions) से क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे अंतरराष्ट्रीय लेन-देन जो स्वतंत्र आर्थिक उद्देश्यों (जैसे अधिकतम लाभ अर्जन) से किए जाते हैं, जिनका BoP की संतुलन स्थिति से कोई सरोकार नहीं होता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्वायत्त लेन-देनों को भुगतान संतुलन खाते में किस तकनीकी नाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'रेखा से ऊपर के सौदे' (Above-the-Line Transactions)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'समायोजक लेन-देन' (Accommodating Transactions) क्या होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे लेन-देन जो स्वायत्त लेन-देनों से उत्पन्न भुगतान संतुलन के घाटे या अधिशेष को पाटने हेतु केंद्रीय बैंक द्वारा किए जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समायोजक लेन-देनों को BoP में किस संज्ञा से अभिहित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'रेखा से नीचे के सौदे' (Below-the-Line Transactions)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब अर्थशास्त्री कहते हैं कि 'भुगतान संतुलन में घाटा (BoP Deficit) है', तो उनका वास्तविक आशय क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वायत्त भुगतानों (Autonomous Debits) का स्वायत्त प्राप्तियों (Autonomous Credits) से अधिक होना, जिसे पाटने हेतु विदेशी मुद्रा भंडार से निकासी करनी पड़ती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन में 'अधिशेष' (BoP Surplus) की स्थिति का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वायत्त प्राप्तियों का स्वायत्त भुगतानों से अधिक होना, जिसके परिणामस्वरूप केंद्रीय बैंक के विदेशी मुद्रा भंडार में शुद्ध वृद्धि होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि कुल स्वायत्त प्राप्तियां $500 बिलियन और स्वायत्त भुगतान $530 बिलियन हों, तो BoP संतुलन हेतु समायोजक मद क्या होगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">$30 बिलियन का समायोजक अंतर्प्रवाह (केंद्रीय बैंक द्वारा विदेशी मुद्रा भंडार से $30 बिलियन निकालना या IMF से आपात ऋण लेना)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन खाते के दो मुख्य पारंपरिक घटक कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. चालू खाता (Current Account) और 2. पूंजी खाता (Capital Account)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IMF की आधुनिक BPM6 प्रणाली के अनुसार BoP को किन तीन विशिष्ट खातों में विभाजित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. चालू खाता (Current Account), 2. पूंजी खाता (Capital Account), और 3. वित्तीय खाता (Financial Account)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दोहरा लेखा प्रणाली में सांख्यिकीय विसंगतियों और आंकड़ों के समय अंतराल को संतुलित करने हेतु कौन-सी मद रखी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भूल-चूक / त्रुटियां एवं लोप (Errors and Omissions)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन किसी देश की किस स्थिति का संपूर्ण बैरोमीटर माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश की बाह्य आर्थिक सुदृढ़ता, अंतरराष्ट्रीय शोधन क्षमता और मुद्रा के विनिमय मूल्य की स्थिरता का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मूलभूत भुगतान संतुलन' (Basic Balance) की संकल्पना में किन मदों को शामिल किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाता संतुलन + दीर्घकालिक स्वायत्त पूंजी प्रवाह (दीर्घकालिक प्रत्यक्ष विदेशी निवेश आदि)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या भुगतान संतुलन एक 'स्टॉक' (Stock) अवधारणा है या 'प्रवाह' (Flow) अवधारणा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह एक 'प्रवाह' (Flow) अवधारणा है, क्योंकि यह एक वित्तीय वर्ष या तिमाही की निश्चित समयावधि में हुए लेन-देनों को मापता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय निवेश स्थिति (International Investment Position - IIP) और BoP में क्या बुनियादी अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">BoP वार्षिक वित्तीय प्रवाहों (Flows) को मापता है, जबकि IIP किसी विशिष्ट तिथि पर किसी देश की बाह्य वित्तीय संपत्तियों और देनदारियों का कुल 'स्टॉक' (Stock) मापता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन में 'संरचनात्मक असंतुलन' (Structural Disequilibrium) कब उत्पन्न होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब अर्थव्यवस्था की बुनियादी उत्पादन संरचना, मांग पैटर्न या प्रौद्योगिकी में गहरे बदलाव के कारण दीर्घकालिक व्यापार घाटा बन जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चक्रीय असंतुलन (Cyclical Disequilibrium) का क्या कारण होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व व्यापार में आने वाले व्यापार चक्र (उछाल और मंदी), जिससे निर्यातों की मांग में अस्थाई उतार-चढ़ाव आता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौसमी असंतुलन (Secular / Seasonal Disequilibrium) किन देशों में अधिक देखा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कृषि-प्रधान प्राथमिक निर्यातक देशों में, जहां फसल कटाई और मानसून की स्थिति के अनुसार विदेशी मुद्रा प्रवाह तय होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन के अध्ययन का व्यापक समष्टिगत उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी विनिमय दर नीतियों, व्यापार नीतियों, सीमा शुल्क दरों और मौद्रिक नीति का विवेकपूर्ण निर्धारण करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार संतुलन (Balance of Trade - BoT) की प्रामाणिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी देश के भौतिक/दृश्य वस्तुओं (Merchandise Goods) के कुल निर्यात मूल्य और कुल आयात मूल्य का अंतर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार संतुलन (BoT) ज्ञात करने का बुनियादी सूत्र क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापार संतुलन = दृश्य वस्तुओं का निर्यात (X) - दृश्य वस्तुओं का आयात (M)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन (BoP) और व्यापार संतुलन (BoT) में सबसे प्रमुख अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">BoT केवल दृश्य भौतिक वस्तुओं के लेन-देन तक सीमित एक संकीर्ण अवधारणा है, जबकि BoP एक व्यापक अवधारणा है जिसमें दृश्य वस्तुएं, सेवाएं, साधन आय, अंतरण और पूंजी प्रवाह सभी शामिल होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार घाटा (Trade Deficit) की स्थिति कब उत्पन्न होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी देश का दृश्य वस्तु आयात (Merchandise Imports) उसके दृश्य वस्तु निर्यात (Merchandise Exports) से अधिक हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार अधिशेष (Trade Surplus) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब दृश्य वस्तु निर्यातों का कुल मूल्य दृश्य वस्तु आयातों के कुल मूल्य से अधिक होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या किसी देश का व्यापार संतुलन घाटे में होने पर भी उसका भुगतान संतुलन अधिशेष में हो सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ, बिल्कुल; यदि सेवाओं के निर्यात, प्रेषण अंतर्प्रवाह या पूंजी खाते में पर्याप्त विदेशी निवेश वस्तु व्यापार घाटे से अधिक हो जाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का व्यापार संतुलन (BoT) स्वतंत्रता के बाद से अधिकांश वर्षों में किस स्थिति में रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगातार घाटे (Trade Deficit) की स्थिति में (केवल 1972-73 और 1976-77 के दो अपवाद वर्षों को छोड़कर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के व्यापार संतुलन में 1972-73 और 1976-77 में संक्षिप्त व्यापार अधिशेष रहने का मुख्य कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयातों पर कड़े सरकारी प्रतिबंध, खाद्यान्न आयातों में अस्थायी कमी और कुछ प्राथमिक जिंसों के निर्यात में अचानक उछाल।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के कुल दृश्य वस्तु आयात में सबसे बड़ा एकल व्यय किस मद पर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीओएल (POL - पेट्रोलियम, कच्चा तेल और स्नेहक), जो कुल आयात बिल का लगभग 25-30% हिस्सा होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के व्यापार घाटे को बढ़ाने वाली दूसरी सबसे प्रमुख गैर-आवश्यक वस्तु कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सोना (Gold) और चांदी का आयात, जो देश में आभूषण और पारंपरिक मूल्य संचय मांग के कारण भारी मात्रा में आयात होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'गैर-तेल और गैर-सोना व्यापार घाटा' (Non-Oil, Non-Gold Trade Deficit) को अर्थशास्त्री क्यों ट्रैक करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यह अर्थव्यवस्था में औद्योगिक कच्चे माल, इलेक्ट्रॉनिक्स और पूंजीगत वस्तुओं की वास्तविक घरेलू विनिर्माण मांग को दर्शाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार संतुलन के आंकड़े भारत में मासिक आधार पर किस मंत्रालय द्वारा जारी किए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वाणिज्य एवं उद्योग मंत्रालय के विदेश व्यापार महानिदेशालय (DGFT) और वाणिज्य विभाग द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>DGFT के वस्तु व्यापार आंकड़ों और RBI के BoP व्यापार आंकड़ों में मामूली अंतर क्यों होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">DGFT आंकड़े सीमा शुल्क घोषणाओं (Customs Data) पर आधारित होते हैं, जबकि RBI आंकड़े वास्तविक बैंकिंग भुगतान निपटान (Banking Records) पर आधारित होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वस्तु व्यापार में निर्यातों का मूल्यांकन सामान्यतः किस आधार पर किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FOB (Free on Board) आधार पर; अर्थात् जहाज पर माल लादने तक का मूल्य (अंतरराष्ट्रीय भाड़ा व बीमा छोड़कर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पारंपरिक व्यापार आंकड़ों में आयातों का मूल्यांकन किस आधार पर किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CIF (Cost, Insurance, and Freight) आधार पर; जिसमें माल की लागत, अंतरराष्ट्रीय परिवहन भाड़ा और बीमा तीनों शामिल होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IMF की BPM6 नियमावली के अनुसार BoP संकलन में आयात और निर्यात दोनों का मूल्यांकन किस आधार पर होना चाहिए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FOB (Free on Board) आधार पर (भाड़ा और बीमा को सेवाओं के अलग खाते में दर्ज किया जाता है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार खुलेपन का अनुपात (Trade Openness Ratio) कैसे मापा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">(कुल वस्तु व सेवा निर्यात + कुल आयात) / सकल घरेलू उत्पाद (GDP) × 100।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के बाद भारत के व्यापार खुलेपन अनुपात (Trade-to-GDP Ratio) में क्या बदलाव आया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह 1990-91 के लगभग 15-16% से बढ़कर वर्तमान में 45% से 50% के स्तर तक पहुंच गया है, जो वैश्विक अर्थव्यवस्था से गहरे जुड़ाव को दर्शाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का सबसे बड़ा द्विपक्षीय व्यापार घाटा (Bilateral Trade Deficit) ऐतिहासिक रूप से किस देश के साथ रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चीन (China) के साथ, जहां से इलेक्ट्रॉनिक्स, सक्रिय फार्मास्यूटिकल सामग्री (APIs), मशीनरी और सौर सेल का भारी आयात होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का सबसे बड़ा व्यापार अधिशेष (Bilateral Trade Surplus) किस प्रमुख देश के साथ रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संयुक्त राज्य अमेरिका (USA) के साथ।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार संतुलन में सुधार हेतु अपनाई जाने वाली 'आयात प्रतिस्थापन' (Import Substitution) रणनीति का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जिन वस्तुओं का पूर्व में विदेशों से आयात किया जाता था, उनका उत्पादन घरेलू स्तर पर प्रारंभ कर आयातों में कटौती करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'निर्यात संवर्धन' (Export Promotion) नीति का केंद्रीय दृष्टिकोण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू उद्योगों को विश्वस्तरीय प्रतिस्पर्धी बनाकर विदेशी बाजारों में निर्यात की मात्रा और मूल्य का आक्रामक विस्तार करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन में 'दृश्य मदें' (Visible Items) किन्हें कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे सभी भौतिक एवं मूर्त वस्तुएं (Physical Merchandise Goods) जिन्हें देखा, छुआ जा सकता है और जिनका सीमा शुल्क चौकियों पर भौतिक निरीक्षण व प्रमाणीकरण संभव है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दृश्य मदों के प्रमुख व्यावहारिक उदाहरण कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कच्चा तेल, लोहा और इस्पात, ऑटोमोबाइल, तैयार वस्त्र, चावल, गेहूं, दवाएं, लैपटॉप और स्मार्टफोन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन में 'अदृश्य मदें' (Invisible Items) किन्हें कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे सभी अमूर्त आर्थिक लेन-देन (सेवाएं, आय और एकतरफा अंतरण) जिन्हें भौतिक रूप से स्पर्श या सीमाओं पर देखा नहीं जा सकता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अदृश्य मदों (Invisibles) को किन तीन प्रमुख उप-श्रेणियों में वर्गीकृत किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. सेवाएं (Services), 2. साधन आय / प्राथमिक आय (Income), और 3. अंतरण / द्वितीयक आय (Transfers)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अदृश्य खाते में 'सेवाएं' (Services) मुख्य रूप से किन दो भागों में बांटी जाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. साधन सेवाएं (Factor Services) और 2. गैर-साधन सेवाएं (Non-Factor Services)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'गैर-साधन सेवाएं' (Non-Factor Services) क्या होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्पादन के साधनों के स्वामित्व से इतर प्रदान की जाने वाली व्यावसायिक सेवाएं; जैसे सॉफ्टवेयर, यात्रा, पर्यटन, परिवहन, संचार, निर्माण और वित्तीय सेवाएं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के अदृश्य निर्यात में सबसे बड़ा और प्रभावशाली घटक कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सॉफ्टवेयर एवं कंप्यूटर सेवाएं (Software & IT/BPO Services Export)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का वार्षिक सॉफ्टवेयर सेवा निर्यात व्यापार संतुलन के संदर्भ में क्या भूमिका निभाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह भारत के विशाल वस्तु व्यापार घाटे के 60% से 70% तक के हिस्से की अकेले भरपाई कर देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब कोई विदेशी नागरिक भारत में ताजमहल देखने आता है और होटल में ठहरता है, तो इसे भारत के BoP में कैसे दर्ज किया जाएगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते के अदृश्य भाग में 'यात्रा सेवा निर्यात' (Credit / विदेशी मुद्रा अंतर्प्रवाह) के रूप में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब कोई भारतीय छात्र उच्च शिक्षा हेतु अमेरिका जाता है और वहां फीस व रहने का खर्च वहन करता है, तो यह क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत के लिए 'शिक्षा सेवा आयात' (Debit / विदेशी मुद्रा बहिर्वाह)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चिकित्सा पर्यटन (Medical Tourism) के तहत किसी विदेशी नागरिक द्वारा भारत के अस्पताल में इलाज कराना किस मद में आता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वास्थ्य सेवा निर्यात (चालू खाते में क्रेडिट)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय जहाजरानी (Shipping) और माल ढुलाई भाड़ा किस अदृश्य मद के अंतर्गत आता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिवहन सेवाएं (Transportation Services)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का परिवहन सेवा खाता सामान्यतः घाटे में क्यों रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भारत के विदेशी व्यापार का 90% से अधिक हिस्सा विदेशी ध्वजवाहक व्यापारिक जहाजों द्वारा ढोया जाता है, जिसका भारी भाड़ा विदेशी मुद्रा में चुकाना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय सेवाएं (Financial Services) और बीमा (Insurance) सेवाएं BoP में कैसे दर्ज होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय बैंकों/बीमा कंपनियों द्वारा विदेशी ग्राहकों से प्राप्त कमीशन व प्रीमियम 'क्रेडिट' तथा विदेशी संस्थाओं को दिया गया भुगतान 'डेबिट'।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बौद्धिक संपदा का उपयोग (Royalty & License Fees) किस श्रेणी में आता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यावसायिक सेवाओं के अंतर्गत अदृश्य मद; भारतीय कंपनियों द्वारा विदेशी पेटेंट व सॉफ्टवेयर के उपयोग पर रॉयल्टी का भुगतान डेबिट होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'साधन आय' (Factor Income / Primary Income) से क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्पादन के प्राथमिक साधनों (भूमि, श्रम, पूंजी और उद्यमिता) द्वारा सीमा-पार प्रदान की गई सेवाओं के बदले अर्जित प्रतिफल।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>साधन आय के अंतर्गत कौन-से दो मुख्य घटक शामिल होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. कर्मचारियों का पारिश्रमिक (Compensation of Employees) और 2. निवेश आय (Investment Income)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'कर्मचारियों का पारिश्रमिक' (Compensation of Employees) में क्या दर्ज होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अस्थाई रूप से विदेशों में काम करने वाले सीमा-पार, मौसमी या अल्पकालिक कामगारों को विदेशी नियोक्ताओं से मिला वेतन व मजदूरी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'निवेश आय' (Investment Income) के तीन प्रमुख रूप कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. ब्याज (विदेशी ऋणों व बॉन्डों पर), 2. लाभांश (शेयरों/इक्विटी पर), और 3. पुनर्निवेशित लाभ (Reinvested Earnings/Profits)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का 'शुद्ध निवेश आय' (Net Investment Income) खाता लगातार ऋणात्मक क्यों बना रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भारत में विदेशी कंपनियों द्वारा संचित निवेश (FDI/FII) और विदेशी ऋण बहुत अधिक हैं, जिनका भारी लाभांश, लाभ और ब्याज विदेश भेजा जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'एकतरफा अंतरण' (Unilateral Transfers / Secondary Income) की विशिष्ट पहचान क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे लेन-देन जिनके बदले में कोई वर्तमान या भविष्य का आर्थिक प्रतिफल (Quid pro quo) नहीं दिया जाता (एक-तरफा भुगतान)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निजी प्रेषण (Private Remittances) को एकतरफा अंतरण क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि खाड़ी या पश्चिमी देशों में कार्यरत भारतीय अपने परिवार को घरेलू खर्च हेतु पैसा भेजते हैं, जिसके बदले भारतीय अर्थव्यवस्था को कोई प्रत्यक्ष वस्तु या सेवा नहीं देनी होती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व बैंक की 'माइग्रेशन एंड डेवलपमेंट ब्रीफ' के अनुसार विश्व में प्रवासियों से सर्वाधिक धन प्रेषण (Remittance Inflow) प्राप्त करने वाला देश कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत (वर्ष 2023 से 2026 के दौरान निरंतर $110-$125 बिलियन से अधिक वार्षिक प्राप्तियां)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत को प्राप्त होने वाले निजी प्रेषणों के शीर्ष दो स्रोत देश/क्षेत्र कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संयुक्त राज्य अमेरिका (USA) और संयुक्त अरब अमीरात (UAE) सहित खाड़ी सहयोग परिषद (GCC) देश।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी सरकारों द्वारा प्राकृतिक आपदाओं (बाढ़, भूकंप) के समय दी जाने वाली मानवीय सहायता BoP में कहाँ दर्ज होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते के द्वितीयक आय (सरकारी एकतरफा अंतरण) के अंतर्गत क्रेडिट में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत सरकार द्वारा भूटान, नेपाल या मालदीव को दिए जाने वाले विकासात्मक अनुदान कहाँ दर्ज होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते के द्वितीयक आय (आधिकारिक अंतरण) के अंतर्गत डेबिट (विदेशी मुद्रा बहिर्वाह) में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अदृश्य संतुलन (Invisibles Balance) की गणना कैसे की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अदृश्य संतुलन = कुल अदृश्य प्राप्तियां (Services + Income + Transfers) - कुल अदृश्य भुगतान।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का अदृश्य संतुलन सामान्यतः अधिशेष (Surplus) में रहता है या घाटे (Deficit) में?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हमेशा भारी अधिशेष (Surplus) में; मुख्यतः सॉफ्टवेयर निर्यातों और भारी निजी प्रेषणों के कारण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि भारत का वस्तु व्यापार घाटा $200 बिलियन हो और अदृश्य अधिशेष $140 बिलियन हो, तो चालू खाता शेष क्या होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">$60 बिलियन का चालू खाता घाटा (CAD = -$60 Billion)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व व्यापार संगठन (WTO) के 'GATS' समझौते के तहत सेवाओं के व्यापार के कितने माध्यम (Modes of Supply) हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चार माध्यम: मोड-1 (सीमा-पार आपूर्ति), मोड-2 (विदेश में उपभोग), मोड-3 (वाणिज्यिक उपस्थिति), और मोड-4 (प्राकृतिक व्यक्तियों की आवाजाही)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय आईटी कंपनियों द्वारा भारत में बैठकर अमेरिकी ग्राहकों को सॉफ्टवेयर कोडिंग सेवा देना GATS के किस मोड में आता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मोड-1 (Cross-Border Supply / सीमा-पार आपूर्ति)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय डॉक्टरों या इंजीनियरों द्वारा ऑन-साइट अमेरिका जाकर आईटी परियोजना निष्पादित करना GATS के किस मोड का उदाहरण है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मोड-4 (Presence of Natural Persons / प्राकृतिक व्यक्तियों की उपस्थिति)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते (Current Account) की मानक आर्थिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भुगतान संतुलन का वह खाता जो वास्तविक संसाधनों (वस्तुओं और सेवाओं) के सीमा-पार प्रवाह तथा चालू आय व अंतरणों को दर्ज करता है, जिससे देश की राष्ट्रीय आय सीधे प्रभावित होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते के लेन-देनों की सबसे महत्वपूर्ण कानूनी व आर्थिक विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ये लेन-देन देश की अंतरराष्ट्रीय परिसंपत्तियों (Assets) या देनदारियों (Liabilities) के दावों में कोई प्रत्यक्ष बदलाव नहीं करते।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते (Current Account) के चार प्रमुख घटक कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. व्यापार संतुलन (दृश्य वस्तुएं), 2. शुद्ध सेवाएं, 3. शुद्ध प्राथमिक आय (साधन आय), और 4. शुद्ध द्वितीयक आय (एकतरफा अंतरण)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाता संतुलन (Current Account Balance - CAB) का गणितीय समीकरण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CAB = (वस्तु निर्यात - वस्तु आयात) + (सेवा निर्यात - सेवा आयात) + शुद्ध प्राथमिक आय + शुद्ध द्वितीयक आय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाता घाटा (Current Account Deficit - CAD) कब उत्पन्न होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब चालू खाते के कुल विदेशी भुगतान (Debits) कुल विदेशी प्राप्तियों (Credits) से अधिक हो जाते हैं (CAB < 0)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाता अधिशेष (Current Account Surplus - CAS) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी देश की चालू विदेशी प्राप्तियां उसके कुल चालू भुगतानों से अधिक होती हैं; अर्थात् देश शेष विश्व को शुद्ध पूंजी उधार देने की स्थिति में होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व के किन प्रमुख देशों में संरचनात्मक रूप से विशाल चालू खाता अधिशेष (CAS) बना रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जर्मनी, जापान, चीन और खाड़ी के प्रमुख तेल निर्यातक देश (जैसे सऊदी अरब, नॉर्वे)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का चालू खाता सामान्यतः घाटे (CAD) में क्यों रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भारत एक विकासशील अर्थव्यवस्था है जिसकी ऊर्जा (कच्चा तेल), पूंजीगत मशीनरी और इलेक्ट्रॉनिक्स की आयात मांग इसके कुल निर्यातों से अधिक रहती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हाल के दशकों में भारत ने किस वित्तीय वर्ष में असाधारण रूप से चालू खाता अधिशेष (CAS) दर्ज किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय वर्ष 2020-21 (COVID-19 महामारी वर्ष) में जीडीपी का लगभग 0.9% अधिशेष दर्ज हुआ था, जिसका कारण देशव्यापी लॉकडाउन से आयातों का पूरी तरह ध्वस्त हो जाना था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मैक्रोइकॉनॉमिक राष्ट्रीय आय लेखांकन पहचान (National Income Identity) के अनुसार चालू खाता शेष का सूत्र क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CAB = Y - (C + I + G) = घरेलू उत्पादन - समग्र घरेलू अवशोषण (Absorption)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश का समग्र घरेलू व्यय/अवशोषण (C + I + G) उसकी कुल राष्ट्रीय आय (Y) से अधिक हो, तो क्या परिणाम होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश अनिवार्य रूप से चालू खाता घाटे (CAD) का सामना करेगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बचत-निवेश संतुलन (Saving-Investment Gap) के रूप में चालू खाते का समीकरण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CAB = (S - I) + (T - G); जहाँ S निजी बचत, I निजी निवेश, T सरकारी कर राजस्व, और G सरकारी व्यय है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'ट्विन डेफिसिट' (Twin Deficit) से क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अर्थव्यवस्था में एक ही समय में 'राजकोषीय घाटा' (Fiscal Deficit: G > T) और 'चालू खाता घाटा' (CAD: M > X) दोनों का एक साथ उच्च स्तर पर उपस्थित होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजकोषीय घाटे में अत्यधिक वृद्धि चालू खाता घाटे (CAD) को कैसे बढ़ाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकारी उधारी और व्यय बढ़ने से अर्थव्यवस्था में समग्र मांग बढ़ती है, जो अतिरिक्त आयातों को आकर्षित करती है और घरेलू बचत को घटाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रंगराजन समिति (1993) के अनुसार भारत के लिए चालू खाता घाटे (CAD) की संधारणीय सुरक्षित सीमा (Safe Threshold) क्या मानी गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सकल घरेलू उत्पाद (GDP) का अधिकतम 2.5% से 3.0% तक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश का चालू खाता घाटा (CAD) जीडीपी के 3% से ऊपर लगातार बना रहे, तो क्या जोखिम उत्पन्न होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा के अवमूल्यन का दबाव, विदेशी मुद्रा भंडार में तेज गिरावट, क्रेडिट रेटिंग डाउनग्रेड और विदेशी पूंजी का अचानक पलायन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 2012-13 में भारत का चालू खाता घाटा (CAD) किस ऐतिहासिक खतरनाक स्तर तक पहुंच गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीडीपी का 4.8%; जिसने भारतीय रुपये में भारी गिरावट और 2013 के 'टेपर टैंट्रम' (Taper Tantrum) संकट को जन्म दिया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाता घाटे (CAD) की वित्तीय भरपाई (Financing) किस प्रकार की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूंजी खाते में विदेशी अंतर्प्रवाहों (FDI, FII/FPI, विदेशी वाणिज्यिक उधारी ECBs, और अनिवासी जमा) द्वारा या विदेशी मुद्रा भंडार को बेचकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>CAD की भरपाई हेतु प्रत्यक्ष विदेशी निवेश (FDI) को विदेशी पोर्टफोलियो निवेश (FPI) से बेहतर और सुरक्षित क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि FDI दीर्घकालिक और स्थिर गैर-ऋण पूंजी है, जबकि FPI 'तप्त मुद्रा' (Hot Money) है जो वैश्विक संकट के समय रातों-रात देश से बाहर भाग सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या चालू खाता घाटा (CAD) हमेशा अर्थव्यवस्था के लिए हानिकारक ही होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; यदि आयात की जाने वाली वस्तुएं उत्पादक पूंजीगत मशीनरी और आधारभूत संरचना निर्माण हेतु हों, तो यह भविष्य की उत्पादन क्षमता बढ़ाकर आर्थिक संवृद्धि को गति देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>CAD अर्थव्यवस्था के लिए कब घातक बन जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब घाटा अनुत्पादक उपभोग वस्तुओं (विलासिता सामान, गैर-आवश्यक सोना) के आयात से उत्पन्न हो और उसकी भरपाई अस्थिर अल्पकालिक विदेशी ऋणों से की जा रही हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय वित्तीय जगत में 'चालू खाता परिवर्तनीयता' (Current Account Convertibility) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वस्तुओं और सेवाओं के आयात-निर्यात, यात्रा, शिक्षा, चिकित्सा और ब्याज भुगतान हेतु घरेलू मुद्रा को विदेशी मुद्रा में स्वतंत्र रूप से भुनाने की वैधानिक स्वतंत्रता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत ने अंतरराष्ट्रीय मुद्रा कोष (IMF) के किस अनुच्छेद के तहत चालू खाते पर रुपये की पूर्ण परिवर्तनीयता स्वीकार की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">IMF समझौते के अनुच्छेद VIII (Article VIII) के तहत, अगस्त 1994 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वर्तमान में भारत में चालू खाते पर किसी भी प्रकार का प्रतिबंध लागू है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सामान्य वाणिज्यिक आयातों हेतु पूर्ण स्वतंत्र है; केवल राष्ट्रीय सुरक्षा, सार्वजनिक स्वास्थ्य, प्रतिबंधित वस्तुओं और हवाला/सट्टेबाजी जैसे चुनिंदा लेन-देनों पर ही विनियामक सीमाएं हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लिबरलाइज्ड रेमिटेंस स्कीम (LRS) के तहत एक भारतीय निवासी को चालू खाते व अनुमत पूंजी खाते के तहत प्रति वित्तीय वर्ष कितनी विदेशी मुद्रा भेजने की छूट है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिकतम 2,50,000 अमेरिकी डॉलर (USD 2.5 Lakh) तक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय कच्चे तेल की कीमतों में $10 प्रति बैरल की वृद्धि होने पर भारत के चालू खाता घाटे (CAD) पर क्या अनुमानित प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत का CAD लगभग $13 से $15 बिलियन बढ़ जाता है (जीडीपी के लगभग 0.4-0.5% के बराबर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रुपये के मूल्यह्रास (Rupee Depreciation) का चालू खाते पर क्या सैद्धांतिक प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निर्यात विदेशी खरीदारों हेतु सस्ते होकर बढ़ते हैं और आयात महंगे होकर घटते हैं, जिससे समय के साथ चालू खाता घाटा कम होना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन के तुरंत बाद CAD में सुधार न होकर पहले घाटा बढ़ने की परिघटना क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जे-वक्र प्रभाव (J-Curve Effect); क्योंकि पुराने आयात अनुबंधों की लागत तुरंत बढ़ जाती है जबकि निर्यातों की मात्रा बढ़ने में समय लगता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मार्शल-लर्नर शर्त (Marshall-Lerner Condition) चालू खाते के सुधार के लिए क्या मांग करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निर्यात और आयात की मूल्य लोच का योग 1 से अधिक होना चाहिए (|e_x + e_m| > 1), तभी मुद्रा का अवमूल्यन व्यापार घाटे को कम कर पाएगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अदृश्य मदों में दर्ज होने वाली 'सॉफ्टवेयर निर्यात' प्राप्तियां भारत की किस विनियामक प्रणाली के तहत दर्ज होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सॉफ्टवेयर निर्यात घोषणा (SOFTEX Form) प्रणाली के माध्यम से RBI और STPI द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में काम करने वाले बहुराष्ट्रीय निगमों (MNCs) द्वारा अपने मूल देश को भेजे जाने वाले लाभ (Repatriation of Profits) का CAD पर क्या असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह प्राथमिक आय खाते से विदेशी मुद्रा का बहिर्वाह (Debit) बढ़ाता है, जिससे चालू खाता घाटा बढ़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशों में स्थित भारतीय कंपनियों की सहायक इकाइयों द्वारा भारत भेजे जाने वाले लाभांश कहाँ दर्ज होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते की प्राथमिक आय में क्रेडिट (अंतर्प्रवाह) के रूप में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वैश्विक आर्थिक मंदी (Global Recession) का भारत के चालू खाते पर क्या दोहरा प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय सॉफ्टवेयर व वस्तु निर्यातों की वैश्विक मांग घटती है, किंतु साथ ही कच्चे तेल की कीमतें गिरने से आयात बिल में राहत भी मिलती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के व्यापार और चालू खाते में 'गोल्ड मोनेटाइजेशन स्कीम' (GMS) और 'सॉवरेन गोल्ड बॉन्ड' (SGB) का मुख्य व्यापक उद्देश्य क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू निवेशकों को भौतिक सोने की जगह वित्तीय विकल्प देकर भौतिक सोने के भारी आयात और CAD के दबाव को कम करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते में 'मर्चेंटिंग व्यापार' (Merchanting Trade) क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब कोई भारतीय व्यापारी किसी विदेशी देश से माल खरीदकर बिना माल को भारत की घरेलू सीमा में लाए सीधे किसी तीसरे देश को बेच देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मर्चेंटिंग व्यापार से होने वाला शुद्ध लाभ (Net Profit Margin) BoP में कहाँ दर्ज किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते के वस्तु व्यापार खंड में 'मर्चेंटिंग व्यापार के तहत शुद्ध माल निर्यात' के रूप में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत सरकार द्वारा घरेलू विनिर्माण को बढ़ावा देने और गैर-आवश्यक आयातों को घटाने हेतु 2020 में कौन-सी प्रमुख योजना लाई गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्पादन लिंक्ड प्रोत्साहन (PLI - Production Linked Incentive) योजना, जो इलेक्ट्रॉनिक्स, फार्मा और ऑटोमोबाइल में आयात घटाने और निर्यात बढ़ाने हेतु है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब चालू खाता घाटा (CAD) पूंजी खाते के शुद्ध अधिशेष से अधिक हो जाता है, तो BoP की समग्र स्थिति क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समग्र BoP घाटे में चला जाता है (Overall BoP Deficit) और इसकी भरपाई देश के आधिकारिक विदेशी मुद्रा भंडार से डॉलर बेचकर करनी पड़ती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब पूंजी खाते का शुद्ध अंतर्प्रवाह चालू खाता घाटे (CAD) से अधिक हो जाता है, तो विदेशी मुद्रा भंडार पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा भंडार में शुद्ध वृद्धि होती है और समग्र भुगतान संतुलन अधिशेष में रहता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी पर्यटकों द्वारा भारत में क्रेडिट कार्ड से किया गया खर्च BoP के किस खाते को प्रभावित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते के सेवा खंड में 'यात्रा एवं पर्यटन निर्यात' (क्रेडिट)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय फिल्मों और ओटीटी वेब सीरीज की विदेशों में स्क्रीनिंग से होने वाली रॉयल्टी आय कहाँ दर्ज होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते में 'व्यक्तिगत, सांस्कृतिक एवं मनोरंजक सेवाएं' (क्रेडिट)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत द्वारा विदेशी उपग्रहों को इसरो (ISRO / NewSpace India Limited) के रॉकेटों से अंतरिक्ष में भेजने पर प्राप्त शुल्क किस मद में आता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दूरसंचार एवं सूचना सेवाएं तथा वाणिज्यिक परिवहन सेवा निर्यात (चालू खाते में क्रेडिट)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी शिपिंग लाइनों और विदेशी एयरलाइनों द्वारा भारतीय निर्यातकों और यात्रियों से वसूला जाने वाला भाड़ा कहाँ दर्ज होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते में परिवहन सेवा आयात (डेबिट)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा अनिवासी (FCNR) खातों पर भारतीय बैंकों द्वारा दिए जाने वाले ब्याज का भुगतान BoP में कहाँ दर्ज होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते की प्राथमिक साधन आय (निवेश आय) के तहत डेबिट में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में आयोजित अंतरराष्ट्रीय सम्मेलनों और प्रदर्शनियों (MICE Tourism) से होने वाली आय BoP में किस रूप में दर्ज होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यावसायिक सेवा एवं पर्यटन निर्यात (चालू खाते में क्रेडिट)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय वित्तीय सेवा केंद्र (IFSC - GIFT City, गुजरात) की स्थापना का भारत के सेवा व्यापार पर क्या रणनीतिक प्रभाव लक्षित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी वित्तीय, बीमा, जहाज पट्टेदारी और कानूनी सेवाओं के आयात पर भारत की निर्भरता घटाना और भारत को वैश्विक वित्तीय सेवाओं का निर्यातक बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते के घाटे को नियंत्रित रखने हेतु दीर्घकालिक रूप से सबसे मजबूत और स्थायी उपाय क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊर्जा दक्षता बढ़ाना (हरित ऊर्जा संक्रमण), उच्च-प्रौद्योगिकी विनिर्माण निर्यातों का विस्तार और घरेलू बचत दर में वृद्धि।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

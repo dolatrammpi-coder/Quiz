@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="औद्योगिक क्षेत्र Part 2">
+<title>औद्योगिक क्षेत्र Part 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / औद्योगिक क्षेत्र Part 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>औद्योगिक क्षेत्र Part 2</h1>
+    <p class="topic-subtitle">1991 की नई औद्योगिक नीति, लाइसेंस-परमिट राज का उन्मूलन, सार्वजनिक क्षेत्र का वि-आरक्षण, MRTP सुधार, FDI उदारीकरण तथा भारतीय अर्थव्यवस्था पर इसके ऐतिहासिक प्रभाव</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">औद्योगिक क्षेत्र Part 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>औद्योगिक नीति/सुधार</th><th>प्रमुख प्रावधान</th><th>औद्योगिक प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">औद्योगिक लाइसेंसिंग का उन्मूलन (De-licensing)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1991 की नीति द्वारा सामरिक, स्वास्थ्य व पर्यावरण से जुड़े 18 उद्योगों को छोड़कर शेष सभी उद्योगों से अनिवार्य लाइसेंसिंग समाप्त की गई (वर्तमान में केवल 4-5 तक सीमित)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">लाइसेंस-परमिट राज की नौकरशाही बाधाओं, कृत्रिम कमी और भ्रष्टाचार का अंत; निजी उद्यमों को क्षमता विस्तार, विविधीकरण व बाजार में स्वतंत्र प्रवेश की पूर्ण छूट।</div></div></td></tr><tr><td><div class="primary-cell">सार्वजनिक क्षेत्र का वि-आरक्षण (De-reservation)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1956 की नीति में सरकार हेतु आरक्षित 17 प्रमुख उद्योगों की संख्या घटाकर 1991 में 8 की गई; वर्तमान में केवल दो क्षेत्रों (परमाणु ऊर्जा और रेलवे परिचालन) तक सीमित।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">खनन, इस्पात, दूरसंचार, बिजली, तेल शोधन, भारी मशीनरी और नागरिक उड्डयन जैसे कोर क्षेत्रों में निजी और वैश्विक पूंजी के विशाल निवेश का मार्ग प्रशस्त।</div></div></td></tr><tr><td><div class="primary-cell">MRTP अधिनियम सुधार एवं प्रतिस्पर्धा नीति</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">MRTP अधिनियम 1969 के तहत बड़ी कंपनियों पर लागू पूर्व-स्वीकृति और संपत्ति सीमा (₹100 करोड़ थ्रेशोल्ड) की समाप्ति; 2002 में प्रतिस्पर्धा अधिनियम द्वारा प्रतिस्थापन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारतीय कॉर्पोरेट घरानों को बड़े पैमाने की इकाइयां स्थापित करने और वैश्विक स्तर पर प्रतिस्पर्धी बनने की स्वतंत्रता; बाजार में एकाधिकार के बजाय निष्पक्ष प्रतिस्पर्धा को संरक्षण।</div></div></td></tr><tr><td><div class="primary-cell">प्रत्यक्ष विदेशी निवेश (FDI) उदारीकरण</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">34 उच्च-प्राथमिकता वाले औद्योगिक क्षेत्रों में 51% विदेशी इक्विटी तक स्वचालित अनुमोदन (Automatic Route); विदेशी प्रौद्योगिकी समझौतों की प्रक्रियाओं का सरलीकरण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विदेशी पूंजी, उन्नत विनिर्माण तकनीकों और वैश्विक प्रबंधन पद्धतियों का तीव्र अंतर्प्रवाह; ऑटोमोबाइल, इलेक्ट्रॉनिक्स और फार्मास्यूटिकल्स में वैश्विक मूल्य श्रृंखलाओं से जुड़ाव।</div></div></td></tr><tr><td><div class="primary-cell">लघु उद्योग (SSI) आरक्षण का वि-आरक्षण</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">लघु उद्योगों हेतु विशेष रूप से आरक्षित 800 से अधिक वस्तुओं की सूची को चरणबद्ध रूप से समाप्त करना तथा बड़े उद्यमों को उत्पादन की अनुमति देना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्पाद गुणवत्ता में वैश्विक सुधार, उन्नत तकनीक और बड़े पैमाने की बचतों का लाभ; यद्यपि कम-पूंजी वाली पारंपरिक घरेलू इकाइयों को तीव्र प्रतिस्पर्धा का सामना करना पड़ा।</div></div></td></tr><tr><td><div class="primary-cell">स्थान-निर्धारण नीति का उदारीकरण</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">10 लाख से कम आबादी वाले शहरों में कारखाने लगाने हेतु केंद्र सरकार के अनुमोदन की अनिवार्यता समाप्त; 25 किमी की परिधि शर्त को प्रदूषणकारी उद्योगों तक सीमित करना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">टियर-2 और टियर-3 शहरों तथा ग्रामीण परिधीय क्षेत्रों में औद्योगिक इकाइयों की तीव्र स्थापना; औद्योगिक क्लस्टरों और गैर-महानगरीय रोजगार का विस्तार।</div></div></td></tr><tr><td><div class="primary-cell">उपभोक्ता संप्रभुता एवं बाजार आपूर्ति</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्पादन सीमाओं और क्षमता प्रतिबंधों के समाप्त होने से ऑटोमोबाइल, स्कूटर, टेलीफोन और उपभोक्ता वस्तुओं में दशकों लंबी वेटिंग लिस्ट और कृत्रिम कमी का स्थायी अंत।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बाजार में गुणवत्तापूर्ण विकल्पों की बाढ़, मूल्य प्रतिस्पर्धा और उपभोक्ताओं के जीवन स्तर व क्रय शक्ति में युगांतरकारी सुधार।</div></div></td></tr><tr><td><div class="primary-cell">आधुनिक नियामक युग (Ease of Doing Business)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">नियंत्रक राज्य से सुगमकर्ता राज्य (Facilitator State) की ओर रूपांतरण; राष्ट्रीय एकल खिड़की प्रणाली (NSWS), जन विश्वास अधिनियम और कॉर्पोरेट अपराधों का गैर-अपराधीकरण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अनुपालन बोझ (Compliance Burden) में कमी, पारदर्शी डिजिटल स्वीकृतियां तथा भारत में घरेलू व बहुराष्ट्रीय विनिर्माण निवेश हेतु अनुकूल परिवेश का निर्माण।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>भारत की ऐतिहासिक 'नई औद्योगिक नीति' (New Industrial Policy - NIP) की घोषणा किस तिथि को की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">24 जुलाई 1991 को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नई औद्योगिक नीति की घोषणा के समय भारत के प्रधानमंत्री और केंद्रीय वित्त मंत्री कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री पी. वी. नरसिम्हा राव तथा केंद्रीय वित्त मंत्री डॉ. मनमोहन सिंह थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नई औद्योगिक नीति संसद में किस केंद्रीय मंत्री द्वारा औपचारिक रूप से प्रस्तुत की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री पी. वी. नरसिम्हा राव द्वारा (क्योंकि उद्योग मंत्रालय का प्रभार स्वयं प्रधानमंत्री के पास था)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 1991 में भारत को नई औद्योगिक नीति लाने के लिए किन गंभीर समष्टिगत आर्थिक संकटों ने विवश किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अभूतपूर्व भुगतान संतुलन (BoP) संकट, विदेशी मुद्रा भंडार का मात्र दो सप्ताह के आयातों के बराबर रह जाना, राजकोषीय घाटे का 8% से ऊपर पहुंचना और दोहरे अंकों की भीषण मुद्रास्फीति।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नीति से पूर्व भारत के औद्योगिक विकास का वैचारिक आधार किस ऐतिहासिक नीति प्रस्ताव पर टिका था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">औद्योगिक नीति संकल्प 1956 (Industrial Policy Resolution - IPR 1956) पर; जिसे 'भारत का आर्थिक संविधान' कहा जाता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1956 की औद्योगिक नीति में आर्थिक विकास का नेतृत्व किस क्षेत्र को सौंपा गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वजनिक क्षेत्र (Public Sector) को; नेहरू-महालनोबिस मॉडल के तहत भारी और बुनियादी उद्योगों में राज्य का पूर्ण आधिपत्य स्थापित किया गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नई औद्योगिक नीति का सबसे केंद्रीय और युगांतरकारी दर्शन क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'लाइसेंस-परमिट-कोटा राज' को समाप्त करना तथा राज्य की भूमिका को एक 'कठोर नियंत्रक' से बदलकर एक 'विकास सुगमकर्ता और उत्प्रेरक' बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नीति ने भारतीय अर्थव्यवस्था में किन तीन बुनियादी सुधार प्रक्रियाओं (LPG मॉडल) की नींव रखी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उदारीकरण (Liberalization), निजीकरण (Privatization), और वैश्वीकरण (Globalization)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नीति के तहत औद्योगिक क्षेत्र में 'उदारीकरण' (Liberalization) का क्या व्यावहारिक अर्थ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उद्योगों पर लगे अनावश्यक प्रशासनिक नियंत्रणों, लाइसेंसिंग, मूल्य नियंत्रण, कोटा प्रणाली और क्षमता विस्तार की सरकारी पाबंदियों को समाप्त करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नीति के तहत 'निजीकरण' (Privatization) की दिशा में क्या प्रमुख कदम उठाए गए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वजनिक क्षेत्र के आरक्षित उद्योगों को निजी पूंजी हेतु खोलना तथा सरकारी उपक्रमों (PSUs) में सरकारी हिस्सेदारी के विनिवेश (Disinvestment) की शुरुआत करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की औद्योगिक नीति के संदर्भ में 'वैश्वीकरण' (Globalization) से क्या आशय था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय उद्योगों को प्रत्यक्ष विदेशी निवेश (FDI), विदेशी तकनीक और आयात उदारीकरण के माध्यम से वैश्विक अर्थव्यवस्था के साथ एकीकृत करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्वतंत्र भारत में 'लाइसेंस-परमिट-कोटा राज' की कानूनी नींव किस अधिनियम द्वारा रखी गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उद्योग (विकास और नियमन) अधिनियम, 1951 [Industries (Development and Regulation) Act, 1951 - IDRA 1951]।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IDRA 1951 के तहत किसी भी निजी उद्यमी को किन गतिविधियों हेतु सरकार से पूर्व-लाइसेंस लेना अनिवार्य था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नया कारखाना स्थापित करने, मौजूदा कारखाने की उत्पादन क्षमता बढ़ाने, नए उत्पाद का विनिर्माण करने और कारखाने का स्थान बदलने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रसिद्ध चक्रवर्ती राजगोपालाचारी (राजाजी) ने 1950 के दशक के उत्तरार्ध में इस नियंत्रणकारी व्यवस्था को क्या प्रसिद्ध नाम दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'लाइसेंस-परमिट-कोटा राज' (License-Permit-Quota Raj)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लाइसेंस राज के कारण भारतीय अर्थव्यवस्था में कौन-सी विकृत आर्थिक प्रवृत्ति चरम पर पहुंच गई थी जिसे अर्थशास्त्र में 'रेंट-सीकिंग' (Rent-Seeking) कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्पादक नवाचार और दक्षता के बजाय सरकारी लाइसेंस, परमिट और कोटा हासिल करने हेतु राजनीतिक और नौकरशाही लॉबिंग पर पूंजी और समय बर्बाद करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लाइसेंस राज ने भारत में किस प्रकार की विनिर्माण संस्कृति को जन्म दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'कमी की अर्थव्यवस्था' (Economy of Scarcity) और 'विक्रेता बाजार' (Seller's Market); जहां गुणवत्ताहीन और महंगे उत्पाद भी उपभोक्ताओं को मजबूरी में खरीदने पड़ते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लाइसेंस राज के दौरान उपभोक्ता वस्तुओं की कृत्रिम कमी का सबसे ज्वलंत उदाहरण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चेतक स्कूटर, फिएट/एंबेसडर कार या लैंडलाइन टेलीफोन कनेक्शन प्राप्त करने हेतु उपभोक्ताओं को 8 से 10 वर्षों तक की लंबी प्रतीक्षा (Waiting List) करनी पड़ती थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नई औद्योगिक नीति ने 'औद्योगिक लाइसेंसिंग' (De-licensing) के संदर्भ में क्या साहसिक फैसला किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुरक्षा, पर्यावरण और सामाजिक चिंताओं से जुड़े केवल 18 उद्योगों को छोड़कर शेष संपूर्ण विनिर्माण क्षेत्र से अनिवार्य लाइसेंसिंग को एक झटके में समाप्त कर दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नीति के बाद जिन उद्योगों को लाइसेंस से मुक्त कर दिया गया, उन्हें कारखाने स्थापित करने हेतु कौन-सी नई सरल प्रक्रिया अपनानी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">औद्योगिक उद्यमी ज्ञापन (Industrial Entrepreneur Memorandum - IEM) दाखिल करना; जो अनुमति लेने के बजाय केवल सरकार को सूचना देने का एक पंजीकरण प्रपत्र है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के बाद लाइसेंस प्राप्त उद्योगों की सूची में समय-समय पर कटौती करते हुए वर्तमान में कितने उद्योगों हेतु अनिवार्य लाइसेंसिंग शेष है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्तमान में केवल 4 से 5 विशिष्ट उद्योगों तक ही अनिवार्य लाइसेंसिंग सीमित है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में भारत में किन विशिष्ट उद्योगों हेतु आज भी अनिवार्य औद्योगिक लाइसेंस (Compulsory Licensing) लेना आवश्यक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. एयरोस्पेस और रक्षा उपकरण, 2. औद्योगिक विस्फोटक, 3. खतरनाक रसायन, 4. सिगार-सिगरेट व तंबाकू उत्पाद, तथा 5. मादक पेय पदार्थों का आसवन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1956 की औद्योगिक नीति में सार्वजनिक क्षेत्र के पूर्ण एकाधिकार हेतु आरक्षित अनुसूची 'A' में कितने उद्योग शामिल थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 17 प्रमुख रणनीतिक व बुनियादी उद्योग।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>24 जुलाई 1991 की नीति द्वारा सार्वजनिक क्षेत्र हेतु आरक्षित उद्योगों की संख्या 17 से घटाकर कितनी कर दी गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घटाकर केवल 8 कर दी गई थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान समय में केंद्र सरकार के सार्वजनिक क्षेत्र हेतु अनन्य रूप से आरक्षित उद्योगों की संख्या कितनी रह गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मात्र 2 उद्योग: 1. परमाणु ऊर्जा (Atomic Energy), तथा 2. रेलवे परिचालन (Railway Operations - विशिष्ट कोर परिचालन)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र का वि-आरक्षण होने से किन भारी बुनियादी उद्योगों में निजी क्षेत्र का ऐतिहासिक प्रवेश हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दूरसंचार, नागरिक उड्डयन, बिजली उत्पादन व वितरण, तेल शोधन व पेट्रोलियम विपणन, कोयला खनन, बंदरगाह, इस्पात और भारी मशीनरी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एकाधिकार तथा अवरोधक व्यापार व्यवहार अधिनियम (MRTP Act) किस वर्ष पारित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1969 में (1 जून 1970 से लागू)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MRTP अधिनियम 1969 लाने के पीछे सरकार का प्राथमिक उद्देश्य क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थिक सत्ता के अनुचित संकेंद्रण को रोकना, एकाधिकार पर नियंत्रण लगाना और अनुचित व्यापार व्यवहारों को प्रतिबंधित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व MRTP कानून के तहत किन कंपनियों को 'MRTP कंपनी' मानकर उन पर कठोर सरकारी नियंत्रण लगाया जाता था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जिन कंपनियों की कुल संपत्ति ₹20 करोड़ (1985 में बढ़ाकर ₹100 करोड़ की गई) से अधिक होती थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MRTP कानून ने बड़े भारतीय कॉर्पोरेट घरानों की उत्पादन क्षमता को किस प्रकार पंगु बना दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बड़ी कंपनियों को नई फैक्ट्रियां लगाने, क्षमता विस्तार करने, विलय करने या नए उत्पाद बनाने हेतु सरकार और MRTP आयोग की अलग से पूर्व-स्वीकृति लेनी होती थी, जिसे वर्षों तक अटकाया जाता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नई औद्योगिक नीति ने MRTP अधिनियम के संबंध में क्या युगांतरकारी सुधार किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिसंपत्ति सीमा (Asset Threshold Limit) की पूर्व-अनुमति प्रणाली को पूरी तरह समाप्त कर दिया, जिससे कंपनियों को बड़े पैमाने की मितव्ययिताएं (Economies of Scale) हासिल करने की स्वतंत्रता मिली।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MRTP अधिनियम 1969 को पूरी तरह निरस्त कर आधुनिक बाजार अर्थव्यवस्था के अनुकूल कौन-सा नया कानून लाया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रतिस्पर्धा अधिनियम, 2002 (Competition Act, 2002)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रतिस्पर्धा अधिनियम 2002 के तहत किस अर्ध-न्यायिक विनियामक संस्था की स्थापना की गई जिसने MRTP आयोग का स्थान लिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय प्रतिस्पर्धा आयोग (Competition Commission of India - CCI / 2003 में स्थापित, 2009 से पूर्णतः कार्यात्मक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MRTP दर्शन और CCI के आधुनिक प्रतिस्पर्धा दर्शन में क्या मौलिक अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">MRTP कंपनियों के बड़े आकार (Big Size) को ही संदेह से देखता था, जबकि CCI बड़े आकार को दंडित नहीं करता, बल्कि बाजार में प्रभुत्वशाली स्थिति के दुरुपयोग (Abuse of Dominant Position) और प्रतिस्पर्धा-विरोधी संधियों (Cartels) को दंडित करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नीति से पूर्व भारत में प्रत्यक्ष विदेशी निवेश (FDI) की सामान्य कानूनी सीमा कितनी हुआ करती थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फेरा (FERA 1973) के तहत सामान्यतः अधिकतम 40% तक; और प्रत्येक विदेशी निवेश प्रस्ताव हेतु सरकार की लंबी विवेकाधीन स्वीकृति लेनी पड़ती थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नई औद्योगिक नीति ने FDI के संबंध में कौन-सी ऐतिहासिक पहल की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">34 उच्च-प्राथमिकता वाले औद्योगिक क्षेत्रों में 51% विदेशी इक्विटी तक 'स्वचालित अनुमोदन' (Automatic Approval) की शुरुआत की।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 में विदेशी निवेश प्रस्तावों के त्वरित निस्तारण हेतु प्रधानमंत्री कार्यालय (PMO) के अंतर्गत किस उच्चस्तरीय संस्था का गठन किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी निवेश संवर्धन बोर्ड (Foreign Investment Promotion Board - FIPB)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत सरकार ने न्यूनतम सरकार और अधिकतम शासन के तहत FIPB को किस वर्ष समाप्त कर दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मई 2017 में; जिसके बाद विभिन्न संबंधित मंत्रालयों को ही सरकारी मार्ग के प्रस्तावों को सीधे निपटाने का अधिकार दिया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी प्रौद्योगिकी समझौतों (Foreign Technology Agreements) के संदर्भ में 1991 की नीति ने क्या छूट प्रदान की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्च प्राथमिकता वाले उद्योगों में घरेलू बिक्री पर 5% और निर्यात पर 8% रॉयल्टी तथा ₹1 करोड़ तक के एकमुश्त प्रौद्योगिकी हस्तांतरण शुल्क हेतु स्वतः सरकारी स्वीकृति का प्रावधान किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व लागू 'चरणबद्ध विनिर्माण कार्यक्रम' (Phased Manufacturing Programme - PMP) क्या था जिसे 1991 में समाप्त किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी कंपनियों पर यह कानूनी बाध्यता थोपना कि वे समय के साथ अपने उत्पादों में प्रयुक्त कलपुर्जों का एक निश्चित प्रतिशत भारत में ही घरेलू स्तर पर अनिवार्यतः खरीदेंगी या बनाएंगी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PMP को समाप्त करने से भारतीय ऑटोमोबाइल और विनिर्माण क्षेत्र को क्या त्वरित लाभ हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी वाहन निर्माता (जैसे हुंडई, सुजुकी, टोयोटा) बिना स्थानीय सामग्री की कठोर शर्तों के भारत में तुरंत विश्वस्तरीय कारखानों की स्थापना कर सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 की नीति से पूर्व 'लघु उद्योग' (Small Scale Industries - SSI) आरक्षण व्यवस्था क्या थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1967 से शुरू की गई व्यवस्था जिसके तहत 800 से अधिक उपभोक्ता वस्तुओं (जूते, खिलौने, कपड़े, बर्तन, स्टेशनरी आदि) के विनिर्माण का एकाधिकार केवल छोटी इकाइयों हेतु कानूनी रूप से आरक्षित था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SSI आरक्षण का भारतीय विनिर्माण की वैश्विक प्रतिस्पर्धात्मकता पर क्या गंभीर नकारात्मक प्रभाव पड़ा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बड़े भारतीय और विदेशी उद्यम इन श्रम-सघन क्षेत्रों में निवेश नहीं कर सके, जिससे इकाइयां छोटी और पुरानी तकनीक वाली बनी रहीं और चीन ने बड़े पैमाने के उत्पादन (Scale) के दम पर वैश्विक खिलौना, कपड़ा व जूता बाजार पर कब्जा कर लिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लघु उद्योग (SSI) आरक्षण सूची को भारत में किस प्रकार समाप्त किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1997 की आबिद हुसैन समिति की सिफारिशों के आधार पर चरणबद्ध रूप से डी-रिजर्व किया गया और अप्रैल 2015 तक आरक्षण सूची पूरी तरह शून्य कर दी गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 2006 में लघु उद्योगों के संवर्धन हेतु कौन-सा व्यापक कानून संसद द्वारा पारित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूक्ष्म, लघु एवं मध्यम उद्यम विकास अधिनियम, 2006 (MSMED Act, 2006)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आत्मनिर्भर भारत पैकेज के तहत 1 जुलाई 2020 से MSME की कौन-सी नई समग्र परिभाषा लागू की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संयंत्र व मशीनरी में निवेश और वार्षिक टर्नओवर (कारोबार) का संयुक्त दोहरा मानदंड; तथा विनिर्माण और सेवा क्षेत्र का भेद पूरी तरह समाप्त।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2020 की संशोधित परिभाषा के अनुसार 'सूक्ष्म उद्यम' (Micro Enterprise) की वित्तीय सीमा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संयंत्र व मशीनरी में निवेश ₹1 करोड़ से कम तथा वार्षिक टर्नओवर ₹5 करोड़ से कम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2020 की परिभाषा के अनुसार 'लघु उद्यम' (Small Enterprise) का क्या पैमाना है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निवेश ₹10 करोड़ से कम तथा वार्षिक टर्नओवर ₹50 करोड़ से कम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2020 की परिभाषा के अनुसार 'मध्यम उद्यम' (Medium Enterprise) की क्या सीमा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निवेश ₹50 करोड़ से कम तथा वार्षिक टर्नओवर ₹250 करोड़ से कम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MSME परिभाषा के नए संशोधन में 'निर्यात टर्नओवर' (Export Turnover) के संबंध में क्या विशेष छूट दी गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी भी उद्यम द्वारा किए गए कुल निर्यात कारोबार को टर्नओवर की सीमा की गणना से पूरी तरह बाहर रखा जाता है, ताकि निर्यात करने पर कंपनी का MSME दर्जा न छिना जाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के औद्योगिक सुधारों का भारत के 'ऑटोमोबाइल क्षेत्र' पर क्या सबसे प्रत्यक्ष और दृश्य प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत मात्र दो पुरानी कार मॉडलों (एंबेसडर व फिएट) के देश से छलांग लगाकर विश्व का तीसरा सबसे बड़ा यात्री वाहन बाजार और ऑटो कंपोनेंट्स का वैश्विक निर्यात हब बन गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के सुधारों ने भारत के 'दवा उद्योग' (Pharmaceutical Sector) को किस प्रकार वैश्विक शक्ति बनाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लाइसेंसिंग और मूल्य नियंत्रण की ढील तथा घरेलू अनुसंधान से भारत 'विश्व की फार्मेसी' (Pharmacy of the World) बना और दुनिया के 200 से अधिक देशों को सस्ती जेनेरिक दवाओं का निर्यात शुरू किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के सुधारों से भारतीय 'दूरसंचार क्षेत्र' (Telecom Sector) में क्या क्रांतिकारी बदलाव आया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकारी दूरसंचार विभाग (DoT) का एकाधिकार समाप्त हुआ, निजी मोबाइल ऑपरेटरों का प्रवेश हुआ और भारत विश्व के सबसे सस्ते डेटा और 115 करोड़+ मोबाइल कनेक्शनों का विशाल नेटवर्क बना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लाइसेंस राज की समाप्ति का भारतीय उपभोक्ताओं पर क्या सबसे बड़ा सकारात्मक प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'उपभोक्ता संप्रभुता' (Consumer Sovereignty) की स्थापना; गुणवत्तापूर्ण उत्पादों की प्रचुरता, कीमतों में प्रतिस्पर्धी गिरावट और ग्राहक सेवा को सर्वोच्च प्राथमिकता।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के औद्योगिक सुधारों से भारत में किस नए सामाजिक वर्ग का अभूतपूर्व आर्थिक उदय हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक विशाल, आकांक्षी और क्रय शक्ति से संपन्न 'शहरी और अर्ध-शहरी मध्यम वर्ग' (Middle Class) का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लाइसेंस राज सुधारों का भारत के प्रत्यक्ष विदेशी निवेश (FDI Inflows) पर क्या सांख्यिकीय प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1991 के मात्र $100 मिलियन से कम के वार्षिक FDI से उछलकर वर्तमान में भारत प्रतिवर्ष $70 से $85 बिलियन से अधिक का विशाल वार्षिक FDI आकर्षित कर रहा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के बाद भारत के सार्वजनिक उपक्रमों (PSUs) के प्रदर्शन को सुधारने हेतु कौन-सी स्वायत्तता योजना शुरू की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नवरत्न (1997), मिनीरत्न (1997), और महारत्न (2009) का दर्जा देना; जिसके तहत उत्कृष्ट लाभ कमाने वाले उपक्रमों के बोर्ड को बिना सरकारी मंजूरी के हजारों करोड़ रुपये के निवेश की वित्तीय स्वायत्तता मिली।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में भारत में 'महारत्न' (Maharatna) सार्वजनिक उपक्रमों की कुल संख्या कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">14 महारत्न कंपनियां (जैसे ONGC, IOCL, NTPC, BHEL, SAIL, GAIL, BPCL, HPCL, PFC, REC, OIL आदि)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के संदर्भ में 1991 में प्रारंभ की गई 'विनिवेश' (Disinvestment) प्रक्रिया का क्या उद्देश्य था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकारी कंपनियों में सरकार की इक्विटी शेयरधारिता का एक हिस्सा जनता, कर्मचारियों और वित्तीय संस्थानों को बेचकर गैर-ऋण राजकोषीय संसाधन जुटाना और कॉर्पोरेट दक्षता बढ़ाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में विनिवेश और सार्वजनिक संपत्ति प्रबंधन हेतु कौन-सा समर्पित केंद्रीय विभाग कार्यरत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दीपम (DIPAM - Department of Investment and Public Asset Management / केंद्रीय वित्त मंत्रालय के अधीन)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>फरवरी 2021 में घोषित भारत सरकार की 'नई सार्वजनिक क्षेत्र उद्यम नीति' (New PSE Policy 2021) क्या निर्धारित करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वजनिक उपक्रमों को चार रणनीतिक क्षेत्रों (ऊर्जा, परिवहन, वित्तीय सेवाएं, रक्षा) तक सीमित करना (जहां अधिकतम 1 से 4 सरकारी कंपनियां रहेंगी), तथा शेष सभी गैर-रणनीतिक क्षेत्रों की कंपनियों का निजीकरण या बंदी करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के सुधारों की सबसे बड़ी संरचनात्मक विफलता या आलोचना किस मोर्चे पर की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'विनिर्माण क्षेत्र की धीमी संवृद्धि' (Stagnant Manufacturing Share); तीन दशकों के सुधारों के बावजूद जीडीपी में विनिर्माण की हिस्सेदारी 14% से 16% के दायरे में ही फंसी रही और 25% का राष्ट्रीय लक्ष्य हासिल नहीं हो सका।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के सुधारों के बाद औद्योगिक विकास में 'रोजगार-विहीन संवृद्धि' (Jobless Growth) क्यों देखी गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि निजी उद्योगपतियों ने कठोर श्रम कानूनों और मजदूरी विवादों से बचने हेतु श्रम-सघन तकनीकों के स्थान पर अत्यधिक स्वचालित पूंजी-गहन मशीनरी (Capital-intensive automation) को प्राथमिकता दी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के औद्योगिक सुधारों से भारत में 'क्षेत्रीय विषमताएं' (Regional Disparities) क्यों बढ़ गईं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि निजी और विदेशी निवेश केवल बेहतर बुनियादी ढांचे, बंदरगाहों और कुशल श्रम वाले पश्चिमी व दक्षिणी राज्यों (महाराष्ट्र, गुजरात, तमिलनाडु, कर्नाटक) में केंद्रित हो गया, जबकि पूर्वी व मध्य राज्य पिछड़ गए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लाइसेंस राज की समाप्ति के बाद भारतीय पारंपरिक लघु एवं कुटीर उद्योगों को किस सबसे बड़े बाह्य आघात का सामना करना पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चीन और पूर्वी एशिया से आने वाले अत्यधिक सस्ते, बड़े पैमाने पर उत्पादित खिलौनों, इलेक्ट्रॉनिक्स, पटाखों और हार्डवेयर सामानों की भारी डंपिंग का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के बाद लागू हुआ 'रुग्ण औद्योगिक कंपनी अधिनियम' (SICA 1985) और BIFR क्यों अप्रभावी साबित हुए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि वे घाटे में चल रही बीमार कंपनियों के पुनरुद्धार या समयबद्ध परिसमापन में विफल रहे और बैंक गैर-निष्पादित परिसंपत्तियों (NPA) के विशाल दलदल में फंस गए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बीमार और डिफॉल्टर कंपनियों से फंसी हुई पूंजी को निकालने हेतु 2016 में कौन-सा युगांतरकारी कानून बनाया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिवाला और शोधन अक्षमता संहिता, 2016 (Insolvency and Bankruptcy Code - IBC, 2016)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IBC 2016 ने भारतीय औद्योगिक क्षेत्र में 'व्यापार से निकास' (Ease of Exit) को कैसे संभव बनाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डिफॉल्ट की स्थिति में कंपनी का प्रबंधन देनदारों से छीनकर लेनदारों की समिति (CoC) को सौंपने और 180 से 330 दिनों की समय-सीमा में समाधान या परिसमापन की कानूनी गारंटी देकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IBC मामलों की न्यायिक सुनवाई करने वाला शीर्ष अधिकरण कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय कंपनी विधि अधिकरण (National Company Law Tribunal - NCLT) तथा अपीलीय अधिकरण NCLAT।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 2014 में शुरू किए गए 'मेक इन इंडिया' (Make in India) अभियान का 1991 की नीति से क्या तार्किक जुड़ाव है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1991 ने जहां लाइसेंसिंग समाप्त कर उद्योगों को खोला था, वहीं मेक इन इंडिया ने प्रक्रियाओं को डिजिटल बनाकर, बुनियादी ढांचा देकर और लालफीताशाही खत्म कर भारत को वैश्विक विनिर्माण हब बनाने का संकल्प लिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मेक इन इंडिया 2.0' के तहत कितने विनिर्माण और सेवा क्षेत्रों पर विशेष ध्यान केंद्रित किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">27 प्रमुख रणनीतिक क्षेत्रों पर (15 विनिर्माण क्षेत्र तथा 12 चैंपियन सेवा क्षेत्र)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में विनिर्माण को पुनः गति देने हेतु 2020 में शुरू की गई 'उत्पादन आधारित प्रोत्साहन' (PLI) योजना का क्या वित्तीय मॉडल है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कंपनियों को अग्रिम सब्सिडी देने के बजाय उनके द्वारा भारत में उत्पादित माल की वास्तविक वृद्धिशील बिक्री पर 4% से 6% का नकद प्रोत्साहन (Incentive) 5 वर्षों हेतु देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PLI योजना कुल कितने क्षेत्रों में लागू है और इसका कुल बजटीय परिव्यय लगभग कितना है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">14 प्रमुख रणनीतिक क्षेत्रों में, लगभग ₹1.97 लाख करोड़ का विशाल वित्तीय परिव्यय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में सेमीकंडक्टर फैब और डिस्प्ले इकोसिस्टम की स्थापना हेतु ₹76,000 करोड़ का कौन-सा राष्ट्रीय कार्यक्रम संचालित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंडिया सेमीकंडक्टर मिशन (Semicon India Programme - ISM)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक अनुपालन बोझ को घटाने हेतु संसद द्वारा पारित 'जन विश्वास (उपबंधों का संशोधन) अधिनियम, 2023' का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापार और उद्योग से जुड़े 42 केंद्रीय कानूनों के 183 छोटे-मोटे तकनीकी उल्लंघनों को आपराधिक श्रेणी (जेल की सजा) से हटाकर केवल मौद्रिक जुर्माने में बदल दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निवेशकों को सभी केंद्रीय और राज्य स्तरीय औद्योगिक मंजूरियां एक ही जगह प्रदान करने वाला एकीकृत डिजिटल प्लेटफॉर्म कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय एकल खिड़की प्रणाली (National Single Window System - NSWS / DPIIT द्वारा संचालित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक भूमि की त्वरित सुलभता हेतु केंद्र सरकार द्वारा विकसित जीआईएस-आधारित डिजिटल पोर्टल कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंडिया इंडस्ट्रियल लैंड बैंक (IILB - India Industrial Land Bank)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>देश में औद्योगिक और आर्थिक बुनियादी ढांचे के समन्वित नियोजन हेतु अक्टूबर 2021 में शुरू किया गया डिजिटल मास्टर प्लान कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएम गतिशक्ति - राष्ट्रीय मास्टर प्लान (PM GatiShakti National Master Plan)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में उच्च लॉजिस्टिक्स लागत (GDP का 13-14%) को घटाकर वैश्विक स्तर (8%) पर लाने हेतु कौन-सी नीति घोषित की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय लॉजिस्टिक्स नीति, 2022 (National Logistics Policy - NLP 2022)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक विनिर्माण में माल ढुलाई की गति और लागत सुधारने हेतु भारतीय रेलवे द्वारा विकसित किए जा रहे दो प्रमुख कॉरिडोर कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. पश्चिमी समर्पित माल गलियारा (Western DFC), तथा 2. पूर्वी समर्पित माल गलियारा (Eastern DFC)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक क्षेत्र में नवाचार और नई तकनीक को गति देने हेतु जनवरी 2016 में शुरू की गई फ्लैगशिप योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्टार्टअप इंडिया (Startup India Scheme); जिसके तहत कर छूट, स्व-प्रमाणन और फंड ऑफ फंड्स (FFS) की सुविधा दी जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत वर्तमान में दुनिया का कौन-सा सबसे बड़ा स्टार्टअप और यूनिकॉर्न इकोसिस्टम बन चुका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व का तीसरा सबसे बड़ा स्टार्टअप इकोसिस्टम (100 से अधिक यूनिकॉर्न कंपनियों के साथ)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रक्षा क्षेत्र में आत्मनिर्भरता बढ़ाने हेतु प्रत्यक्ष विदेशी निवेश (FDI) की स्वचालित सीमा को बढ़ाकर कितना कर दिया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वचालित मार्ग से 74% तक (तथा आधुनिक तकनीक के आधार पर सरकारी मार्ग से 100% तक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रक्षा विनिर्माण हेतु भारत में किन दो राज्यों में विशेष 'रक्षा औद्योगिक गलियारे' (Defence Corridors) स्थापित किए गए हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तर प्रदेश (UP DIC) तथा तमिलनाडु (TN DIC)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घरेलू उद्योगों को बढ़ावा देने हेतु सार्वजनिक खरीद में भारत सरकार की कौन-सी अनिवार्य नीति लागू है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वजनिक खरीद (मेक इन इंडिया को वरीयता) आदेश, 2017; जिसके तहत ₹200 करोड़ तक की सरकारी निविदाओं में वैश्विक टेंडर (Global Tenders) पर पूर्ण प्रतिबंध है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सरकारी विभागों द्वारा वस्तुओं और सेवाओं की ऑनलाइन पारदर्शी खरीद हेतु स्थापित राष्ट्रीय ई-मार्केटप्लेस कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गवर्नमेंट ई-मार्केटप्लेस (GeM Portal - 2016)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>GeM पोर्टल पर किन उत्पादकों हेतु 25% तक की सार्वजनिक खरीद आरक्षित की गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूक्ष्म और लघु उद्यमों (MSEs) हेतु (जिसमें 4% SC/ST उद्यमियों तथा 3% महिला उद्यमियों हेतु विशिष्ट कोटा शामिल है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक क्षेत्र में अप्रत्यक्ष करों की विविधता और चुंगी (Octroi) को समाप्त करने वाला ऐतिहासिक कर सुधार कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वस्तु एवं सेवा कर (GST - 1 जुलाई 2017 से लागू); जिसने 'एक राष्ट्र, एक कर, एक बाजार' का निर्माण किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सितंबर 2019 में भारत सरकार ने नए विनिर्माण उद्यमों को आकर्षित करने हेतु कॉर्पोरेट आयकर दर घटाकर कितनी कर दी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नई घरेलू विनिर्माण कंपनियों हेतु घटाकर मात्र 15% (प्रभावी दर ~17.16%) की ऐतिहासिक रियायती दर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वस्त्र एवं परिधान क्षेत्र में विश्वस्तरीय बुनियादी ढांचा तैयार करने हेतु 7 मेगा पार्कों की कौन-सी राष्ट्रीय योजना संचालित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएम मित्र योजना (PM MITRA - PM Mega Integrated Textile Region and Apparel Parks)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विशाल रासायनिक और पेट्रोकेमिकल विनिर्माण निवेश हेतु किन विशेष क्षेत्रों का विकास किया जा रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीसीपीआईआर (PCPIR - Petroleum, Chemicals and Petrochemicals Investment Regions)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सस्ती और गुणवत्तापूर्ण जेनेरिक दवाओं के घरेलू कच्चे माल (APIs) के उत्पादन हेतु कौन-सी योजना शुरू की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बल्क ड्रग पार्कों को बढ़ावा देने की योजना (Promotion of Bulk Drug Parks Scheme)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक क्षेत्र के डिजिटलीकरण और 'चौथी औद्योगिक क्रांति' (Industry 4.0) हेतु कौन-सा राष्ट्रीय मिशन कार्य कर रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्मार्ट उन्नत विनिर्माण और त्वरित परिवर्तन केंद्र (SAMARTH Udyog Bharat 4.0)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारी उद्योगों (इस्पात, सीमेंट, उर्वरक) को कार्बन-मुक्त बनाने हेतु केंद्र सरकार का फ्लैगशिप मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय हरित हाइड्रोजन मिशन (National Green Hydrogen Mission - जनवरी 2023)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक क्षेत्र में 'शून्य दोष, शून्य प्रभाव' (Zero Defect, Zero Effect - ZED) प्रमाणन योजना का क्या उद्देश्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एमएसएमई इकाइयों को ऐसे उच्च गुणवत्ता वाले उत्पाद बनाने हेतु प्रोत्साहित करना जिनमें कोई तकनीकी दोष (Zero Defect) न हो और पर्यावरण पर कोई प्रदूषणकारी प्रभाव (Zero Effect) न पड़े।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>श्रम सुधारों के अंतर्गत 44 जटिल केंद्रीय श्रम कानूनों को समाहित कर संसद द्वारा किन चार संहिताओं (Labour Codes) को पारित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. मजदूरी संहिता 2019, 2. औद्योगिक संबंध संहिता 2020, 3. सामाजिक सुरक्षा संहिता 2020, और 4. व्यावसायिक सुरक्षा, स्वास्थ्य एवं कार्यदशा संहिता 2020।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चार नए श्रम संहिताओं का औद्योगिक विकास पर क्या मुख्य सकारात्मक प्रभाव अपेक्षित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुपालन की जटिलताएं समाप्त होंगी, निश्चित अवधि के रोजगार (Fixed Term Employment) को वैधता मिलेगी और श्रमिकों को सार्वभौमिक न्यूनतम वेतन व सामाजिक सुरक्षा प्राप्त होगी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी व्यापार में संरक्षणवाद के आधुनिक खतरे के रूप में यूरोपीय संघ का कौन-सा नया कर भारतीय धातु उद्योगों को प्रभावित कर रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कार्बन सीमा समायोजन तंत्र (CBAM - Carbon Border Adjustment Mechanism / कार्बन बॉर्डर टैक्स)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक विकास के वर्तमान चरण में 'आत्मनिर्भर भारत अभियान' (2020) की क्या मुख्य रणनीति है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैश्विक अलगाववाद के बजाय महत्वपूर्ण इनपुट्स में रणनीतिक आत्मनिर्भरता हासिल करना, वैश्विक आपूर्ति श्रृंखलाओं में भारत की हिस्सेदारी बढ़ाना और घरेलू विनिर्माण को विश्वस्तरीय बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत को 'विकसित भारत @2047' बनाने के राष्ट्रीय संकल्प में औद्योगिक क्षेत्र की क्या निर्णायक भूमिका परिकल्पित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सकल घरेलू उत्पाद में विनिर्माण की हिस्सेदारी को बढ़ाकर 25% तक ले जाना, उच्च-प्रौद्योगिकी इलेक्ट्रॉनिक्स, सेमीकंडक्टर, हरित ऊर्जा और रक्षा विनिर्माण का वैश्विक हब बनना तथा करोड़ों युवाओं हेतु उत्पादक व सम्मानजनक औपचारिक रोजगार सुनिश्चित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक क्षेत्र Part 2 के संपूर्ण ऐतिहासिक और नीतिगत विश्लेषण का अंतिम समष्टिगत निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1991 की नई औद्योगिक नीति ने लाइसेंस-परमिट राज की जंजीरों को तोड़कर भारतीय उद्यमशीलता को जो पंख दिए, उसी का परिणाम है कि भारत आज विश्व की पांचवीं सबसे बड़ी आर्थिक शक्ति है; अब चुनौती आधुनिक बुनियादी ढांचे, सेमीकंडक्टर, हरित प्रौद्योगिकियों, श्रम सुधारों और PLI जैसी रणनीतियों के समन्वय से भारत को एक आत्मनिर्भर वैश्विक विनिर्माण महाशक्ति के रूप में स्थापित करने की है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

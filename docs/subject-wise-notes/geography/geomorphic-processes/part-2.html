@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Geomorphic Processes 2">
+<title>Geomorphic Processes 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Geography / भूगोल / Geomorphic Processes 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Geography — भूगोल</div>
+    <h1>Geomorphic Processes 2</h1>
+    <p class="topic-subtitle">अपरदन व निक्षेपण, प्रवाही जल, हिमनद, पवन व भूमिगत जल की स्थलाकृतियां तथा वृहद संचलन (मृदा सर्पण)</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Geomorphic Processes 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>प्रक्रिया</th><th>स्थलाकृति</th><th>प्रमुख उदाहरण</th></tr></thead><tbody><tr><td><div class="primary-cell">नदीय अपरदन (Fluvial Erosion)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">V-आकार की घाटी, गॉर्ज, कैनियन, जलप्रपात, क्षिप्रिका, जलर्तिका (पॉटहोल) व नदी वेदिकाएं</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कोलोराडो नदी का ग्रैंड कैनियन (USA), सिंधु गॉर्ज (बुंजी, लद्दाख), भेड़ाघाट धुआंधार (नर्मदा)</div></div></td></tr><tr><td><div class="primary-cell">नदीय निक्षेपण (Fluvial Deposition)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जलोढ़ पंख, जलोढ़ शंकु, प्राकृतिक तटबंध, बाढ़ का मैदान, नदी विसर्प, गोखुर झील व डेल्टा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">गंगा-ब्रह्मपुत्र का सुंदरवन डेल्टा, कंवर झील (बिहार - एशिया की बड़ी गोखुर झील), माजुली नदी द्वीप</div></div></td></tr><tr><td><div class="primary-cell">हिमानी अपरदन (Glacial Erosion)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">U-आकार की घाटी, सर्क (कोरी), टार्न झील, अरेत (तीक्ष्ण कटक), हॉर्न (शृंग), लटकती घाटी व फियोर्ड</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">स्विट्जरलैंड का मैटरहॉर्न (हॉर्न), नॉर्वे के फियोर्ड तट, कुल्लू-मनाली की लटकती घाटियाँ</div></div></td></tr><tr><td><div class="primary-cell">हिमानी निक्षेपण (Glacial Deposition)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">हिमोढ़ (पार्श्व, मध्यस्थ, अंतस्थ व तलस्थ मोरेन), ड्रमलिन, एस्कर, केम, केतली व आउटवॉश मैदान</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आयरलैंड का 'बास्केट ऑफ एग्स' स्थलाकृति (ड्रमलिन क्षेत्र), फिनलैंड के विस्तृत एस्कर व केम कटक</div></div></td></tr><tr><td><div class="primary-cell">पवन अपरदन (Aeolian Erosion)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">छत्रक शिला (मशरूम रॉक), ज्यूगेन, यार्डांग, इन्सेलबर्ग, भू-स्तंभ (डेमोइसेल), वातगर्त व ड्राईकांउटर</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सहारा मरुस्थल के छत्रक शिला, थार मरुस्थल के यार्डांग, कालाहारी व ऑस्ट्रेलिया के इन्सेलबर्ग</div></div></td></tr><tr><td><div class="primary-cell">पवन निक्षेपण (Aeolian Deposition)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बालुका स्तूप (बरखान, सीफ, अनुप्रस्थ, अनुदैर्घ्य), लोएस मैदान, बजाडा व पेडिमेंट</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">थार मरुस्थल (राजस्थान) के बरखान, उत्तरी चीन का विशाल लोएस पठार (ह्वॉन्गहो बेसिन)</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Geomorphic Processes 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>प्रक्रिया</th><th>स्थलाकृति</th><th>प्रमुख उदाहरण</th></tr></thead><tbody><tr><td><div class="primary-cell">कार्स्ट / भूमिगत जल अपरदन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">घोलरंध्र (सिंकहोल), विलयन रंध्र (स्वालो होल), डोलाइन, उवाला, पोल्ये, लैपीज व अंधी घाटी</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">एड्रियाटिक सागर तट (स्लोवेनिया व क्रोएशिया का कार्स्ट क्षेत्र), मेघालय व बस्तर की चूना पत्थर कंदराएं</div></div></td></tr><tr><td><div class="primary-cell">कार्स्ट / भूमिगत जल निक्षेपण</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">स्टैलेक्टाइट (आकाशीय स्तंभ), स्टैलेग्माइट (धरातलीय स्तंभ), कंदरा स्तंभ व ड्रिपस्टोन</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बोरा गुफाएं (विशाखापट्टनम, आंध्र प्रदेश), कुटुमसर गुफा (बस्तर, छत्तीसगढ़), रॉबर्ट्स केव (देहरादून)</div></div></td></tr><tr><td><div class="primary-cell">मंद वृहद संचलन (Slow Mass Movement)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मृदा विसर्पण (Soil Creep), टैलास विसर्पण, चट्टान विसर्पण तथा सॉलिफ्लुक्शन (पंक प्रवाह)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">शीतोष्ण व पेरिग्लेशियर ढलानों पर खंभों व बाड़ों का आगे झुकना; टुंड्रा ढालों पर मृदा का धीमा बहाव</div></div></td></tr><tr><td><div class="primary-cell">तीव्र वृहद संचलन (Rapid Mass Movement)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भूस्खलन (Landslide), शैल स्खलन (Rockfall), अवपात (Slump), मलबा प्रवाह व पंकाश्म प्रवाह</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्तराखंड (चमोली, उत्तरकाशी) व पश्चिमी घाट (वायनाड, केरल) के तीव्र ढलानों पर मानसूनी भूस्खलन</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>गतिशील माध्यमों (जल, हिमनद, पवन, भूमिगत जल) द्वारा चट्टानों के टूटने, घिसने और कटकर स्थानांतरित होने की प्रक्रिया क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अपरदन (Erosion)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अपरदन के कारकों द्वारा अपने साथ बहाकर लाए गए तलछटों (अवसादों) को ढाल में कमी आने पर जमा करने की क्रिया क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निक्षेपण (Deposition)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अपरदन के दौरान गतिशील माध्यम में मौजूद कंकड़-पत्थरों द्वारा घाटी की तली और किनारों को घिसकर काटने की क्रिया क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अपघर्षण (Abrasion)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>परिवहित हो रहे शिलाखंडों का आपस में टकरा-टकराकर टूटते हुए छोटे और गोल चिकने कणों में बदल जाना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सन्निघर्षण (Attrition)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जल के रासायनिक प्रभाव से घुलनशील खनिजों (जैसे चूना पत्थर) का घुलकर जल में विलीन हो जाने की अपरदनात्मक क्रिया क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संक्षारण या घोलन (Corrosion / Solution)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बिना किसी कंकड़-पत्थर के केवल जल की तीव्र तरंगों और धाराओं के सीधे आघात द्वारा चट्टानों को तोड़ने की क्रिया क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जलदाब क्रिया (Hydraulic Action)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन द्वारा मरुस्थलीय धरातल से ढीले धूल और बालू के कणों को उड़ाकर ले जाने की प्रक्रिया को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अपवाहन (Deflation)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद की बर्फ द्वारा अपनी तली और किनारों की चट्टानों को उखाड़कर अपने साथ बहा ले जाने की क्रिया क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्पाटन (Plucking)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रवाही जल (नदी) द्वारा अपने मार्ग के ऊपरी पर्वतीय भाग (युवावस्था) में लंबवत कटाव से निर्मित संकीर्ण घाटी क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">V-आकार की घाटी (V-shaped Valley)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अत्यधिक कठोर चट्टानी क्षेत्रों में नदी के तीव्र लंबवत कटाव से बनी खड़ी सीधी दीवारों वाली अत्यधिक गहरी और संकरी घाटी क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गॉर्ज या महाखड्ड (Gorge)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गॉर्ज का ही विस्तृत और शुष्क क्षेत्रों में सोपानी ढालों वाला गहरा स्वरूप क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कैनियन (Canyon)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का सबसे प्रसिद्ध और विशालकाय कैनियन 'ग्रैंड कैनियन' किस देश में और किस नदी द्वारा बनाया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संयुक्त राज्य अमेरिका (एरिज़ोना) में कोलोराडो नदी द्वारा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का सबसे गहरा गॉर्ज सिंधु नदी द्वारा लद्दाख के पास किस स्थान पर बनाया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बुंजी के समीप (लगभग 5,180 मीटर गहरा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब नदी का जल किसी ऊंचे खड़े चट्टानी कगार से सीधे नीचे गिरता है, तो उसे क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जलप्रपात (Waterfall)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नदी की तली में कठोर और कोमल चट्टानों के एकांतर क्रम से उत्पन्न होने वाले छोटे सोपानी प्रपातों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्षिप्रिकाएं (Rapids)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जलप्रपात के ठीक नीचे जल के वेग और पत्थरों के भंवरदार घूर्णन से तली में बनने वाले गहरे गड्ढे को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवनमित कुंड (Plunge Pool)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पर्वतीय नदी की पथरीली तली में जल भंवर के साथ घूमते कंकड़ों द्वारा बने छोटे-छोटे बेलनाकार गड्ढे क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जलर्तिका या जलगर्तिका (Potholes)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पर्वतीय ढालों पर बहते समय जब नदी आमने-सामने निकली पहाड़ियों को काटकर टेढ़े-मेढ़े मार्ग से निकलती है, तो वे पहाड़ियाँ क्या कहलाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतर्ग्रथित कटक (Interlocking Spurs)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नदी के पुनर्यौवन (Rejuvenation) या उत्थान के कारण पुरानी घाटी के दोनों ओर बने सीढ़ीनुमा सपाट मंच क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नदी वेदिकाएं (River Terraces)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पहाड़ से उतरकर जब नदी अचानक समतल मैदान में प्रवेश करती है, तो तलछटों के पंखे के आकार में निक्षेपण से क्या बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जलोढ़ पंख (Alluvial Fan)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब जलोढ़ पंख का ढाल अधिक तीव्र और शंकुनुमा होता है, तो उसे क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जलोढ़ शंकु (Alluvial Cone)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पर्वतपदीय भागों में कई जलोढ़ पंखों के आपस में मिलने से निर्मित विस्तृत समतल मैदान क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गिरिपद जलोढ़ मैदान (Piedmont Alluvial Plain / भाबर क्षेत्र)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मैदानी भाग में नदी के दोनों किनारों पर बाढ़ के समय बालू और मिट्टी के निक्षेपण से बने प्राकृतिक समानांतर बांध क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राकृतिक तटबंध (Natural Levees)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रतिवर्ष बाढ़ के दौरान नवीन महीन जलोढ़ मिट्टी के जमाव से बनने वाला अत्यधिक उपजाऊ समतल क्षेत्र क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाढ़ का मैदान (Flood Plain / खादर क्षेत्र)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मैदानी भाग में मंद ढाल के कारण नदी का अंग्रेजी के 'S' अक्षर के समान टेढ़े-मेढ़े घुमावदार मार्ग पर प्रवाहित होना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नदी विसर्प (Meanders)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नदी विसर्प के बाहरी घुमाव पर कौन-सी प्रक्रिया होती है और आंतरिक घुमाव पर क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाहरी घुमाव पर अपरदन (कटऑफ ढाल) तथा आंतरिक घुमाव पर निक्षेपण (पॉइंट बार)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अत्यधिक विसर्पण के बाद जब नदी अपनी संकरी गर्दन को काटकर सीधे बहने लगती है, तो छूटा हुआ मुड़ा हुआ जलखंड क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गोखुर झील या छाड़न झील (Ox-bow Lake / Horseshoe Lake)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बिहार के बेगूसराय जिले में स्थित एशिया की सबसे बड़ी मीठे पानी की गोखुर झील कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कंवर झील (बूढ़ी गंडक नदी द्वारा निर्मित)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब नदी में अवसाद की मात्रा अत्यधिक हो जाती है और वह कई छोटी-छोटी उलझी हुई धाराओं में बंट जाती है, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गुंफित नदी या गुंफित जलमार्ग (Braided River / जैसे असम में ब्रह्मपुत्र नदी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नदी के मुहाने पर समुद्र या झील में मिलने से पूर्व मंद ढाल के कारण समस्त अवसादों के जमाव से निर्मित त्रिभुजाकार स्थलरूप क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डेल्टा (Delta)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'डेल्टा' शब्द का सर्वप्रथम प्रयोग मिस्र की नील नदी के मुहाने के लिए किस प्राचीन यूनानी इतिहासकार ने किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हेरोडोटस (Herodotus) ने</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गंगा-ब्रह्मपुत्र, नील, राइन और इरावती नदियों के डेल्टा किस ज्यामितीय आकार के होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चापाकार डेल्टा (Arcuate Delta / धनुषाकार डेल्टा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संयुक्त राज्य अमेरिका की मिसिसिपी-मिसौरी नदी द्वारा निर्मित पक्षी के पंजे के समान डेल्टा क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पक्षी-पाद डेल्टा (Bird's Foot Delta)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब नदी का मुहाना समुद्र की तीव्र ज्वारीय तरंगों से साफ रहता है और मलबा मुहाने पर लम्बाई में जमता है, तो वह क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ज्वारनदमुखी डेल्टा (Estuarine Delta - जैसे ओब, येनेसी, एल्ब नदी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तीव्र समुद्री लहरों के सीधे आघात से बनने वाला नुकीला अग्र भाग वाला डेल्टा क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दंताकार या कस्पेट डेल्टा (Cuspate Delta - जैसे इटली की टाइबर नदी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब नदी का डेल्टा समुद्री अपरदन के कारण निरंतर पीछे हटने लगता है, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवरोधी या क्षीण डेल्टा (Blocked / Truncated Delta)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पर्वतीय घाटियों में धीरे-धीरे नीचे की ओर खिसकने वाली विशाल हिमराशि को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हिमनद या ग्लेशियर (Glacier)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद द्वारा पर्वतीय V-आकार की घाटी की तली और किनारों को अपघर्षण व उत्पाटन द्वारा चौड़ा व सपाट करने से कौन-सी घाटी बनती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">U-आकार की घाटी (U-shaped Valley)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद के स्रोत पर पर्वत ढाल पर बनने वाला आरामकुर्सी या अर्ध-चंद्राकार कटोरे के समान विशाल गर्त क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सर्क या कोरी (Cirque / Corrie)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सर्क के गर्त में जब बर्फ पिघलने से जल संचित हो जाता है, तो उस सुंदर पहाड़ी झील को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टार्न झील (Tarn Lake / सर्क झील)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब किसी पर्वत शिखर के दोनों ओर दो सर्क विकसित होकर एक संकीर्ण, नुकीली और आरी के दांतों जैसी कटक बनाते हैं, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरेत या तीक्ष्ण कटक (Arête)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब किसी पर्वत के चारों ओर तीन या अधिक सर्क एक साथ पीछे की ओर कटते हैं, तो केंद्र में बनने वाली पिरामिड जैसी नुकीली चोटी क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हॉर्न या पिरामिडीय शृंग (Horn / Pyramidal Peak)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का सबसे प्रसिद्ध हॉर्न कौन-सा है जो आल्प्स पर्वतमाला (स्विट्जरलैंड-इटली) पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मैटरहॉर्न (Matterhorn)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुख्य हिमनद घाटी में मिलने वाली छोटी सहायक हिमनद घाटियां जो ऊपर लटकती हुई प्रतीत होती हैं, क्या कहलाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लटकती घाटी (Hanging Valley)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लटकती घाटी से जब जल मुख्य घाटी में गिरता है, तो किस मनोरम स्थलाकृति का निर्माण होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रपाती जलप्रपात (Waterfalls) का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद प्रवाह के मार्ग में आने वाले टीले के एक ओर मंद-चिकना ढाल तथा दूसरी ओर उत्पाटन से बना तीव्र उबड़-खाबड़ कगार क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भेड़ पीठ शैल या रोशे मुटोने (Roche Moutonnée)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च अक्षांशीय तटीय क्षेत्रों में समुद्र में डूबी हुई गहरी, खड़ी दीवारों वाली हिमनद घाटियों को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फियोर्ड या फ्योर्ड (Fiords / Fjords)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का कौन-सा देश अपने अत्यंत भव्य और गहरे फियोर्ड तटों के लिए प्रसिद्ध है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नॉर्वे (Norway - फियोर्डों का देश)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद द्वारा बहाकर लाए गए विभिन्न आकारों के चट्टानी मलबे, बालू और सिल्ट के समग्र असंगठित ढेर को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हिमोढ़ (Moraine)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद घाटी के दोनों किनारों के सहारे जमा होने वाला शैल मलबा क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पार्श्विक हिमोढ़ (Lateral Moraine)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब दो सहायक हिमनद आपस में मिलते हैं, तो उनके आंतरिक पार्श्विक हिमोढ़ मिलकर क्या बनाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मध्यस्थ हिमोढ़ (Medial Moraine)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद के अंतिम छोर (गलनांक बिंदु) पर मलबे के चापाकार कटक के रूप में निक्षेप को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतस्थ हिमोढ़ (Terminal / End Moraine)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद की तली में पेंदे के सहारे बिछने वाला बारीक और भारी मलबा क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तलस्थ हिमोढ़ (Ground Moraine)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमोढ़ मलबे के निक्षेपण से बनने वाले उल्टी नाव या कटे हुए आधे अंडे जैसे चिकने टीलों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ड्रमलिन (Drumlin)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ड्रमलिन के विशाल झुंड वाले क्षेत्र को किस उपनाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंडे की टोकरी स्थलाकृति (Basket of Eggs Topography)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद के भीतर पिघलते जल की उप-हिमानी नदियों द्वारा बजरी और बालू के जमाव से बनी लंबी, सर्पीली कटक क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एस्कर (Esker)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद के पिघलते छोर पर जल द्वारा निक्षेपित छोटी तीव्र ढाल वाली रेत और बजरी की टीलियाँ क्या कहलाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केम (Kame)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमानीधौत मैदान में बर्फ के दबे हुए विशाल टुकड़ों के पिघलने से बने गोल कटोरे जैसे गड्ढों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केतली या केटल (Kettle Holes)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमनद से दूर पिघले हुए जल द्वारा बहाकर बिछाए गए बालू, सिल्ट और बजरी के विशाल मंद समतल मैदान को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हिमानीधौत मैदान या आउटवॉश प्लेन (Outwash Plain)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन द्वारा मरुस्थलों में कोमल और कठोर चट्टानों के क्षैतिज संस्तरों पर अपरदन से बनी दावात (Inkpot) जैसी मेजनुमा आकृति क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ज्यूगेन (Zeugen)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मरुस्थलों में कठोर और कोमल चट्टानों के ऊर्ध्वाधर (लंबवत) संस्तरों पर पवन अपघर्षण से बनी नालीदार नुकीली कटकें क्या कहलाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यार्डांग (Yardang)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मरुस्थलों में धरातल से 1-2 मीटर की ऊंचाई पर तीव्र पवन अपघर्षण से बने पतले आधार और चौड़े शीर्ष वाली चट्टान को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">छत्रक शिला या गारा (Mushroom Rock / Pedestal Rock)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन द्वारा चारों ओर की कोमल चट्टानों के कट जाने के बाद मरुस्थलीय मैदान में खड़े एकाकी कठोर चट्टानी टीले क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इन्सेलबर्ग या द्वीपशैल (Inselberg - जैसे बॉर्नहार्ड्ट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जर्मन भाषा के शब्द 'इन्सेलबर्ग' का शाब्दिक अर्थ क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">द्वीपीय पर्वत (Island Mountain)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अपरदन के प्रतिरोधी कठोर शैल खंभों के ऊपर टिके नुकीले स्तंभों को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भू-स्तंभ (Demoiselle / Earth Pillars)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मरुस्थलों में पवन द्वारा घिसकर चिकने बनाए गए तीन फलकों (Faces) वाले नुकीले कंकड़-पत्थरों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ड्राईकांउटर (Dreikanter)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन अपवाहन द्वारा बालू उड़ा ले जाने से मरुस्थलों में बनने वाले विशाल उथले गड्ढों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अपवाहन गर्त या वातगर्त (Deflation Basins / Blowouts)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मिस्र के पश्चिमी मरुस्थल में स्थित प्रसिद्ध विशाल वातगर्त कौन-सा है जो समुद्र तल से 133 मी नीचे है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कत्तारा गर्त (Qattara Depression)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन की दिशा के लंबवत (समकोण पर) बनने वाले अर्ध-चंद्राकार बालुका स्तूप जिनके दोनों सींग आगे निकले होते हैं, क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बरखान (Barchan)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बरखान का उत्तल ढाल किस ओर होता है और अवतल ढाल किस ओर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तल ढाल पवनोन्मुखी (मंद) तथा अवतल ढाल पवनाभिमुखी (तीव्र)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन की दिशा के समानांतर विकसित होने वाले अत्यधिक लंबे और संकीर्ण रेखीय बालुका स्तूप क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सीफ (Seif) या अनुदैर्घ्य बालुका स्तूप (Longitudinal Dunes)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन की दिशा के ठीक समकोण (90°) पर तरंगों की भांति बनने वाले बालू के टीलों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुप्रस्थ बालुका स्तूप (Transverse Dunes)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन द्वारा मरुस्थलों से दूर उड़ाकर लाए गए अत्यंत बारीक, हल्के, पीले रंग के सिल्ट कणों के विशाल निक्षेप को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लोएस (Loess)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का सबसे सघन और विस्तृत लोएस का पठार किस देश में पाया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तरी चीन में (गोबी मरुस्थल से उड़ी धूल द्वारा ह्वॉन्गहो बेसिन में निर्मित)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पर्वतीय कगारों के आगे स्थित अपरदित चट्टानी समतल ढाल को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पेडिमेंट (Pediment)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पेडिमेंट के आगे जलोढ़ पंखों के मिलन से बना मंद ढालू मलबे का निक्षेपात्मक मैदान क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बजाडा (Bajada)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मरुस्थलों में चारों ओर पहाड़ियों से घिरी आंतरिक बेसिन में अल्पकालिक वर्षा से बनने वाली उथली खारी झील क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्लाया (Playa)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजस्थान के थार मरुस्थल में प्लाया झीलों को स्थानीय रूप से क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ढांड या रन (Dhand / Rann - जैसे डीडवाना, पचपदरा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चूना पत्थर (लाइमस्टोन) और डोलोमाइट बहुल क्षेत्रों में भूमिगत जल के रासायनिक घोलन से बनी स्थलाकृतियों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कार्स्ट स्थलाकृतियां (Karst Topography)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'कार्स्ट' (Karst) शब्दावली की उत्पत्ति किस भौगोलिक क्षेत्र के आधार पर हुई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूर्व यूगोस्लाविया (स्लोवेनिया) के एड्रियाटिक तटीय कार्स्ट पठार के नाम पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चूना पत्थर की खुली सतह पर जल के संक्षारण से बनने वाली अत्यंत नुकीली, संकीर्ण और अनियमित खाइयों व शिखरों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लैपीज या कारेन (Lapies / Karren)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कार्स्ट धरातल पर चूना पत्थर के घुलने से बनने वाले कीपाकार या तश्तरीनुमा छोटे छिद्रों को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घोलरंध्र (Sinkholes)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब कई घोलरंध्र आपस में मिलकर एक बड़ा गड्ढा बना लेते हैं, तो उसे क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डोलाइन (Doline)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कई डोलाइनों के आपस में जुड़ने से बनने वाली अत्यंत विशालकाय और चौड़ी कार्स्ट द्रोणी को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उवाला (Uvala)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कार्स्ट क्षेत्र का सबसे विशाल समतल पेंदे और खड़ी दीवारों वाला गर्त (गड्ढा) क्या कहलाता है जो कई वर्ग किमी में फैला होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पोल्ये (Polje)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब कोई सतही नदी किसी सिंकहोल या विवर में गिरकर भूमिगत हो जाती है और आगे की घाटी सूखी रह जाती है, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंधी घाटी (Blind Valley)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चूना पत्थर की चट्टानों के भीतर भूमिगत जल के क्षैतिज प्रवाह और घोलन से बनने वाले विशाल खोखले कक्ष क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कार्स्ट कंदराएं या गुफाएं (Caves / Caverns)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व की सबसे लंबी कार्स्ट गुफा प्रणाली कौन-सी है जो केंटकी (USA) में स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मैमथ केव (Mammoth Cave - 680 किमी से अधिक लंबाई)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में विशाखापट्टनम (आंध्र प्रदेश) के पास अराकू घाटी में स्थित प्रसिद्ध कार्स्ट गुफाएं कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बोरा गुफाएं (Borra Caves)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कंदरा की छत से चूनेदार जल के टपकने और वाष्पीकरण से छत से नीचे की ओर लटकने वाले नुकीले खंभे क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्टैलेक्टाइट (Stalactite / आकाशीय स्तंभ)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कंदरा के फर्श पर टपकती बूंदों से नीचे से ऊपर की ओर बनने वाले चपटे शीर्ष के स्तंभ क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्टैलेग्माइट (Stalagmite / धरातलीय स्तंभ)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब छत का स्टैलेक्टाइट और फर्श का स्टैलेग्माइट आपस में मिलकर एक पूर्ण अखंड खंभा बना लेते हैं, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कंदरा स्तंभ (Cave Pillar)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुरुत्वाकर्षण बल के प्रत्यक्ष प्रभाव से ढाल के सहारे चट्टानी मलबे और मृदा के नीचे की ओर होने वाले संचलन को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वृहद संचलन या संहति संचलन (Mass Wasting / Mass Movement)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वृहद संचलन (Mass Wasting) अपरदन (Erosion) से किस प्रकार भिन्न है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसमें जल या पवन जैसे गतिशील माध्यम द्वारा मलबे को ढोने की आवश्यकता नहीं होती, यह सीधे गुरुत्वाकर्षण से होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वृहद संचलन की गतिशीलता को बढ़ाने में जल (नमी) की क्या भूमिका होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जल मलबे का भार बढ़ाता है और कणों के बीच घर्षण को कम करके स्नेहक (Lubricant) का कार्य करता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पहाड़ी ढलानों पर मृदा का अत्यंत मंद गति से (प्रतिवर्ष कुछ मिलीमीटर) नीचे खिसकना जो नग्न आंखों से तुरंत दिखाई नहीं देता, क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मृदा विसर्पण (Soil Creep)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मृदा विसर्पण (Soil Creep) के धरातलीय प्रमाण क्या होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टेलीफोन के खंभों, बाड़ों और वृक्षों के तनों का ढाल की दिशा में नीचे झुक जाना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शीत टुंड्रा या उच्च पर्वतीय क्षेत्रों में ग्रीष्मकाल में ऊपरी जमी हुई मृदा के पिघलने से नीचे की ठोस बर्फ पर होने वाला पंक बहाव क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मृदा सर्पण या सॉलिफ्लुक्शन (Solifluction / पंक प्रवाह)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तीव्र पर्वतीय ढलानों पर गुरुत्वाकर्षण के कारण चट्टानों और मलबे का अचानक और अत्यधिक तीव्र गति से नीचे गिरना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भूस्खलन (Landslide)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भूस्खलन के दौरान जब चट्टानी खंड अवतल वक्रीय तल के सहारे पीछे की ओर घूमते हुए नीचे फिसलते हैं, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवपात या स्लम्प (Slump / Rotational Slip)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारी वर्षा के कारण अत्यधिक जल-संतृप्त मृदा और कीचड़ का किसी संकीर्ण घाटी में तीव्र वेग से नदी की तरह बहना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पंकाश्म प्रवाह या कीचड़ बहाव (Mudflow)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पर्वतीय शिखरों से विशाल चट्टानी शिलाखंडों का बिना किसी रुकावट के हवा में सीधे स्वतंत्र रूप से नीचे गिरना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शैल स्खलन या प्रपात (Rockfall)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च हिमालयी क्षेत्रों में ढाल पर संचित विशाल हिमराशि और पत्थरों का अचानक प्रचंड गति से नीचे गिरना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हिमस्खलन (Avalanche)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का कौन-सा भू-आकृतिक क्षेत्र भूस्खलन के प्रति सर्वाधिक संवेदनशील और अति-जोखिम वाला क्षेत्र है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हिमालयी क्षेत्र (विशेषकर उत्तराखंड, हिमाचल प्रदेश, जम्मू-कश्मीर और सिक्किम)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिमालयी क्षेत्र में पश्चिमी घाट की तुलना में भूस्खलन की आवृत्ति और तीव्रता बहुत अधिक क्यों होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हिमालय के नवीन वलित, विवर्तनिक रूप से अस्थिर, असंगठित अवसादी चट्टानों व तीव्र ढाल वाला होने के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पश्चिमी घाट (जैसे केरल का वायनाड) में हाल के वर्षों में विनाशकारी भूस्खलनों के बढ़ने का मुख्य कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक मानसूनी वर्षा के साथ अवैज्ञानिक निर्माण, वन विनाश और उत्खनन</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

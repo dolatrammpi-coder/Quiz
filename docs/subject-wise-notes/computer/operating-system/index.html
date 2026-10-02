@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Operating System 1">
+<title>Operating System 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Computer / Computer / Operating System 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Computer — Computer</div>
+    <h1>Operating System 1</h1>
+    <p class="topic-subtitle">ऑपरेटिंग सिस्टम की अवधारणा, प्रकार, प्रक्रिया, मेमोरी और संसाधन प्रबंधन की विस्तृत अध्ययन सामग्री</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list">
+
+<div class="qa-row"><div class="qa-q"><span>ऑपरेटिंग सिस्टम (OS) की मूल परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह सिस्टम सॉफ्टवेयर का एक मुख्य समूह है जो कंप्यूटर हार्डवेयर और उपयोगकर्ता के बीच मध्यस्थ (Interface) के रूप में कार्य करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>ऑपरेटिंग सिस्टम का प्राथमिक उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम्प्यूटर संसाधनों (CPU, मेमोरी, I/O डिवाइस) का कुशलतापूर्वक प्रबंधन करना और यूजर को प्रोग्राम चलाने के लिए सुविधाजनक वातावरण देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>कर्नेल (Kernel) ऑपरेटिंग सिस्टम का क्या हिस्सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह ऑपरेटिंग सिस्टम का सबसे केंद्रीय और महत्वपूर्ण भाग है जो सीधे हार्डवेयर के साथ संवाद करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>बूटिंग (Booting) प्रक्रिया से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कंप्यूटर चालू होने पर ऑपरेटिंग सिस्टम को सेकेंडरी स्टोरेज से रैम (RAM) में लोड करने की प्रक्रिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>सिंगल-यूज़र ऑपरेटिंग सिस्टम का एक उदाहरण दें।</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">MS-DOS, जिसमें एक समय में केवल एक ही यूजर काम कर सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>मल्टी-यूज़र ऑपरेटिंग सिस्टम की मुख्य विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह एक ही समय में नेटवर्क के माध्यम से एकाधिक उपयोगकर्ताओं को कंप्यूटर संसाधन साझा करने की अनुमति देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>बैच ऑपरेटिंग सिस्टम (Batch Operating System) कैसे कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समान प्रकार के कार्यों (Jobs) को बैच के रूप में एकत्र करके बिना यूजर के हस्तक्षेप के एक साथ क्रमिक रूप से निष्पादित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>मल्टीटास्किंग (Multitasking) या टाइम-शेयरिंग ऑपरेटिंग सिस्टम का मुख्य उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CPU के समय को विभिन्न कार्यों और उपयोगकर्ताओं के बीच तेजी से विभाजित करके सभी को सक्रिय रखना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>रियल-टाइम ऑपरेटिंग सिस्टम (RTOS) कहाँ उपयोग किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जहाँ समय की पाबंदी और त्वरित प्रतिक्रिया अत्यधिक संवेदनशील होती है, जैसे अंतरिक्ष यान, मिसाइल नियंत्रण और चिकित्सा उपकरण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>हार्ड रियल-टाइम और सॉफ्ट रियल-टाइम सिस्टम में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हार्ड RTOS में समय सीमा (Deadline) चूकना पूर्ण असफलता है, जबकि सॉफ्ट RTOS में थोड़ी देरी स्वीकार्य हो सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डिस्ट्रीब्यूटेड ऑपरेटिंग सिस्टम (Distributed OS) की क्या विशेषता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह स्वतंत्र कंप्यूटरों के एक समूह को एक एकल समेकित सिस्टम के रूप में कार्य करने की क्षमता देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>प्रोसेस (Process) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निष्पादन की अवस्था में मौजूद किसी कंप्यूटर प्रोग्राम को प्रोसेस कहा जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>प्रोसेस कंट्रोल ब्लॉक (PCB) में क्या संग्रहीत होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रोसेस की स्थिति, प्रोग्राम काउंटर, रजिस्टर्स और मेमोरी आवंटन से संबंधित सारी जानकारी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>प्रोसेस की मुख्य अवस्थाएँ (Process States) कौन-सी होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">New, Ready, Running, Waiting (Blocked) और Terminated (Completed)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>कॉन्टेक्स्ट स्विचिंग (Context Switching) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CPU द्वारा एक प्रोसेस को रोककर दूसरी प्रोसेस की स्थिति को सहेजने और लोड करने की प्रक्रिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>सीपीयू शेड्यूलिंग (CPU Scheduling) का मुख्य लक्ष्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिस्टम की दक्षता बढ़ाने के लिए सीपीयू संसाधनों का सर्वोत्तम उपयोग और प्रतीक्षा समय को कम करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>प्रीम्प्टिव (Preemptive) और नॉन-प्रीम्प्टिव शेड्यूलिंग में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रीम्प्टिव में चल रही प्रोसेस को बलपूर्वक रोका जा सकता है, जबकि नॉन-प्रीम्प्टिव में प्रोसेस के पूरा होने तक इंतजार करना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>शेड्यूलिंग एल्गोरिदम में FCFS का पूर्ण रूप क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">First-Come, First-Served; जो प्रोसेस पहले आती है उसे पहले CPU मिलता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>SJF (Shortest Job First) शेड्यूलिंग की क्या विशेषता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सबसे कम Burst Time वाली प्रोसेस को पहले निष्पादित किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>राउंड रॉबिन (Round Robin) शेड्यूलिंग किस पर आधारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह एक निश्चित समय क्वांटम (Time Quantum) पर आधारित प्रीम्प्टिव शेड्यूलिंग एल्गोरिदम है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>थ्रेड (Thread) को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसे 'लाइटवेट प्रोसेस' (Lightweight Process) कहा जाता है जो प्रोसेस का सबसे छोटा निष्पादन योग्य भाग है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डेडलॉक (Deadlock) की स्थिति कब उत्पन्न होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब दो या दो से अधिक प्रोसेस ऐसी स्थिति में फँस जाती हैं जहाँ प्रत्येक प्रोसेस किसी अन्य प्रोसेस द्वारा रोके गए संसाधन की प्रतीक्षा कर रही हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डेडलॉक निवारण के लिए कॉफमैन की शर्तों में से एक मुख्य शर्त क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">म्यूचुअल एक्सक्लूज़न, होल्ड एंड वेट, नो प्रीम्प्टशन और सर्कुलर वेट।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>मेमोरी प्रबंधन (Memory Management) का मुख्य कार्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुख्य मेमोरी (RAM) के विभिन्न हिस्सों का आवंटन, ट्रैकिंग और विमोचन करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>लॉजिकल एड्रेस और फिजिकल एड्रेस में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लॉजिकल एड्रेस CPU द्वारा जनरेट किया जाता है, जबकि फिजिकल एड्रेस मेमोरी यूनिट में वास्तविक स्थान को दर्शाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>मैप करने की इस प्रक्रिया को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेमोरी मैनेजमेंट यूनिट (MMU) द्वारा लॉजिकल एड्रेस को फिजिकल एड्रेस में बदलना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>स्वैपिंग (Swapping) प्रक्रिया क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुख्य मेमोरी से किसी प्रोसेस को अस्थायी रूप से डिस्क (Backing store) में भेजना और वापस लाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>वर्चुअल मेमोरी (Virtual Memory) की अवधारणा का मुख्य लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह भौतिक RAM से बड़े आकार के प्रोग्रामों को सेकेंडरी स्टोरेज का उपयोग करके चलाने की अनुमति देती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>पेजिंग (Paging) तकनीक में मेमोरी को किसमें विभाजित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फिक्स आकार के ब्लॉकों में जिन्हें पेजेस (लॉजिकल) और फ्रेम्स (फिजिकल) कहते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>पेज फॉल्ट (Page Fault) कब होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब कोई वांछित पेज मुख्य मेमोरी में मौजूद नहीं होता और उसे डिस्क से लाना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>थ्रैशिंग (Thrashing) स्थिति क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब ऑपरेटिंग सिस्टम полезного काम की बजाय अधिकांश समय पेज स्वैपिंग में बिता देता है, जिससे सिस्टम धीमा हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>फाइल प्रबंधन (File Management) OS में क्या सुनिश्चित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डेटा फाइलों का संगठन, भंडारण, पुनर्प्राप्ति, नामकरण और सुरक्षा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>फाइल कंट्रोल ब्लॉक (FCB) में क्या जानकारी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फाइल की अनुमति (Permissions), स्वामित्व, आकार और डिस्क पर भौतिक स्थान का विवरण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डिरेक्टory संरचना (Directory Structure) का मुख्य उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फाइलों को तार्किक समूहों में व्यवस्थित करना (जैसे ट्री संरचना)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>I/O डिवाइस प्रबंधन के लिए OS में किस सॉफ्टवेयर का उपयोग होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डिवाइस ड्राइवर्स (Device Drivers) का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>स्पooling (SPOOL) तकनीक का मुख्य उपयोग क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धीमी गति वाले I/O उपकरणों (जैसे प्रिंटर) के साथ समन्वय के लिए डेटा को अस्थायी रूप से डिस्क बफर में रखना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>कमांड लाइन इंटरफेस (CLI) का एक प्रमुख उदाहरण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">Linux Shell, Windows Command Prompt या MS-DOS।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>ग्राफिकल यूजर इंटरफेस (GUI) की मुख्य विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह टेक्स्ट कमांड के बजाय आइकॉन्स, मेनू और विंडो के माध्यम से विजुअल इंटरैक्शन प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>लिनक्स (Linux) किस प्रकार का ऑपरेटिंग सिस्टम है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह एक ओपन-सोर्स, मल्टी-यूज़र और मल्टीटास्किंग यूनिक्स-जैसी ऑपरेटिंग प्रणाली है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>लिनक्स कर्नल का विकास किसने और कब शुरू किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लिनस टोरवाल्ड्स (Linus Torvalds) ने 1991 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>विंडोज ऑपरेटिंग सिस्टम किस कंपनी द्वारा विकसित किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माइक्रोसॉफ्ट (Microsoft) द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>एंड्रॉइड (Android) ऑपरेटिंग सिस्टम मुख्य रूप से किस पर आधारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लिनक्स कर्नल (Linux Kernel) पर आधारित मोबाइल ऑपरेटिंग सिस्टम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>आईओएस (iOS) किस कंपनी का मोबाइल ऑपरेटिंग सिस्टम है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐप्पल (Apple) इंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>मोनोलिथिक कर्नल (Monolithic Kernel) की क्या विशेषता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसमें सभी ऑपरेटिंग सिस्टम सेवाएं (फाइल सिस्टम, डिवाइस ड्राइवर आदि) कर्नल स्पेस में एक साथ चलती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>माइक्रोकर्नेल (Microkernel) वास्तुकला का मुख्य लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह आवश्यक सेवाओं को यूजर स्पेस में रखकर कर्नल को छोटा और सुरक्षित बनाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>हाइब्रिड कर्नल (Hybrid Kernel) का उदाहरण कौन सा OS है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माइक्रोसॉफ्ट विंडोज (Windows NT कर्नल)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>सिस्टम कॉल (System Call) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपयोगकर्ता प्रोग्राम और ऑपरेटिंग सिस्टम कर्नल के बीच सेवा प्राप्त करने का माध्यम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>सुरक्षा और एक्सेस कंट्रोल (Access Control) OS में कैसे लागू होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपयोगकर्ता प्रमाणीकरण, पासवर्ड और फाइल अनुमति (Read, Write, Execute) के माध्यम से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>फ्रीलांस या ओपन-सोर्स सॉफ्टवेयर का सबसे बड़ा फायदा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसके स्रोत कोड (Source Code) को स्वतंत्र रूप से देखा, संशोधित और वितरित किया जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>यूनिक्स (UNIX) ऑपरेटिंग सिस्टम की मुख्य भाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सी (C) प्रोग्रामिंग भाषा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>शेल (Shell) लिनक्स/यूनिक्स में क्या कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह यूजर के कमांड को पढ़कर कर्नल तक पहुँचाता है और परिणाम प्रदर्शित करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डेडलॉक रिकवरी की एक सामान्य तकनीक क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रक्रिया समाप्ति (Process Termination) या संसाधन प्रीम्प्शन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>बफर (Buffer) मेमोरी का मुख्य कार्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डेटा ट्रांसफर के दौरान गति के अंतर को संतुलित करने के लिए अस्थायी भंडारण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>कैश मेमोरी (Cache Memory) का प्रबंधन कौन करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह मुख्य रूप से हार्डवेयर और CPU द्वारा प्रबंधित होती है, जो OS के साथ समन्वय रखती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>मल्टी-प्रोसेसर सिस्टम (Multi-processor System) का लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक से अधिक CPU होने के कारण थ्रूपुट (Throughput) में वृद्धि और बेहतर कार्यक्षमता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>सिमेट्रिक मल्टीप्रोसेसिंग (SMP) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ऐसी प्रणाली जहाँ सभी प्रोसेसर समान रूप से OS और कार्यों को नियंत्रित करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>असिमेट्रिक मल्टीप्रोसेसिंग (ASMP) में क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक मास्टर प्रोसेसर होता है जो अन्य मास्टर/स्लेव प्रोसेसरों को कार्य आवंटित करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>फ्रेगमेंटेशन (Fragmentation) से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेमोरी या डिस्क स्पेस का छोटे-छोटे असहज टुकड़ों में विभाजित हो जाना जिससे नया स्थान देना कठिन होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>एक्सटर्नल फ्रेगमेंटेशन और इंटरनल फ्रेगमेंटेशन में अंतर स्पष्ट करें।</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक्सटर्नल मेमोरी ब्लॉकों के बाहर खाली जगह है, जबकि इंटरनल आवंटित ब्लॉक के भीतर व्यर्थ स्थान है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>कॉम्पैक्टेशन (Compaction) तकनीक का उपयोग किसलिए होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक्सटर्नल फ्रेगमेंटेशन को दूर करने के लिए सभी खाली मेमोरी स्पेस को एक साथ समेकित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>फाइल एलोकेशन टेबल (FAT) किस फाइल सिस्टम से जुड़ा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माइक्रोसॉफ्ट विंडोज के पुराने फाइल सिस्टम (FAT16, FAT32) से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>NTFS का पूर्ण रूप क्या है और यह किस OS में प्रयुक्त होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">New Technology File System; यह आधुनिक विंडोज ऑपरेटिंग सिस्टम में प्रयुक्त होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>EXT4 फाइल सिस्टम मुख्य रूप से किस ऑपरेटिंग सिस्टम परिवार का है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लिनक्स (Linux) ऑपरेटिंग सिस्टम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>इंडेक्सड एलोकेशन (Indexed Allocation) फाइल सिस्टम में कैसे काम करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्येक फाइल के लिए एक इंडेक्स ब्लॉक होता है जो उसके सभी डेटा ब्लॉकों के पते रखता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>लॉन्चिंग या स्पॉनिंग (Spawning) प्रोसेस से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक मुख्य प्रोसेस द्वारा नई बाल (Child) प्रोसेस का निर्माण करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>फॉर्क (Fork) सिस्टम कॉल का उपयोग किस लिए होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यूनिक्स/लिनक्स में एक नई प्रोसेस बनाने के लिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>एग्जिक्यूट (Exec) सिस्टम कॉल क्या करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह वर्तमान प्रोसेस के मेमोरी स्पेस में एक नए प्रोग्राम को लोड करके चलाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>इंटर-प्रोसेस कम्युनिकेशन (IPC) की आवश्यकता क्यों होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अलग-अलग प्रक्रियाओं के बीच डेटा और सूचनाओं के आदान-प्रदान के लिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>IPC की दो प्रमुख विधियाँ कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शेयरड मेमोरी (Shared Memory) और मैसेज पासिंग (Message Passing)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>सेमाफोर (Semaphore) सिंक्रनाइज़ेशन टूल का क्या कार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह एक चर (Variable) है जो एकाधिक प्रक्रियाओं के बीच महत्वपूर्ण खंड (Critical Section) तक पहुँच को नियंत्रित करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>म्यूटेक्स (Mutex) और सेमाफोर में मुख्य अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">म्यूटेक्स लॉकिंग तंत्र है जो केवल एक समय में एक प्रोसेस को अनुमति देता है, जबकि सेमाफोर काउंटर-आधारित होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>क्रिटिकल सेक्शन (Critical Section) समस्या क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोड का वह हिस्सा जहाँ साझा संसाधनों (Shared Data) को संशोधित किया जाता है, जिसे परस्पर विरोधी पहुँच से बचाना होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>बैंकर एल्गोरिदम (Banker's Algorithm) का उपयोग किस लिए किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डेडलॉक से बचने (Deadlock Avoidance) के लिए संसाधन आवंटन की सुरक्षा जाँचने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डिस्क शेड्यूलिंग में FCFS डिस्क शेड्यूलिंग की मुख्य सीमा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसमें डिस्क आर्म को लंबी दूरी तय करनी पड़ती है, जिससे औसत seek time बढ़ जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>SCAN डिस्क शेड्यूलिंग एल्गोरिदम को किस अन्य नाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एलिवेटर (Elevator) एल्गोरिदम, क्योंकि यह डिस्क के एक छोर से दूसरे छोर तक जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>C-SCAN (Circular SCAN) डिस्क शेड्यूलिंग की क्या विशेषता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह केवल एक दिशा में सिर को ले जाती है और अंत में पहुँचकर सीधे शुरुआती बिंदु पर लौट आती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डिवाइस ड्राइवर (Device Driver) को सॉफ्टवेयर की भाषा में क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह एक ट्रांसलेटर या इंटरफेस है जो ऑपरेटिंग सिस्टम को विशिष्ट हार्डवेयर से बात करने योग्य बनाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>प्लग-एंड-प्ले (Plug and Play) तकनीक क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">OS की वह क्षमता जिससे नए हार्डवेयर डिवाइस को जोड़ते ही वह स्वचालित रूप से कॉन्फ़िगर हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>सिस्टम रिस्टोर (System Restore) फीचर विंडोज में क्या कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिस्टम फाइलों और सेटिंग्स को किसी पूर्व सुरक्षित स्थिति (Restore Point) पर वापस ले जाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>रेजिस्ट्री (Registry) विंडोज ऑपरेटिंग सिस्टम में क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह सिस्टम और एप्लिकेशन कॉन्फ़िगरेशन सेटिंग्स का एक पदानुक्रमित डेटाबेस है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>कंट्रोल पैनल या सेटिंग्स ऐप का मुख्य उपयोग क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऑपरेटिंग सिस्टम की विभिन्न सेटिंग्स, हार्डवेयर और नेटवर्क को प्रबंधित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>टास्क मैनेजर (Task Manager) का उपयोग किसलिए होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चल रही प्रक्रियाओं (Processes), CPU/RAM उपयोग और अनुत्तरदायी ऐप्स को बलपूर्वक बंद करने के लिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>ओपन-सोर्स बनाम प्रोप्राइटरी (Proprietary) ऑपरेटिंग सिस्टम का मुख्य अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओपन-सोर्स फ्री और संशोधित करने योग्य होता है, जबकि प्रोप्राइटरी (जैसे Windows) का मालिकाना हक होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>लिनक्स डिस्ट्रिब्यूशन (Distros) के कुछ प्रसिद्ध उदाहरण दें।</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">Ubuntu, Fedora, Debian, Mint और Arch Linux।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>यूनिक्स (UNIX) और लिनक्स में तकनीकी समानता का मुख्य आधार क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दोनों ही POSIX मानकों का पालन करते हैं और कमांड संरचना में काफी हद तक समान हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>नेटवर्क ऑपरेटिंग सिस्टम (NOS) का एक उदाहरण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">Windows Server, Novell NetWare।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>एम्बेडेड ऑपरेटिंग सिस्टम (Embedded OS) की मुख्य विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह विशेष उपकरणों (जैसे माइक्रोवेव, वॉशिंग मशीन) के भीतर सीमित हार्डवेयर पर काम करने के लिए डिज़ाइन किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>पेज रिप्लेसमेंट एल्गोरिदम FIFO का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">First-In, First-Out; जो पेज सबसे पहले मेमोरी में आया था, पेज फॉल्ट होने पर सबसे पहले बाहर जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>LRU (Least Recently Used) पेज रिप्लेसमेंट कैसे काम करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह उस पेज को हटाता है जिसका उपयोग सबसे लंबे समय से नहीं किया गया हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>ऑप्टिमम पेज रिप्लेसमेंट एल्गोरिदम का मुख्य सिद्धांत क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उस पेज को हटाना जो भविष्य में सबसे लंबे समय तक उपयोग में नहीं आएगा (सैद्धांतिक आदर्श)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>बेलैड की विसंगति (Belady's Anomaly) किस एल्गोरिदम में देखी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FIFO पेज रिप्लेसमेंट में, जहाँ फ्रेम बढ़ाने पर भी पेज फॉल्ट बढ़ सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डिस्क डिफ्रैगमेन्टेशन (Disk Defragmentation) का क्या लाभ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिखरे हुए फाइल टुकड़ों को एक साथ व्यवस्थित करके डिस्क एक्सेस गति में सुधार करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>लिनक्स में रूट (Root) यूजर कौन होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुपरयूजर जिसके पास सिस्टम पर पूर्ण प्रशासनिक विशेषाधिकार होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>विंडोज में कमांड प्रॉम्प्ट या पॉवरशेल की भूमिका क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टेक्स्ट-आधारित कमांड के जरिए सिस्टम एडमिनिस्ट्रेशन और टास्क ऑटोमेशन करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>ऑपरेटिंग सिस्टम की सुरक्षा में 'प्रिंसिपल ऑफ लीस्ट प्रिवलेज' का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्येक यूजर या प्रोसेस को केवल वही न्यूनतम अधिकार देना जो उसके कार्य के लिए आवश्यक हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>फायरवॉल और एंटी-वायरस सुरक्षा किस स्तर पर कार्य करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह OS के ऊपर सुरक्षा सॉफ्टवेयर या कर्नल स्तर पर नेटवर्क और सिस्टम को मैलवेयर से बचाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डेटा रिकवरी और बैकअप प्रबंधन ऑपरेटिंग सिस्टम का कौन सा भाग संभालता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्टोरेज और फाइल सिस्टम प्रबंधन यूटिलिटीज।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>बूटस्ट्रैप लोडर (Bootstrap Loader) ROM में कहाँ स्थित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह मदरबोर्ड की BIOS/UEFI चिप में स्थायी रूप से संग्रहीत होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>ऑपरेटिंग सिस्टम का कौन सा घटक यूजर और हार्डवेयर के बीच की खाई को पाटता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर्नेल और सिस्टम सॉफ्टवेयर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>स्टोरेज डिवाइसों के लिए I/O कंट्रोलर का मुख्य कार्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CPU और परिधीय उपकरणों के बीच डेटा ट्रांसफर को नियंत्रित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+<div class="qa-row"><div class="qa-q"><span>डिस्क इंडेक्सिंग (Disk Indexing) का क्या उपयोग है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फाइलों को तेजी से खोजने के लिए उनके मेटाडेटा की सूची तैयार करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div>
+
+</div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Operating System 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>प्रकार/कार्य</th><th>मुख्य विशेषता</th><th>उदाहरण/भूमिका</th></tr></thead><tbody><tr><td><div class="primary-cell">बैच ऑपरेटिंग सिस्टम</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">समान कार्यों को बैच बनाकर बिना यूजर इंटरैक्शन के क्रमिक रूप से चलाना</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्रारंभिक मेनफ्रेम कंप्यूटर, payroll और बिलिंग प्रोसेसिंग</div></div></td></tr><tr><td><div class="primary-cell">टाइम-शेयरिंग / मल्टीटास्किंग</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">CPU समय को विभाजित कर एकाधिक कार्यों/यूजर्स को एक साथ चलाना</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">Modern Windows, Linux, macOS; एक साथ ब्राउज़िंग और कोडिंग करना</div></div></td></tr><tr><td><div class="primary-cell">रियल-टाइम OS (RTOS)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कड़ी समय सीमा (Deadlines) के भीतर अत्यंत तीव्र और निश्चित प्रतिक्रिया देना</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अंतरिक्ष यान नियंत्रण, एयर ट्रैफिक कंट्रोल, चिकित्सा पेसमेकर</div></div></td></tr><tr><td><div class="primary-cell">वितरित OS (Distributed OS)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भौतिक रूप से अलग स्वतंत्र कंप्यूटरों को एक सिंगल सिस्टम की तरह दिखाना</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">क्लाउड कंप्यूटिंग क्लस्टर, ग्रिड कंप्यूटिंग नेटवर्क</div></div></td></tr><tr><td><div class="primary-cell">प्रोसेस प्रबंधन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">CPU शेड्यूलिंग, प्रोसेस क्रिएशन, सिंक्रनाइज़ेशन और डेडलॉक निवारण</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सिस्टम संसाधनों का इष्टतम आवंटन और मल्टी-प्रोसेसिंग नियंत्रण</div></div></td></tr><tr><td><div class="primary-cell">मेमोरी प्रबंधन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">RAM आवंटन, वर्चुअल मेमोरी, पेजिंग और स्वैपिंग का नियंत्रण</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बड़े प्रोग्रामों को सीमित भौतिक रैम में सुचारू रूप से चलाना</div></div></td></tr><tr><td><div class="primary-cell">फाइल प्रबंधन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">फाइलों का संगठन, निर्देशिका (Directory) संरचना और अनुमतियाँ</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">FAT, NTFS, EXT4 फाइल सिस्टम के जरिए डेटा सुरक्षित रखना</div></div></td></tr><tr><td><div class="primary-cell">यूजर इंटरफेस (UI)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">यूजर और सिस्टम के बीच संवाद स्थापित करना (CLI या GUI)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विंडोज डेस्कटॉप एनवायरमेंट या लिनक्स टर्मिनल (Bash)</div></div></td></tr></tbody></table></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

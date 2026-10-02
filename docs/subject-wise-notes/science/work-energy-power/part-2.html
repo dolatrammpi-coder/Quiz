@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Work Energy Power 2">
+<title>Work Energy Power 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">General Science / Science Notes / Work Energy Power 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 General Science — Science Notes</div>
+    <h1>Work Energy Power 2</h1>
+    <p class="topic-subtitle">शक्ति की परिभाषा, ऊर्जा संरक्षण का नियम, ऊर्जा रूपांतरण के प्रमुख उदाहरण, मुक्त पतन और शक्ति-ऊर्जा संबंध</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Work Energy Power 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>ऊर्जा/शक्ति अवधारणा</th><th>नियम/सूत्र</th><th>ऊर्जा रूपांतरण/अनुप्रयोग</th></tr></thead><tbody><tr><td><div class="primary-cell">औसत शक्ति (Average Power)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">P_avg = कुल कार्य / कुल समय = ΔW / Δt ; मात्रक: वाट (W)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मशीनों व मोटरों की औसत कार्य निष्पादन दर का आकलन</div></div></td></tr><tr><td><div class="primary-cell">तात्क्षणिक शक्ति (Instantaneous Power)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">P = dW / dt = F · v = F · v · cos θ ; मात्रक: वाट (W)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">गतिमान वाहन या क्रेन द्वारा किसी विशेष क्षण पर बल व वेग से उत्पन्न तात्कालिक शक्ति</div></div></td></tr><tr><td><div class="primary-cell">अश्वशक्ति (Horsepower - HP)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1 मीट्रिक HP = 735.5 W ; 1 ब्रिटिश HP = 746 W</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऑटोमोबाइल इंजन, ट्रैक्टर, सिंचाई पंप तथा भारी औद्योगिक मशीनों की शक्ति रेटिंग</div></div></td></tr><tr><td><div class="primary-cell">किलोवाट-घंटा (kWh / यूनिट)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1 kWh = 1000 W × 3600 s = 3.6 × 10⁶ J (3.6 MJ)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">घरेलू, वाणिज्यिक व औद्योगिक विद्युत ऊर्जा उपभोग का आधिकारिक मापन</div></div></td></tr><tr><td><div class="primary-cell">ऊर्जा संरक्षण का सार्वभौमिक नियम</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ब्रह्मांड की कुल ऊर्जा E_total = नियत ; ΔE = 0</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऊर्जा का न तो सृजन संभव है न विनाश; केवल एक रूप से दूसरे रूप में रूपांतरण</div></div></td></tr><tr><td><div class="primary-cell">यांत्रिक ऊर्जा संरक्षण नियम</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">E = K + U = ½mv² + mgh = नियत (केवल संरक्षी बलों हेतु)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सरल लोलक की गति, रोलर कोस्टर, उपग्रहों की कक्षीय गति व स्प्रिंग दोलन</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Work Energy Power 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>ऊर्जा/शक्ति अवधारणा</th><th>नियम/सूत्र</th><th>ऊर्जा रूपांतरण/अनुप्रयोग</th></tr></thead><tbody><tr><td><div class="primary-cell">मुक्त पतन में ऊर्जा संतुलन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">शीर्ष पर: E = mgh ; मध्य में: E = ½mv² + mgh' ; आधार पर: E = ½mv_max²</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऊंचाई से गिरते पिंड में स्थितिज ऊर्जा का क्रमिक रूप से गतिज ऊर्जा में पूर्ण रूपांतरण</div></div></td></tr><tr><td><div class="primary-cell">विद्युत जनरेटर (Dynamo)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विद्युतचुंबकीय प्रेरण (EMI): e = -dΦ/dt</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">यांत्रिक ऊर्जा का विद्युत ऊर्जा में रूपांतरण; पनबिजली, पवन व ताप विद्युत संयंत्र</div></div></td></tr><tr><td><div class="primary-cell">विद्युत मोटर (Electric Motor)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">चुंबकीय क्षेत्र में धारावाही चालक पर बल (F = I L B sin θ)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विद्युत ऊर्जा का यांत्रिक ऊर्जा में रूपांतरण; पंखे, वाशिंग मशीन, मिक्सर, ई-वाहन</div></div></td></tr><tr><td><div class="primary-cell">सौर सेल (Photovoltaic Cell)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्रकाश वोल्टीय प्रभाव (Photovoltaic Effect)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सूर्य के प्रकाश (फोटॉन ऊर्जा) का सीधे दिष्ट धारा (DC विद्युत ऊर्जा) में रूपांतरण</div></div></td></tr><tr><td><div class="primary-cell">विद्युत सेल व बैटरी</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">रेडॉक्स रासायनिक अभिक्रिया (Redox Reactions)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विसर्जन में रासायनिक से विद्युत ऊर्जा; आवेशन (चार्जिंग) में विद्युत से रासायनिक ऊर्जा</div></div></td></tr><tr><td><div class="primary-cell">जलविद्युत ऊर्जा रूपांतरण</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">P = η · ρ · g · Q · H (जहाँ Q = जल प्रवाह दर, H = दाबोच्चता)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बांध के जल की स्थितिज ऊर्जा → गतिज ऊर्जा → टरबाइन यांत्रिक ऊर्जा → विद्युत ऊर्जा</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>कार्य करने की समय दर (Rate of doing work) को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शक्ति (Power)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शक्ति का आधारभूत गणितीय सूत्र क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">P = W / t (कार्य / समय)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी वस्तु पर बल F लगाने पर वह v वेग से गतिमान हो, तो शक्ति का सूत्र क्या होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">P = F · v (बल × वेग)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शक्ति किस प्रकार की भौतिक राशि है—अदिश या सदिश?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अदिश राशि (Scalar Quantity)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतर्राष्ट्रीय मात्रक प्रणाली (SI) में शक्ति का मात्रक क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वाट (Watt - W या जूल प्रति सेकंड)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शक्ति का SI मात्रक 'वाट' किस वैज्ञानिक के सम्मान में रखा गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जेम्स वाट (James Watt)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>CGS प्रणाली में शक्ति का मात्रक क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अर्ग प्रति सेकंड (erg/s)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शक्ति का विमीय सूत्र (Dimensional Formula) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">[M¹ L² T⁻³]</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 वाट (1 W) की परिभाषा भौतिक रूप से क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब 1 सेकंड में 1 जूल कार्य किया जाए</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 किलोवाट (kW) कितने वाट के समतुल्य होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1000 वाट (10³ W)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 मेगावाट (MW) में कितने वाट होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">10⁶ वाट (10 लाख वाट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 गीगावाट (GW) कितने वाट के बराबर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">10⁹ वाट (1 अरब वाट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इंजीनियरिंग में प्रयुक्त व्यावहारिक मात्रक 'अश्वशक्ति' (Horsepower - HP) का मान ब्रिटिश प्रणाली में कितना होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">746 वाट</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मीट्रिक प्रणाली में 1 अश्वशक्ति (Metric HP) का मान कितना स्वीकार किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">735.5 वाट</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसी दिए गए समयांतराल में किए गए कुल कार्य और कुल समय के अनुपात को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">औसत शक्ति (Average Power)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसी निश्चित विशिष्ट क्षण पर कार्य करने की दर को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तात्क्षणिक शक्ति (Instantaneous Power = dW/dt)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत ऊर्जा उपभोग का व्यावहारिक या व्यावसायिक मात्रक क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किलोवाट-घंटा (kWh / यूनिट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 किलोवाट-घंटा (kWh) कितने जूल ऊर्जा के बराबर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">3.6 × 10⁶ जूल (3.6 मेगाजूल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऊर्जा संरक्षण का सार्वभौमिक नियम क्या प्रतिपादित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊर्जा न तो उत्पन्न की जा सकती है और न ही नष्ट, केवल रूपांतरित हो सकती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऊर्जा संरक्षण का नियम भौतिकी के किस मौलिक समरूपता सिद्धांत पर आधारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समय की समरूपता (Homogeneity of Time)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संरक्षी बलों के प्रभाव में किसी विलगित निकाय की कौन सी ऊर्जा सदैव नियत रहती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल यांत्रिक ऊर्जा (गतिज ऊर्जा + स्थितिज ऊर्जा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यांत्रिक ऊर्जा संरक्षण का मानक गणितीय समीकरण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">E = K + U = नियत (अथवा ΔK + ΔU = 0)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>असंरक्षी बल (जैसे घर्षण या श्यानता) उपस्थित होने पर यांत्रिक ऊर्जा किसमें क्षय होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊष्मीय ऊर्जा और ध्वनि ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केवल गुरुत्वाकर्षण के अधीन किसी वस्तु का नीचे गिरना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुक्त पतन (Free Fall)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुक्त पतन कर रहे m द्रव्यमान के पिंड की h ऊंचाई पर उच्चतम बिंदु पर कुल यांत्रिक ऊर्जा कितनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">E = mgh (गतिज ऊर्जा = 0, स्थितिज ऊर्जा = mgh)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुक्त पतन के दौरान जमीन से टकराने के ठीक पूर्व पिंड की कुल ऊर्जा किस रूप में होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूर्णतः गतिज ऊर्जा (K = ½mv², स्थितिज ऊर्जा = 0)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>h ऊंचाई से मुक्त पतन करने वाले पिंड का धरातल पर पहुँचते समय वेग क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">v = √(2gh)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुक्त पतन में ठीक आधी ऊंचाई (h/2) पर पिंड की गतिज और स्थितिज ऊर्जा का अनुपात क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 : 1 (दोनों ऊर्जाएं परस्पर बराबर होती हैं)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यांत्रिक ऊर्जा को विद्युत ऊर्जा में परिवर्तित करने वाला प्राथमिक उपकरण क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विद्युत जनरेटर या डायनेमो (Electric Generator)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत जनरेटर भौतिकी के किस सिद्धांत पर कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माइकल फैराडे के विद्युतचुंबकीय प्रेरण के नियम पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत ऊर्जा को यांत्रिक ऊर्जा में बदलने वाली युक्ति क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विद्युत मोटर (Electric Motor)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत मोटर किस सिद्धांत पर कार्य करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चुंबकीय क्षेत्र में धारावाही चालक पर लगने वाले बल के सिद्धांत पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत मोटर के घूमने की दिशा फ्लेमिंग के किस नियम द्वारा ज्ञात की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फ्लेमिंग के बाएँ हाथ के नियम (Left-hand rule) द्वारा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत जनरेटर में प्रेरित धारा की दिशा किस नियम से निर्धारित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फ्लेमिंग के दाएँ हाथ के नियम (Right-hand rule) द्वारा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सौर ऊर्जा को सीधे विद्युत ऊर्जा में रूपांतरित करने वाली अर्धचालक युक्ति क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सौर सेल (Solar Cell / फोटोवोल्टिक सेल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सौर सेल के निर्माण में मुख्य रूप से किस अर्धचालक तत्व का उपयोग किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिलिकॉन (Silicon)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत बल्ब या फिलामेंट लैंप विद्युत ऊर्जा को किन ऊर्जा रूपों में रूपांतरित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रकाश ऊर्जा और ऊष्मा ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पारंपरिक तापदीप्त बल्ब में प्रयुक्त विद्युत ऊर्जा का अधिकांश भाग किस रूप में व्यय होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊष्मा ऊर्जा (अवरक्त विकिरण) के रूप में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एलईडी (LED) बल्ब पारंपरिक बल्ब की तुलना में अधिक दक्ष क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यह विद्युत ऊर्जा को लगभग पूर्णतः प्रकाश में बदलता है (न्यूनतम ऊष्मा हानि)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पादपों में प्रकाश संश्लेषण द्वारा सौर ऊर्जा किस ऊर्जा में रूपांतरित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रासायनिक ऊर्जा (ग्लूकोज और स्टार्च) में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ध्वनि ऊर्जा को विद्युत सिग्नलों (विद्युत ऊर्जा) में बदलने वाला ट्रांसड्यूसर क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माइक्रोफोन (Microphone)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत ऊर्जा को पुनः ध्वनि तरंगों (ध्वनि ऊर्जा) में बदलने वाला उपकरण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लाउडस्पीकर (Loudspeaker)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रासायनिक ऊर्जा को विद्युत ऊर्जा में बदलने वाली प्राथमिक या द्वितीयक युक्ति क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विद्युत सेल या बैटरी (Battery)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैटरी को चार्ज (आवेशित) करते समय कौन सा ऊर्जा रूपांतरण घटित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विद्युत ऊर्जा का रासायनिक ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत हीटर, गीजर, टोस्टर और विद्युत इस्त्री किस सिद्धांत पर कार्य करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विद्युत ऊर्जा का ऊष्मीय ऊर्जा में रूपांतरण (जूल तापन प्रभाव)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कोयला, पेट्रोल या डीजल के दहन में कौन सा ऊर्जा रूपांतरण होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रासायनिक ऊर्जा का ऊष्मा और प्रकाश ऊर्जा में रूपांतरण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाष्प इंजन (Steam Engine) ऊष्मा ऊर्जा को किस ऊर्जा में परिवर्तित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यांत्रिक ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पवन चक्की (Windmill) बहती वायु की गतिज ऊर्जा को किस ऊर्जा में बदलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यांत्रिक ऊर्जा और फिर विद्युत ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जलविद्युत गृह (Hydroelectric Power Plant) में ऊर्जा रूपांतरण का सही क्रम क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थितिज ऊर्जा → गतिज ऊर्जा → यांत्रिक ऊर्जा → विद्युत ऊर्जा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ताप विद्युत संयंत्र (Thermal Power Plant) में ऊर्जा रूपांतरण का प्राथमिक क्रम क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रासायनिक ऊर्जा → ऊष्मा ऊर्जा → गतिज ऊर्जा → विद्युत ऊर्जा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नाभिकीय ऊर्जा संयंत्र में विद्युत उत्पादन का मूल आधार क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नाभिकीय विखंडन ऊर्जा → ऊष्मा ऊर्जा → यांत्रिक ऊर्जा → विद्युत ऊर्जा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूर्य और अन्य तारों में ऊर्जा का अटूट स्रोत कौन सी नाभिकीय प्रक्रिया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नाभिकीय संलयन (Nuclear Fusion - हाइड्रोजन से हीलियम)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>परमाणु बम में किस प्रक्रिया द्वारा द्रव्यमान का ऊर्जा में तीव्र विनाशकारी रूपांतरण होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनियंत्रित नाभिकीय विखंडन (Uncontrolled Nuclear Fission)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हाइड्रोजन बम किस ऊर्जा उत्पादन सिद्धांत पर आधारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनियंत्रित नाभिकीय संलयन (Nuclear Fusion)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आइंस्टीन का प्रसिद्ध द्रव्यमान-ऊर्जा समतुल्यता समीकरण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">E = mc² (जहाँ c प्रकाश का वेग है)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 किलोग्राम द्रव्यमान के पूर्ण ऊर्जा में विलीन होने पर कितनी ऊर्जा विमुक्त होगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">9 × 10¹⁶ जूल (E = 1 × (3×10⁸)²)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जीवधारियों में कोशिकीय श्वसन द्वारा रासायनिक ऊर्जा किस जैविक ऊर्जा अणु में संचित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एटीपी (ATP - एडीनोसिन ट्राइफॉस्फेट) में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मांसपेशियों के संकुचन के समय एटीपी की रासायनिक ऊर्जा किसमें रूपांतरित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यांत्रिक कार्य और ऊष्मा ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुगनू (Firefly) में रासायनिक ऊर्जा का सीधे प्रकाश ऊर्जा में रूपांतरण क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जैव-संदीप्ति (Bioluminescence - ल्युसिफेरिन द्वारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विद्युत घंटी (Electric Bell) में विद्युत ऊर्जा अंततः किसमें परिवर्तित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ध्वनि ऊर्जा और चुंबकीय यांत्रिक ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तनी हुई कमान से तीर छोड़ते समय ऊर्जा का रूपांतरण किस प्रकार होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्यास्थ स्थितिज ऊर्जा का बाण की गतिज ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चाबी भरी हुई खिलौना गाड़ी में कौन सी ऊर्जा संचित रहती है और चलने पर किसमें बदलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्यास्थ स्थितिज ऊर्जा गतिज ऊर्जा में बदलती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दीवार घड़ी के लोलक (Pendulum) की गति में निरंतर कौन सा ऊर्जा रूपांतरण होता रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गतिज ऊर्जा और स्थितिज ऊर्जा का परस्पर सतत रूपांतरण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लोलक के माध्य स्थिति (Mean Position) से गुजरते समय उसकी ऊर्जा की स्थिति क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गतिज ऊर्जा अधिकतम तथा स्थितिज ऊर्जा न्यूनतम</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लोलक के दोनों उच्चतम चरम बिंदुओं (Extreme Positions) पर ऊर्जा का स्वरूप क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थितिज ऊर्जा अधिकतम तथा गतिज ऊर्जा शून्य</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सरल आवर्त गति कर रहे कण की कुल ऊर्जा (E) उसके आयाम (A) से कैसे संबंधित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">E ∝ A² (आयाम के वर्ग के समानुपाती)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सितार, वीणा या गिटार बजाने पर अंगुलियों की यांत्रिक ऊर्जा किसमें बदलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तारों के कंपन द्वारा ध्वनि ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पटाखों और आतिशबाजी में बारूद के दहन से रासायनिक ऊर्जा किन रूपों में विमुक्त होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रकाश, ध्वनि, ऊष्मा और गैसों की गतिज ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>थर्मोकपल (ताप-युग्म) युक्ति किस प्रभाव द्वारा ऊष्मा को सीधे विद्युत में बदलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सीबेक प्रभाव (Seebeck Effect) द्वारा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पीजोइलेक्ट्रिक क्रिस्टल पर यांत्रिक दबाव डालने पर विद्युत विभव उत्पन्न होना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीजोइलेक्ट्रिक प्रभाव (Piezoelectric Effect)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गैस लाइटर में चिंगारी उत्पन्न करने के लिए किस ऊर्जा रूपांतरण का उपयोग होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यांत्रिक दाब ऊर्जा का विद्युत चिंगारी में रूपांतरण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घर्षण बल द्वारा किया गया यांत्रिक कार्य सदैव किस ऊर्जा में अपव्ययित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊष्मीय ऊर्जा (Heat Energy) में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सर्दियों में हथेलियों को परस्पर रगड़ने पर गर्माहट महसूस होना किसका उदाहरण है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यांत्रिक कार्य का ऊष्मा ऊर्जा में रूपांतरण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरिक्ष यान के वायुमंडल में तीव्र गति से प्रवेश करते समय अत्यधिक चमकने का कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वायुमंडलीय घर्षण द्वारा भारी गतिज ऊर्जा का ऊष्मा में बदलना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उल्कापिंड (Meteor) के पृथ्वी के वायुमंडल में जल उठने का भौतिक कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वायु घर्षण से तीव्र गतिज ऊर्जा का ऊष्मा और प्रकाश में रूपांतरण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसी मशीन की निर्गत शक्ति (Output) और निवेशी शक्ति (Input) के प्रतिशत अनुपात को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मशीन की दक्षता (Efficiency, η)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षता (Efficiency) का गणितीय सूत्र क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">η = (उपयोगी निर्गत कार्य / कुल निवेशी ऊर्जा) × 100%</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या किसी भी व्यावहारिक मशीन या इंजन की दक्षता 100% हो सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं (घर्षण व ऊष्मा क्षय के कारण सदैव 100% से कम)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऊष्मागतिकी के किस नियम के अनुसार ऊष्मा को पूर्णतः उपयोगी कार्य में नहीं बदला जा सकता?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊष्मागतिकी के द्वितीय नियम (Second Law of Thermodynamics)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आदर्श कार्नो इंजन (Carnot Engine) की दक्षता किस पर निर्भर करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्रोत और सिंक के परम तापमान (T₁ व T₂) पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि 1000 वाट का हीटर 2 घंटे तक लगातार कार्य करे, तो उपभुक्त विद्युत ऊर्जा कितनी होगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">2 kWh (2 यूनिट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>60 वाट का पंखा 10 घंटे चलने पर कितने यूनिट बिजली की खपत करेगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">0.6 यूनिट (60 × 10 / 1000 = 0.6 kWh)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी विद्युत मोटर की शक्ति 2 HP हो, तो वाट में उसका मान कितना होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1492 वाट (2 × 746 W)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एक क्रेन 2000 kg के भार को 10 सेकंड में 15 मीटर ऊपर उठाती है, क्रेन की शक्ति क्या होगी (g=10)?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">30,000 वाट या 30 kW (P = mgh/t = 2000×10×15/10)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एक मोटरकार 72 km/h (20 m/s) की नियत चाल से 500 N के प्रतिरोध बल के विरुद्ध चल रही है, इंजन की शक्ति क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">10 kW (P = F · v = 500 × 20 = 10,000 W)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऊंचाई h से स्वतंत्र रूप से गिरती गेंद जब फर्श से अप्रत्यास्थ रूप से टकराती है, तो यांत्रिक ऊर्जा कहाँ जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊष्मा, ध्वनि और गेंद के विरूपण में क्षयित हो जाती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूर्णतः प्रत्यास्थ टक्कर (Elastic Collision) में कौन-कौन सी भौतिक राशियां संरक्षित रहती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रैखिक संवेग और कुल गतिज ऊर्जा दोनों</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अप्रत्यस्थ टक्कर (Inelastic Collision) में संवेग संरक्षित रहता है किंतु क्या संरक्षित नहीं रहता?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गतिज ऊर्जा संरक्षित नहीं रहती (यांत्रिक ऊर्जा का ह्रास होता है)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऊंचाई से कूदते समय पैराशूट वायु के किस प्रभाव का उपयोग करके गतिज ऊर्जा नियंत्रित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वायु के श्यान कर्षण (Drag Force) द्वारा सीमांत वेग प्राप्त कर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी वस्तु की गतिज ऊर्जा नियत दर से बढ़ रही हो, तो उस पर आरोपित शक्ति कैसी होगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नियत (P = dK/dt = स्थिर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि कोई बल विस्थापन के लंबवत कार्यरत हो (जैसे अभिकेंद्र बल), तो उस बल द्वारा स्थानांतरित शक्ति कितनी होगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शून्य (P = F · v · cos 90° = 0)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उपग्रह के पृथ्वी के चारों ओर वृत्ताकार कक्षा में घूमने पर गुरुत्वाकर्षण बल द्वारा प्रदत्त शक्ति कितनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शून्य</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब एक संधारित्र (Capacitor) को आवेशित किया जाता है, तो उसमें विद्युत ऊर्जा किस रूप में संचित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्लेटों के मध्य स्थिरवैद्युत क्षेत्र (Electric Field) में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एक प्रेरक कुण्डली (Inductor) में धारा प्रवाहित करने पर ऊर्जा किस रूप में संचित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चुंबकीय क्षेत्र (Magnetic Field) में (U = ½ L I²)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>परमाणु रिएक्टर में मंदक (Moderator) भारी जल या ग्रेफाइट न्यूट्रॉनों की किस ऊर्जा को कम करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गतिज ऊर्जा को (तीव्र न्यूट्रॉनों को तापीय न्यूट्रॉनों में बदलना)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नियंत्रक छड़ें (कैडमियम या बोरॉन) परमाणु भट्टी में किसका अवशोषण करती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अतिरिक्त न्यूट्रॉनों का अवशोषण कर विखंडन श्रृंखला को नियंत्रित करना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रशीतक (Refrigerator) में प्रशीतक द्रव के वाष्पीकरण और संघनन द्वारा कौन सा प्रक्रम संपन्न होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आंतरिक कक्ष से ऊष्मा का निष्कासन कर बाह्य वातावरण में विसर्जन</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सौर जल तापक (Solar Water Heater) सूर्य की किस ऊर्जा का सीधा उपयोग करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सौर विकिरण की उष्मीय ऊर्जा का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भू-तापीय ऊर्जा (Geothermal Energy) का मूल स्रोत क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पृथ्वी के आंतरिक क्रोड में उपस्थित अत्यधिक ऊष्मा और रेडियोधर्मी क्षय</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वारीय ऊर्जा संयंत्र (Tidal Energy) समुद्र में किसके गुरुत्वाकर्षण बल से उत्पन्न गतिज ऊर्जा का उपयोग करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चंद्रमा और सूर्य के गुरुत्वाकर्षण खिंचाव से उत्पन्न ज्वार-भाटे का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ओशन थर्मल एनर्जी कन्वर्जन (OTEC) महासागर में किन दो परतों के बीच तापांतर का उपयोग करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सतही गर्म जल और गहरी परतों के ठंडे जल के तापमान अंतर का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बायोमास या बायोगैस संयंत्र में पशु अपशिष्टों की रासायनिक ऊर्जा किसमें बदलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मीथेन गैस युक्त जैव-रासायनिक ईंधन ऊर्जा में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाहनों में हाइड्रोलिक ब्रेक किस नियम पर कार्य करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पास्कल के नियम (द्रव दाब संचरण) पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>द्रव्यमान m की वस्तु को v वेग से सीधे ऊपर फेंकने पर वह अधिकतम कितनी ऊंचाई तक जाएगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">h = v² / (2g)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या किसी गतिशील वस्तु की तात्क्षणिक शक्ति ऋणात्मक हो सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ (जब बल और वेग के बीच कोण 90° से अधिक हो, जैसे मंदन में)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शक्ति, कार्य और ऊर्जा में सबसे मौलिक अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कार्य और ऊर्जा कुल संचित या स्थानांतरित मात्रा हैं, जबकि शक्ति उसकी संपादन दर है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

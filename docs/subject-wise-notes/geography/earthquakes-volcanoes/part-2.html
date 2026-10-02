@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Earthquakes Volcanoes 2">
+<title>Earthquakes Volcanoes 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Geography / भूगोल / Earthquakes Volcanoes 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Geography — भूगोल</div>
+    <h1>Earthquakes Volcanoes 2</h1>
+    <p class="topic-subtitle">ज्वालामुखी के प्रकार (सक्रिय, प्रसुप्त, शांत), अंतर्वेधी व बहिर्वेधी स्थलाकृतियां एवं भारत के ज्वालामुखी (बैरन व नारकोंडम)</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Earthquakes Volcanoes 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>ज्वालामुखीय प्रकार/स्थलरूप</th><th>विशेषता</th><th>उदाहरण/क्षेत्र</th></tr></thead><tbody><tr><td><div class="primary-cell">सक्रिय ज्वालामुखी (Active Volcano)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जिनसे वर्तमान में अथवा ऐतिहासिक काल में निरंतर या प्रायः लावा, गैस, राख व विखंडित पदार्थों का उद्भेदन होता रहता है</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">किलाउएआ व मौना लोआ (हवाई), माउंट एटना व स्ट्राम्बोली (इटली), कोटोपैक्सी (इक्वाडोर), माउंट मेरापी (इंडोनेशिया), बैरन द्वीप (भारत)</div></div></td></tr><tr><td><div class="primary-cell">प्रसुप्त ज्वालामुखी (Dormant Volcano)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जो वर्तमान में शांत हैं किंतु निकट भविष्य में कभी भी अचानक और भीषण विस्फोटक उद्गार होने की पूरी संभावना बनी रहती है</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">माउंट वेसुवियस (इटली), माउंट फ्यूजियामा (जापान), क्राकाटोआ (इंडोनेशिया), नारकोंडम द्वीप (अंडमान, भारत)</div></div></td></tr><tr><td><div class="primary-cell">शांत / विलुप्त ज्वालामुखी (Extinct)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जिनमें ऐतिहासिक काल से कोई उद्गार नहीं हुआ और जिनकी नली में लावा जमकर प्लग बन चुका है तथा भविष्य में उद्गार की संभावना शून्य है</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">माउंट पोपा (म्यांमार), किलिमंजारो (तंजानिया), चिम्बराजो (इक्वाडोर), एकांकागुआ (एंडीज, चिली-अर्जेंटीना), देमवंद व कोह-ए-सुल्तान (ईरान)</div></div></td></tr><tr><td><div class="primary-cell">शील्ड ज्वालामुखी (Shield Volcano)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अत्यधिक तरल बेसाल्टिक लावा के धीमे व शांत प्रवाह से निर्मित कम ढालू और विस्तृत गुंबदाकार ज्वालामुखी (पृथ्वी पर सबसे विशालकाय)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">हवाई द्वीप के ज्वालामुखी (मौना लोआ व किलाउएआ); सागर तल से कुल ऊंचाई 9,000 मी से अधिक</div></div></td></tr><tr><td><div class="primary-cell">मिश्रित ज्वालामुखी (Stratovolcano)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अम्लीय चिपचिपे लावा और पायरोक्लास्टिक मलबे (राख व धूल) की एकांतर परतों से बने ऊंचे, तीव्र ढाल वाले शंकुनुमा पर्वत</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">माउंट मेयन (फिलीपींस - सबसे आदर्श शंकु), माउंट फ्यूजी (जापान), माउंट रेनियर ও माउंट सेंट हेलेन्स (USA)</div></div></td></tr><tr><td><div class="primary-cell">क्रेटर एवं काल्डेरा (Crater &amp; Caldera)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">क्रेटर: ज्वालामुखी नली का कीपाकार मुख; काल्डेरा: भीषण विस्फोट या मैग्मा कक्ष के खाली होकर धंसने से बना विशाल गर्त</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">क्रेटर लेक (ओरेगॉन, USA), टोबा काल्डेरा (सुमात्रा, इंडोनेशिया), येलोस्टोन काल्डेरा (USA), लोनार क्रेटर (महाराष्ट्र)</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Earthquakes Volcanoes 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>ज्वालामुखीय प्रकार/स्थलरूप</th><th>विशेषता</th><th>उदाहरण/क्षेत्र</th></tr></thead><tbody><tr><td><div class="primary-cell">बैथोलिथ (Batholith)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भूगर्भ की अत्यधिक गहराई में ठंडे होकर जमे मैग्मा के विशाल, अनियंत्रित और गुंबदाकार आंतरिक आग्नेय पिंड (सैकड़ों किमी विस्तार)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पर्वतों के मूल में स्थित ग्रेनाइट पिंड; इडाहो बैथोलिथ (USA), रांची का पठार (छोटा नागपुर ग्रेनाइट बैथोलिथ)</div></div></td></tr><tr><td><div class="primary-cell">लैकोलिथ व लोपोलिथ</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">लैकोलिथ: ऊपर उठी अवसादी परतों के नीचे गुंबद/छत्रकनुमा मैग्मा जमाव; लोपोलिथ: तश्तरीनुमा (Saucer-shaped) अवतल जमाव</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">हेनरी पर्वत (यूटा, USA); दक्षिण अफ्रीका का बुशवेल्ड कॉम्प्लेक्स (लोपोलिथ - प्लैटिनम व क्रोमियम समृद्ध)</div></div></td></tr><tr><td><div class="primary-cell">सिल और डाइक (Sill &amp; Dike)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सिल: अवसादी संस्तरों के समानांतर क्षैतिज चादरनुमा जमाव; डाइक: संस्तरों को काटती हुई लगभग लंबवत या ऊर्ध्वाधर दीवारनुमा संरचना</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ग्रेट व्हिन सिल (ब्रिटेन); दामोदर कोयला घाटी व पश्चिमी महाराष्ट्र के दक्कन लावा क्षेत्र में विस्तृत डाइक संरचनाएं</div></div></td></tr><tr><td><div class="primary-cell">बैरन द्वीप (Barren Island)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अंडमान सागर में पोर्ट ब्लेयर से 138 किमी उत्तर-पूर्व में स्थित भारत और दक्षिण एशिया का एकमात्र जीवित सक्रिय ज्वालामुखी</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1787 में प्रथम दर्ज उद्गार; 1991, 2005-06 तथा 2017-2022 में पुनः सक्रिय; अंडमान-सुंडा सबडक्शन आर्क का भाग</div></div></td></tr><tr><td><div class="primary-cell">नारकोंडम द्वीप (Narcondam Island)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैरन द्वीप के उत्तर-पूर्व में अंडमान सागर में स्थित एक पृथक ज्वालामुखीय द्वीप; वर्तमान में प्रसुप्त/सुप्त अवस्था में</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अत्यंत दुर्लभ और स्थानिक 'नारकोंडम हॉर्नबिल' (पक्षी) का एकमात्र प्राकृतिक आवास; द्वितीयक ज्वालामुखीय शंकु</div></div></td></tr><tr><td><div class="primary-cell">दक्कन ट्रैप (Deccan Basalt Plateau)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">क्रेटेशियस काल (लगभग 6.5 करोड़ वर्ष पूर्व) में दरारी उद्भेदन से विमुक्त अत्यधिक तरल बेसाल्टिक लावा की सीढ़ीदार परतें</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">महाराष्ट्र, गुजरात व मध्य प्रदेश के 5 लाख वर्ग किमी में विस्तार; रीयूनियन हॉटस्पॉट का परिणाम; उपजाऊ काली मृदा (रेगुर) का आधार</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>पृथ्वी की भूपर्पटी में उपस्थित वह प्राकृतिक छिद्र या दरार जिससे होकर भूगर्भ का पिघला हुआ मैग्मा, गैसें और राख बाहर निकलती हैं, क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ज्वालामुखी (Volcano)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पृथ्वी के आंतरिक भाग में उपस्थित अत्यधिक तप्त पिघले हुए शैल पदार्थ को धरातल पर आने से पूर्व क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मैग्मा (Magma)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब पिघला हुआ मैग्मा भूपर्पटी को तोड़कर धरातल पर प्रकट होता है और प्रवाहित होने लगता है, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लावा (Lava)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी से बाहर निकलने वाले गैसीय पदार्थों में सर्वाधिक मात्रा (60 से 90 प्रतिशत) किस घटक की होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जलवाष्प (Water Vapour) की</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जलवाष्प के अतिरिक्त ज्वालामुखी गैसों में कौन-सी प्रमुख जहरीली और ग्रीनहाउस गैसें उपस्थित होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कार्बन डाइऑक्साइड (CO₂), सल्फर डाइऑक्साइड (SO₂), हाइड्रोजन सल्फाइड (H₂S) और हाइड्रोक्लोरिक अम्ल (HCl)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी से निकलने वाले ठोस शैल खंडों, चट्टानी टुकड़ों और अंगारों को सामूहिक रूप से क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पायरोक्लास्ट्स (Pyroclasts / ज्वालामुखीय मलबा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी विस्फोट में हवा में उछलकर ठंडे हुए बड़े, गोल या अंडाकार घूर्णित शैल पिंड क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ज्वालामुखीय बम (Volcanic Bombs)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मटर के दाने या अखरोट के आकार के छोटे गोल कंकड़नुमा ज्वालामुखीय टुकड़ों को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लेपिली (Lapilli)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>झागदार, अत्यधिक रंध्रयुक्त और हल्के लावा से बने तैरने वाले पत्थर को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">झांवा या प्यूमिस (Pumice)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बारीक ज्वालामुखीय धूल और राख के संगठित होकर जमने से निर्मित अवसादी शैल क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टफ (Tuff)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कोणीय और नुकीले ज्वालामुखीय शैल टुकड़ों के आपस में जमने से बनने वाली चट्टान को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ज्वालामुखीय ब्रेशिया (Volcanic Breccia)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सिलिका की मात्रा और रासायनिक संघटन के आधार पर लावा को मुख्य रूप से किन दो वर्गों में विभाजित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अम्लीय लावा (Acidic/Felsic) और क्षारीय लावा (Basic/Mafic)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अम्लीय या रायोलिटिक लावा (Acidic Lava) में सिलिका (SiO₂) की मात्रा कितने प्रतिशत से अधिक होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">65 प्रतिशत से अधिक</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अम्लीय लावा की भौतिक प्रकृति कैसी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक गाढ़ा, श्यान (Viscous), चिपचिपा, हल्के रंग का तथा उच्च गलनांक वाला</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अम्लीय लावा के उद्गार अत्यधिक हिंसक और विस्फोटक क्यों होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि गाढ़ा लावा गैसों को आसानी से मुक्त नहीं होने देता, जिससे भारी आंतरिक दबाव बनता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्षारीय या बेसाल्टिक लावा (Basic/Mafic Lava) में सिलिका की मात्रा कितनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">45 से 55 प्रतिशत (कम सिलिका तथा अधिक लोहा व मैग्नीशियम)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्षारीय लावा की भौतिक प्रकृति कैसी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक तरल, कम श्यान (पतला), गहरे काले रंग का तथा दूर तक तेजी से फैलने वाला</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हवाई द्वीप के ज्वालामुखियों से निकलने वाला लावा प्रायः किस प्रकार का होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्षारीय बेसाल्टिक लावा (Basic Basaltic Lava - शांत प्रवाह)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उद्गार की निरंतरता और सक्रियता के आधार पर ज्वालामुखियों को किन तीन प्रमुख श्रेणियों में बांटा गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सक्रिय, प्रसुप्त और शांत (विलुप्त) ज्वालामुखी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सक्रिय ज्वालामुखी (Active Volcano) किसे कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे ज्वालामुखी जिनसे समय-समय पर लावा, गैस और विखंडित पदार्थ अनवरत बाहर निकलते रहते हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में विश्व का सबसे सक्रिय ज्वालामुखी किसे माना जाता है जहाँ लगभग निरंतर उद्गार होता रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किलाउएआ ज्वालामुखी (Kilauea - हवाई द्वीप, USA)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रशांत महासागर में हवाई द्वीप पर स्थित विश्व का सबसे विशालतम सक्रिय शील्ड ज्वालामुखी कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मौना लोआ (Mauna Loa)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भूमध्य सागर में लिपारी द्वीप पर स्थित किस ज्वालामुखी को 'भूमध्य सागर का प्रकाश स्तंभ' (Lighthouse of the Mediterranean) कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्ट्राम्बोली ज्वालामुखी (Stromboli)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्ट्राम्बोली को प्रकाश स्तंभ क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इससे प्रत्येक 15-20 मिनट में गैसों और प्रदीप्त लावा अंगारों का निरंतर चमकदार निकास होता रहता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इटली के सिसिली द्वीप पर स्थित यूरोप का सबसे बड़ा और निरंतर सक्रिय ज्वालामुखी कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट एटना (Mount Etna)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का सबसे ऊंचा सक्रिय ज्वालामुखी कौन-सा है जो अर्जेंटीना और चिली की सीमा पर एंडीज में स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओजोस डेल सालाडो (Ojos del Salado - 6,893 मीटर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इक्वाडोर में एंडीज पर्वतमाला पर स्थित विश्व का प्रसिद्ध सबसे ऊंचा सक्रिय ज्वालामुखी पर्वत कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट कोटोपैक्सी (Mount Cotopaxi - 5,897 मीटर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इंडोनेशिया के जावा द्वीप पर स्थित सर्वाधिक खतरनाक और सक्रिय ज्वालामुखी कौन-सा है जो राख उगलता रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट मेरापी (Mount Merapi)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंटार्कटिका महाद्वीप का एकमात्र सक्रिय ज्वालामुखी कौन-सा है जो रॉस द्वीप पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट एरेबस (Mount Erebus)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रसुप्त या सुप्त ज्वालामुखी (Dormant Volcano) की परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे ज्वालामुखी जो लंबे समय से शांत रहे हैं परंतु जिनमें कभी भी अप्रत्याशित भीषण विस्फोट हो सकता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नेपल्स की खाड़ी (इटली) में स्थित ऐतिहासिक प्रसुप्त ज्वालामुखी कौन-सा है जिसने 79 ईस्वी में पोम्पेई नगर को भस्म कर दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट वेसुवियस (Mount Vesuvius)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान का सबसे पवित्र और सर्वोच्च पर्वत शिखर 'माउंट फ्यूजियामा' (Fuji) किस श्रेणी का ज्वालामुखी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रसुप्त / सुप्त मिश्रित ज्वालामुखी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इंडोनेशिया में सुंडा जलडमरूमध्य के मध्य स्थित वह प्रसुप्त ज्वालामुखी कौन-सा है जिसमें 1883 में प्रलयंकारी विस्फोट हुआ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्राकाटोआ ज्वालामुखी (Krakatoa / Krakatau)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1883 के क्राकाटोआ विस्फोट की ध्वनि पृथ्वी पर कितनी दूरी तक सुनाई दी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 4,800 किलोमीटर दूर (मॉरीशस और पर्थ तक - इतिहास की सबसे तेज ध्वनि)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>फिलीपींस के लूजोन द्वीप पर स्थित वह ज्वालामुखी कौन-सा है जिसमें 1991 में 20वीं सदी का दूसरा सबसे बड़ा विस्फोट हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट पिनातुबो (Mount Pinatubo)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शांत या विलुप्त ज्वालामुखी (Extinct Volcano) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जिनमें ऐतिहासिक काल में कोई उद्गार नहीं हुआ और जिनकी नली में लावा जमकर अपरदित हो चुका है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अफ्रीका महाद्वीप की सर्वोच्च चोटी 'माउंट किलिमंजारो' (5,895 मी - तंजानिया) किस प्रकार का ज्वालामुखी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शांत / विलुप्त ज्वालामुखी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिण अमेरिका और पश्चिमी गोलार्ध का सर्वोच्च पर्वत शिखर 'एकांकागुआ' (Aconcagua - 6,961 मी) किस प्रकार का पर्वत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विलुप्त ज्वालामुखीय पर्वत</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>म्यांमार के मध्य भाग में स्थित कौन-सा विलुप्त ज्वालामुखी अपने क्रेटर में बौद्ध मंदिरों हेतु प्रसिद्ध है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट पोपा (Mount Popa)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ईरान के एल्बुर्ज पर्वत पर स्थित 'देमवंद' (Damavand) और बलूचिस्तान सीमा पर 'कोह-ए-सुल्तान' किस प्रकार के ज्वालामुखी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शांत / विलुप्त ज्वालामुखी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केन्या की सीमा पर स्थित 'माउंट केन्या' (Mount Kenya) किस श्रेणी का ज्वालामुखी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक अपरदित विलुप्त ज्वालामुखी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उद्गार के स्वरूप और विस्फोटकता के आधार पर ज्वालामुखियों का सर्वाधिक हिंसक प्रकार कौन-सा माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीलियन तुल्य ज्वालामुखी (Pelean Type)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पीलियन तुल्य ज्वालामुखी का नामकरण वेस्ट इंडीज के मार्टिनिक द्वीप के किस ज्वालामुखी के आधार पर हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट पीली (Mont Pelée - 1902 का भीषण विस्फोट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पीलियन विस्फोट के दौरान निकलने वाले अत्यधिक तप्त, विषैली गैसों और राख के तीव्रगामी बादल को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नुए आरदां (Nuée Ardente / जलता हुआ मेघ / Pyroclastic Density Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गैस, भाप और राख के गोभी के फूल जैसे विशाल ऊर्ध्वाधर बादलों के साथ फटने वाला ज्वालामुखी प्रकार क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्लिनियम तुल्य ज्वालामुखी (Plinian Type - प्लिनी द यंगर के विवरण पर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी विस्फोटकता सूचकांक (VEI - Volcanic Explosivity Index) का पैमाना कितने अंकों का होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">0 से 8 तक (लघुगणकीय पैमाना; प्रत्येक अंक पर विमुक्त आयतन 10 गुना बढ़ता है)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी शंकु के शीर्ष पर स्थित कीपाकार गड्ढा या प्यालेनुमा मुख क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्रेटर (Crater / ज्वालामुखी मुख)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब किसी शांत ज्वालामुखी के क्रेटर में वर्षा का जल संचित हो जाता है, तो कौन-सी झील बनती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्रेटर झील (Crater Lake)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संयुक्त राज्य अमेरिका के ओरेगॉन राज्य में स्थित प्रसिद्ध 'क्रेटर लेक' किस प्राचीन ज्वालामुखी के ढहने से बनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट मजमा (Mount Mazama) के ढहने से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्पेनिश भाषा के शब्द 'काल्डेरा' (Caldera) का शाब्दिक अर्थ क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कड़ाहा या विशाल हांडी (Cauldron / विशाल गड्ढा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>काल्डेरा का निर्माण क्रेटर से किस प्रकार भिन्न होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भीषण विस्फोट के बाद नीचे स्थित विशाल मैग्मा कक्ष के खाली होने से पूरा ज्वालामुखी पर्वत अंदर धंस जाता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का सबसे बड़ा ज्ञात नवजीवन काल का काल्डेरा कौन-सा है जो इंडोनेशिया के सुमात्रा में स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टोबा काल्डेरा (Lake Toba - 100 किमी लंबा और 30 किमी चौड़ा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सुपर-ज्वालामुखी (Supervolcano) का सर्वोत्तम अमेरिकी उदाहरण कौन-सा है जो विशाल काल्डेरा तंत्र है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">येलोस्टोन काल्डेरा (Yellowstone National Park, वायमिंग)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>काल्डेरा के भीतर पुनः छोटे ज्वालामुखी शंकुओं के जन्म लेने से बनी स्थलाकृति को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घोंसलादार काल्डेरा (Nested Caldera - जैसे क्राकाटोआ का अनाक क्राकाटोआ)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी के शांत होने पर उसकी नली में जमे कठोर लावा का स्तंभ जो अपरदन के बाद खड़ा रहता है, क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ज्वालामुखी ग्रीवा या प्लग (Volcanic Neck / Plug - जैसे डेविल्स टॉवर, USA)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हवाईयन भाषा के शब्द 'पाहोहो' (Pāhoehoe) का अर्थ किस प्रकार के लावा प्रवाह से है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चिकनी, चमकदार और मुड़ी हुई रस्सी जैसी सतह वाला बेसाल्टिक लावा (Ropy Lava)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'आ-आ' (ʻAʻā) लावा प्रवाह की क्या विशेषता होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">खुरदुरा, नुकीला, काँटेदार और खंडित शिलाखंडों वाला कठिन लावा प्रवाह</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समुद्र के भीतर जलमग्न ज्वालामुखी उद्गार के समय पानी के संपर्क में जमने वाले तकिये जैसे गोल लावा पिंड क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पिलो लावा (Pillow Lava / तकिया लावा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी शंकु के चारों ओर केवल सिंडर, राख और ज्वालामुखीय अंगारों के जमने से बना ढीला शंकु क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिंडर शंकु या राख शंकु (Cinder Cone - जैसे मैक्सिको का पारिकुटिन ज्वालामुखी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मैग्मा के भूपर्पटी के भीतर ठंडे होकर जमने से बनने वाली आंतरिक आग्नेय चट्टानों की आकृतियां क्या कहलाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्लूटोनिक या अंतर्वेधी स्थलाकृतियां (Intrusive Landforms)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भूगर्भ में मैग्मा के जमने से बनने वाली सबसे विशालकाय, अनियमित और तली-रहित आग्नेय संरचना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैथोलिथ (Batholith)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैथोलिथ का निर्माण मुख्य रूप से किस प्रकार की आग्नेय चट्टान से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रेनाइट (Granite) से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैथोलिथ की न्यूनतम धरातलीय सतह का क्षेत्रफल कम से कम कितना होना आवश्यक माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">100 वर्ग किलोमीटर से अधिक</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में बैथोलिथ संरचना का सबसे प्रमुख उदाहरण किस क्षेत्र में देखा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">छोटा नागपुर पठार के ग्रेनाइट गुंबद (रांची का पठार)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब मैग्मा अवसादी परतों के बीच ऊपर उठकर गुंबदाकार या छतरीनुमा उत्तल रूप में जमता है, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लैकोलिथ (Laccolith / छत्रक शिला)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लैकोलिथ का धरातल कैसा होता है और ऊपरी भाग कैसा होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धरातल (तली) लगभग समतल तथा ऊपरी भाग उत्तल गुंबद जैसा (Mushroom-shaped)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कर्नाटक के पठार पर पाए जाने वाले कठोर ग्रेनाइट के उत्तल गुंबद किस संरचना के उदाहरण हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लैकोलिथ (Laccolith) के</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब मैग्मा किसी द्रोणी या बेसिन के आकार में तश्तरीनुमा अवतल रूप में जमता है, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लोपोलिथ (Lopolith)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वलित पर्वतों की अपनति (Anticline) के शीर्ष पर और अभिनति (Syncline) के गर्त में जमे लहरदार मैग्मा को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फैकोलिथ (Phacolith)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसादी चट्टानों की संस्तर परतों के समानांतर क्षैतिज चादर के रूप में जमे मैग्मा को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिल (Sill)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सिल की मोटाई कम (कुछ सेंटीमीटर से 1 मीटर) होने पर उसे क्या नाम दिया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शीट (Sheet)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब मैग्मा संस्तर परतों के समकोण पर दरारों में खड़ी दीवार की भांति ऊर्ध्वाधर जमता है, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डाइक (Dike / Dyke)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पश्चिमी महाराष्ट्र के दक्कन ट्रैप क्षेत्र और दामोदर कोयला घाटी में कौन-सी अंतर्वेधी संरचनाएं बहुतायत में मिलती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डाइक संरचनाएं (Dikes)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी क्रिया के अंतिम चरण में गैस और वाष्प उगलने वाले छिद्र क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धुआँरे (Fumaroles / वाष्प मुख)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अलास्का की कटमई पर्वत घाटी को किस प्रसिद्ध नाम से जाना जाता है जहाँ 1912 के बाद हजारों धुआंरे बने?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दस सहस्र धूम्र घाटी (Valley of Ten Thousand Smokes)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सल्फर (गंधक) युक्त भाप और गैसें उगलने वाले धुआँरों को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सोल्फ़तारा (Solfatara - इटली के नेपल्स के पास)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भूगर्भ से नियमित अंतरालों पर उबलता हुआ गर्म जल और भाप फव्वारे के रूप में बाहर फेंकने वाले स्रोत क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उष्णोत्स या गीजर (Geysers)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का सबसे प्रसिद्ध प्राकृतिक गीजर कौन-सा है जो प्रत्येक 60-90 मिनट में गर्म जल का फव्वारा छोड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओल्ड फेथफुल गीजर (Old Faithful - येलोस्टोन नेशनल पार्क, USA)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में लद्दाख की पूगा घाटी, मणिकर्ण (हिमाचल) और तपोवन (उत्तराखंड) किसके लिए प्रसिद्ध हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गर्म जल के चश्मों और भू-तापीय ऊर्जा (Geothermal Energy) स्रोतों हेतु</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का एकमात्र जीवित सक्रिय ज्वालामुखी कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैरन द्वीप (Barren Island)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैरन द्वीप भौगोलिक रूप से कहाँ स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंडमान सागर में पोर्ट ब्लेयर से लगभग 138 किलोमीटर उत्तर-पूर्व में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैरन द्वीप किस विवर्तनिक प्लेट अभिसरण पेटी का भाग है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंडो-ऑस्ट्रेलियन प्लेट और बर्मा माइक्रोप्लेट के सबडक्शन जोन (सुंडा ज्वालामुखीय चाप) का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैरन द्वीप पर प्रथम ऐतिहासिक उद्गार किस वर्ष दर्ज किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1787 में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लगभग दो शताब्दियों तक शांत रहने के बाद 20वीं सदी में बैरन द्वीप किस वर्ष पुनः हिंसक रूप से फटा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1991 में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2004 की हिंद महासागर सुनामी के बाद बैरन द्वीप में किन वर्षों में पुनः सक्रिय उद्गार दर्ज किए गए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2005-2006, 2017, 2018 और 2022 में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैरन द्वीप के ज्वालामुखी का प्रकार क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्ट्रैटोवोल्केनो (मिश्रित ज्वालामुखी / बेसाल्टिक-एंडिसिटिक लावा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंडमान सागर में स्थित भारत का दूसरा प्रमुख ज्वालामुखीय द्वीप कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नारकोंडम द्वीप (Narcondam Island)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नारकोंडम द्वीप बैरन द्वीप से किस दिशा में और कितनी दूरी पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैरन द्वीप के उत्तर-उत्तर-पूर्व में लगभग 140 किमी (पोर्ट ब्लेयर से 240 किमी उ.पू.)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नारकोंडम ज्वालामुखी को वर्तमान में किस श्रेणी में वर्गीकृत किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रसुप्त या सुप्त ज्वालामुखी (Dormant Volcano)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नारकोंडम द्वीप किस अत्यंत दुर्लभ और स्थानिक पक्षी का विश्व में एकमात्र प्राकृतिक आवास है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नारकोंडम हॉर्नबिल (Narcondam Hornbill - IUCN संकटग्रस्त)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का विशाल 'दक्कन का पठार' (दक्कन ट्रैप) किस प्रकार की ज्वालामुखीय क्रिया का परिणाम है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शांत दरारी उद्भेदन (Fissure Eruption / बेसाल्टिक लावा प्रवाह)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्कन ट्रैप के लावा प्रवाह का निर्माण किस भूवैज्ञानिक युग में हुआ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्रेटेशियस कल्प के अंत में (लगभग 6.5 से 6.6 करोड़ वर्ष पूर्व)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्कन ट्रैप के निर्माण में किस मेंटल प्लूम / तप्त स्थल की भूमिका सिद्ध हो चुकी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रीयूनियन हॉटस्पॉट (Réunion Hotspot) की</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्कन के बेसाल्टिक पठार के अपक्षय और अपरदन से किस उपजाऊ मृदा का निर्माण हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">काली मृदा (रेगुर मृदा / Black Cotton Soil)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हरियाणा के महेंद्रगढ़ जिले में स्थित 'धोसी हिल' (Dhosi Hill) किस प्राचीन पर्वतमाला का एक विलुप्त ज्वालामुखी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरावली पर्वतमाला का (लगभग 73 करोड़ वर्ष पुराना विलुप्त ज्वालामुखीय स्थल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>झारखंड के पूर्वी सिंहभूम में स्थित 'दलमा पर्वत श्रेणी' (Dalma Hills) किस काल के ज्वालामुखीय उद्गार का प्रमाण है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्री-कैम्ब्रियन / प्रोटेरोज़ोइक काल के प्राचीन लावा उद्गार का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुजरात के भावनगर में स्थित 'पालीताना की पहाड़ियां' और पावागढ़ पर्वत किस प्रकार के शैल खंड हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्कन लावा प्रवाह के अंतर्गत बने अम्लीय ज्वालामुखी गुंबद (Rhyolite Domes)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंडमान के 'बाराटांग द्वीप' (Baratang Island) पर पाया जाने वाला अनोखा ज्वालामुखी किस प्रकार का है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कीचड़ ज्वालामुखी (Mud Volcano / मड वोल्केनो)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बाराटांग के कीचड़ ज्वालामुखी से लावा के स्थान पर क्या निकलता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मीथेन गैस के दबाव से उबलने वाला गीला कीचड़ और खारा जल</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का सबसे बड़ा क्रेटर या काल्डेरा किस ग्रह या उपग्रह पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मंगल ग्रह पर 'ओलंपस मॉन्स' (सौरमंडल का सबसे बड़ा ज्वालामुखी, 22 किमी ऊंचा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी उद्गार से वायुमंडल में निकलने वाली सल्फर डाइऑक्साइड गैस का वैश्विक जलवायु पर क्या तात्कालिक प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सल्फेट एरोसोल बनकर सूर्य प्रकाश को परावर्तित करते हैं, जिससे पृथ्वी पर वैश्विक शीतलन (Cooling) होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1815 में इंडोनेशिया के किस ज्वालामुखी के महा-विस्फोट से 1816 'बिना ग्रीष्म का वर्ष' (Year Without a Summer) बना?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माउंट तांबोरा (Mount Tambora - VEI 7 विस्फोट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ज्वालामुखी क्रिया का सर्वाधिक सकारात्मक आर्थिक महत्व क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपजाऊ लावा मृदा (कृषि हेतु), भू-तापीय ऊर्जा, गंधक व तांबा जैसे बहुमूल्य खनिज भंडार</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

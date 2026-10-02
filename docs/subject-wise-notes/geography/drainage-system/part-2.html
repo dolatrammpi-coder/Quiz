@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Drainage System 2">
+<title>Drainage System 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Geography / भूगोल / Drainage System 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Geography — भूगोल</div>
+    <h1>Drainage System 2</h1>
+    <p class="topic-subtitle">प्रायद्वीपीय अपवाह तंत्र (नर्मदा, गोदावरी, कृष्णा, कावेरी), पूर्व एवं पश्चिम वाहिनी नदियाँ, प्रमुख जलप्रपात व झीलें</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Drainage System 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>नदी/जल निकाय</th><th>प्रवाह/स्थिति</th><th>प्रमुख क्षेत्र</th></tr></thead><tbody><tr><td><div class="primary-cell">गोदावरी नदी (दक्षिण गंगा)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">महाराष्ट्र के नासिक जिले में त्र्यंबकेश्वर से उद्गम; पूर्व की ओर 1,465 किमी बहकर बंगाल की खाड़ी में विसर्जन</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">महाराष्ट्र, तेलंगाना, आंध्र प्रदेश, छत्तीसगढ़ व ओडिशा; प्राणहिता, इंद्रावती, मंजीरा, पेनगंगा व वेनगंगा प्रमुख सहायक; राजमुंद्री के पास डेल्टा</div></div></td></tr><tr><td><div class="primary-cell">कृष्णा नदी</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">महाराष्ट्र के पश्चिमी घाट में महाबलेश्वर (1,338 मी) से उद्गम; 1,401 किमी पूर्वगामी प्रवाह</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">महाराष्ट्र, कर्नाटक, तेलंगाना व आंध्र प्रदेश; तुंगभद्रा, भीमा, कोयना, पंचगंगा, मालप्रभा व मूसी सहायक; अलमट्टी, श्रीशैलम व नागार्जुन सागर बांध</div></div></td></tr><tr><td><div class="primary-cell">कावेरी नदी (दक्षिण भारत की गंगा)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कर्नाटक के कोडागु (कुर्ग) में ब्रह्मगिरि पहाड़ी के तालकावेरी (1,341 मी) से उद्गम; 800 किमी प्रवाह</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कर्नाटक, केरल व तमिलनाडु; शिवसमुद्रम व श्रीरंगपट्टनम नदी द्वीप; अमरावती, भवानी, हेमावती व काबिनी सहायक; मेट्टूर बांध व पूम्पुहार डेल्टा</div></div></td></tr><tr><td><div class="primary-cell">महानदी</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">छत्तीसगढ़ के धमतरी जिले में सिहावा पर्वत श्रेणी से उद्गम; 851 किमी पूर्वगामी अपवाह</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">छत्तीसगढ़ व ओडिशा; शिवनाथ, हसदेव, मांड, इब, जोंक व तेल सहायक; संबलपुर के पास विश्व प्रसिद्ध हीराकुंड बांध; कटक में विशाल डेल्टा</div></div></td></tr><tr><td><div class="primary-cell">नर्मदा नदी</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्य प्रदेश में अनूपपुर जिले के अमरकंटक पठार (1,057 मी) से उद्गम; विंध्य-सतपुड़ा भ्रंश घाटी में 1,312 किमी पश्चिम प्रवाह</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्य प्रदेश, महाराष्ट्र व गुजरात; भेड़ाघाट संगमरमर शैल, धुआंधार प्रपात; तवा, शक्कर व दूधी सहायक; सरदार सरोवर बांध व भरूच के पास एश्चुअरी</div></div></td></tr><tr><td><div class="primary-cell">ताप्ती (तापी) नदी</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्य प्रदेश के बैतूल जिले में मुलताई (752 मी) के समीप सतपुड़ा श्रेणी से उद्गम; 724 किमी पश्चिम प्रवाह</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्य प्रदेश, महाराष्ट्र व गुजरात; सतपुड़ा व अजंता के मध्य भ्रंश घाटी; पूर्णा, गिरना व पंजरा सहायक; उकाई व काकरापार परियोजना; सूरत के पास खंभात की खाड़ी</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Drainage System 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>नदी/जल निकाय</th><th>प्रवाह/स्थिति</th><th>प्रमुख क्षेत्र</th></tr></thead><tbody><tr><td><div class="primary-cell">कुंचिकल जलप्रपात (455 मी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कर्नाटक के शिमोगा जिले में पश्चिमी घाट की वाराही नदी पर स्थित सोपानी (Cascading) प्रपात</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत का सबसे ऊंचा सोपानी जलप्रपात; वाराही भूमिगत जलविद्युत परियोजना का प्रमुख स्रोत</div></div></td></tr><tr><td><div class="primary-cell">जोग / गरसोप्पा प्रपात (253 मी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कर्नाटक के शिमोगा जिले में शरावती नदी पर स्थित चार धाराओं (राजा, रानी, रॉकेट, रोवर) का प्रपात</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">महात्मा गांधी जलप्रपात के नाम से विख्यात; भारत का दूसरा सबसे ऊंचा अनवरत एकल-खंडीय प्रपात</div></div></td></tr><tr><td><div class="primary-cell">शिवसमुद्रम जलप्रपात (98 मी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कर्नाटक के मांड्या व चामराजनगर सीमा पर कावेरी नदी पर स्थित दोहरी धारा (गगनचुक्की व भरचुक्की)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">एशिया का प्रथम प्रमुख जलविद्युत गृह (1902 में स्थापित); मैसूर व कोलार स्वर्ण खदानों को विद्युत आपूर्ति</div></div></td></tr><tr><td><div class="primary-cell">धुआंधार जलप्रपात (30 मी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्य प्रदेश के जबलपुर जिले में भेड़ाघाट के निकट नर्मदा नदी के संगमरमर संकीर्ण गॉर्ज पर</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जल की फुहारों से धुएं जैसा दृश्य बनने के कारण 'धुआंधार' नामकरण; प्रमुख अंतरराष्ट्रीय पर्यटन स्थल</div></div></td></tr><tr><td><div class="primary-cell">चित्रकूट जलप्रपात (29 मी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">छत्तीसगढ़ के बस्तर जिले में जगदलपुर के निकट इंद्रावती नदी पर स्थित 300 मीटर चौड़ा अश्वनाल प्रपात</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अपने विशाल फैलाव व घोड़े की नाल जैसी आकृति के कारण 'भारत का नियाग्रा प्रपात' (Niagara of India)</div></div></td></tr><tr><td><div class="primary-cell">हुंडरू जलप्रपात (98 मी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">झारखंड के रांची जिले में छोटा नागपुर पठार के कगार पर स्वर्णरेखा नदी द्वारा निर्मित</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">नदी के विषम अपरदन व कगार स्खलन का उत्कृष्ट भूवैज्ञानिक उदाहरण; सुवर्णरेखा जलविद्युत परियोजना</div></div></td></tr><tr><td><div class="primary-cell">चिल्का झील (Chilika Lake)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ओडिशा तट पर दया व भार्गवी नदियों के मुहाने पर स्थित भारत की सबसे बड़ी खारे पानी की लैगून झील</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्रथम भारतीय रामसर आर्द्रभूमि (1981); नलबाना पक्षी अभयारण्य तथा लुप्तप्राय इरावदी डॉल्फिन का निवास</div></div></td></tr><tr><td><div class="primary-cell">वेम्बनाड झील (Vembanad)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">केरल के कोट्टायम, अलप्पुझा व एर्नाकुलम में अरब सागर तट के समानांतर 96 किमी लंबी कयाल झील</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत की सबसे लंबी झील; वेलिंगटन द्वीप (कोच्चि बंदरगाह); प्रसिद्ध नेहरू ट्रॉफी नौका दौड़ (वल्लमकली)</div></div></td></tr><tr><td><div class="primary-cell">लोनार झील (Lonar Lake)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">महाराष्ट्र के बुलढाणा जिले में दक्कन बेसाल्टिक पठार पर उल्कापिंड के संघट्ट (Impact Crater) से निर्मित</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अत्यधिक क्षारीय व लवणीय क्रेटर झील; 2020 में रामसर स्थल घोषित; हेलोआर्किया जीवाणुओं से गुलाबी रंग</div></div></td></tr><tr><td><div class="primary-cell">लोकटक झील (Loktak Lake)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मणिपुर के बिष्णुपुर जिले में स्थित पूर्वोत्तर भारत की सबसे बड़ी मीठे पानी की प्राकृतिक आर्द्रभूमि झील</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">तैरते हुए वनस्पति द्वीपों 'फुमदी' (Phumdis) हेतु विख्यात; विश्व का एकमात्र तैरता राष्ट्रीय उद्यान 'केइबुल लामजाओ'</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>भूवैज्ञानिक दृष्टि से प्रायद्वीपीय अपवाह तंत्र हिमालयी अपवाह तंत्र की तुलना में कैसा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यंत प्राचीन और प्रौढ़ावस्था को प्राप्त तंत्र</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय नदियों की घाटियाँ हिमालयी नदियों की V-आकार की गहरी घाटियों की तुलना में कैसी होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चौड़ी, उथली तथा अत्यधिक मंद प्रवणता वाली</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय नदियों का प्रवाह मुख्य रूप से किस पर निर्भर करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल मानसूनी वर्षा पर (ऋतुनिष्ठ एवं मौसमी नदियाँ)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय भारत की अधिकांश नदियाँ पश्चिम से पूर्व की ओर बहकर बंगाल की खाड़ी में क्यों गिरती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि प्रायद्वीपीय भूखंड का सामान्य ढाल पश्चिम से पूर्व एवं दक्षिण-पूर्व की ओर है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय पठार की कौन-सी दो प्रमुख बड़ी नदियाँ अपवाद स्वरूप पूर्व से पश्चिम की ओर बहकर अरब सागर में गिरती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नर्मदा और ताप्ती (तापी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नर्मदा और ताप्ती नदियों के पश्चिम की ओर बहने का मूल भूवैज्ञानिक कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राचीन भ्रंश घाटियों (Rift Valleys) से होकर सामान्य ढाल के विपरीत प्रवाहित होना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय भारत की पूर्व की ओर बहने वाली नदियाँ मुहाने पर क्या बनाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशाल उपजाऊ डेल्टा (Deltas)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पश्चिम की ओर बहने वाली नदियाँ डेल्टा के स्थान पर मुहाने पर क्या बनाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ज्वारनदमुख या एश्चुअरी (Estuaries)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पश्चिम तटीय नदियाँ डेल्टा का निर्माण क्यों नहीं कर पाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मार्ग छोटा व तीव्र ढाल वाला होने, कठोर चट्टानों से बहने और गाद (अवसाद) की भारी कमी के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय भारत की सबसे लंबी और सबसे बड़ी नदी द्रोणी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गोदावरी नदी (लंबाई: 1,465 किमी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोदावरी नदी को उसके विशाल आकार और धार्मिक महत्ता के कारण किस उपनाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्षिण गंगा (Dakshin Ganga) अथवा वृद्ध गंगा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोदावरी नदी का उद्गम महाराष्ट्र के किस जिले और स्थान से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नासिक जिले के त्र्यंबकेश्वर (Trimbakeshwar) की पहाड़ियों से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोदावरी नदी किन भारतीय राज्यों से होकर प्रवाहित और अपवाहित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">महाराष्ट्र, तेलंगाना, आंध्र प्रदेश, छत्तीसगढ़ और ओडिशा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोदावरी नदी में बाईं ओर से मिलने वाली सबसे बड़ी संयुक्त सहायक नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राणहिता नदी (Pranhita River)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्राणहिता नदी किन तीन प्रमुख पहाड़ी नदियों के संयुक्त संगम से बनती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पेनगंगा, वर्धा और वेनगंगा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दंडकारण्य पठार (ओडिशा-छत्तीसगढ़) से निकलकर बस्तर से बहते हुए गोदावरी में मिलने वाली प्रमुख नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंद्रावती नदी (Indravati River)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोदावरी की दाहिने तट से मिलने वाली सबसे महत्वपूर्ण और लंबी सहायक नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मंजीरा नदी (Manjira River - बालाघाट पहाड़ी से उद्गमित)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तेलंगाना में मंजीरा नदी पर कौन-सा ऐतिहासिक सिंचाई जलाशय अवस्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निजाम सागर (Nizam Sagar Dam)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आंध्र प्रदेश में गोदावरी नदी पर निर्मित विशाल बहुउद्देशीय राष्ट्रीय सिंचाई परियोजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पोलावरम राष्ट्रीय सिंचाई परियोजना (Polavaram Project)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोदावरी नदी बंगाल की खाड़ी में गिरने से पूर्व किन दो मुख्य वितरिकाओं में विभाजित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गौतमी गोदावरी और वशिष्ठ गोदावरी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय भारत की दूसरी सबसे बड़ी पूर्व वाहिनी नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कृष्णा नदी (लंबाई: 1,401 किमी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृष्णा नदी का उद्गम महाराष्ट्र के सतारा जिले में पश्चिमी घाट के किस स्थान से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">महाबलेश्वर (Mahabaleshwar - 1,338 मी ऊंचाई) से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृष्णा नदी का अपवाह बेसिन किन चार राज्यों में विस्तृत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">महाराष्ट्र, कर्नाटक, तेलंगाना और आंध्र प्रदेश</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृष्णा नदी की सबसे बड़ी और महत्वपूर्ण दक्षिणी सहायक नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तुंगभद्रा नदी (Tungabhadra River)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तुंगभद्रा नदी कर्नाटक के पश्चिमी घाट में किन दो धाराओं के मिलने से बनती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तुंगा और भद्रा (कूडली के पास संगम)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विजयनगर साम्राज्य की ऐतिहासिक राजधानी 'हम्पी' किस नदी के पावन तट पर अवस्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तुंगभद्रा नदी के तट पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृष्णा नदी की सबसे लंबी उत्तरी सहायक नदी कौन-सी है जो भीमाशंकर (महाराष्ट्र) से निकलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भीमा नदी (Bhima River - 861 किमी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महाराष्ट्र का प्रसिद्ध तीर्थ स्थल 'पंढरपुर' किस नदी के तट पर स्थित है जहाँ इसे चंद्रभागा कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भीमा नदी के तट पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महाराष्ट्र में कोयना नदी पर निर्मित बांध और जलाशय को किस नाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शिवसागर जलाशय (कोयना जलविद्युत परियोजना)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 1967 में कोयना बांध के जलाशय प्रेरित भूकंप (RIS) की तीव्रता रिक्टर पैमाने पर कितनी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">6.3 तीव्रता (भारत का सबसे विनाशकारी प्रेरित भूकंप)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तेलंगाना की राजधानी हैदराबाद किस नदी के तट पर अवस्थित है जो कृष्णा की सहायक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मूसी नदी (Musi River) के तट पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृष्णा नदी पर कर्नाटक में निर्मित प्रमुख विशाल बांध कौन-सा है जिसे लाल बहादुर शास्त्री बांध भी कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अलमट्टी बांध (Almatti Dam)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आंध्र प्रदेश और तेलंगाना की सीमा पर कृष्णा नदी पर निर्मित दो प्रसिद्ध विशाल बहुउद्देशीय बांध कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">श्रीशैलम बांध और नागार्जुन सागर बांध</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृष्णा और गोदावरी नदियों के विशाल डेल्टाओं के बीच कौन-सी प्रसिद्ध मीठे पानी की प्राकृतिक झील स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोलेरू झील (Kolleru Lake - आंध्र प्रदेश)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कावेरी नदी का उद्गम कर्नाटक के कोडागु (कुर्ग) जिले में किस पर्वत श्रेणी से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ब्रह्मगिरि पहाड़ी पर स्थित तालकावेरी (Talakaveri - 1,341 मी) से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कावेरी नदी की कुल लंबाई कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 800 किलोमीटर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कावेरी नदी को प्रायद्वीपीय भारत की एकमात्र वर्ष भर जल रखने वाली (सदा नीरा जैसी) नदी क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊपरी जलग्रहण में द.प. मानसून से तथा निचले जलग्रहण (तमिलनाडु) में उ.पू. मानसून से वर्षा मिलने के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तमिल संस्कृति और साहित्य में कावेरी नदी को किस पवित्र नाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पोन्नी (Ponni - अर्थ: स्वर्णमयी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कावेरी नदी कर्नाटक में अपने मार्ग में किन दो प्रमुख नदी द्वीपों का निर्माण करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">श्रीरंगपट्टनम और शिवसमुद्रम द्वीप</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तमिलनाडु में तिरुचिरापल्ली के पास कावेरी नदी किस प्रसिद्ध पवित्र नदी द्वीप की रचना करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">श्रीरंगम द्वीप (Srirangam Island)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कावेरी नदी की बाएं तट से मिलने वाली प्रमुख सहायक नदियाँ कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हेमावती, शिमशा, अर्कावती और हरंगी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कावेरी नदी की दाहिने तट से मिलने वाली प्रमुख दक्षिणी सहायक नदियाँ कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लक्ष्मणतीर्थ, काबिनी, भवानी, नोय्याल और अमरावती</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कर्नाटक में कावेरी नदी पर कृष्णराज वोडेयार और एम. विश्वेश्वरैया द्वारा निर्मित प्रसिद्ध बांध कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कृष्णराज सागर बांध (KRS Dam - वृंदावन गार्डन के पास)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तमिलनाडु में कावेरी नदी पर स्थित ऐतिहासिक और सबसे बड़ा जलाशय कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेट्टूर बांध (स्टैनली जलाशय / Stanley Reservoir)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कावेरी जल विवाद (CWDT) मुख्य रूप से किन राज्यों और केंद्र शासित प्रदेश के मध्य केंद्रित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर्नाटक, तमिलनाडु, केरल और पुडुचेरी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महानदी का उद्गम छत्तीसगढ़ के धमतरी जिले में किस पर्वत श्रृंखला से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिहावा पर्वत श्रेणी (Sihawa Hills) से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महानदी की कुल लंबाई कितनी है और यह किन दो राज्यों की जीवनरेखा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">851 किमी; छत्तीसगढ़ और ओडिशा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ओडिशा के संबलपुर के पास महानदी पर बना विश्व का सबसे लंबा मुख्य मिट्टी का बांध कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हीराकुंड बांध (Hirakud Dam - मुख्य बांध लंबाई: 4.8 किमी, कुल: 25.8 किमी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महानदी की बाएं तट से मिलने वाली प्रमुख सहायक नदियाँ कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शिवनाथ, हसदेव, मांड और इब</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महानदी की दाहिने तट से मिलने वाली प्रमुख सहायक नदियाँ कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जोंक, ओंग और तेल नदी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ओडिशा की व्यावसायिक राजधानी 'कटक' किस नदी के डेल्टा शीर्ष पर अवस्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">महानदी के डेल्टा पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ब्राह्मणी नदी किन दो छोटी नदियों के संगम से राउरकेला (ओडिशा) के समीप अस्तित्व में आती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्षिण कोयल और सांख नदी के संगम से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ओडिशा के क्योंझर पठार की गुप्तगंगा पहाड़ी से किस पवित्र नदी का उद्गम होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैतरणी नदी (Baitarani River) का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>झारखंड के रांची पठार के नगड़ी गांव से निकलने वाली प्रसिद्ध स्वतंत्र नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वर्णरेखा नदी (Subarnarekha River)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का प्रसिद्ध इस्पात नगर 'जमशेदपुर' (टाटानगर) किन दो नदियों के पावन संगम पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वर्णरेखा और खरकई नदी के संगम पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कर्नाटक की नंदी पहाड़ियों से निकलकर आंध्र प्रदेश से बहते हुए बंगाल की खाड़ी में गिरने वाली नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पेन्नार नदी (उत्तरी पेन्नार / पिनाकिनी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तमिलनाडु का प्रसिद्ध प्राचीन सांस्कृतिक नगर 'मदुरै' किस नदी के तट पर बसा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैगई नदी (Vaigai River - वर्षनदु पहाड़ियों से उद्गमित)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगस्त्यमलाई पहाड़ी से निकलकर मन्नार की खाड़ी में गिरने वाली दक्षिण भारत की सबसे दक्षिणतम नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ताम्रपर्णी नदी (Tamraparni River)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नर्मदा नदी का उद्गम मध्य प्रदेश के अनूपपुर जिले में किस चोटी से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमरकंटक चोटी (Amarkantak - मैकाल श्रेणी, 1,057 मी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय भारत में पश्चिम की ओर बहने वाली सबसे लंबी नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नर्मदा नदी (कुल लंबाई: 1,312 किमी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नर्मदा नदी किन दो प्रमुख पर्वत श्रेणियों के बीच बनी भ्रंश घाटी में बहती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तर में विंध्याचल तथा दक्षिण में सतपुड़ा पर्वत श्रेणी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नर्मदा नदी मध्य प्रदेश के जबलपुर में भेड़ाघाट के पास किस संगमरमरी प्राकृतिक प्रपात का निर्माण करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धुआंधार जलप्रपात (Dhuandhar Falls)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नर्मदा नदी की सबसे बड़ी और महत्वपूर्ण सहायक नदी कौन-सी है जो पचमढ़ी से निकलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तवा नदी (Tawa River)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नर्मदा की अन्य प्रमुख सहायक नदियाँ कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हिरन, शेर, शक्कर, दूधी, बरना, गंजाल और ओरसंग</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुजरात के नर्मदा जिले में नर्मदा नदी पर बना भारत का विशाल कंक्रीट गुरुत्वीय बांध कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरदार सरोवर बांध (Sardar Sarovar Dam)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सरदार सरोवर बांध के पास साधु बेट द्वीप पर विश्व की सबसे ऊंची कौन-सी प्रतिमा स्थापित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्टैच्यू ऑफ यूनिटी (सरदार वल्लभभाई पटेल - 182 मीटर ऊंची)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नर्मदा नदी गुजरात के किस औद्योगिक शहर के पास 27 किमी चौड़ा ज्वारनदमुख (Estuary) बनाकर खंभात की खाड़ी में गिरती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भरूच (Bharuch) के पास</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नर्मदा बचाओ आंदोलन (NBA) का नेतृत्व किस प्रसिद्ध पर्यावरणविद और सामाजिक कार्यकर्ता ने किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेधा पाटकर (Medha Patkar) ने</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ताप्ती (तापी) नदी का उद्गम मध्य प्रदेश के बैतूल जिले में किस स्थान से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुलताई (Multai) के समीप सतपुड़ा पठार से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ताप्ती नदी की कुल लंबाई कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 724 किलोमीटर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ताप्ती नदी किन दो पर्वत श्रेणियों के मध्य स्थित भ्रंश घाटी से होकर प्रवाहित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तर में सतपुड़ा श्रेणी तथा दक्षिण में अजंता व सतमाला पहाड़ियों के मध्य</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुजरात में ताप्ती नदी पर स्थित दो प्रमुख जलविद्युत और सिंचाई परियोजनाएं कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उकाई परियोजना (वल्लभ सागर) और काकरापार परियोजना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुजरात का प्रसिद्ध हीरा व कपड़ा उद्योग केंद्र 'सूरत' किस नदी के तट पर बसा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ताप्ती नदी के तट पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजस्थान के अजमेर के निकट अरावली की नाग पहाड़ियों से निकलने वाली नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लूनी नदी (Luni River - प्राचीन नाम लवणवती)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उद्गम स्थल पर लूनी नदी किन दो धाराओं के संगम से बनती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सागरमती और सरस्वती (गोविंदगढ़ के पास संगम)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लूनी नदी के जल में किस स्थान के बाद खारापन (लवणता) आ जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाड़मेर जिले के बालोतरा के बाद (मरुस्थलीय लवणों के घुलने से)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लूनी नदी किसी समुद्र में न गिरकर कहाँ विलीन हो जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गुजरात के कच्छ के महान रण (Rann of Kutch) के दलदल में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्थल से घिरे होने और समुद्र तक न पहुँच पाने के कारण लूनी किस प्रकार का अपवाह तंत्र बनाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतःस्थलीय अपवाह तंत्र (Inland Drainage System)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>साबरमती नदी का उद्गम राजस्थान के उदयपुर जिले में किस पर्वत श्रेणी से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरावली पर्वत श्रेणी के समीप स्थित जयसमंद झील / कोटड़ा से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुजरात की राजधानी गांधीनगर और अहमदाबाद किस नदी के तट पर स्थित हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">साबरमती नदी (Sabarmati River) के तट पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मध्य प्रदेश के धार जिले में विंध्याचल पर्वत की मेहद झील से किस नदी का उद्गम होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माही नदी (Mahi River) का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की एकमात्र ऐसी नदी कौन-सी है जो कर्क रेखा (23.5° उत्तर) को दो बार काटती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माही नदी (मध्य प्रदेश, राजस्थान व गुजरात में)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजस्थान के बांसवाड़ा जिले में माही नदी पर कौन-सा बहुउद्देशीय बांध निर्मित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माही बजाज सागर बांध</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोवा राज्य की जीवनरेखा (Lifeline of Goa) मानी जाने वाली दो प्रमुख नदियाँ कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मांडवी नदी और जुवारी नदी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोवा की राजधानी 'पणजी' किस नदी के बाएं तट पर अवस्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मांडवी नदी (Mandovi River) के तट पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गोवा और कर्नाटक की सीमा पर मांडवी नदी पर स्थित प्रसिद्ध चार-स्तरीय दूध जैसा सफेद जलप्रपात कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दूधसागर जलप्रपात (Dudhsagar Falls)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कर्नाटक के शिमोगा जिले में पश्चिमी घाट से निकलकर अरब सागर में गिरने वाली शरावती नदी पर कौन-सा प्रसिद्ध प्रपात है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जोग जलप्रपात (गरसोप्पा / महात्मा गांधी प्रपात)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कर्नाटक की अन्य प्रमुख पश्चिम वाहिनी नदियाँ कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">काली नदी, गंगावली, बेड़ती, अघनाशिनी और नेत्रावती</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केरल की सबसे लंबी नदी कौन-सी है जिसे 'पोन्नानी' के नाम से भी जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतपुझा नदी (Bharatpuzha - 209 किमी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केरल की दूसरी सबसे लंबी और आर्थिक रूप से सर्वाधिक महत्वपूर्ण नदी कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पेरियार नदी (Periyar River - 244 किमी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केरल में पेरियार नदी पर स्थित एशिया का सबसे बड़ा और प्रसिद्ध कंक्रीट आर्च बांध कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इडुक्की आर्च बांध (Idukki Arch Dam - कुरावन और कुराती पहाड़ियों के बीच)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केरल की तीसरी प्रमुख पावन नदी कौन-सी है जिसके तट पर प्रसिद्ध सबरीमाला मंदिर अवस्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पंबा नदी (Pamba River - दक्षिण की भागीरथी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आधिकारिक भारतीय जलप्रपात आंकड़ों के अनुसार भारत का सबसे ऊंचा सोपानी (Cascading) जलप्रपात कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुंचिकल जलप्रपात (Kunchikal Falls - 455 मी / वाराही नदी, कर्नाटक)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का सबसे ऊंचा सीधा अनवरत गिरने वाला (Plunge Waterfall) जलप्रपात कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नोहकलिकाई जलप्रपात (Nohkalikai Falls - 340 मी, चेरापूंजी, मेघालय)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जोग जलप्रपात (गरसोप्पा) की कुल ऊंचाई कितनी है और यह किन चार अलग-अलग धाराओं से मिलकर गिरता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">253 मीटर; चार धाराएं: राजा, रानी, रोवर और रॉकेट</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एशिया का प्रथम जलविद्युत उत्पादन केंद्र 1902 में किस जलप्रपात पर स्थापित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शिवसमुद्रम जलप्रपात (कावेरी नदी, कर्नाटक) पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तमिलनाडु के धर्मपुरी जिले में कावेरी नदी पर स्थित 'होगेनक्कल जलप्रपात' को किस उपनाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तमिलनाडु का नियाग्रा (Hogenakkal Falls)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छत्तीसगढ़ के बस्तर जिले में इंद्रावती नदी पर स्थित किस प्रपात को 'भारत का नियाग्रा प्रपात' कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चित्रकूट जलप्रपात (Chitrakote Falls - 300 मी चौड़ा अश्वनाल प्रपात)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छत्तीसगढ़ की कांगेर घाटी में मुनगाबहार नदी पर 300 फीट ऊंचा सीढ़ीनुमा प्रपात कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तीरथगढ़ जलप्रपात (Tirathgarh Falls)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>झारखंड के रांची जिले में स्वर्णरेखा नदी पर स्थित 98 मीटर ऊंचा प्रसिद्ध जलप्रपात कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हुंडरू जलप्रपात (Hundru Falls)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>झारखंड के लातेहार जिले में बुरहा नदी पर स्थित राज्य का सबसे ऊंचा जलप्रपात कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लोध जलप्रपात या बूढ़ा घाघ प्रपात (143 मीटर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजस्थान के चित्तौड़गढ़ जिले में भैंसरोड़गढ़ के पास चंबल नदी पर कौन-सा प्रसिद्ध प्रपात स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चूलिया जलप्रपात (Chulia Falls - 18 मीटर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कर्नाटक के बेलगाम जिले में घटप्रभा नदी पर स्थित प्रसिद्ध हॉर्स-शू जलप्रपात कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गोकक जलप्रपात (Gokak Falls - 52 मीटर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केरल के त्रिशूर जिले में चालकुडी नदी पर स्थित प्रसिद्ध पर्यटन जलप्रपात कौन-सा है जिसे दक्षिण भारत का नियाग्रा भी कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अथिरापल्ली जलप्रपात (Athirappilly Falls)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की सबसे बड़ी तटीय खारे पानी की लैगून झील कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चिल्का झील (Chilika Lake - ओडिशा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चिल्का झील को रामसर कन्वेंशन के तहत भारत का पहला अंतरराष्ट्रीय महत्व का आर्द्रभूमि स्थल कब घोषित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1981 में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चिल्का झील के मध्य स्थित प्रमुख पक्षी अभयारण्य का क्या नाम है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नलबाना पक्षी अभयारण्य (Nalbana Bird Sanctuary)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चिल्का झील में पाई जाने वाली दुर्लभ और लुप्तप्राय समुद्री स्तनपायी प्रजाति कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इरावदी डॉल्फिन (Orcaella brevirostris)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की दूसरी सबसे बड़ी खारे पानी की लैगून झील कौन-सी है जो आंध्र प्रदेश और तमिलनाडु की सीमा पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पुलिकट झील (Pulicat Lake)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पुलिकट झील को बंगाल की खाड़ी से कौन-सा रेतीला संकीर्ण द्वीप अलग करता है जहाँ इसरो का उपग्रह प्रक्षेपण केंद्र है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">श्रीहरिकोटा द्वीप (सतीश धवन अंतरिक्ष केंद्र)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केरल के तटीय लैगूनों को स्थानीय मलयालम भाषा में क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कयाल (Kayals)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की सबसे लंबी झील कौन-सी है जो 96 किमी लंबी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वेम्बनाड झील (Vembanad Lake - केरल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वेम्बनाड कयाल में स्थित वेलिंगटन द्वीप किस प्रमुख प्राकृतिक बंदरगाह का केंद्र है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोच्चि बंदरगाह (Kochi Port)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ओणम पर्व के अवसर पर वेम्बनाड झील में आयोजित होने वाली प्रसिद्ध सर्प-नौका दौड़ का नाम क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नेहरू ट्रॉफी नौका दौड़ (वल्लमकली / Vallam Kali)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केरल के कोल्लम जिले में स्थित आठ शाखाओं वाली प्रसिद्ध रामसर आर्द्रभूमि लैगून झील कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अष्टमुडी झील (Ashtamudi Lake)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केरल की सबसे बड़ी ताजे मीठे पानी की प्राकृतिक झील कौन-सी है जिसे 'झीलों की रानी' कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सस्थमकोट्टा झील (Sasthamkotta Lake)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महाराष्ट्र के बुलढाणा जिले में लगभग 50,000 वर्ष पूर्व एक उल्कापिंड के टकराने से बनी प्रसिद्ध क्रेटर झील कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लोनार झील (Lonar Crater Lake)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लोनार झील का जल किस रासायनिक प्रकृति का है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक खारा और क्षारीय (सलाइन व एल्केलाइन दोनों)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूर्वोत्तर भारत की मीठे पानी की सबसे बड़ी प्राकृतिक झील कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लोकटक झील (Loktak Lake - मणिपुर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लोकटक झील में तैरने वाले गोल घास-फूस और मिट्टी के प्राकृतिक द्वीपों को स्थानीय रूप से क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फुमदी (Phumdis)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लोकटक झील की फुमदी पर स्थित विश्व का एकमात्र तैरता हुआ राष्ट्रीय उद्यान कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केइबुल लामजाओ राष्ट्रीय उद्यान (Keibul Lamjao National Park)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केइबुल लामजाओ राष्ट्रीय उद्यान में पाया जाने वाला मणिपुर का राज्य पशु और अत्यंत दुर्लभ हिरण कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संगाई हिरण (तैरता हुआ हिरण / Rucervus eldii eldii)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की सबसे बड़ी अंतःस्थलीय लवणीय (खारे पानी की) झील कौन-सी है जहाँ बड़े पैमाने पर नमक बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सांभर झील (Sambhar Lake - जयपुर/नागौर, राजस्थान)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सांभर झील देश के कुल नमक उत्पादन का लगभग कितना प्रतिशत भाग उत्पादित करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 8 से 9 प्रतिशत</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजस्थान के उदयपुर में स्थित 17वीं सदी में राणा जयसिंह द्वारा निर्मित भारत की दूसरी सबसे बड़ी कृत्रिम मीठे पानी की झील कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ढेबर झील (जयसमंद झील)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की सबसे बड़ी मानव निर्मित कृत्रिम मीठे पानी की झील कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गोविंद बल्लभ पंत सागर (रिहंद बांध, सोनभद्र, उत्तर प्रदेश)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समुद्र तल से 5,330 मीटर की ऊंचाई पर स्थित भारत की सबसे ऊंची झील कौन-सी है जहाँ से तीस्ता नदी निकलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चो ल्हामु झील या त्सो ल्हामो (सिक्किम)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लद्दाख में 4,350 मीटर की ऊंचाई पर स्थित 134 किमी लंबी अंतःप्रवाही खारे पानी की प्रसिद्ध झील कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पैंगोंग त्सो (Pangong Tso - 60% भाग चीन में)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तराखंड के चमोली जिले में स्थित वह रहस्यमयी झील कौन-सी है जहाँ सैकड़ों प्राचीन मानव कंकाल मिले हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रूपकुंड झील (Roopkund - कंकाल झील / Mystery Lake)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रायद्वीपीय अपवाह तंत्र की नदियों का जल प्रवाह वर्ष भर एक समान न रहने का मुख्य कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इनका उद्गम किसी हिमनद से न होकर वर्षा-पोषित मौसमी होना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

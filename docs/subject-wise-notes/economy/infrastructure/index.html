@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="बुनियादी ढाँचा Part 1">
+<title>बुनियादी ढाँचा Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / बुनियादी ढाँचा Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>बुनियादी ढाँचा Part 1</h1>
+    <p class="topic-subtitle">अवसंरचना की अवधारणा, आर्थिक विकास से अंतर्संबंध, आर्थिक अवसंरचना (ऊर्जा, परिवहन, संचार) तथा सामाजिक अवसंरचना (स्वास्थ्य, शिक्षा, आवास) का गहन विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">बुनियादी ढाँचा Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>अवसंरचना का प्रकार</th><th>प्रमुख विशेषता</th><th>आर्थिक विकास में भूमिका</th></tr></thead><tbody><tr><td><div class="primary-cell">आर्थिक अवसंरचना: परिवहन (सड़क, रेल, पत्तन, विमानन)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भौतिक वस्तुओं और यात्रियों की अंतर-क्षेत्रीय गतिशीलता; उच्च पूंजीगत लागत, लंबा गर्भाधान काल (Gestation Period) और प्रत्यक्ष आर्थिक मूल्य संवर्धन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">लॉजिस्टिक्स लागत में कमी, राष्ट्रीय व वैश्विक बाजारों का एकीकरण, व्यापार प्रतिस्पर्धात्मकता में वृद्धि तथा औद्योगिक गलियारों का तीव्र विस्तार।</div></div></td></tr><tr><td><div class="primary-cell">आर्थिक अवसंरचना: ऊर्जा एवं विद्युत (Power &amp; Energy)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">औद्योगिक, कृषि और वाणिज्यिक गतिविधियों का अनिवार्य प्रेरक इनपुट; 'एक राष्ट्र, एक ग्रिड', हरित ऊर्जा गलियारा और नवीकरणीय ऊर्जा संक्रमण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विनिर्माण क्षेत्र को 24x7 निर्बाध विद्युत आपूर्ति, प्रति व्यक्ति ऊर्जा उपभोग में वृद्धि, विनिर्माण क्षमता का विस्तार और हरित औद्योगिक संवृद्धि।</div></div></td></tr><tr><td><div class="primary-cell">आर्थिक अवसंरचना: डिजिटल व संचार (Telecom &amp; DPI)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऑप्टिकल फाइबर नेटवर्क (भारतनेट), 5G तकनीक, डेटा केंद्र तथा डिजिटल पब्लिक इंफ्रास्ट्रक्चर (DPI / इंडिया स्टैक)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सूचना विषमता की समाप्ति, डिजिटल वित्तीय समावेशन, ई-कॉमर्स व फिनटेक का तीव्र प्रसार और ज्ञान आधारित अर्थव्यवस्था का निर्माण।</div></div></td></tr><tr><td><div class="primary-cell">आर्थिक अवसंरचना: सिंचाई एवं जल प्रबंधन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वृहत व मध्यम नहर प्रणालियां, सूक्ष्म सिंचाई (ड्रिप/स्प्रिंकलर), भूजल पुनर्भरण तथा कृषि अवसंरचना कोष (AIF)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कृषि की मानसून पर निर्भरता में कमी, फसल सघनता और उत्पादकता में वृद्धि, ग्रामीण आय संवर्धन तथा खाद्य सुरक्षा की गारंटी।</div></div></td></tr><tr><td><div class="primary-cell">सामाजिक अवसंरचना: शिक्षा एवं कौशल (Education &amp; Skills)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्राथमिक विद्यालय, उच्च शिक्षण संस्थान, अनुसंधान केंद्र, कौशल विकास केंद्र (PMKVY) तथा डिजिटल लर्निंग (दीक्षा/स्वयं)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मानव पूंजी निर्माण (Human Capital Formation), कार्यबल की उत्पादकता व नवाचार क्षमता में वृद्धि तथा अंतर-पीढ़ीगत गरीबी का उन्मूलन।</div></div></td></tr><tr><td><div class="primary-cell">सामाजिक अवसंरचना: स्वास्थ्य एवं पोषण (Healthcare)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आयुष्मान आरोग्य मंदिर, प्राथमिक स्वास्थ्य केंद्र, तृतीयक अस्पताल (AIIMS) तथा पीएम-आयुष्मान भारत स्वास्थ्य अवसंरचना मिशन (PM-ABHIM)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बीमारी के बोझ और कार्यदिवसों के नुकसान में कमी, जीवन प्रत्याशा में सुधार तथा जेब से होने वाले विनाशकारी स्वास्थ्य व्यय से सुरक्षा।</div></div></td></tr><tr><td><div class="primary-cell">सामाजिक अवसंरचना: पेयजल एवं स्वच्छता (WASH)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जल जीवन मिशन (हर घर नल से जल), स्वच्छ भारत मिशन (शौचालय व अपशिष्ट प्रबंधन) तथा सीवरेज शोधन नेटवर्क।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जल-जनित महामारियों (डायरिया, हैजा) की रोकथाम, बाल मृत्यु दर (IMR) में तीव्र गिरावट और महिलाओं के जीवन की गरिमा व समय की बचत।</div></div></td></tr><tr><td><div class="primary-cell">सामाजिक अवसंरचना: किफायती आवास (Affordable Housing)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्रधानमंत्री आवास योजना (PMAY ग्रामीण व शहरी) के तहत पक्के आवास, बुनियादी नागरिक सुविधाएं (बिजली, नल, शौचालय)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">गरीब परिवारों को भौतिक व सामाजिक सुरक्षा, पारिवारिक जीवन स्तर में गुणात्मक सुधार और स्थानीय निर्माण क्षेत्र में व्यापक रोजगार सृजन।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'बुनियादी ढांचा' या 'अवसंरचना' (Infrastructure) की मानक प्रामाणिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उन बुनियादी भौतिक, संगठनात्मक और संस्थागत संरचनाओं, सुविधाओं और सेवाओं का समग्र ताना-बाना जो किसी अर्थव्यवस्था के सुचारू संचालन, औद्योगिक उत्पादन और मानव जीवन की गुणवत्ता हेतु अनिवार्य आधार प्रदान करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रसिद्ध विकास अर्थशास्त्री अल्बर्ट हर्शमैन (Albert Hirschman) ने अवसंरचना को किस विशेष तकनीकी नाम से संबोधित किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'सामाजिक शीर्षोपरि पूंजी' (Social Overhead Capital - SOC)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हर्शमैन के अनुसार 'सामाजिक शीर्षोपरि पूंजी' (SOC) और 'प्रत्यक्ष उत्पादक गतिविधियों' (Directly Productive Activities - DPA) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">SOC (सड़क, बिजली, बंदरगाह, शिक्षा) आधारभूत ढांचा तैयार करती है, जिसके ऊपर DPA (कारखाने, कृषि फार्म, व्यावसायिक दुकानें) लाभ कमाने हेतु कार्य करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचनात्मक परियोजनाओं की तीन सबसे प्रमुख आर्थिक विशेषताएं कौन-सी होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. अत्यधिक उच्च पूंजी सघनता (High Capital Intensity), 2. लंबा गर्भाधान काल (Long Gestation Period), और 3. अविभाज्यता या लंपी निवेश (Lumpiness of Investment)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचना में 'लंबा गर्भाधान काल' (Long Gestation Period) होने का क्या निहितार्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परियोजना के निर्माण में कई वर्ष (5 से 10 वर्ष) लग जाते हैं और निवेश पर वित्तीय प्रतिफल (Returns) मिलना बहुत देर से शुरू होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचना को अर्थशास्त्र में 'प्राकृतिक एकाधिकार' (Natural Monopoly) का उदाहरण क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भारी आरंभिक स्थिर लागत के कारण एक ही नेटवर्क (जैसे रेलवे ट्रैक या बिजली ट्रांसमिशन ग्रिड) बिछाना आर्थिक रूप से तर्कसंगत होता है; समानांतर दूसरा नेटवर्क बनाना भारी बर्बादी होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचनात्मक संपत्तियों में 'अपरिवर्तनीय या डूबी हुई लागत' (Sunk Costs) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक बार सड़क, सुरंग या बांध में पूंजी लगा देने के बाद उस निवेश को किसी अन्य वैकल्पिक कार्य में स्थानांतरित या वापस नकद में वसूल नहीं किया जा सकता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में अवसंरचना को 'सार्वजनिक वस्तु' (Public Good) या 'अर्ध-सार्वजनिक वस्तु' (Quasi-Public Good) क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इनमें गैर-अपवर्ज्यता (Non-excludability) और गैर-प्रतिद्वंद्विता (Non-rivalry) के लक्षण पाए जाते हैं और ये समाज को विशाल सकारात्मक बाह्यताएं (Positive Externalities) प्रदान करती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'सकारात्मक बाह्यताएं' (Positive Externalities) अवसंरचना के संदर्भ में क्या दर्शाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवसंरचना का सामाजिक और आर्थिक लाभ (Social Returns) उसके प्रत्यक्ष निवेशक को मिलने वाले वित्तीय लाभ (Private Returns) से कहीं अधिक विशाल होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निजी क्षेत्र ऐतिहासिक रूप से बुनियादी ढांचे में स्वतंत्र रूप से भारी निवेश करने से क्यों कतराता रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक विशाल पूंजी की आवश्यकता, लंबी भुगतान अवधि (Payback Period), विनियामक अनिश्चितताएं और अपेक्षाकृत कम वाणिज्यिक लाभप्रदता के कारण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'कठोर अवसंरचना' (Hard Infrastructure) और 'नरम अवसंरचना' (Soft Infrastructure) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कठोर अवसंरचना से आशय मूर्त भौतिक परिसंपत्तियों (सड़क, पुल, रेलवे, बंदरगाह, पाइपलाइन) से है, जबकि नरम अवसंरचना से आशय अर्थव्यवस्था को चलाने वाली संस्थागत, कानूनी, वित्तीय, शैक्षणिक और स्वास्थ्य प्रणालियों से है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राष्ट्रीय अवसंरचना पाइपलाइन (NIP) के तहत भारत में बुनियादी ढांचे को मोटे तौर पर किन दो व्यापक श्रेणियों में विभाजित किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. आर्थिक अवसंरचना (Economic Infrastructure), तथा 2. सामाजिक अवसंरचना (Social Infrastructure)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचना और आर्थिक संवृद्धि के बीच के संबंध को अर्थशास्त्र में किस प्रकार वर्णित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">द्वि-मार्गी और संचयी संबंध (Two-Way Causality / Feedback Loop); अवसंरचना जीडीपी संवृद्धि को बढ़ाती है, और उच्च जीडीपी सरकार को अवसंरचना में अधिक निवेश करने हेतु राजकोषीय संसाधन देती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बुनियादी ढांचे में किए गए सरकारी पूंजीगत व्यय (Capex) का 'गुणक प्रभाव' (Multiplier Effect) कितना आंका गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 2.5 से 3.25; अर्थात् अवसंरचना में खर्च किया गया प्रत्येक ₹1 आने वाले वर्षों में जीडीपी को ₹2.50 से ₹3.25 तक बढ़ा देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचना का निजी निवेश पर कौन-सा सकारात्मक प्रभाव पड़ता है जिसे अर्थशास्त्र में 'क्राउडिंग-इन' (Crowding-in Effect) कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकार द्वारा बेहतर सड़कें, बिजली और बंदरगाह बनाने से निजी कारखानों की उत्पादन व लॉजिस्टिक्स लागत घटती है, जिससे निजी उद्योगपति अधिक निवेश करने हेतु आकर्षित होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वर्तमान में सकल घरेलू उत्पाद (GDP) के अनुपात में 'लॉजिस्टिक्स लागत' (Logistics Cost) कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 13% से 14% (जबकि विकसित देशों में यह 7% से 8% है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च लॉजिस्टिक्स लागत भारतीय अर्थव्यवस्था और विनिर्माण क्षेत्र को किस प्रकार कमजोर बनाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय उत्पादों की ढुलाई महंगी होने से वे अंतरराष्ट्रीय निर्यात बाजार में चीनी और वियतनामी उत्पादों की तुलना में अप्रतिस्पर्धी हो जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राष्ट्रीय लॉजिस्टिक्स नीति (NLP 2022) का मुख्य लक्ष्य लॉजिस्टिक्स लागत को घटाकर कितना करना है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीडीपी के 8% के वैश्विक बेंचमार्क स्तर पर लाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचना किस प्रकार देश में 'बाजारों का भौगोलिक एकीकरण' (Market Integration) करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिवहन और डिजिटल नेटवर्क द्वारा दूरदराज के कृषि क्षेत्रों को बड़े महानगरीय बाजारों से जोड़कर, जिससे पूरे देश में वस्तुओं की कीमतों में समानता (Price Equalization) आती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचना देश में 'क्षेत्रीय विषमताओं' (Regional Disparities) को दूर करने में कैसे सहायता करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पहाड़ी, पूर्वोत्तर और पिछड़े जिलों को राष्ट्रीय राजमार्गों और रेल नेटवर्क से जोड़कर, जिससे वहां नए उद्योग, पर्यटन और रोजगार के अवसर पहुंचते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व बैंक द्वारा देशों की लॉजिस्टिक्स दक्षता मापने हेतु जारी किया जाने वाला आधिकारिक सूचकांक कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लॉजिस्टिक्स प्रदर्शन सूचकांक (Logistics Performance Index - LPI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व बैंक के LPI 2023 में 139 देशों की सूची में भारत का कौन-सा रैंक रहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">38वां स्थान (2014 के 54वें स्थान से 16 पायदान का ऐतिहासिक सुधार)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दिसंबर 2019 में घोषित 'राष्ट्रीय अवसंरचना पाइपलाइन' (National Infrastructure Pipeline - NIP) का कुल निवेश लक्ष्य क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय वर्ष 2020 से 2025 के दौरान ₹111 लाख करोड़ का विश्वस्तरीय अवसंरचना निवेश।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NIP के वित्तीय पोषण ढांचे में केंद्र, राज्य और निजी क्षेत्र की लक्षित हिस्सेदारी का क्या अनुपात निर्धारित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्र सरकार: 39%, राज्य सरकारें: 39%, तथा निजी क्षेत्र: 22%।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NIP के कुल अनुमानित निवेश में किन चार क्षेत्रों की हिस्सेदारी सर्वाधिक (लगभग 70%+) रखी गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊर्जा (24%), सड़कें (18%), शहरी अवसंरचना (17%), और रेलवे (12%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगस्त 2021 में घोषित 'राष्ट्रीय मुद्रीकरण पाइपलाइन' (National Monetisation Pipeline - NMP) का मूल दर्शन क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'परिसंपत्तियों का मुद्रीकरण, उनका निजीकरण नहीं' (Monetization of Rights, not Ownership); चालू संपत्तियों के संचालन अधिकार सीमित अवधि हेतु निजी क्षेत्र को लीज पर देकर नई परियोजनाओं हेतु पूंजी जुटाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नीति आयोग द्वारा तैयार NMP का 4-वर्षीय (2022-2025) कुल मुद्रीकरण लक्ष्य कितना निर्धारित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">₹6.0 लाख करोड़।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बुनियादी ढांचा परियोजनाओं के बहु-मॉडल समन्वय हेतु अक्टूबर 2021 में शुरू किया गया डिजिटल मास्टर प्लान कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएम गतिशक्ति - राष्ट्रीय मास्टर प्लान (PM GatiShakti National Master Plan)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पीएम गतिशक्ति प्लेटफॉर्म का मुख्य तकनीकी और प्रशासनिक लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">16 से अधिक केंद्रीय मंत्रालयों की भौगोलिक सूचना प्रणाली (GIS-आधारित 200+ डेटा लेयर्स) को एक मंच पर लाना, जिससे सड़क बनने के बाद पाइपलाइन बिछाने जैसी खुदाई की बर्बादी और देरी समाप्त होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पीएम गतिशक्ति के सात प्रमुख इंजनों (Seven Engines) में किन्हें शामिल किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सड़क, रेलवे, विमानपत्तन, पत्तन (बंदरगाह), सार्वजनिक परिवहन, जलमार्ग, और लॉजिस्टिक्स अवसंरचना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'आर्थिक अवसंरचना' (Economic Infrastructure) की मानक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवसंरचना का वह भाग जो अर्थव्यवस्था में वस्तुओं और सेवाओं के भौतिक उत्पादन, संचलन और व्यापारिक गतिविधियों को सीधे और प्रत्यक्ष रूप से सुगम बनाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आर्थिक अवसंरचना के चार प्रमुख आधारभूत क्षेत्र कौन-से होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. परिवहन (सड़क, रेल, पत्तन, विमानन), 2. ऊर्जा एवं विद्युत, 3. संचार एवं डिजिटल नेटवर्क, और 4. सिंचाई एवं जल संसाधन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का सड़क नेटवर्क विश्व में किस स्थान पर आता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व का दूसरा सबसे बड़ा सड़क नेटवर्क (लगभग 63 लाख किलोमीटर से अधिक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में राष्ट्रीय राजमार्ग (National Highways) कुल सड़क नेटवर्क का कितना प्रतिशत हैं और वे कुल सड़क यातायात का कितना भार ढोते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल सड़क लंबाई का मात्र लगभग 2% से 2.2% हैं, किंतु देश के कुल सड़क यातायात और माल ढुलाई का लगभग 40% भार वहन करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>देश भर में राष्ट्रीय राजमार्गों के निर्माण, विकास और प्रबंधन हेतु शीर्ष सांविधिक निकाय कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय राष्ट्रीय राजमार्ग प्राधिकरण (NHAI - National Highways Authority of India / 1988 के अधिनियम द्वारा स्थापित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सीमावर्ती, पहाड़ी और रणनीतिक क्षेत्रों में सड़कों के निर्माण का कार्य कौन-सा विशिष्ट संगठन करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सीमा सड़क संगठन (BRO - Border Roads Organisation / रक्षा मंत्रालय के अधीन)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में राजमार्ग विकास का सबसे बड़ा राष्ट्रीय छत्र कार्यक्रम कौन-सा है जिसे 2017 में शुरू किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतमाला परियोजना (Bharatmala Pariyojana)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतमाला परियोजना का प्राथमिक फोकस किन गलियारों के विकास पर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थिक गलियारे (Economic Corridors), अंतर-गलियारे, फीडर मार्ग, राष्ट्रीय गलियारा दक्षता सुधार, सीमा व तटीय सड़कें और ग्रीनफील्ड एक्सप्रेसवे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'स्वर्णिम चतुर्भुज' (Golden Quadrilateral) परियोजना किन चार प्रमुख भारतीय महानगरों को 4/6 लेन राजमार्ग से जोड़ती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिल्ली, मुंबई, चेन्नई और कोलकाता (कुल लंबाई 5,846 किमी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तर-दक्षिण और पूर्व-पश्चिम गलियारा (North-South & East-West Corridor) का जंक्शन किस शहर में स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">झांसी (उत्तर प्रदेश) में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में टोल प्लाजा पर वाहनों की निर्बाध आवाजाही और इलेक्ट्रॉनिक टोल संग्रह हेतु कौन-सी RFID तकनीक अनिवार्य की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फास्टैग (FASTag - 15 फरवरी 2021 से अनिवार्य)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सड़क परिवहन मंत्रालय द्वारा विकसित की जा रही अगली पीढ़ी की बाधा-रहित टोलिंग प्रणाली कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीएनएसएस आधारित टोलिंग (GNSS - Global Navigation Satellite System / स्वचालित उपग्रह आधारित टोलिंग)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रामीण सड़क कनेक्टिविटी हेतु 25 दिसंबर 2000 को शुरू की गई 100% केंद्र प्रायोजित ऐतिहासिक योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री ग्राम सड़क योजना (PMGSY)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PMGSY का प्राथमिक मानदंड क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मैदानी क्षेत्रों में 500 से अधिक और पहाड़ी/जनजातीय/रेगिस्तानी क्षेत्रों में 250 से अधिक आबादी वाली असंबद्ध बस्तियों को बारहमासी पक्की सड़क से जोड़ना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रेलवे विश्व में नेटवर्क आकार की दृष्टि से किस स्थान पर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एकल प्रबंधन के तहत विश्व का चौथा सबसे बड़ा रेल नेटवर्क (68,000+ मार्ग किमी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रेलवे के माल ढुलाई परिचालन को गति देने हेतु विकसित किए जा रहे दो प्रमुख गलियारे कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. पश्चिमी समर्पित माल गलियारा (WDFC - दादरी से जेएनपीटी मुंबई, 1506 किमी), तथा 2. पूर्वी समर्पित माल गलियारा (EDFC - लुधियाना से सोननगर/दानकुनी, 1337 किमी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समर्पित माल गलियारों (DFCs) का भारतीय लॉजिस्टिक्स दक्षता पर क्या क्रांतिकारी प्रभाव पड़ा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मालगाड़ियों की औसत गति 25 किमी/घंटे से बढ़कर 60-70 किमी/घंटे हो गई, भारी डबल-स्टैक कंटेनर ट्रेनें चलने लगीं और यात्री ट्रैक खाली होने से यात्री ट्रेनों की समयबद्धता सुधरी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रेलवे के संपूर्ण ब्रॉड गेज नेटवर्क के '100% विद्युतीकरण' का लक्ष्य किस मिशन का हिस्सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'मिशन 100% विद्युतीकरण' और 2030 तक 'नेट ज़ीरो कार्बन उत्सर्जक' (Net Zero Carbon Emitter) बनने का राष्ट्रीय संकल्प।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की पहली स्वदेशी सेमी-हाई-स्पीड यात्री ट्रेन कौन-सी है जिसे 'ट्रेन 18' भी कहा गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वंदे भारत एक्सप्रेस (Vande Bharat Express / इंटीग्रल कोच फैक्ट्री, चेन्नई द्वारा निर्मित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेलवे स्टेशनों के आधुनिकीकरण और विश्वस्तरीय सुविधाओं हेतु हाल ही में शुरू की गई राष्ट्रीय योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमृत भारत स्टेशन योजना (Amrit Bharat Station Scheme / 1300 से अधिक स्टेशनों का पुनर्विकास)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ट्रेनों की आमने-सामने की टक्कर रोकने हेतु भारतीय रेलवे द्वारा विकसित स्वदेशी स्वचालित ट्रेन सुरक्षा (ATP) प्रणाली कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'कवच' (KAVACH System)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की पहली बुलेट ट्रेन / हाई-स्पीड रेल परियोजना किन दो शहरों के बीच निर्माणाधीन है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुंबई और अहमदाबाद के बीच (जापान की शिंकानसेन तकनीकी सहायता से)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के कुल विदेशी व्यापार (मात्रा की दृष्टि से) का कितना प्रतिशत समुद्री जलमार्गों से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मात्रा की दृष्टि से लगभग 95% और मूल्य की दृष्टि से लगभग 68%।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वर्तमान में केंद्र सरकार के नियंत्रण वाले 'प्रमुख बंदरगाहों' (Major Ports) की कुल संख्या कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">12 प्रमुख बंदरगाह (तथा लगभग 200 से अधिक गैर-प्रमुख / राज्य नियंत्रित बंदरगाह)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का सबसे बड़ा कंटेनर बंदरगाह कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जवाहरलाल नेहरू पोर्ट (JNPT / न्हावा शेवा, महाराष्ट्र) - भारत का पहला 100% लैंडलॉर्ड पोर्ट।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के बंदरगाहों के आधुनिकीकरण और बंदरगाह-आधारित विकास हेतु संचालित फ्लैगशिप कार्यक्रम कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सागरमाला कार्यक्रम (Sagarmala Programme / 2015 से प्रारंभ)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सागरमाला कार्यक्रम के चार प्रमुख स्तंभ कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. पत्तन आधुनिकीकरण, 2. पत्तन कनेक्टिविटी, 3. पत्तन-आधारित औद्योगिकीकरण (CEZs), और 4. तटीय समुदाय विकास।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बंदरगाहों के संदर्भ में 'टर्नअराउंड टाइम' (Turnaround Time - TRT) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी मालवाहक जहाज के बंदरगाह पर पहुंचने, माल उतारने/चढ़ाने और प्रस्थान करने के बीच का कुल समय (कम समय उच्च दक्षता दर्शाता है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का पहला समर्पित डीप-वॉटर अंतरराष्ट्रीय ट्रांसशिपमेंट टर्मिनल कहाँ चालू किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विझिंजम बंदरगाह (Vizhinjam Port, तिरुवनंतपुरम, केरल)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महाराष्ट्र के पालघर में ₹76,000 करोड़ से स्वीकृत नया विश्वस्तरीय ऑल-वेदर ग्रीनफील्ड मेगा पोर्ट कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वाधवन बंदरगाह (Vadhavan Port)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में अंतर्देशीय जलमार्गों के विकास और नियमन हेतु शीर्ष वैधानिक संस्था कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय अंतर्देशीय जलमार्ग प्राधिकरण (IWAI - मुख्यालय: नोएडा, उत्तर प्रदेश)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राष्ट्रीय जलमार्ग-1 (National Waterway-1 / NW-1) किस नदी पर और किन दो शहरों के बीच विस्तृत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गंगा-भागीरथी-हुगली नदी प्रणाली पर, प्रयागराज (उत्तर प्रदेश) से हल्दिया (पश्चिम बंगाल) तक (कुल लंबाई 1,620 किमी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NW-1 की नौवहन क्षमता बढ़ाने हेतु विश्व बैंक समर्थित प्रमुख परियोजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जल मार्ग विकास परियोजना (JMVP / वाराणसी, साहिबगंज और हल्दिया में मल्टी-मोडल टर्मिनलों का निर्माण)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राष्ट्रीय जलमार्ग-2 (NW-2) किस नदी पर और कहाँ से कहाँ तक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ब्रह्मपुत्र नदी पर, धुबरी से सादिया (असम) तक (891 किमी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्षेत्रीय हवाई कनेक्टिविटी को वहनीय बनाने हेतु अक्टूबर 2016 में शुरू की गई नागरिक उड्डयन योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उड़ान योजना (UDAN - 'उड़े देश का आम नागरिक')।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उड़ान योजना की क्या वित्तीय व्यवस्था है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विमानन कंपनियों को घाटे की भरपाई हेतु 'व्यवहार्यता अंतराल वित्तपोषण' (Viability Gap Funding - VGF) देना तथा 1 घंटे की उड़ान का किराया लगभग ₹2,500 पर सीमित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में ग्रीनफील्ड हवाई अड्डों के विकास का सबसे बड़ा निजी-सार्वजनिक भागीदारी (PPP) उदाहरण कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नोएडा अंतरराष्ट्रीय हवाई अड्डा (जेवर, उत्तर प्रदेश) तथा नवी मुंबई अंतरराष्ट्रीय हवाई अड्डा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की कुल स्थापित विद्युत उत्पादन क्षमता (Total Installed Power Capacity) लगभग कितनी हो चुकी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">440 गीगावाट (GW) से अधिक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की स्थापित विद्युत क्षमता में गैर-जीवाश्म/नवीकरणीय स्रोतों की हिस्सेदारी वर्तमान में कितनी हो चुकी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">44% से अधिक (पेरिस जलवायु समझौते के 40% के लक्ष्य को 2030 की समय-सीमा से 9 वर्ष पूर्व 2021 में ही प्राप्त कर लिया गया)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉप-26 (COP-26 ग्लासगो) में भारत द्वारा 2030 तक गैर-जीवाश्म ऊर्जा स्थापित क्षमता का क्या महत्वाकांक्षी लक्ष्य घोषित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">500 गीगावाट (500 GW) गैर-जीवाश्म ईंधन आधारित बिजली क्षमता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>देश भर के क्षेत्रीय बिजली ग्रिडों को जोड़कर 'वन नेशन, वन ग्रिड, वन फ्रीक्वेंसी' की स्थापना कब पूरी हुई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिसंबर 2013 में, जब दक्षिणी ग्रिड को केंद्रीय ग्रिड से सिंक्रनाइज़ किया गया (विश्व का सबसे बड़ा एकल समकालिक ग्रिड)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बिजली वितरण कंपनियों (DISCOMs) के परिचालन और वित्तीय पुनरुद्धार हेतु 2021 में शुरू की गई ₹3.03 लाख करोड़ की योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पुनरुत्थान वितरण क्षेत्र योजना (RDSS - Revamped Distribution Sector Scheme)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RDSS योजना का मुख्य तकनीकी लक्ष्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश भर में 25 करोड़ स्मार्ट प्रीपेड मीटर लगाना तथा AT&C (सकल तकनीकी व वाणिज्यिक) नुकसान को घटाकर 12-15% पर लाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>देश के ग्रामीण क्षेत्रों में सभी इच्छुक घरों के विद्युतीकरण हेतु 2017 में कौन-सा मिशन शुरू किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री सहज बिजली हर घर योजना (सौभाग्य योजना)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसानों को सौर जल पंप उपलब्ध कराने और बंजर भूमि पर सौर संयंत्र लगाने हेतु संचालित योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएम-कुसुम योजना (PM-KUSUM - किसान ऊर्जा सुरक्षा एवं उत्थान महाभियान)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 करोड़ घरों की छतों पर रूफटॉप सोलर लगाने हेतु फरवरी 2024 में शुरू की गई ₹75,000 करोड़ की योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएम सूर्य घर: मुफ्त बिजली योजना (प्रति माह 300 यूनिट तक मुफ्त सौर बिजली)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारी उद्योगों और परिवहन को डी-कार्बोनाइज करने हेतु जनवरी 2023 में शुरू किया गया ₹19,744 करोड़ का मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय हरित हाइड्रोजन मिशन (National Green Hydrogen Mission / 2030 तक 5 MMT वार्षिक उत्पादन लक्ष्य)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>देश की सभी 2.5 लाख ग्राम पंचायतों को हाई-स्पीड ब्रॉडबैंड ऑप्टिकल फाइबर से जोड़ने वाला राष्ट्रीय प्रोजेक्ट कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतनेट परियोजना (पूर्व में राष्ट्रीय ऑप्टिकल फाइबर नेटवर्क - NOFN)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतनेट परियोजना का वित्तपोषण किस विशेष कोष से किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वभौमिक सेवा दायित्व निधि (USOF / दूरसंचार अधिनियम 2023 के तहत डिजिटल भारत निधि)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृषि क्षेत्र में जल उपयोग दक्षता बढ़ाने हेतु 'हर खेत को पानी' और 'पर ड्रॉप मोर क्रॉप' किस योजना के घटक हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री कृषि सिंचाई योजना (PMKSY / 2015 से)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृषि में कटाई उपरांत प्रबंधन और कोल्ड स्टोरेज अवसंरचना हेतु 2020 में शुरू किया गया ₹1 लाख करोड़ का कोष कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कृषि अवसंरचना कोष (Agriculture Infrastructure Fund - AIF)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'सामाजिक अवसंरचना' (Social Infrastructure) की मानक आर्थिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उन बुनियादी सार्वजनिक सुविधाओं और सेवाओं का समुच्चय जो समाज के मानव संसाधनों के विकास, स्वास्थ्य, ज्ञान, कौशल और जीवन की गरिमा को सीधे उन्नत बनाती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आर्थिक अवसंरचना और सामाजिक अवसंरचना में सबसे मौलिक कार्यात्मक अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थिक अवसंरचना उत्पादन और व्यापार की 'भौतिक क्षमता' बढ़ाती है, जबकि सामाजिक अवसंरचना नागरिकों की 'मानवीय क्षमता' (Human Capability) और श्रम उत्पादकता का निर्माण करती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सामाजिक अवसंरचना के चार प्रमुख आधारभूत स्तंभ कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. शिक्षा एवं कौशल विकास, 2. स्वास्थ्य एवं परिवार कल्याण, 3. पेयजल एवं स्वच्छता (WASH), और 4. किफायती आवास।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सामाजिक अवसंरचना को 'मानव पूंजी निर्माण' (Human Capital Formation) की नींव क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि स्वस्थ और उच्च शिक्षित नागरिक ही आधुनिक ज्ञान अर्थव्यवस्था में उच्च उत्पादकता और नवाचार उत्पन्न कर सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्कूल शिक्षा अवसंरचना के समग्र उन्नयन हेतु प्री-स्कूल से 12वीं तक संचालित एकीकृत केंद्रीय योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समग्र शिक्षा अभियान (Samagra Shiksha Abhiyan)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राष्ट्रीय शिक्षा नीति (NEP 2020) के तहत देश भर में 14,500 से अधिक आदर्श विद्यालयों के विकास की योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएम श्री योजना (PM-SHRI - PM Schools for Rising India)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च शिक्षा में अत्याधुनिक अनुसंधान और प्रयोगशाला अवसंरचना के वित्तपोषण हेतु स्थापित गैर-बैंकिंग वित्तीय संस्था कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्चतर शिक्षा वित्तपोषण एजेंसी (HEFA - Higher Education Financing Agency / केनरा बैंक व शिक्षा मंत्रालय का संयुक्त उपक्रम)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>देश भर में प्राथमिक स्वास्थ्य अवसंरचना को मजबूत करने हेतु स्थापित किए जा रहे उप-केंद्र क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयुष्मान आरोग्य मंदिर (पूर्व में आयुष्मान भारत - स्वास्थ्य एवं कल्याण केंद्र / HWCs)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महामारियों से निपटने और जिला स्तर पर क्रिटिकल केयर ब्लॉक व डायग्नोस्टिक लैब स्थापित करने हेतु अक्टूबर 2021 में शुरू किया गया ₹64,180 करोड़ का मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएम-आयुष्मान भारत स्वास्थ्य अवसंरचना मिशन (PM-ABHIM)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>देश के प्रत्येक नागरिक का डिजिटल स्वास्थ्य रिकॉर्ड सुरक्षित रखने हेतु संचालित राष्ट्रीय मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयुष्मान भारत डिजिटल मिशन (ABDM / आभा आईडी - ABHA Card)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रामीण भारत के प्रत्येक घर में नल से शुद्ध जल पहुंचाने का लक्ष्य किस मिशन के तहत संचालित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जल जीवन मिशन (JJM - 15 अगस्त 2019 से प्रारंभ / लक्ष्य: 55 लीटर प्रति व्यक्ति प्रतिदिन)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जल जीवन मिशन का सामाजिक अवसंरचना पर क्या सबसे बड़ा सकारात्मक प्रभाव पड़ा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रामीण महिलाओं को दूर से सिर पर पानी ढोने की शारीरिक प्रताड़ना से मुक्ति मिली और फ्लोरोसिस व जल-जनित बीमारियों में भारी कमी आई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्वच्छ भारत मिशन - ग्रामीण (SBM-G) का 'ओडीएफ प्लस' (ODF Plus) चरण किन बुनियादी संरचनाओं पर केंद्रित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">खुले में शौच मुक्ति का स्थायित्व, ठोस एवं तरल अपशिष्ट प्रबंधन (SLWM), गोबरधन बायोगैस संयंत्र और प्लास्टिक कचरा प्रबंधन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रधानमंत्री आवास योजना - ग्रामीण (PMAY-G) के तहत मैदानी और पहाड़ी क्षेत्रों में मकान निर्माण हेतु कितनी वित्तीय सहायता दी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मैदानी क्षेत्रों में ₹1.20 लाख तथा पहाड़ी/दुर्गम/आईएपी क्षेत्रों में ₹1.30 लाख (100% डीबीटी द्वारा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PMAY-G के तहत बनने वाले पक्के मकानों में किन अन्य सरकारी योजनाओं का अनिवार्य अभिसरण (Convergence) होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वच्छ भारत से शौचालय, उज्ज्वला से गैस कनेक्शन, सौभाग्य से बिजली और जल जीवन मिशन से नल कनेक्शन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शहरों में झुग्गी-झोपड़ियों के पुनर्वास और किफायती आवास हेतु संचालित मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री आवास योजना - शहरी (PMAY-U / 2.0)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सामाजिक अवसंरचना का कमजोर होना किस प्रकार आर्थिक अवसंरचना की उत्पादकता को पंगु बना देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यदि कार्यबल अस्वस्थ, कुपोषित और अशिक्षित हो, तो विश्वस्तरीय सड़कें, बंदरगाह और हाई-स्पीड ट्रेनें भी उच्च आर्थिक विकास दर नहीं दिला सकतीं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सामाजिक अवसंरचना में निवेश को 'वित्तीय व्यय' के बजाय 'उत्पादक सामाजिक निवेश' क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि प्राथमिक शिक्षा और स्वास्थ्य में लगाया गया धन कार्यबल की उत्पादकता को कई गुना बढ़ाकर भविष्य में कर राजस्व और राष्ट्रीय आय को बढ़ाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचना वित्तपोषण में 'परिसंपत्ति-देनदारी बेमेल' (Asset-Liability Mismatch - ALM) की समस्या क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब वाणिज्यिक बैंक अपनी अल्पकालिक जमाओं (3 से 5 वर्ष की FD) से 20-30 वर्ष लंबी अवसंरचना परियोजनाओं को भारी कर्ज दे देते हैं, जिससे बैंकों के एनपीए (NPA) में फंसने का जोखिम पैदा होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ALM समस्या को हल करने और दीर्घकालिक अवसंरचना वित्तपोषण हेतु संसद द्वारा 2021 में किस विशेष विकास वित्तीय संस्थान (DFI) की स्थापना की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नैबफिड (NaBFID - National Bank for Financing Infrastructure and Development)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवसंरचना परियोजनाओं में निजी पूंजी आकर्षित करने हेतु सेबी (SEBI) द्वारा विनियमित वित्तीय साधन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इनविट्स (InvITs - Infrastructure Investment Trusts / जैसे NHAI का InvIT)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक-निजी भागीदारी (PPP) में सरकार द्वारा वाणिज्यिक रूप से अलाभकारी किंतु सामाजिक रूप से आवश्यक परियोजनाओं को दी जाने वाली वित्तीय सहायता क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यवहार्यता अंतराल वित्तपोषण (Viability Gap Funding - VGF / पूंजीगत लागत का 20% से 40% तक सरकारी अनुदान)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राज्यों को पूंजीगत अवसंरचना व्यय हेतु केंद्र सरकार द्वारा दी जाने वाली 50-वर्षीय विशेष वित्तीय सहायता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'पूंजीगत निवेश के लिए राज्यों को विशेष वित्तीय सहायता योजना' (50-वर्षीय पूर्णतः ब्याज-मुक्त ऋण)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय बजट 2024-25 में केंद्र सरकार का कुल पूंजीगत अवसंरचना व्यय (Capex) कितना निर्धारित किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">₹11.11 लाख करोड़ (सकल घरेलू उत्पाद का लगभग 3.4%) के ऐतिहासिक उच्च स्तर पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बुनियादी ढाँचा Part 1 के संपूर्ण अध्ययन का अंतिम और सारगर्भित समष्टिगत निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवसंरचना किसी भी आधुनिक राष्ट्र के आर्थिक सामर्थ्य का अस्थि-पंजर और स्नायु तंत्र है; जहां परिवहन, ऊर्जा और डिजिटल जैसी आर्थिक अवसंरचनाएं विकास की भौतिक गति को तीव्र करती हैं, वहीं स्वास्थ्य, शिक्षा, आवास और पेयजल जैसी सामाजिक अवसंरचनाएं उस विकास को मानवीय चेहरा, समता और टिकाऊ आधार प्रदान करती हैं; दोनों का संतुलित संगम ही भारत को 2047 तक एक विकसित राष्ट्र बनाने का वास्तविक राजमार्ग है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="समावेशी विकास Part 1">
+<title>समावेशी विकास Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / समावेशी विकास Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>समावेशी विकास Part 1</h1>
+    <p class="topic-subtitle">समावेशी विकास के प्रमुख आधार, वृद्धि को समावेशी बनाने वाले तत्व, गरीबी उन्मूलन के माध्यम तथा रोजगार के समावेशी प्रभावों का संपूर्ण समष्टिगत विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">समावेशी विकास Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>समावेशी विकास घटक</th><th>प्रमुख विशेषता</th><th>समावेशन में भूमिका</th></tr></thead><tbody><tr><td><div class="primary-cell">उत्पादक एवं औपचारिक रोजगार सृजन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">श्रम-सघन विनिर्माण, सूक्ष्म, लघु एवं मध्यम उद्यमों (MSMEs) तथा आधुनिक सेवा क्षेत्र में टिकाऊ, सम्मानजनक व वैधानिक सामाजिक सुरक्षा युक्त रोजगार।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आय के न्यायसंगत प्राथमिक वितरण का मुख्य साधन; प्रच्छन्न बेरोजगारी को घटाकर कार्यबल को गरीबी के दुष्चक्र से स्थायी रूप से बाहर निकालना।</div></div></td></tr><tr><td><div class="primary-cell">वित्तीय समावेशन (Financial Inclusion)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">समाज के अंतिम और वंचित व्यक्ति तक औपचारिक बैंकिंग, बचत खाते, संस्थागत रियायती साख, डिजिटल भुगतान, सूक्ष्म बीमा तथा पेंशन की सुलभ पहुंच।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">साहूकारों के शोषण से मुक्ति, महिलाओं का वित्तीय सशक्तीकरण, सूक्ष्म उद्यमों की स्थापना तथा सरकारी कल्याणकारी लाभों का 100% रिसाव-मुक्त अंतरण।</div></div></td></tr><tr><td><div class="primary-cell">सामाजिक सुरक्षा एवं सुरक्षा जाल</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">राष्ट्रीय खाद्य सुरक्षा अधिनियम (NFSA), मनरेगा (MGNREGA), आयुष्मान भारत (AB-PMJAY) तथा प्रत्यक्ष लाभ अंतरण (DBT) आधारित सुरक्षा कवच।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आर्थिक, स्वास्थ्य व प्राकृतिक आपदाओं के झटकों से निर्धन परिवारों को अत्यधिक भुखमरी और कंगाली में गिरने से बचाने की मजबूत ढाल।</div></div></td></tr><tr><td><div class="primary-cell">मानव पूंजी विकास (शिक्षा व कौशल)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बुनियादी साक्षरता (FLN), समग्र शिक्षा, राष्ट्रीय शिक्षा नीति (NEP 2020) तथा प्रधानमंत्री कौशल विकास योजना (PMKVY) द्वारा कार्यबल का सशक्तिकरण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">श्रमिकों की सीमांत उत्पादकता बढ़ाना, आय विषमता को कम करना, सामाजिक गतिशीलता को गति देना और अंतर-पीढ़ीगत गरीबी को तोड़ना।</div></div></td></tr><tr><td><div class="primary-cell">कृषि एवं ग्रामीण पुनरुद्धार</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कृषि विविधीकरण, किसान उत्पादक संगठन (FPOs), ई-नाम (e-NAM), सूक्ष्म सिंचाई, पीएम-किसान तथा ग्रामीण सड़क कनेक्टिविटी (PMGSY)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">देश के 45% से अधिक कार्यबल को आजीविका सुरक्षा देना, कृषि उत्पादकता बढ़ाकर ग्रामीण आय में उछाल लाना और ग्रामीण-शहरी खाई को पाटना।</div></div></td></tr><tr><td><div class="primary-cell">एमएसएमई (MSME) क्षेत्र संवर्धन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">देश के 90% से अधिक औद्योगिक उद्यम, 11 करोड़ से अधिक रोजगार और सकल घरेलू उत्पाद में लगभग 30% योगदान देने वाला विकेंद्रीकृत क्षेत्र।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">स्थानीय स्तर पर न्यूनतम पूंजी से अधिकतम रोजगार पैदा करना, क्षेत्रीय असंतुलन मिटाना और वंचित वर्गों (SC/ST/महिला उद्यमिता) का उत्थान।</div></div></td></tr><tr><td><div class="primary-cell">लैंगिक समानता एवं महिला सहभागिता</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बालिका शिक्षा, मातृत्व सुरक्षा, संपत्ति में समान अधिकार, स्वयं सहायता समूह (SHG) आंदोलन तथा कार्यस्थल पर सुरक्षा कानून।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आधी आबादी को मुख्यधारा में शामिल करना; महिला श्रम बल भागीदारी (FLFPR) बढ़ाकर देश की जीडीपी और परिवार के पोषण स्तर में तीव्र सुधार।</div></div></td></tr><tr><td><div class="primary-cell">क्षेत्रीय संतुलन एवं आकांक्षी कार्यक्रम</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आकांक्षी जिला व ब्लॉक कार्यक्रम, पूर्वोत्तर और पहाड़ी राज्यों हेतु विशेष अवसंरचना पैकेज तथा डिजिटल इंडिया द्वारा भौगोलिक दूरियों की समाप्ति।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भौगोलिक रूप से पिछड़े व दुर्गम क्षेत्रों को राष्ट्रीय विकास की मुख्यधारा से जोड़कर समावेशी क्षेत्रीय विकास सुनिश्चित करना।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>समष्टि अर्थशास्त्र में 'समावेशी विकास' (Inclusive Growth) की मानक और प्रामाणिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसी आर्थिक संवृद्धि प्रक्रिया जो न केवल आर्थिक उत्पादन (GDP) को तीव्र गति से बढ़ाती है, बल्कि विकास के अवसरों का समतामूलक सृजन करती है और सभी सामाजिक वर्गों, विशेषकर निर्धनों और वंचितों तक विकास के लाभों का न्यायसंगत वितरण सुनिश्चित करती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास पारंपरिक 'ट्रिकल-डाउन सिद्धांत' (Trickle-Down Theory) से किस प्रकार मौलिक रूप से भिन्न है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ट्रिकल-डाउन मानता था कि उच्च जीडीपी वृद्धि के लाभ स्वतः नीचे तक रिसकर पहुंच जाएंगे, जबकि समावेशी विकास यह मानता है कि गरीबों को संवृद्धि प्रक्रिया का केवल मूक लाभार्थी नहीं बल्कि प्रत्यक्ष भागीदार और चालक बनाया जाना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की किस पंचवर्षीय योजना ने सर्वप्रथम 'तीव्र और अधिक समावेशी संवृद्धि' (Faster and More Inclusive Growth) को अपना आधिकारिक मुख्य लक्ष्य घोषित किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">11वीं पंचवर्षीय योजना (2007-2012) ने।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>12वीं पंचवर्षीय योजना (2012-2017) ने 11वीं योजना के समावेशी लक्ष्य को और अधिक परिष्कृत करते हुए क्या नया ध्येय वाक्य अपनाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'तीव्र, संधारणीय और अधिक समावेशी संवृद्धि' (Faster, Sustainable and More Inclusive Growth)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नीति आयोग द्वारा प्रतिपादित विकास दर्शन में समावेशी विकास को किस राष्ट्रीय मंत्र के रूप में अभिव्यक्त किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'सबका साथ, सबका विकास, सबका विश्वास और सबका प्रयास'।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास के दो परस्पर जुड़े अविभाज्य आयाम कौन-से होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. भागीदारी का आयाम (Process Dimension - सभी को आर्थिक प्रक्रिया में रोजगार व अवसर मिलना), तथा 2. परिणाम का आयाम (Outcome Dimension - विकास के लाभों व आय का समतामूलक वितरण)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संयुक्त राष्ट्र के सतत विकास लक्ष्यों (SDGs 2030) में समावेशी विकास का कौन-सा मूल मार्गदर्शक सिद्धांत निहित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'किसी को भी पीछे न छोड़ना' (Leave No One Behind - LNOB)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास की पहली और सबसे मौलिक पूर्व-शर्त किसे माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'अवसरों की समानता' (Equality of Opportunity); जहां प्रत्येक नागरिक को अपनी जाति, धर्म, लिंग या जन्म स्थान के भेदभाव के बिना शिक्षा, स्वास्थ्य और आजीविका के समान अवसर सुलभ हों।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'सशक्तिकरण' (Empowerment) के सिद्धांत का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नागरिकों को केवल सरकारी राहत पर निर्भर रखने के बजाय उन्हें शिक्षा, कौशल, स्वास्थ्य और सूचना के अधिकारों से संपन्न बनाकर अपने जीवन के निर्णय स्वयं लेने योग्य बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'सामाजिक सुरक्षा' (Social Security) का आधार क्या कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वृद्धावस्था, बीमारी, विकलांगता, बेरोजगारी या प्राकृतिक आपदा जैसी अप्रत्याशित विपत्तियों के समय कमजोर वर्गों को आर्थिक तबाही से बचाने हेतु एक सार्वभौमिक न्यूनतम सुरक्षा जाल प्रदान करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास का 'स्थानिक या क्षेत्रीय समता' (Spatial / Regional Equity) का आधार क्या सुनिश्चित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश के भौगोलिक रूप से पिछड़े, दूरदराज, जनजातीय और सीमावर्ती क्षेत्रों में बुनियादी ढांचे और सार्वजनिक सेवाओं का संतुलित विस्तार कर क्षेत्रीय विषमताओं को समाप्त करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'लैंगिक समता' (Gender Parity) को केंद्रीय आधार क्यों माना गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि कुल आबादी की आधी हिस्सेदारी (महिलाओं) को समान आर्थिक, राजनीतिक और सामाजिक अधिकार दिए बिना कोई भी विकास समावेशी नहीं हो सकता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'शासन का विकेंद्रीकरण' (Decentralized Governance) क्यों अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">73वें और 74वें संविधान संशोधन के तहत पंचायती राज और शहरी स्थानीय निकायों को वित्तीय व प्रशासनिक शक्तियां सौंपकर स्थानीय प्राथमिकताओं के अनुसार विकास योजनाएं बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास की प्रक्रिया में 'पर्यावरणीय संधारणीयता' (Environmental Sustainability) क्यों एक अनिवार्य आधार है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि जलवायु परिवर्तन, प्रदूषण और प्राकृतिक संसाधनों के क्षरण का सबसे पहला और भीषण आघात निर्धनों और वंचितों की आजीविका पर पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व बैंक के अनुसार 'साझा समृद्धि' (Shared Prosperity) की अवधारणा समावेशी विकास को कैसे मापती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी देश की जनसंख्या के सबसे निचले 40% (Bottom 40%) निर्धन वर्ग की आय या उपभोग वृद्धि दर का राष्ट्रीय औसत वृद्धि दर के सापेक्ष निरंतर ऊंचा होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आर्थिक संवृद्धि को समावेशी बनाने वाला सबसे प्रमुख और प्रत्यक्ष आर्थिक माध्यम कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'उत्पादक और सम्मानजनक रोजगार का तीव्र सृजन' (Productive and Decent Job Creation)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रोजगार-विहीन संवृद्धि (Jobless Growth) को समावेशी विकास का विरोधी क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यदि जीडीपी बढ़ती है किंतु रोजगार नहीं बढ़ते, तो संवृद्धि का सारा लाभ केवल पूंजीपतियों और कुशल उच्च वर्ग के पास संकेंद्रित हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>श्रम-सघन विनिर्माण (Labour-Intensive Manufacturing) संवृद्धि को समावेशी बनाने में कैसे निर्णायक भूमिका निभाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वस्त्र, चमड़ा, खाद्य प्रसंस्करण और निर्माण जैसे क्षेत्रों में कम कुशल और अर्ध-कुशल ग्रामीण श्रमिकों को तुरंत बड़े पैमाने पर औपचारिक आजीविका देकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक शिक्षा व्यय आर्थिक संवृद्धि को समावेशी बनाने में क्या भूमिका निभाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह गरीब परिवारों के बच्चों को उच्च मूल्य वाले आधुनिक ज्ञान और नौकरियों तक पहुंचने की योग्यता देकर सामाजिक गतिशीलता (Social Mobility) को गति देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक स्वास्थ्य प्रणाली (Public Health System) विकास को समावेशी कैसे बनाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सस्ती और निःशुल्क स्वास्थ्य सेवाएं देकर परिवारों को गंभीर बीमारियों के इलाज में होने वाले 'जेब से विनाशकारी खर्च' (Out-of-Pocket Expenditure) के कारण पुनः गरीबी में गिरने से बचाकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय समावेशन (Financial Inclusion) संवृद्धि को समावेशी बनाने वाला प्रेरक तत्व क्यों है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह गरीबों को औपचारिक वित्तीय प्रणाली से जोड़कर बचत, सुरक्षित ऋण, बीमा और प्रत्यक्ष सरकारी लाभ अंतरण की सुविधा प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वित्तीय समावेशन की ऐतिहासिक क्रांति लाने वाली 'जैम त्रिमूर्ति' (JAM Trinity) के तीन घटक कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जन धन योजना (Jan Dhan), बायोमेट्रिक पहचान प्रणाली तथा मोबाइल कनेक्टिविटी (Mobile)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रधानमंत्री जन धन योजना (PMJDY - 2014) ने वित्तीय समावेशन में क्या वैश्विक रिकॉर्ड बनाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">50 करोड़ से अधिक शून्य-शेष बुनियादी बचत बैंक खाते खोलकर, जिनमें से 55% से अधिक खाते ग्रामीण और अर्ध-शहरी क्षेत्रों की महिलाओं के हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूक्ष्म वित्त (Microfinance) और स्वयं सहायता समूह (SHG) आंदोलन समावेशी विकास को कैसे आगे बढ़ाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिना किसी संपार्श्विक (Collateral) के गरीब ग्रामीण महिलाओं को सामूहिक साख देकर उन्हें स्थानीय उद्यमी बनाना और उनकी सामाजिक स्थिति को ऊंचा उठाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में ग्रामीण महिलाओं के सबसे बड़े स्वयं सहायता समूह नेटवर्क को संचालित करने वाला राष्ट्रीय मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दीनदयाल अंत्योदय योजना - राष्ट्रीय ग्रामीण आजीविका मिशन (DAY-NRLM)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रगतिशील कराधान (Progressive Taxation) संवृद्धि को समावेशी बनाने का राजकोषीय उपकरण कैसे बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्च आय वाले धनी वर्ग और कॉर्पोरेट्स पर कर लगाकर जुटाए गए राजस्व को गरीबों हेतु मुफ्त राशन, आवास, स्वास्थ्य और छात्रवृत्तियों में पुनर्वितरित करके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डिजिटल सार्वजनिक अवसंरचना (Digital Public Infrastructure - DPI / India Stack) समावेशन को कैसे गति दे रही है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">UPI, डिजिलॉकर और ओएनडीसी (ONDC) जैसे खुले डिजिटल नेटवर्क के माध्यम से बिना किसी बिचौलिए के सबसे गरीब व्यक्ति और छोटे दुकानदार को वैश्विक वित्तीय व वाणिज्यिक शक्ति देकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रामीण अवसंरचना में 'प्रधानमंत्री ग्राम सड़क योजना' (PMGSY - 2000) का समावेशी प्रभाव क्या रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दूरदराज के गांवों को बारहमासी पक्की सड़कों से जोड़कर किसानों को मंडियों, छात्रों को स्कूलों और मरीजों को अस्पतालों तक त्वरित पहुंच उपलब्ध कराना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आकांक्षी जिला कार्यक्रम (Aspirational Districts Programme - ADP) क्षेत्रीय समावेशन का सफल मॉडल क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इसने देश के सबसे पिछड़े 112 जिलों में स्वास्थ्य, पोषण, शिक्षा और बुनियादी ढांचे के 49 प्रमुख संकेतकों पर अभिसरण, प्रतिस्पर्धा और जनभागीदारी द्वारा तीव्र सुधार दर्ज किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास के संदर्भ में 'सकारात्मक भेदभाव' (Affirmative Action) या आरक्षण नीति का क्या संवैधानिक औचित्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐतिहासिक रूप से वंचित और हाशिए पर रहे सामाजिक वर्गों (SC, ST, OBC, EWS) को सरकारी सेवाओं और उच्च शिक्षण संस्थानों में अनिवार्य प्रतिनिधित्व देकर मुख्यधारा में लाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'संवृद्धि की गरीबी लोच' (Growth Elasticity of Poverty) क्या मापती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीडीपी में 1% की वृद्धि होने पर गरीबी अनुपात (Headcount Ratio) में होने वाली प्रतिशत गिरावट की दर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विकासशील देशों में संवृद्धि की गरीबी लोच कब सर्वाधिक ऊंची (प्रभावी) होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब आर्थिक संवृद्धि श्रम-सघन विनिर्माण, कृषि और असंगठित गैर-कृषि क्षेत्रों में केंद्रित होती है, जहां अधिकांश गरीब कार्यरत होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गरीबी उन्मूलन हेतु 'प्रत्यक्ष लक्षित दृष्टिकोण' (Direct Targeted Approach) और 'अप्रत्यक्ष संवृद्धि दृष्टिकोण' (Growth-Mediated Approach) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अप्रत्यक्ष दृष्टिकोण समग्र आर्थिक संवृद्धि द्वारा गरीबी घटाने की बात करता है, जबकि प्रत्यक्ष दृष्टिकोण गरीबों को लक्षित कल्याणकारी योजनाएं (राशन, आवास, रोजगार गारंटी) सीधे उपलब्ध कराता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में खाद्य सुरक्षा सुनिश्चित करने वाला सबसे बड़ा कानूनी ढांचा कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय खाद्य सुरक्षा अधिनियम, 2013 (National Food Security Act - NFSA, 2013)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NFSA 2013 के तहत देश की कितनी जनसंख्या को रियायती/मुफ्त खाद्यान्न का विधिक अधिकार प्राप्त है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश की कुल जनसंख्या का 67% हिस्सा (ग्रामीण आबादी का 75% और शहरी आबादी का 50%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रधानमंत्री गरीब कल्याण अन्न योजना (PMGKAY) के तहत पात्र परिवारों को वर्तमान में क्या खाद्य सहायता दी जा रही है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NFSA के तहत सभी 81 करोड़ से अधिक लाभार्थियों को प्रति व्यक्ति प्रति माह 5 किलोग्राम खाद्यान्न पूर्णतः निःशुल्क प्रदान किया जा रहा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>खाद्य सुरक्षा में 'वन नेशन वन राशन कार्ड' (ONORC) प्रणाली ने प्रवासी मजदूरों को कैसे गरीबी से सुरक्षा दी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रवासी श्रमिक देश के किसी भी राज्य या शहर में किसी भी उचित मूल्य की दुकान (FPS) से बायोमेट्रिक प्रमाणीकरण द्वारा अपने हिस्से का राशन प्राप्त कर सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'प्रत्यक्ष लाभ अंतरण' (Direct Benefit Transfer - DBT) प्रणाली ने गरीबी उन्मूलन योजनाओं में क्या क्रांतिकारी सुधार किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कल्याणकारी योजनाओं का नकद पैसा सीधे लाभार्थियों के बैंक खातों में स्थानांतरित करके बिचौलियों, फर्जी लाभार्थियों और प्रशासनिक भ्रष्टाचार को समाप्त कर दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में गरीब परिवारों को 'पक्का आवास' उपलब्ध कराकर बहुआयामी गरीबी घटाने वाला प्रमुख राष्ट्रीय मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री आवास योजना - ग्रामीण एवं शहरी (PMAY-G & PMAY-U)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PMAY के तहत मकान का मालिकाना हक अनिवार्य रूप से किसके नाम या संयुक्त नाम पर पंजीकृत किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिवार की महिला मुखिया के नाम पर या पति-पत्नी के संयुक्त नाम पर (महिला संपत्ति सशक्तीकरण)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्वास्थ्य आपातकाल के कारण होने वाली गरीबी को रोकने हेतु संचालित विश्व की सबसे बड़ी सरकारी स्वास्थ्य बीमा योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयुष्मान भारत - प्रधानमंत्री जन आरोग्य योजना (AB-PMJAY)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयुष्मान भारत (PM-JAY) योजना के तहत प्रत्येक पात्र परिवार को प्रतिवर्ष कितना स्वास्थ्य बीमा सुरक्षा कवच मिलता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">द्वितीयक और तृतीयक अस्पताल में भर्ती के इलाज हेतु प्रति परिवार प्रतिवर्ष ₹5 लाख तक का पूर्णतः कैशलेस स्वास्थ्य बीमा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छोटे और सीमांत किसानों को सीधी आय सहायता देकर कृषि संकट से उबारने वाली केंद्रीय योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री किसान सम्मान निधि (PM-KISAN)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PM-KISAN योजना के तहत पात्र किसान परिवारों को प्रतिवर्ष कितनी वित्तीय सहायता सीधे बैंक खातों में दी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रतिवर्ष ₹6,000 की राशि, ₹2,000 की तीन समान किस्तों में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गरीब ग्रामीण परिवारों को सुरक्षित नल जल पहुंचाकर जल-जनित बीमारियों और आर्थिक नुकसान को रोकने वाला मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जल जीवन मिशन (हर घर जल)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गरीब महिलाओं को मुफ्त एलपीजी गैस कनेक्शन देकर स्वास्थ्य सुधारने और समय बचाने वाली योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री उज्ज्वला योजना (PMUY)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>असंगठित क्षेत्र के रेहड़ी-पटरी वालों (स्ट्रीट वेंडर्स) को साहूकारों से मुक्ति दिलाने हेतु शुरू की गई सूक्ष्म-ऋण योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएम स्वनिधि योजना (PM SVANidhi - बिना गारंटी के ₹10,000 से ₹50,000 तक का कार्यशील पूंजी ऋण)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूक्ष्म उद्यमों को औपचारिक ऋण प्रणाली से जोड़ने हेतु शुरू की गई 'मुद्रा योजना' (PMMY) के तीन ऋण वर्ग कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. शिशु (₹50,000 तक), 2. किशोर (₹50,000 से ₹5 लाख तक), और 3. तरुण (₹5 लाख से ₹10 लाख तक / संशोधित ₹20 लाख तक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नीति आयोग के अनुसार भारत में बहुआयामी गरीबी (MPI) में हाल के वर्षों में आई ऐतिहासिक गिरावट का मुख्य श्रेय किन कार्यक्रमों को जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वच्छता (शौचालय), पक्के आवास, स्वच्छ रसोई गैस, सुरक्षित पेयजल, बिजली कनेक्शन और बैंक खातों के सार्वभौमिक संतृप्ति (Saturation) अभियानों को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गरीबी उन्मूलन में 'संपत्ति सृजन' (Asset Creation) और 'मात्र उपभोग हस्तांतरण' में से किसे अधिक टिकाऊ माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संपत्ति सृजन (जैसे कौशल, पशुधन, सिंचाई साधन, पक्का मकान, सूक्ष्म उद्यम) को; क्योंकि यह निर्धन व्यक्ति को भविष्य में निरंतर स्वतंत्र आय अर्जित करने में सक्षम बनाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रोजगार को किसी भी लोकतांत्रिक समाज में 'समावेशी विकास का सबसे शक्तिशाली वाहक' क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि रोजगार न केवल व्यक्ति को निरंतर स्वतंत्र आय और आर्थिक क्रय शक्ति देता है, बल्कि उसे सामाजिक सम्मान, आत्मविश्वास और समाज में उपयोगी भूमिका की अनुभूति कराता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय श्रम संगठन (ILO) द्वारा प्रतिपादित 'सभ्य कार्य' (Decent Work) के चार प्रमुख स्तंभ कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. रोजगार सृजन, 2. कार्यस्थल पर अधिकारों का संरक्षण, 3. सामाजिक सुरक्षा, और 4. सामाजिक संवाद (Social Dialogue)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रामीण भारत में मजदूरी रोजगार की कानूनी गारंटी देने वाला युगांतरकारी कानून कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">महात्मा गांधी राष्ट्रीय ग्रामीण रोजगार गारंटी अधिनियम, 2005 (MGNREGA, 2005)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मनरेगा (MGNREGA) अधिनियम प्रत्येक ग्रामीण परिवार को प्रति वित्तीय वर्ष कितने दिनों के कार्य की कानूनी गारंटी देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अकुशल शारीरिक कार्य करने के इच्छुक प्रत्येक ग्रामीण परिवार के वयस्क सदस्यों को कम से कम 100 दिनों के सवैतनिक रोजगार की गारंटी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मनरेगा में काम मांगने के कितने दिनों के भीतर रोजगार न मिलने पर कानूनी 'बेरोजगारी भत्ता' देने का अनिवार्य प्रावधान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आवेदन करने के 15 दिनों के भीतर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मनरेगा कानून के तहत कुल लाभार्थियों में महिलाओं हेतु कितना आरक्षण अनिवार्य रूप से निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल कार्यबल का कम से कम एक-तिहाई (33.3%) हिस्सा (व्यावहारिक रूप से भारत में महिला भागीदारी 55% से 58% तक पहुंच चुकी है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मनरेगा ने ग्रामीण भारत में मजदूरी और समावेशी विकास को किस प्रकार रूपांतरित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रामीण न्यूनतम मजदूरी को ऊपर उठाया, संकटकालीन प्रवास (Distress Migration) को रोका और जल संरक्षण व ग्रामीण बुनियादी ढांचे की टिकाऊ संपत्तियों का निर्माण किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय श्रम बाजार की सबसे गंभीर संरचनात्मक कमजोरी क्या है जिसे समावेशी विकास द्वारा दूर करना आवश्यक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कार्यबल का अत्यधिक 'अनौपचारिकीकरण' (Informalization); जहां लगभग 85% से 90% श्रमिक बिना किसी औपचारिक लिखित अनुबंध, सवैतनिक अवकाश और सामाजिक सुरक्षा के कार्यरत हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>श्रम के 'औपचारिकीकरण' (Formalization of Labour) से श्रमिकों को क्या समावेशी सुरक्षा प्राप्त होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर्मचारी भविष्य निधि (EPF), कर्मचारी राज्य बीमा (ESIC), न्यूनतम मजदूरी, ग्रेच्युटी और पेंशन जैसी विधिक सामाजिक सुरक्षाओं की गारंटी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>असंगठित श्रमिकों का राष्ट्रीय डेटाबेस तैयार करने हेतु अगस्त 2021 में शुरू किया गया केंद्रीय पोर्टल कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ई-श्रम पोर्टल (e-Shram Portal); जिस पर 30 करोड़ के करीब असंगठित श्रमिक पंजीकृत हो चुके हैं और उन्हें 12-अंकीय UAN कार्ड दिया गया है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में तेजी से उभरते 'गिग और प्लेटफॉर्म श्रमिकों' (Gig and Platform Workers) के समावेशी संरक्षण हेतु भारत सरकार ने क्या कानूनी कदम उठाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सामाजिक सुरक्षा संहिता, 2020 (Code on Social Security, 2020) में गिग और प्लेटफॉर्म श्रमिकों को पहली बार कानूनी रूप से परिभाषित कर उनके लिए सामाजिक सुरक्षा कोष बनाने का प्रावधान किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गिग श्रमिकों के अधिकारों और कल्याण हेतु विशिष्ट कानून पारित करने वाला भारत का पहला राज्य कौन-सा बना?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राजस्थान (राजस्थान प्लेटफॉर्म आधारित गिग कर्मकार अधिनियम, 2023)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय संसद द्वारा 44 पुराने केंद्रीय श्रम कानूनों को समाहित कर बनाए गए चार नए 'श्रम कोड' (Four Labour Codes) कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. मजदूरी संहिता 2019, 2. औद्योगिक संबंध संहिता 2020, 3. सामाजिक सुरक्षा संहिता 2020, और 4. व्यावसायिक सुरक्षा, स्वास्थ्य एवं कार्यदशा संहिता 2020।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मजदूरी संहिता 2019' (Code on Wages, 2019) ने सभी श्रमिकों के लिए कौन-सा युगांतरकारी समावेशी अधिकार सुनिश्चित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संगठित और असंगठित दोनों क्षेत्रों के सभी श्रमिकों हेतु एक 'वैधानिक राष्ट्रीय फ्लोर मजदूरी' (National Floor Level Minimum Wage) और समय पर मजदूरी भुगतान का सार्वभौमिक अधिकार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>श्रम बाजार में 'लिंग आधारित वेतन अंतर' (Gender Wage Gap) को समाप्त करने हेतु मजदूरी संहिता में क्या प्रावधान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समान कार्य या समान प्रकृति के कार्य हेतु पुरुष और महिला के बीच किसी भी प्रकार के वेतन भेदभाव पर पूर्ण कानूनी प्रतिबंध।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>युवाओं को उद्योग-उन्मुख कौशल देकर रोजगार योग्य बनाने हेतु संचालित प्रमुख राष्ट्रीय योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री कौशल विकास योजना (PMKVY - 2015 से)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पारंपरिक कारीगरों और शिल्पकारों को कौशल, आधुनिक उपकरण और रियायती ऋण देने वाली 2023 में शुरू की गई फ्लैगशिप योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री विश्वकर्मा योजना (PM Vishwakarma Scheme / 18 पारंपरिक व्यवसायों हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुसूचित जाति (SC), अनुसूचित जनजाति (ST) और महिला उद्यमियों को बैंक ऋण देकर समावेशी उद्यमिता को बढ़ावा देने वाली योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्टैंड-अप इंडिया योजना (Stand-Up India Scheme - ₹10 लाख से ₹1 करोड़ तक का बैंक ऋण)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूक्ष्म, लघु एवं मध्यम उद्यम (MSMEs) भारत में रोजगार समावेशन की रीढ़ क्यों माने जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि ये बड़े कॉरपोरेट उद्योगों की तुलना में प्रति इकाई पूंजी पर कई गुना अधिक रोजगार पैदा करते हैं और देश के ग्रामीण व कस्बाई क्षेत्रों में फैले हुए हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृषि क्षेत्र में 'प्रच्छन्न या छिपी हुई बेरोजगारी' (Disguised Unemployment) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आवश्यकता से अधिक श्रमिकों का कृषि कार्य में लगा होना, जहां यदि कुछ श्रमिकों को हटा भी दिया जाए, तो भी कुल कृषि उत्पादन पर कोई नकारात्मक प्रभाव नहीं पड़ता (सीमांत उत्पादकता शून्य)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रच्छन्न बेरोजगारी को समाप्त कर समावेशी रोजगार देने का सबसे व्यावहारिक मार्ग क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रामीण क्षेत्रों में कृषि-प्रसंस्करण, कुटीर उद्योग, वेयरहाउसिंग, परिवहन और ग्रामीण विनिर्माण का तीव्र विकास कर अधिशेष श्रमिकों को गैर-कृषि रोजगार में स्थानांतरित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महिला श्रम बल भागीदारी दर (FLFPR) बढ़ाने हेतु कानूनन 'मातृत्व लाभ संशोधन अधिनियम 2017' ने क्या ऐतिहासिक सुधार किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सवैतनिक मातृत्व अवकाश को 12 सप्ताह से बढ़ाकर 26 सप्ताह (6 माह) कर दिया तथा 50 से अधिक कर्मचारियों वाले प्रतिष्ठानों में अनिवार्य क्रेच (शिशुगृह) सुविधा का नियम बनाया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>असंगठित क्षेत्र के घरेलू कामगारों, रिक्शा चालकों और भूमिहीन मजदूरों हेतु पेंशन सुरक्षा प्रदान करने वाली योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री श्रम योगी मान-धन योजना (PM-SYM - 60 वर्ष की आयु के बाद ₹3,000 मासिक सुनिश्चित पेंशन)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छोटे दुकानदारों और स्व-नियोजित व्यापारियों हेतु पेंशन सुरक्षा देने वाली केंद्रीय योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय पेंशन योजना - व्यापारी एवं स्वरोजगार (NPS-Traders / PM-LVM)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आवधिक श्रम बल सर्वेक्षण (PLFS) भारत में किस आधिकारिक सांख्यिकीय संस्था द्वारा नियमित रूप से संचालित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय सांख्यिकी कार्यालय (NSO - सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PLFS में श्रम बल की स्थिति मापने हेतु प्रयुक्त 'सामान्य स्थिति' (Usual Status - ps+ss) दृष्टिकोण क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सर्वेक्षण तिथि से पूर्व के 365 दिनों (1 वर्ष) के दौरान किसी व्यक्ति की प्रमुख रोजगार या बेरोजगारी की स्थिति।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PLFS में 'वर्तमान साप्ताहिक स्थिति' (Current Weekly Status - CWS) दृष्टिकोण क्या मापता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सर्वेक्षण तिथि से पूर्व के पिछले 7 दिनों के दौरान किसी व्यक्ति की रोजगार स्थिति (यदि पिछले सप्ताह कम से कम 1 घंटा काम किया तो नियोजित माना जाता है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास के परिप्रेक्ष्य में 'कार्यबल-जनसंख्या अनुपात' (Worker Population Ratio - WPR) क्या मापता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल जनसंख्या में वास्तव में कार्यरत (रोजगार प्राप्त) व्यक्तियों का प्रतिशत अनुपात; जो अर्थव्यवस्था की रोजगार सृजन क्षमता का वास्तविक सूचक है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>श्रम बाजार में 'अंडर-एम्प्लॉयमेंट' या 'अल्प-रोजगार' (Underemployment) की क्या समस्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब उच्च शिक्षित या कुशल व्यक्ति को अपनी क्षमता और योग्यता से बहुत निम्न स्तर का, कम मजदूरी वाला या आंशिक समय का कार्य करने पर विवश होना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास के लिए रोजगार की 'मात्रा' (Quantity) के साथ-साथ रोजगार की 'गुणवत्ता' (Quality) का होना क्यों अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि कम मजदूरी, असुरक्षित और बंधुआ प्रकृति के कार्य लोगों को गरीबी रेखा से ऊपर नहीं उठा पाते; केवल सुरक्षित और पर्याप्त वेतन वाले रोजगार ही सतत समावेशन लाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'वित्तीय साक्षरता' (Financial Literacy) की क्या भूमिका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गरीबों और ग्रामीण नागरिकों को ऋण के सही उपयोग, डिजिटल बैंकिंग सुरक्षा, पोंजी स्कीमों से बचाव और दीर्घकालिक बचत व निवेश के प्रति जागरूक बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिज़र्व बैंक (RBI) द्वारा संचालित 'वित्तीय समावेशन सूचकांक' (FI-Index) किन तीन व्यापक आयामों पर आधारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. पहुंच (Access - 35%), 2. उपयोग (Usage - 45%), और 3. गुणवत्ता (Quality - 20%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI के FI-Index का संख्यात्मक मान किस सीमा में होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">0 से 100 के बीच; जहां 0 पूर्ण वित्तीय बहिष्करण दर्शाता है और 100 पूर्ण वित्तीय समावेशन को दर्शाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास के संदर्भ में 'सार्वजनिक वितरण प्रणाली' (PDS) का क्या सामाजिक महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाजार में खाद्यान्न कीमतों में अचानक उछाल आने पर भी देश के सबसे निर्धन नागरिकों को निश्चित मात्रा में रियायती भोजन की भौतिक गारंटी देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'उचित मूल्य की दुकानों' (Fair Price Shops) के डिजिटलीकरण से क्या लाभ हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इलेक्ट्रॉनिक पॉइंट ऑफ सेल (e-PoS) मशीनों और बायोमेट्रिक सत्यापन द्वारा राशन की कालाबाजारी और रिसाव पर पूर्ण विराम लगा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'भूमि सुधारों' (Land Reforms) की ऐतिहासिक विफलता ने भारत में क्या असंतुलन पैदा किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रामीण भारत में भूमिहीन कृषि मजदूरों और छोटे सीमांत किसानों की विशाल संख्या बनी रही, जिनकी आजीविका असुरक्षित और गरीबी के चक्र में फंसी रह गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रामीण क्षेत्रों में भूमि और संपत्ति के स्पष्ट कानूनी मालिकाना हक हेतु संचालित ड्रोन-आधारित योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वामित्व योजना (SVAMITVA Scheme - Survey of Villages and Mapping with Improvised Technology in Village Areas)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्वामित्व योजना का ग्रामीण समावेशन पर क्या सबसे बड़ा आर्थिक प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रामीण नागरिकों को अपने आवासीय घरों का 'संपत्ति कार्ड' (Property Card) मिला, जिससे वे अपनी संपत्ति को बैंकों में गिरवी रखकर व्यवसाय हेतु ऋण लेने में सक्षम हुए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'दिव्यांगजनों' (Persons with Disabilities) के अधिकारों हेतु कौन-सा कानून लागू है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिव्यांगजन अधिकार अधिनियम, 2016 (RPwD Act, 2016); जिसने मान्यता प्राप्त विकलांगताओं की श्रेणियों को 7 से बढ़ाकर 21 किया और सरकारी नौकरियों में 4% आरक्षण दिया।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक भवनों और परिवहन को दिव्यांग-अनुकूल बनाने हेतु संचालित राष्ट्रीय अभियान कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुगम्य भारत अभियान (Accessible India Campaign)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'असंगठित सामाजिक सुरक्षा अधिनियम 2008' का क्या ऐतिहासिक महत्व था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पहली बार अनौपचारिक क्षेत्र के करोड़ों श्रमिकों के स्वास्थ्य, मातृत्व, वृद्धावस्था और जीवन सुरक्षा हेतु राष्ट्रीय सामाजिक सुरक्षा बोर्ड और योजनाओं का कानूनी प्रावधान किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में गरीबी रेखा के निर्धारण हेतु गठित दो प्रमुख विशेषज्ञ समितियां कौन-सी रही हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. सुरेश तेंदुलकर समिति (2009), तथा 2. सी. रंगराजन समिति (2014)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सुरेश तेंदुलकर समिति ने गरीबी रेखा के निर्धारण हेतु किस आधार को अपनाया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल कैलोरी उपभोग के स्थान पर प्रति व्यक्ति मासिक उपभोग व्यय (MPCE) को आधार बनाया, जिसमें स्वास्थ्य और शिक्षा पर निजी व्यय को भी शामिल किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तेंदुलकर पद्धति के आधार पर 2011-12 में भारत में गरीबी का राष्ट्रीय अनुपात कितना आंका गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल जनसंख्या का 21.9% (ग्रामीण क्षेत्रों में 25.7% तथा शहरी क्षेत्रों में 13.7%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सी. रंगराजन समिति (2014) ने गरीबी रेखा हेतु क्या दैनिक उपभोग व्यय सीमा सुझाई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रामीण क्षेत्रों में ₹32 प्रति व्यक्ति प्रतिदिन तथा शहरी क्षेत्रों में ₹47 प्रति व्यक्ति प्रतिदिन (कुल राष्ट्रीय गरीबी अनुपात 29.5%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नीति आयोग द्वारा अपनाए गए 'बहुआयामी निर्धनता सूचकांक' (National MPI) के अनुसार भारत में बहुआयामी गरीबी का प्रतिशत 2015-16 से 2019-21 के बीच कितना घटा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">24.85% से तेजी से घटकर 14.96% पर आ गया (लगभग 13.5 करोड़ लोग सीधे बाहर निकले)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'लॉरेंज वक्र' (Lorenz Curve) और 'गिनी गुणांक' (Gini Coefficient) की क्या भूमिका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह सटीक रूप से मापना कि संवृद्धि के दौर में देश के भीतर आय और संपत्ति की असमानता घट रही है या बढ़ रही है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास में 'समेकित बाल विकास सेवाएं' (ICDS / आंगनवाड़ी प्रणाली) क्या भूमिका निभाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">6 वर्ष से कम आयु के बच्चों और गर्भवती/धात्री माताओं को पूरक पोषण, पूर्व-प्राथमिक शिक्षा, प्रतिरक्षण और स्वास्थ्य जांच की एकीकृत सेवाएं देकर बाल विकास की मजबूत नींव रखना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रामीण युवाओं को कौशल प्रशिक्षण देकर संगठित क्षेत्र में रोजगार दिलाने वाला प्रमुख कार्यक्रम कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दीनदयाल उपाध्याय ग्रामीण कौशल्य योजना (DDU-GKY)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शहरी निर्धनों को स्वरोजगार, कौशल और आश्रय प्रदान करने वाला राष्ट्रीय मिशन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दीनदयाल अंत्योदय योजना - राष्ट्रीय शहरी आजीविका मिशन (DAY-NULM)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास के संदर्भ में 'अमृत काल' (2022-2047) का क्या मुख्य सामाजिक-आर्थिक संकल्प है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शून्य अत्यधिक गरीबी, 100% बुनियादी नागरिक सुविधाओं (आवास, नल जल, बिजली, शौचालय, बैंकिंग) की पूर्ण संतृप्ति (100% Saturation) और सामाजिक न्याय युक्त विकसित भारत का निर्माण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समावेशी विकास Part 1 के संपूर्ण अध्ययन का अंतिम और सर्वमान्य समष्टिगत निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समावेशी विकास केवल आर्थिक संवृद्धि का एक वैकल्पिक मॉडल नहीं, बल्कि भारतीय लोकतंत्र का संवैधानिक और नैतिक अधिदेश है; वास्तविक राष्ट्रीय प्रगति वही है जो प्रत्येक नागरिक को उत्पादक रोजगार, मानवीय गरिमा, सामाजिक सुरक्षा और अवसरों की पूर्ण समानता प्रदान कर विकास की मुख्यधारा का गौरवशाली भागीदार बनाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

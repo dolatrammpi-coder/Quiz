@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Atmosphere Structure 2">
+<title>Atmosphere Structure 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Geography / भूगोल / Atmosphere Structure 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Geography — भूगोल</div>
+    <h1>Atmosphere Structure 2</h1>
+    <p class="topic-subtitle">मध्यमंडल, आयनमंडल, बाह्यमंडल, रेडियो तरंगों का परावर्तन, ध्रुवीय ज्योति (अरोरा) एवं उच्च वायुमंडलीय प्रक्रियाएं</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Atmosphere Structure 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>परत/घटना</th><th>प्रमुख विशेषता</th><th>संबंधित प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">मध्यमंडल (Mesosphere)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">समतापसीमा से 50 से 80 किमी ऊंचाई तक विस्तृत; ऊंचाई के साथ तापमान में तीव्र गिरावट; वायुमंडल का सबसे ठंडा क्षेत्र</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अंतरिक्ष से तीव्र गति से प्रवेश करने वाले अधिकांश उल्कापिंड वायु घर्षण से इसी परत में जलकर भस्म हो जाते हैं</div></div></td></tr><tr><td><div class="primary-cell">मेसोपॉज़ (Mesopause)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्यमंडल की ऊपरी सीमा (लगभग 80 से 85 किमी); तापमान गिरकर -80°C से -100°C (-130°F) तक पहुंच जाना</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्यमंडल और तापमंडल के मध्य तापीय विभाजक सीमा; संपूर्ण वायुमंडल का न्यूनतम दर्ज तापमान स्थल</div></div></td></tr><tr><td><div class="primary-cell">निशादीप्त मेघ (Noctilucent Clouds)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मेसोपॉज़ के समीप 80-85 किमी ऊंचाई पर उल्कापिंडीय धूलकणों पर जमे सूक्ष्म बर्फ क्रिस्टलों से निर्मित चमकीले नीले-सफेद बादल</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ग्रीष्म ऋतु में उच्च अक्षांशों (50°-70°) पर सूर्यास्त के बाद आकाश में अत्यधिक ऊंचाई पर चमकते दिखाई देना</div></div></td></tr><tr><td><div class="primary-cell">कारमन रेखा (Kármán Line)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">समुद्र तल से ठीक 100 किमी (62 मील) की ऊंचाई पर स्थित अंतरराष्ट्रीय वैमानिकी महासंघ (FAI) द्वारा मान्य काल्पनिक सीमा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पृथ्वी के वायुमंडल और बाह्य अंतरिक्ष (Outer Space) के मध्य कानूनी और भौतिक विभाजक सीमा</div></div></td></tr><tr><td><div class="primary-cell">तापमंडल (थर्मोस्फीयर)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">80 से 640 किमी तक विस्तृत; सौर पराबैंगनी व एक्स-किरणों के अवशोषण से ऊंचाई के साथ तापमान में अप्रत्याशित वृद्धि (1200°C+)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अत्यधिक विरल वायु के कारण उच्च गतिज तापमान होने पर भी मानव त्वचा को वास्तविक ऊष्मा (संवेदी ताप) का अनुभव न होना</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Atmosphere Structure 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>परत/घटना</th><th>प्रमुख विशेषता</th><th>संबंधित प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">D-परत (D-Layer: 80-99 किमी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">निम्न आयनमंडल; केवल दिन के समय सौर पराबैंगनी किरणों से निर्मित तथा रात्रि में पूर्णतः लुप्त हो जाने वाली परत</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">निम्न आवृत्ति (LF/VLF) रेडियो तरंगों का परावर्तन परंतु मध्यम व उच्च आवृत्ति तरंगों का अवशोषण</div></div></td></tr><tr><td><div class="primary-cell">E-परत (केनेली-हेविसाइड परत)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">99 से 130-150 किमी ऊंचाई; नाइट्रोजन व ऑक्सीजन अणुओं के आयनीकरण से निर्मित स्थायी आयनिक परत</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्यम आवृत्ति (MF) रेडियो तरंगों का परावर्तन; धरातलीय AM रेडियो प्रसारण का प्राथमिक संवाहक</div></div></td></tr><tr><td><div class="primary-cell">F-परत (एप्लेटन-बार्नेट परत)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">150 से 400 किमी; दिन में F1 व F2 दो उप-परतों में विभाजित तथा रात में एकल सघन F-परत में संयोजित</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उच्च आवृत्ति (HF / Shortwave) रेडियो तरंगों का शक्तिशाली परावर्तन; लंबी दूरी के वैश्विक बेतार संचार का आधार</div></div></td></tr><tr><td><div class="primary-cell">बाह्यमंडल (Exosphere)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">640 से 10,000 किमी तक विस्तृत वायुमंडल की बाह्यतम सीमा; अत्यंत विरल हीलियम व हाइड्रोजन गैसों की प्रधानता</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">गैसों के अणुओं का अंतरिक्ष में निरंतर पलायन; कृत्रिम भू-स्थैतिक उपग्रहों (GEO) का प्राथमिक परिक्रमण क्षेत्र</div></div></td></tr><tr><td><div class="primary-cell">ध्रुवीय ज्योति (Aurora)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सौर पवन के आवेशित कणों (इलेक्ट्रॉन/प्रोटॉन) का आयनमंडल में ऑक्सीजन व नाइट्रोजन परमाणुओं से टकराकर प्रकाश उत्सर्जन</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्तरी ध्रुव पर 'अरोरा बोरियालिस' (हरा/लाल प्रकाश) तथा दक्षिणी ध्रुव पर 'अरोरा ऑस्ट्रैलिस' का भव्य दृश्य</div></div></td></tr><tr><td><div class="primary-cell">वैन एलेन विकिरण मेखला</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पृथ्वी के चुंबकीय क्षेत्र (Magnetosphere) द्वारा अंतरिक्ष में रोके गए अत्यधिक ऊर्जावान आवेशित कणों के दो विशाल छल्ले</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सौर ज्वालाओं और अंतरिक्ष विकिरण से पृथ्वी के जीवमंडल तथा उपग्रहों की रक्षा करने वाली चुंबकीय ढाल</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>समतापसीमा (Stratopause) के ठीक ऊपर 50 से 80 किलोमीटर की ऊंचाई तक फैली वायुमंडलीय परत क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मध्यमंडल (Mesosphere)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मध्यमंडल (Mesosphere) में ऊंचाई बढ़ने के साथ तापमान पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तापमान में तीव्र गिरावट आती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मध्यमंडल की ऊपरी सीमा जो लगभग 80 से 85 किमी की ऊंचाई पर स्थित है, क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेसोपॉज़ (Mesopause / मध्यसीमा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संपूर्ण वायुमंडल का न्यूनतम तापमान किस परत की ऊपरी सीमा पर दर्ज किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेसोपॉज़ पर (लगभग -80°C से -100°C तक)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरिक्ष से तीव्र गति से पृथ्वी की ओर आने वाले अधिकांश उल्कापिंड (Meteors) किस परत में जलकर भस्म हो जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मध्यमंडल (Mesosphere) में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उल्कापिंड मध्यमंडल में प्रवेश करते ही क्यों जलने लगते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक गति के कारण वायुमंडलीय गैसों के साथ उत्पन्न प्रचंड घर्षण और संपीडन ऊष्मा से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आकाश में टूटने वाले तारे (Shooting Stars) के रूप में दिखाई देने वाली परिघटना किस वायुमंडलीय परत से संबंधित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मध्यमंडल (Mesosphere) से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मध्यमंडल के ऊपरी भाग (मेसोपॉज़) में अत्यधिक ठंडे तापमान के कारण बनने वाले दुर्लभ बादलों को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निशादीप्त मेघ (Noctilucent Clouds)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निशादीप्त मेघ (Noctilucent Clouds) मुख्यतः किन घटकों से मिलकर बनते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उल्कापिंडीय धूलकणों के नाभिक पर जमे सूक्ष्म बर्फ क्रिस्टलों से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निशादीप्त मेघ वर्ष के किस मौसम में और किन अक्षांशों पर स्पष्ट दिखाई देते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रीष्म ऋतु में उच्च अक्षांशों (50° से 70° उत्तर व दक्षिण) पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निशादीप्त मेघ दिन के समय दिखाई क्यों नहीं देते?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि वे बहुत हल्के और विरल होते हैं, केवल सूर्यास्त के बाद अंतरिक्ष से परावर्तित सूर्य प्रकाश में चमकते हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समुद्र तल से ठीक 100 किमी की ऊंचाई पर स्थित वह काल्पनिक रेखा क्या कहलाती है जो वायुमंडल और बाह्य अंतरिक्ष की सीमा तय करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कारमन रेखा (Kármán Line)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कारमन रेखा का नामकरण किस हंगेरियन-अमेरिकी एरोस्पेस वैज्ञानिक के सम्मान में किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">थियोडोर वॉन कारमन (Theodore von Kármán)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कारमन रेखा को अंतरिक्ष की भौतिक सीमा क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इस ऊंचाई पर वायु इतनी विरल हो जाती है कि वायुयानों को उड़ने हेतु एयरोडायनामिक लिफ्ट के स्थान पर कक्षीय वेग चाहिए</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मेसोपॉज़ के ऊपर लगभग 80 से 640 किलोमीटर की ऊंचाई तक विस्तृत वायुमंडलीय परत क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तापमंडल (Thermosphere / थर्मोस्फीयर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तापमंडल में ऊंचाई बढ़ने के साथ तापमान पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तापमान में अत्यधिक तीव्र वृद्धि होती है (1200°C से 2000°C तक)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तापमंडल में तापमान में इतनी भीषण वृद्धि होने का मुख्य भौतिक कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गैसों के परमाणुओं द्वारा सूर्य की लघु तरंगदैर्घ्य वाली अत्यधिक ऊर्जावान UV और एक्स-रे किरणों का सीधा अवशोषण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तापमंडल का तापमान 1500°C से अधिक होने के बावजूद वहाँ स्थित अंतरिक्ष यात्री को गर्मी क्यों नहीं महसूस होती?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि वायु का घनत्व अत्यंत नगण्य होने से ऊष्मा संचरण हेतु पर्याप्त आणविक संघट्ट (Collsions) नहीं होते</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तापमंडल के अत्यधिक उच्च तापमान को भौतिकी में संवेदी तापमान के बजाय कौन-सा तापमान कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गतिज तापमान (Kinetic Temperature)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतर्राष्ट्रीय अंतरिक्ष स्टेशन (ISS) पृथ्वी की किस वायुमंडलीय परत में लगभग 400 किमी की ऊंचाई पर परिक्रमा करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तापमंडल (थर्मोस्फीयर) के भीतर निचली पृथ्वी कक्षा (LEO) में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तापमंडल का वह आंतरिक भाग जो विद्युत आवेशित आयनों और मुक्त इलेक्ट्रॉनों से भरा होता है, क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयनमंडल (Ionosphere)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल का विस्तार धरातल से सामान्यतः कितनी ऊंचाई के मध्य माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 80 से 400 (या 640) किलोमीटर की ऊंचाई तक</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल में गैसों के परमाणुओं का आयनों और मुक्त इलेक्ट्रॉनों में टूटना क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रकाश-आयनीकरण (Photo-ionization)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>धरातल से प्रेषित रेडियो तरंगों को परावर्तित कर पृथ्वी पर वापस भेजने वाली वायुमंडलीय परत कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयनमंडल (Ionosphere)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल द्वारा रेडियो तरंगों का परावर्तन होने से मानव सभ्यता को किस तकनीक के विकास में सहायता मिली?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लंबी दूरी के बेतार संचार और रेडियो प्रसारण (Wireless Radio Communication)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल को ऊंचाई और इलेक्ट्रॉन घनत्व के आधार पर मुख्य रूप से किन परतों में विभाजित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">D-परत, E-परत, F-परत और G-परत</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल की सबसे निचली परत कौन-सी है जो 80 से 99 किमी की ऊंचाई पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">D-परत (D-Layer)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>D-परत केवल दिन के समय ही क्यों अस्तित्व में रहती है और रात में क्यों विलीन हो जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि रात में सूर्य का प्रकाश न होने से आयनीकरण रुक जाता है और आयन पुनः संयुक्त हो जाते हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>D-परत किस प्रकार की रेडियो तरंगों को परावर्तित करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निम्न आवृत्ति (Low Frequency - LF व VLF) वाली लंबी रेडियो तरंगों को</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>D-परत मध्यम (MF) और उच्च (HF) आवृत्ति वाली रेडियो तरंगों के साथ क्या व्यवहार करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उन्हें अवशोषित (Absorb) कर क्षीण कर देती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>D-परत के ऊपर 99 से लगभग 130-150 किमी की ऊंचाई तक स्थित आयनिक परत क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">E-परत (E-Layer)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>E-परत की खोज किन दो वैज्ञानिकों ने की थी जिसके कारण इसे 'केनेली-हेविसाइड परत' भी कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थर केनेली और ओलिवर हेविसाइड (Kennelly-Heaviside Layer)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केनेली-हेविसाइड (E) परत मुख्य रूप से किस आवृत्ति की रेडियो तरंगों को परावर्तित करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मध्यम आवृत्ति (Medium Frequency - MF) वाली तरंगों को (AM रेडियो बैंड)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रात के समय AM रेडियो का प्रसारण दिन की तुलना में अधिक स्पष्ट और लंबी दूरी तक क्यों सुनाई देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि रात में अवशोषक D-परत समाप्त हो जाती है और तरंगें सीधे E व F परतों से बिना अवरोध परावर्तित होती हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>E-परत में कभी-कभी अचानक अत्यधिक सघन आयनों के बनने वाले अस्थायी पैच क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्पोराडिक E-परत (Sporadic E Layer / Es)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>E-परत के ऊपर लगभग 150 से 400 किमी की ऊंचाई तक विस्तृत सर्वाधिक उपयोगी आयनिक परत कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">F-परत (F-Layer)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>F-परत को किस नोबेल पुरस्कार विजेता ब्रिटिश भौतिकशास्त्री के नाम पर 'एप्लेटन-बार्नेट परत' कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सर एडवर्ड एप्लेटन (Edward Appleton Layer)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दिन के समय सौर विकिरण की तीव्रता के कारण F-परत किन दो उप-परतों में विभाजित हो जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">F1-परत (निचली) और F2-परत (ऊपरी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रात्रि के समय F1 और F2 परतों की क्या स्थिति होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दोनों आपस में मिलकर एक एकल सघन F-परत बन जाती हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लंबी दूरी के अंतरराष्ट्रीय शॉर्टवेव (Shortwave / HF) रेडियो प्रसारण हेतु कौन-सी परत उत्तरदायी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एप्लेटन परत (F2-परत)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल में सर्वाधिक इलेक्ट्रॉन घनत्व (Electron Density) किस परत में पाया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">F2-परत में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>F-परत के ऊपर 400 किमी से अधिक ऊंचाई पर कभी-कभी पहचानी जाने वाली अत्यंत विरल परत क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">G-परत (G-Layer)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>टेलीविजन प्रसारण, मोबाइल नेटवर्क और उपग्रह संचार में प्रयुक्त बहुत उच्च आवृत्ति (VHF/UHF) तरंगे आयनमंडल से क्यों नहीं लौटतीं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि उनकी आवृत्ति इतनी अधिक होती है कि वे आयनमंडल को भेदकर अंतरिक्ष में पार निकल जाती हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उपग्रह संचार (Satellite Communication) में VHF, UHF और माइक्रोवेव तरंगों का उपयोग क्यों किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ताकि वे आयनमंडल से परावर्तित हुए बिना सीधे अंतरिक्ष में स्थित उपग्रह तक पहुंच सकें</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च अक्षांशों (ध्रुवीय क्षेत्रों) के रात्रि कालीन आकाश में दिखने वाली रंग-बिरंगी चमकीली रोशनी को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ध्रुवीय ज्योति (अरोरा / Aurora)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी ध्रुवीय क्षेत्रों में दिखाई देने वाली चमकीली ध्रुवीय ज्योति को वैज्ञानिक रूप से क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरोरा बोरियालिस (Aurora Borealis / सुमेरु ज्योति)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिणी ध्रुव (अंटार्कटिका) के आकाश में दिखने वाली ध्रुवीय ज्योति को क्या नाम दिया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरोरा ऑस्ट्रैलिस (Aurora Australis / कुमेरु ज्योति)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'अरोरा बोरियालिस' शब्द में अरोरा और बोरियालिस क्रमशः किन प्राचीन मान्यताओं से प्रेरित हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरोरा: भोर की रोमन देवी; बोरियालिस: उत्तरी हवा के ग्रीक देवता (बोरियास)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ध्रुवीय ज्योति (अरोरा) की उत्पत्ति का मूल खगोलीय और भौतिक कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूर्य से आने वाले आवेशित कणों (सौर पवन) का पृथ्वी के चुंबकीय क्षेत्र और वायुमंडलीय गैसों से टकराव</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अरोरा की परिघटना पृथ्वी के किन क्षेत्रों में ही सर्वाधिक स्पष्ट रूप से देखी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ध्रुवीय और उप-ध्रुवीय उच्च अक्षांशीय क्षेत्रों (जैसे नॉर्वे, अलास्का, कनाडा, आइसलैंड, अंटार्कटिका)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सौर पवन के आवेशित कण पृथ्वी के केवल ध्रुवों की ओर ही क्यों आकर्षित होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि पृथ्वी की चुंबकीय बल रेखाएं दोनों चुंबकीय ध्रुवों पर आकर अभिसरित (Converge) होती हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अरोरा के दौरान आकाश में दिखने वाला विशिष्ट हरा और लाल प्रकाश किस गैस के परमाणुओं के उत्तेजन से उत्पन्न होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऑक्सीजन परमाणुओं (हरा: 557.7 nm तथा लाल: 630 nm तरंगदैर्घ्य) से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अरोरा में दिखने वाला नीला, बैंगनी और गहरा गुलाबी रंग किस गैस के अणुओं से संबंधित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आणविक नाइट्रोजन (N₂) और आयनित नाइट्रोजन से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अरोरा सामान्यतः किस वायुमंडलीय ऊंचाई पर घटित होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयनमंडल और तापमंडल में 100 से 400 किमी की ऊंचाई पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूर्य की सतह पर होने वाले विशालकाय चुंबकीय विस्फोट जिनसे अत्यधिक मात्रा में आवेशित प्लाज्मा निकलता है, क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोरोनल मास इजेक्शन (CME / Coronal Mass Ejection)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब एक शक्तिशाली CME पृथ्वी के चुंबकीय क्षेत्र से टकराता है, तो पृथ्वी पर कौन-सी बड़ी घटना घटती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भू-चुंबकीय तूफान (Geomagnetic Storm)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भू-चुंबकीय तूफान (Geomagnetic Storm) का मानव तकनीक पर क्या प्रतिकूल प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विद्युत पावर ग्रिड ठप होना, उपग्रहों की कार्यप्रणाली में बाधा और रेडियो संचार ब्लैकआउट</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूर्य पर सौर कलंकों (Sunspots) की संख्या में चक्रीय वृद्धि और कमी की समयावधि कितनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 11 वर्ष (सौर चक्र / Solar Cycle)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सौर कलंकों की अधिकतम सक्रियता (Solar Maximum) के समय अरोरा की तीव्रता पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरोरा की आवृत्ति और चमक चरम पर पहुंच जाती है तथा यह मध्य अक्षांशों तक दिखाई देने लगता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल के ऊपर लगभग 640 किमी से 10,000 किमी तक फैला वायुमंडल का सबसे बाहरी स्तर क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाह्यमंडल या बहिर्मंडल (Exosphere / एक्सोस्फीयर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बाह्यमंडल में मुख्य रूप से किन दो सबसे हल्की गैसों की प्रधानता पाई जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाइड्रोजन और हीलियम गैसों की</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बाह्यमंडल में वायु का घनत्व कितना होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यंत नगण्य (लगभग पूर्ण निर्वात जैसी स्थिति)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बाह्यमंडल की वह सीमा जहाँ से गैसों के अणु पृथ्वी के गुरुत्वाकर्षण से मुक्त होकर अंतरिक्ष में पलायन कर जाते हैं, क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक्सोबेस (Exobase) या क्रिटिकल लेवल</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पृथ्वी के वायुमंडल से हाइड्रोजन गैस के अणुओं के निरंतर पलायन का प्राथमिक कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उनका तापीय वेग पृथ्वी के पलायन वेग (11.2 किमी/सेकंड) से अधिक हो जाना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संचार उपग्रहों को स्थापित की जाने वाली 'भू-स्थैतिक कक्षा' (Geostationary Orbit - 36,000 किमी) किस क्षेत्र में स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाह्यमंडल से भी परे अंतरिक्ष और मैग्नेटोस्फीयर के भीतर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पृथ्वी के चारों ओर अंतरिक्ष में विस्तृत वह विशाल चुंबकीय क्षेत्र जो सौर पवन को रोकता है, क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चुंबकमंडल (Magnetosphere / मैग्नेटोस्फीयर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पृथ्वी के आंतरिक भाग में चुंबकमंडल को उत्पन्न करने वाला मूल स्रोत क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाहरी तरल धात्विक क्रोड में पिघले लोहे की संवहनीय गति (भू-डायनेमो प्रभाव)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पृथ्वी के चुंबकीय क्षेत्र द्वारा फंसे हुए अत्यधिक ऊर्जावान इलेक्ट्रॉनों और प्रोटॉनों के दोहरे विकिरण वलय क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैन एलेन विकिरण मेखला (Van Allen Radiation Belts)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वैन एलेन विकिरण मेखला की खोज वर्ष 1958 में अमेरिका के किस पहले उपग्रह द्वारा की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक्सप्लोरर-1 (Explorer-1 - जेम्स वैन एलेन द्वारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वैन एलेन विकिरण मेखला का मानव अंतरिक्ष उड़ानों और उपग्रहों के लिए क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह अंतरिक्ष यानों के इलेक्ट्रॉनिक्स और अंतरिक्ष यात्रियों के लिए अत्यधिक घातक विकिरण क्षेत्र है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूर्य के सम्मुख पृथ्वी के चुंबकमंडल का आकार कैसा होता है और विपरीत दिशा में कैसा होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूर्य की ओर सौर पवन के दबाव से संकुचित तथा विपरीत दिशा में लंबी पूंछ (मैग्नेटोटेल) जैसा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सममंडल (Homosphere) और विषममंडल (Heterosphere) के मध्य विभाजक सीमा (लगभग 85-100 किमी) क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टर्बोपॉज़ (Turbopause)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विषममंडल (Heterosphere) में गैसें रासायनिक रूप से मिश्रित रहने के बजाय किस नियम से व्यवस्थित होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आणविक भार के अनुसार अलग-अलग परतों में (आणविक नाइट्रोजन > ऑक्सीजन > हीलियम > हाइड्रोजन)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऊपरी वायुमंडल में सूर्य के पराबैंगनी प्रकाश द्वारा अणुओं का परमाणुओं में विखंडन क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रकाश-रासायनिक वियोजन (Photodissociation)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल में उत्पन्न होने वाली शक्तिशाली विद्युत धाराएं जो ध्रुवीय क्षेत्रों में बहती हैं, क्या कहलाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऑरोरल इलेक्ट्रोजेट्स (Auroral ElectroJets)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जीपीएस (GPS) उपग्रह सिग्नलों के समय में आयनमंडल से गुजरते समय होने वाली देरी क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयनमंडलीय विलंब (Ionospheric Delay / TEC प्रभाव)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल में इलेक्ट्रॉनों की कुल संख्या को मापने वाला सूचकांक क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टोटल इलेक्ट्रॉन कंटेंट (TEC - Total Electron Content)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल में रेडियो सिग्नलों के तेजी से झिलमिलाने और दिशा भटकने की घटना को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयनमंडलीय सिंटिलेशन (Ionospheric Scintillation)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अचानक आने वाली सौर ज्वालाओं द्वारा पृथ्वी के दिन वाले भाग में रेडियो संचार के पूर्ण ठप होने को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शॉर्टवेव फेडआउट या डेलिंजर प्रभाव (Dellinger Effect)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मध्यमंडल में तापमान ह्रास की दर समतापमंडल की तुलना में पुनः क्यों शुरू हो जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि वहाँ ओजोन गैस की अनुपस्थिति होती है तथा CO₂ द्वारा विकिरण उत्सर्जन से शीतलन होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वायुमंडल की किस परत में वायुदाब समुद्र तल के वायुदाब का लगभग दस लाखवाँ भाग (10⁻⁶) रह जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेसोपॉज़ (लगभग 80 किमी की ऊंचाई) पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरिक्ष यात्रियों के लिए भारहीनता का अनुभव करने की न्यूनतम ऊंचाई सामान्यतः कहाँ से आरंभ होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निम्न पृथ्वी कक्षा (LEO) में लगभग 160 किमी के ऊपर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या मध्यमंडल (Mesosphere) में मौसम संबंधी कोई सामान्य बादल या चक्रवात बनते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं, जलवाष्प के अभाव में केवल निशादीप्त मेघों को छोड़कर कोई मौसमी परिघटना नहीं होती</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल की स्थिति का अध्ययन करने हेतु धरातल से ऊर्ध्वाधर रेडियो स्पंद भेजने वाला रडार उपकरण क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आओनोसोंड (Ionosonde)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेडियो संचार में 'स्किप दूरी' (Skip Distance) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रेषक एंटीना से उस निकटतम बिंदु की दूरी जहाँ आयनमंडल से परावर्तित तरंग पहली बार जमीन पर लौटती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वह क्षेत्र जहाँ न तो धरातलीय तरंगे पहुंच पाती हैं और न ही आकाश तरंगे, क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शांत क्षेत्र या डेड जोन (Dead Zone / Skip Zone)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल से परावर्तित होकर यात्रा करने वाली रेडियो तरंगें तकनीकी रूप से क्या कहलाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आकाशीय तरंगें या स्काई वेव्स (Sky Waves)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>धरातल के समानांतर सीधे प्रेषित होने वाली रेडियो तरंगों को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भू-तरंगें या ग्राउंड वेव्स (Ground Waves)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पृथ्वी के वायुमंडल का वह कौन-सा गुण है जो हमें बाह्य अंतरिक्ष के घातक उल्कापिंडीय बमबारी से प्राकृतिक सुरक्षा प्रदान करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मध्यमंडल का सघन घर्षण और तापीय विघटन गुण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अरोरा के दौरान आकाश में बनने वाले प्रमुख प्रकाश रूप कौन-से होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेहराब (Arcs), पर्दे या पट्टियां (Curtains/Bands), किरणें (Rays) और कोरोना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नॉर्वे के उत्तरी शहर ट्रोम्सो को वैश्विक स्तर पर किस प्राकृतिक दृश्य की राजधानी माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तरी ध्रुवीय ज्योति (अरोरा बोरियालिस) देखने की</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिण गोलार्ध में न्यूजीलैंड और तस्मानिया से कौन-सी ध्रुवीय ज्योति स्पष्ट देखी जा सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरोरा ऑस्ट्रैलिस (Aurora Australis)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च वायुमंडलीय अनुसंधान हेतु प्रक्षेपित किए जाने वाले विशेष गैर-कक्षीय रॉकेट क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">साउंडिंग रॉकेट्स (Sounding Rockets)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का पहला साउंडिंग रॉकेट 'नाइक-अपाचे' 1963 में कहाँ से प्रक्षेपित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">थुम्बा (तिरुवनंतपुरम, केरल) स्थित TERLS केंद्र से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>थुम्बा को साउंडिंग रॉकेट प्रक्षेपण केंद्र के रूप में क्यों चुना गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यह पृथ्वी के चुंबकीय भूमध्य रेखा (Magnetic Equator) के बिल्कुल ऊपर स्थित है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चुंबकीय भूमध्य रेखा के ऊपर आयनमंडल में बहने वाली तीव्र पूर्व-पश्चिम विद्युत धारा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इक्वेटोरियल इलेक्ट्रोजेट (Equatorial Electrojet - EEJ)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भू-चुंबकीय ध्रुवों और भौगोलिक ध्रुवों की स्थिति में क्या संबंध होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे एक ही बिंदु पर नहीं होते, चुंबकीय ध्रुव भौगोलिक ध्रुवों से लगभग 11° के कोण पर झुके होते हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पृथ्वी का उत्तरी चुंबकीय ध्रुव वर्तमान में किस देश के आर्कटिक क्षेत्र की ओर तेजी से खिसक रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कनाडा से रूस के साइबेरिया क्षेत्र की ओर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयनमंडल में रेडियो तरंगों के क्रांतिक कोण से अधिक कोण पर टकराने पर होने वाला परावर्तन क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूर्ण आंतरिक परावर्तन जैसा अपवर्तन (Total Internal Reflection Effect)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेडियो संचार की वह अधिकतम आवृत्ति जो आयनमंडल से बिना पार निकले परावर्तित हो सकती है, क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्रांतिक आवृत्ति (Critical Frequency - fc)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरिक्ष यान जब वायुमंडल में पुनः प्रवेश (Re-entry) करता है, तो संचार संपर्क कुछ समय के लिए क्यों टूट जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यान के चारों ओर घर्षण जनित प्लाज्मा की एक अभेद्य चादर बनने के कारण (प्लाज्मा ब्लैकआउट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मध्यमंडल में अध्ययन करना मौसम गुब्बारों और उपग्रहों दोनों के लिए अत्यंत कठिन क्यों होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह मौसम गुब्बारों हेतु अत्यधिक ऊंचा तथा कृत्रिम उपग्रहों हेतु अत्यधिक सघन (घर्षण युक्त) होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इसी कारण से मध्यमंडल को कभी-कभी वैज्ञानिकों द्वारा किस अनौपचारिक उपनाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इग्नूरोस्फीयर (Ignorosphere / कम ज्ञात वायुमंडलीय मंडल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वायुमंडल की ऊपरी परतों में सौर पवन की गति सामान्यतः कितने किमी प्रति सेकंड होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 400 से 800 किलोमीटर प्रति सेकंड</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अरोरा के दौरान चमकने वाले प्रकाश की तीव्रता को मापने के लिए किस इकाई का उपयोग होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेले (Rayleigh) इकाई का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पृथ्वी के वायुमंडल का शीर्ष भाग जो अंतरिक्ष में धीरे-धीरे विलीन हो जाता है, क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जियोकोरोना (Geocorona - हाइड्रोजन परमाणुओं का मंद प्रदीप्त आभामंडल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अपोलो 16 के अंतरिक्ष यात्रियों ने चंद्रमा से पृथ्वी की तस्वीर लेते समय पृथ्वी के चारों ओर क्या देखा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पराबैंगनी प्रकाश में चमकता हुआ पृथ्वी का जियोकोरोना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वायुमंडल की सभी पांचों परतों में से सबसे न्यूनतम वायुमंडलीय घनत्व किस परत का होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाह्यमंडल (Exosphere) का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ध्रुवीय क्षेत्रों में आयनमंडल की ऊंचाई विषुवत वृत्त की तुलना में कैसी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">थोड़ी कम होती है (वायुमंडल के संकुचित होने के कारण)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मध्यमंडल और समतापमंडल के मध्य वायु परिसंचरण की वैश्विक संवहनीय प्रणाली क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ब्रूवर-डॉबसन परिसंचरण (Brewer-Dobson Circulation)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शीत ऋतु में ध्रुवीय मध्यमंडल का तापमान ग्रीष्म ऋतु की तुलना में गर्म क्यों रहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैश्विक परिसंचरण द्वारा वायु के नीचे बैठने और रुद्धोष्म तापन के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वायुमंडल में 100 किमी से ऊपर नाइट्रोजन किस रूप में पाई जाने लगती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आणविक नाइट्रोजन (N₂) के साथ-साथ परमाण्विक नाइट्रोजन (N) के रूप में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वायुमंडल में 200 किमी से ऊपर ऑक्सीजन मुख्य रूप से किस रूप में रहती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परमाण्विक ऑक्सीजन (Atomic Oxygen - O) के रूप में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>परमाण्विक ऑक्सीजन निम्न पृथ्वी कक्षा (LEO) में स्थित अंतरिक्ष यानों की सतह पर क्या प्रभाव डालती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धातुओं और पॉलिमर्स का तीव्र ऑक्सीकरण एवं रासायनिक क्षरण करती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समस्त वायुमंडलीय संरचना का सबसे प्रमुख पर्यावरणीय निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह बहुस्तरीय आवरण पृथ्वी के जीवन को बाह्य अंतरिक्ष के घातक विकिरण व उल्काओं से पूर्ण सुरक्षा प्रदान करता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

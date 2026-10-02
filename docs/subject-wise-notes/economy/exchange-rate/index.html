@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="विनिमय दर Part 1">
+<title>विनिमय दर Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / विनिमय दर Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>विनिमय दर Part 1</h1>
+    <p class="topic-subtitle">विनिमय दर का अर्थ, नाममात्र विनिमय दर (NER/NEER), वास्तविक विनिमय दर (RER/REER), तुलनात्मक अंतर एवं बाह्य प्रतिस्पर्धात्मकता का संपूर्ण विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">विनिमय दर Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>विनिमय दर का प्रकार</th><th>प्रमुख विशेषता</th><th>आर्थिक प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">नाममात्र विनिमय दर (Nominal Exchange Rate - NER)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दो मुद्राओं के बीच का सीधा मौद्रिक विनिमय अनुपात (जैसे ₹83 प्रति $1); इसमें देशों के आंतरिक मूल्य स्तर या मुद्रास्फीति का कोई समायोजन नहीं होता।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दैनिक विदेशी मुद्रा बाजार में लेन-देन, वित्तीय परिसंपत्तियों के मूल्यांकन, विदेशी ऋणों की सेवा लागत और तात्कालिक पूंजी प्रवाह को निर्धारित करती है।</div></div></td></tr><tr><td><div class="primary-cell">वास्तविक विनिमय दर (Real Exchange Rate - RER)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">घरेलू और विदेशी मूल्य स्तरों (मुद्रास्फीति) के अनुपात द्वारा समायोजित नाममात्र विनिमय दर [RER = NER * (P_domestic / P_foreign)]; वस्तुओं की सापेक्ष कीमत का मापक।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अंतरराष्ट्रीय बाजार में किसी देश के उत्पादों की वास्तविक व्यापारिक प्रतिस्पर्धात्मकता (Trade Competitiveness) और चालू खाता संतुलन की मुख्य निर्धारक।</div></div></td></tr><tr><td><div class="primary-cell">नाममात्र प्रभावी विनिमय दर (NEER)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्रमुख व्यापारिक साझेदार देशों की मुद्राओं के सापेक्ष घरेलू मुद्रा का व्यापार-भारित (Trade-Weighted) बहुपक्षीय नाममात्र सूचकांक (जैसे RBI का 40-मुद्रा बास्केट)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">एकल मुद्रा (डॉलर) पर निर्भरता से परे जाकर वैश्विक स्तर पर घरेलू मुद्रा की समग्र बाह्य शक्ति और विनिमय स्थिरता का व्यापक दर्पण।</div></div></td></tr><tr><td><div class="primary-cell">वास्तविक प्रभावी विनिमय दर (REER)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">साझेदार देशों के सापेक्ष घरेलू मुद्रास्फीति अंतरों द्वारा समायोजित व्यापार-भारित बहुपक्षीय सूचकांक (आधार वर्ष 2015-16 = 100)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">यदि REER > 100 हो तो मुद्रा का अधिमूल्यन (Overvaluation) और निर्यात प्रतिस्पर्धा में गिरावट; यदि REER < 100 हो तो निर्यात प्रतिस्पर्धा में बढ़त का संकेत।</div></div></td></tr><tr><td><div class="primary-cell">स्थिर विनिमय दर (Fixed / Pegged Exchange Rate)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">केंद्रीय बैंक द्वारा अपनी मुद्रा का मूल्य किसी प्रमुख विदेशी मुद्रा (जैसे डॉलर) या स्वर्ण के साथ एक निश्चित स्तर पर आधिकारिक रूप से तय करना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विनिमय जोखिम से व्यापारिक स्थिरता मिलती है, किंतु केंद्रीय बैंक को दर बनाए रखने हेतु भारी विदेशी मुद्रा भंडार खपाना पड़ता है और मौद्रिक स्वायत्तता छिन जाती है।</div></div></td></tr><tr><td><div class="primary-cell">लचीली / फ्लोटिंग विनिमय दर (Floating Exchange Rate)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मुद्रा का मूल्य पूरी तरह विदेशी मुद्रा बाजार में मांग और आपूर्ति की बाजार शक्तियों द्वारा स्वतंत्र रूप से तय होना (शून्य केंद्रीय हस्तक्षेप)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बाह्य आर्थिक आघातों (जैसे तेल झटका) को स्वतः अवशोषित करने की क्षमता, स्वतंत्र मौद्रिक नीति का लाभ, किंतु सट्टेबाजी और अत्यधिक मूल्य अस्थिरता का जोखिम।</div></div></td></tr><tr><td><div class="primary-cell">प्रबंधित फ्लोटिंग दर (Managed Float / Dirty Float)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बाजार मांग-आपूर्ति द्वारा दर का निर्धारण, किंतु अत्यधिक अस्थिरता रोकने हेतु केंद्रीय बैंक (RBI) द्वारा समय-समय पर फॉरेक्स बाजार में डॉलर की खरीद-बिक्री।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बाजार आधारित दक्षता और समष्टिगत वित्तीय स्थिरता का व्यावहारिक संतुलन; भारत द्वारा 1993 से सफलतापूर्वक अपनाई गई विनिमय व्यवस्था।</div></div></td></tr><tr><td><div class="primary-cell">क्रय शक्ति समता दर (Purchasing Power Parity - PPP Rate)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दो देशों में समान वस्तुओं और सेवाओं की टोकरी खरीदने हेतु आवश्यक मुद्राओं का सापेक्ष अनुपात ('एक मूल्य का नियम' - Law of One Price पर आधारित)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विभिन्न अर्थव्यवस्थाओं के वास्तविक आर्थिक आकार और नागरिकों के जीवन स्तर की अंतरराष्ट्रीय तुलनाओं का सबसे सटीक पैमाना (भारत 3री सबसे बड़ी PPP जीडीपी)।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'विनिमय दर' (Exchange Rate) की मानक प्रामाणिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह दर जिस पर एक देश की राष्ट्रीय मुद्रा का किसी अन्य देश की मुद्रा में रूपांतरण या विनिमय किया जाता है (अर्थात् घरेलू मुद्रा के रूप में विदेशी मुद्रा की कीमत)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार (Foreign Exchange Market / Forex Market) किस प्रकार का बाजार है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक वैश्विक, विकेंद्रीकृत और चौबीसों घंटे (24x7) संचालित होने वाला ओवर-द-काउंटर (OTC) वित्तीय बाजार, जहां विश्व की विभिन्न राष्ट्रीय मुद्राओं की खरीद-बिक्री होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा उद्धरण (Forex Quotation) में 'प्रत्यक्ष उद्धरण' (Direct Quote) से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा की एक निश्चित इकाई (जैसे 1 अमेरिकी डॉलर) को खरीदने हेतु आवश्यक घरेलू मुद्रा की मात्रा व्यक्त करना (जैसे 1 USD = ₹83.50)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'अप्रत्यक्ष उद्धरण' (Indirect Quote) किसे कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू मुद्रा की एक इकाई (जैसे ₹1) के बदले प्राप्त होने वाली विदेशी मुद्रा की मात्रा व्यक्त करना (जैसे ₹1 = 0.012 USD)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'आधार मुद्रा' (Base Currency) और 'उद्धरण मुद्रा' (Quote Currency) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जोड़ी में पहली मुद्रा आधार मुद्रा होती है (जिसका मूल्य 1 इकाई माना जाता है), और दूसरी मुद्रा उद्धरण मुद्रा होती है जो आधार मुद्रा की कीमत बताती है (USD/INR में USD आधार मुद्रा है और INR उद्धरण मुद्रा है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>फॉरेक्स बाजार में 'बोली मूल्य' (Bid Price) और 'पूछ मूल्य' (Ask / Offer Price) क्या दर्शाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बोली मूल्य वह दर है जिस पर बैंक/डीलर विदेशी मुद्रा खरीदने को तैयार है, और पूछ मूल्य वह दर है जिस पर डीलर विदेशी मुद्रा बेचने को तैयार है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'स्प्रेड' (Bid-Ask Spread) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूछ मूल्य और बोली मूल्य के बीच का अंतर (Ask Price - Bid Price), जो फॉरेक्स डीलर का लाभ मार्जिन और बाजार की तरलता लागत दर्शाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हाजिर विनिमय दर (Spot Exchange Rate) से क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह विनिमय दर जिस पर मुद्राओं का तत्काल भौतिक लेन-देन और निपटान सामान्यतः दो कार्य दिवसों (T+2) के भीतर होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वायदा विनिमय दर (Forward Exchange Rate) क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्तमान में तय की गई वह विनिमय दर जिस पर भविष्य की किसी पूर्व-निर्धारित तिथि (जैसे 1, 3 या 6 महीने बाद) मुद्राओं का वास्तविक विनिमय किया जाएगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वायदा अनुबंधों (Forward Contracts) का उपयोग व्यापार में मुख्य रूप से किस उद्देश्य से किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विनिमय दर के भविष्य के प्रतिकूल उतार-चढ़ाव से बचने हेतु 'हेजिंग' (Hedging / जोखिम सुरक्षा) करने के लिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'क्रॉस विनिमय दर' (Cross Exchange Rate) की क्या अवधारणा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किन्हीं दो मुद्राओं के बीच की विनिमय दर जिसे किसी तीसरी प्रमुख सामान्य मुद्रा (प्रायः अमेरिकी डॉलर) के माध्यम से अप्रत्यक्ष रूप से निकाला जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि 1 USD = ₹83 और 1 USD = 150 जापानी येन (JPY) हो, तो रुपये और येन की क्रॉस दर क्या होगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 INR = 1.807 JPY (150 / 83 = 1.807 येन प्रति रुपया)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा का 'मूल्यह्रास' (Currency Depreciation) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फ्लोटिंग विनिमय दर प्रणाली में बाजार की मांग और आपूर्ति की शक्तियों के कारण विदेशी मुद्रा के सापेक्ष घरेलू मुद्रा के बाजार मूल्य में स्वतः गिरावट आना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा का 'अवमूल्यन' (Currency Devaluation) मूल्यह्रास से किस प्रकार तकनीकी रूप से भिन्न है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवमूल्यन स्थिर या प्रबंधित विनिमय दर व्यवस्था में सरकार या केंद्रीय बैंक द्वारा आधिकारिक प्रशासनिक आदेश से जानबूझकर अपनी मुद्रा के मूल्य में की गई कटौती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा के 'मूल्यवृद्धि' (Currency Appreciation) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाजार में विदेशी मुद्रा की आपूर्ति बढ़ने या घरेलू मुद्रा की मांग बढ़ने से फ्लोटिंग विनिमय दर तंत्र में घरेलू मुद्रा का स्वतः मजबूत होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा का 'अधिमूल्यन' या 'पुनर्मूल्यांकन' (Currency Revaluation) क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थिर विनिमय दर प्रणाली में सरकार या केंद्रीय बैंक द्वारा आधिकारिक नीतिगत निर्णय के तहत अपनी मुद्रा के मूल्य को विदेशी मुद्रा के मुकाबले आधिकारिक रूप से बढ़ाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब भारतीय रुपया अमेरिकी डॉलर के मुकाबले ₹80 से गिरकर ₹84 प्रति डॉलर हो जाता है, तो यह रुपये का क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये का मूल्यह्रास (Depreciation / डॉलर के सापेक्ष रुपये की कीमत घटना)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब रुपया ₹84 से सुधरकर ₹80 प्रति डॉलर हो जाता है, तो इसे अर्थशास्त्र में क्या कहेंगे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये का अधिमूल्यन या सुदृढ़ीकरण (Appreciation of Rupee)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घरेलू मुद्रा के मूल्यह्रास (Depreciation) का देश के निर्यातों पर क्या तात्कालिक प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निर्यात विदेशी खरीदारों के लिए सस्ते और अधिक प्रतिस्पर्धी हो जाते हैं, जिससे निर्यात मांग में वृद्धि को प्रोत्साहन मिलता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घरेलू मुद्रा के मूल्यह्रास का देश के आयातों पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयात घरेलू उपभोक्ताओं और उद्योगों के लिए महंगे हो जाते हैं, जिससे आयात मांग हतोत्साहित होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'आयातित मुद्रास्फीति' (Imported Inflation) क्या है और यह विनिमय दर से कैसे जुड़ी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब घरेलू मुद्रा के टूटने (Depreciation) के कारण आयातित कच्चे माल (विशेषकर कच्चा तेल) के दाम बढ़ जाते हैं, जिससे घरेलू बाजार में उत्पादन लागत और सामान्य कीमतें बढ़ जाती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घरेलू मुद्रा के मूल्यह्रास का उन भारतीय कंपनियों पर क्या नकारात्मक प्रभाव पड़ता है जिन्होंने विदेशी वाणिज्यिक उधारी (ECB) ली है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उनके विदेशी ऋणों के मूलधन और ब्याज चुकाने की रुपये में लागत (Debt Servicing Cost) अत्यधिक बढ़ जाती है, यदि ऋण हेज न किया गया हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घरेलू मुद्रा के सुदृढ़ीकरण (Appreciation) का घरेलू अर्थव्यवस्था पर क्या सकारात्मक और नकारात्मक प्रभाव होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सकारात्मक: आयात सस्ते होते हैं और मुद्रास्फीति घटती है; नकारात्मक: निर्यात विदेशी बाजारों में महंगे होकर अपनी प्रतिस्पर्धात्मकता खो देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'सट्टेबाजी' (Speculation) क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विनिमय दर के भावी उतार-चढ़ाव का अनुमान लगाकर केवल मुद्रा की खरीद-बिक्री से अल्पकालिक लाभ कमाने का प्रयास।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'आर्बिट्राज' (Arbitrage / अंतरपणन) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दो अलग-अलग विदेशी मुद्रा बाजारों में विनिमय दर के अंतर का लाभ उठाते हुए एक बाजार से सस्ती मुद्रा खरीदकर उसी समय दूसरे बाजार में महंगी दर पर बेचकर जोखिम-मुक्त लाभ कमाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'मुद्रा स्वैप' (Currency Swap) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दो पक्षों के बीच एक मुद्रा को दूसरी मुद्रा में बदलने और भविष्य की तारीख पर पूर्व-निर्धारित विनिमय दर पर उसे वापस बदलने का एक साथ किया गया समझौता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय बैंकों के बीच द्विपक्षीय मुद्रा स्वैप व्यवस्था (Bilateral Swap Arrangement) का क्या रणनीतिक महत्व होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा तरलता संकट के समय डॉलर बाजार पर निर्भर हुए बिना एक-दूसरे की स्थानीय मुद्रा में आपातकालीन तरलता प्राप्त करना (जैसे भारत-जापान स्वैप समझौता)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'क्रॉलिंग पेग' (Crawling Peg) विनिमय दर व्यवस्था क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ऐसी प्रणाली जहां विनिमय दर स्थिर तो रखी जाती है, किंतु मुद्रास्फीति अंतरों के आधार पर पूर्व-घोषित अंतरालों पर उसमें छोटे-छोटे क्रमिक समायोजन किए जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'करेंसी बोर्ड व्यवस्था' (Currency Board System) में विनिमय दर कैसे संचालित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कठोर कानूनी प्रतिबद्धता जिसके तहत घरेलू मुद्रा 100% विदेशी मुद्रा भंडार द्वारा समर्थित होती है और निश्चित दर पर पूरी तरह परिवर्तनीय होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'डॉलरीकरण' (Dollarization) की आर्थिक प्रक्रिया से क्या आशय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब कोई देश गंभीर अति-मुद्रास्फीति या मुद्रा संकट के कारण अपनी राष्ट्रीय मुद्रा को पूरी तरह त्यागकर अमेरिकी डॉलर को आधिकारिक वैध मुद्रा बना लेता है (जैसे इक्वाडोर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्थिर विनिमय दर प्रणाली का सबसे बड़ा लाभ और सबसे बड़ी हानि क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लाभ: अंतरराष्ट्रीय व्यापार और निवेश में विनिमय जोखिम समाप्त होना; हानि: केंद्रीय बैंक को स्वतंत्र मौद्रिक नीति का परित्याग करना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लचीली (फ्लोटिंग) विनिमय दर व्यवस्था का सबसे बड़ा समष्टिगत लाभ क्या माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाह्य आर्थिक आघातों (जैसे तेल मूल्य उछाल या वैश्विक मंदी) को विनिमय दर के स्वतः समायोजन द्वारा अवशोषित करने की क्षमता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रबंधित फ्लोटिंग (Managed Float) को वित्तीय अर्थशास्त्र में 'डर्टी फ्लोट' (Dirty Float) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि दर को औपचारिक रूप से बाजार-निर्धारित कहा जाता है, किंतु केंद्रीय बैंक पर्दे के पीछे से डॉलर खरीद-बेचकर दर को अपनी इच्छानुसार प्रभावित करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'लेन-देन जोखिम' (Transaction Exposure) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुबंध करने और वास्तविक नकद भुगतान प्राप्त करने के बीच विनिमय दर में प्रतिकूल बदलाव से होने वाले संभावित वित्तीय घाटे का जोखिम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कंपनियों के लिए 'आर्थिक जोखिम' (Economic Exposure) विनिमय दर से कैसे उत्पन्न होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विनिमय दर के दीर्घकालिक उतार-चढ़ाव से कंपनी की भविष्य की नकदी प्रवाह क्षमता, बाजार हिस्सेदारी और अंतरराष्ट्रीय प्रतिस्पर्धात्मकता पर पड़ने वाला गहरा प्रभाव।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'नाममात्र विनिमय दर' (Nominal Exchange Rate - NER) की सटीक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दो देशों की मुद्राओं के बीच का वह सीधा मौद्रिक विनिमय अनुपात जिसमें दोनों देशों के आंतरिक मूल्य स्तरों (मूल्य सूचकांकों या मुद्रास्फीति) का कोई समायोजन नहीं किया गया होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>द्विपक्षीय नाममात्र विनिमय दर (Bilateral Nominal Exchange Rate) क्या मापती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल किन्हीं दो विनिर्दिष्ट देशों की मुद्राओं के बीच का सीधा विनिमय अनुपात (जैसे INR बनाम USD, या INR बनाम यूरो)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि बाजार में 1 डॉलर = ₹83.00 है, तो इस उद्धरण में नाममात्र विनिमय दर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">83 रुपये प्रति डॉलर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नाममात्र विनिमय दर (NER) के निर्धारण में विदेशी मुद्रा की मांग (Demand for Forex) किन कारकों से उत्पन्न होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी वस्तुओं व सेवाओं के आयात हेतु, विदेशों में भारतीय नागरिकों की यात्रा व शिक्षा हेतु, विदेशी ऋणों की अदायगी, और विदेशों में परिसंपत्ति निवेश हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा की आपूर्ति (Supply of Forex) देश में किन प्रमुख स्रोतों से आती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वस्तुओं और सेवाओं के निर्यात से, प्रत्यक्ष विदेशी निवेश (FDI) व पोर्टफोलियो निवेश (FPI) से, बाह्य वाणिज्यिक उधारी (ECB), और अनिवासी भारतीयों के प्रेषण (Remittances) से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा की मांग वक्र (Demand Curve for Foreign Exchange) का ढाल कैसा होता है और क्यों?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नीचे की ओर ऋणात्मक ढाल (Downward Sloping); क्योंकि विदेशी मुद्रा की विनिमय दर जितनी सस्ती होगी, विदेशी सामान सस्ते होंगे और आयात हेतु विदेशी मुद्रा की मांग उतनी ही अधिक होगी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा की आपूर्ति वक्र (Supply Curve for Foreign Exchange) का ढाल कैसा होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊपर की ओर धनात्मक ढाल (Upward Sloping); क्योंकि विदेशी मुद्रा जितनी महंगी होगी (रुपया कमजोर होगा), हमारे निर्यात विदेशियों हेतु सस्ते होंगे और वे अधिक खरीदकर देश में अधिक विदेशी मुद्रा लाएंगे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नाममात्र विनिमय दर का संतुलन (Equilibrium Exchange Rate) कहाँ स्थापित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उस बिंदु पर जहां विदेशी मुद्रा की कुल बाजार मांग उसकी कुल बाजार आपूर्ति के ठीक बराबर हो जाती है (Demand = Supply)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश में विदेशी पोर्टफोलियो निवेशक (FPI) अचानक भारतीय शेयर बाजार से अरबों डॉलर निकालना शुरू कर दें, तो NER पर क्या प्रभाव पड़ेगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉलर की मांग अत्यधिक बढ़ जाएगी और डॉलर की आपूर्ति घट जाएगी, जिससे रुपये की नाममात्र विनिमय दर में तीव्र मूल्यह्रास (Depreciation) होगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब अमेरिकी फेडरल रिजर्व अपनी नीतिगत ब्याज दरों में भारी वृद्धि करता है, तो भारतीय रुपये की NER पर क्या असर पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूंजी भारत से निकलकर अमेरिकी परिसंपत्तियों की ओर पलायन करती है, जिससे डॉलर मजबूत होता है और भारतीय रुपया कमजोर होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नाममात्र प्रभावी विनिमय दर (Nominal Effective Exchange Rate - NEER) की क्या परिभाषा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी देश की मुद्रा का उसके प्रमुख व्यापारिक साझेदार देशों की मुद्राओं के बास्केट के सापेक्ष व्यापार-भारित (Trade-Weighted) ज्यामितीय औसत सूचकांक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NEER की गणना करने की आवश्यकता क्यों पड़ती है जबकि हमारे पास द्विपक्षीय NER पहले से उपलब्ध होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि एक देश कई देशों के साथ व्यापार करता है; संभव है कि रुपया डॉलर के मुकाबले कमजोर हो रहा हो किंतु यूरो या येन के मुकाबले मजबूत हो रहा हो; NEER मुद्रा की समग्र बाह्य शक्ति को दर्शाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक (RBI) वर्तमान में NEER सूचकांक की गणना हेतु कितने व्यापारिक साझेदार देशों के मुद्रा बास्केट का उपयोग करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">40 प्रमुख व्यापारिक साझेदार देशों के मुद्रा बास्केट का (पूर्व में 36-मुद्रा बास्केट था)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI के 40-मुद्रा NEER बास्केट में विभिन्न विदेशी मुद्राओं को भार (Weightage) किस आधार पर दिया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत के कुल बाह्य व्यापार (वस्तुओं और सेवाओं के आयात + निर्यात) में संबंधित देश के आनुपातिक हिस्से के आधार पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI के NEER बास्केट में सबसे बड़ा भारांक (Weightage) पारंपरिक रूप से किन मुद्राओं का है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमेरिकी डॉलर (USD), चीनी युआन (CNY), यूरो (EUR), यूएई दिरहम (AED), और ब्रिटिश पाउंड (GBP)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI के 40-मुद्रा NEER और REER सूचकांकों का वर्तमान आधिकारिक 'आधार वर्ष' (Base Year) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय वर्ष 2015-16 = 100 (आरबीआई द्वारा दिसंबर 2020 में संशोधित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि भारत का NEER सूचकांक 100 से बढ़कर 105 हो जाता है, तो इसका क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रमुख 40 व्यापारिक साझेदारों की मुद्राओं के समग्र बास्केट के सापेक्ष भारतीय रुपये का नाममात्र रूप से 5% अधिमूल्यन (Appreciation) हुआ है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि भारत का NEER सूचकांक 100 से गिरकर 95 पर आ जाता है, तो यह क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">साझेदार देशों की मुद्राओं के मुकाबले भारतीय रुपये का व्यापार-भारित नाममात्र मूल्यह्रास (Depreciation)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नाममात्र विनिमय दर (NER) किसी देश की वास्तविक अंतरराष्ट्रीय व्यापारिक प्रतिस्पर्धात्मकता को सटीक रूप से क्यों नहीं दर्शा पाती?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यह दोनों देशों के बीच मुद्रास्फीति (मूल्य वृद्धि) के अंतर को पूरी तरह नजरअंदाज कर देती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विनिमय दर पास-थ्रू (Exchange Rate Pass-Through - ERPT) क्या मापता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नाममात्र विनिमय दर में 1% के बदलाव से घरेलू आयात कीमतों और उपभोक्ता मुद्रास्फीति में होने वाले प्रतिशत बदलाव का अनुपात।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में विनिमय दर पास-थ्रू अपूर्ण (Incomplete Pass-Through) क्यों होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि आयातक और विनिर्माता मुद्रा मूल्यह्रास के पूरे बोझ को तुरंत ग्राहकों पर नहीं डालते, बल्कि अपने लाभ मार्जिन में कुछ हिस्सा अवशोषित कर लेते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि कच्चे तेल के अंतरराष्ट्रीय दाम स्थिर रहें किंतु डॉलर के मुकाबले रुपया 5% टूट जाए, तो भारतीय रिफाइनरियों के आयात बिल पर क्या प्रभाव पड़ेगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कच्चे तेल का रुपये में आयात बिल तुरंत 5% बढ़ जाएगा, जिससे पेट्रोल और डीजल की कीमतें बढ़ेंगी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'अति-प्रतिक्रिया' (Overshooting Model) की अवधारणा किसने दी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुडिगर डॉर्नबुश (Rudiger Dornbusch - 1976) ने; जो दर्शाती है कि मौद्रिक आघात के बाद विनिमय दर अल्पावधि में अपने दीर्घकालिक संतुलन से बहुत अधिक आगे निकल जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कवर्ड इंटरेस्ट रेट पैरिटी (Covered Interest Parity - CIP) क्या दर्शाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दो देशों के बीच ब्याज दर का अंतर वायदा विनिमय दर के प्रीमियम या डिस्काउंट के ठीक बराबर होना चाहिए, जिससे जोखिम-मुक्त विदेशी निवेश पर रिटर्न समान हो जाता है।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनकवर्ड इंटरेस्ट रेट पैरिटी (Uncovered Interest Parity - UIP) का क्या सिद्धांत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्च ब्याज दर वाले देश की मुद्रा में भविष्य में ब्याज अंतर के बराबर मूल्यह्रास होने की अपेक्षा की जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'वास्तविक विनिमय दर' (Real Exchange Rate - RER) की मौलिक समष्टिगत परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू और विदेशी मूल्य स्तरों (मुद्रास्फीति) के सापेक्ष अनुपात द्वारा समायोजित नाममात्र विनिमय दर; जो विदेशी वस्तुओं के संदर्भ में घरेलू वस्तुओं की सापेक्ष कीमत को मापती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वास्तविक विनिमय दर (RER) ज्ञात करने का मानक गणितीय सूत्र क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RER = NER * (P_domestic / P_foreign) अथवा e * (P / P*); जहां e प्रत्यक्ष नाममात्र विनिमय दर है, P घरेलू मूल्य स्तर है, और P* विदेशी मूल्य स्तर है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वास्तविक विनिमय दर (RER) आर्थिक दृष्टि से वास्तव में क्या मापती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह क्रय शक्ति का वह वास्तविक अनुपात मापती है जिस पर एक देश की वस्तुओं और सेवाओं का दूसरे देश की वस्तुओं और सेवाओं से भौतिक व्यापार किया जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि भारत और अमेरिका में नाममात्र विनिमय दर $1 = ₹80 है, भारत में एक शर्ट की कीमत ₹800 है और अमेरिका में समान शर्ट की कीमत $10 है, तो RER क्या होगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RER = 1; क्योंकि 80 * (10 / 800) = 1 (दोनों देशों में शर्ट की वास्तविक लागत बिल्कुल समान है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि नाममात्र विनिमय दर $1 = ₹80 पर स्थिर रहे, किंतु भारत में मुद्रास्फीति 10% हो और अमेरिका में मुद्रास्फीति 2% हो, तो वास्तविक विनिमय दर (RER) पर क्या प्रभाव पड़ेगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये का वास्तविक अधिमूल्यन (Real Appreciation) हो जाएगा; भारतीय सामान अमेरिकी सामानों की तुलना में महंगे हो जाएंगे और भारत की निर्यात प्रतिस्पर्धा घट जाएगी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वास्तविक विनिमय दर में वृद्धि (Real Appreciation) का किसी देश के व्यापार संतुलन पर क्या प्रतिकूल असर पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू उत्पाद विदेशी खरीदारों हेतु महंगे और विदेशी उत्पाद घरेलू खरीदारों हेतु सस्ते हो जाते हैं, जिससे निर्यात घटते हैं, आयात बढ़ते हैं और व्यापार घाटा गहराता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वास्तविक विनिमय दर में गिरावट (Real Depreciation) का देश के व्यापार पर क्या सकारात्मक प्रभाव होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू वस्तुओं की अंतरराष्ट्रीय प्रतिस्पर्धात्मकता बढ़ जाती है, जिससे देश के निर्यात बढ़ते हैं और चालू खाता संतुलन में सुधार होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वास्तविक प्रभावी विनिमय दर (Real Effective Exchange Rate - REER) की क्या परिभाषा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रमुख व्यापारिक साझेदार देशों के सापेक्ष घरेलू और विदेशी मुद्रास्फीति (उपभोक्ता मूल्य सूचकांकों) के अंतर द्वारा समायोजित नाममात्र प्रभावी विनिमय दर (NEER) का भारित सूचकांक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>REER की गणना का औपचारिक वैचारिक सूत्र NEER के संदर्भ में क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">REER = NEER * (घरेलू मूल्य सूचकांक / भारित विदेशी मूल्य सूचकांक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक (RBI) अपने 40-मुद्रा REER सूचकांक में मूल्य स्तरों को मापने हेतु किस मूल्य सूचकांक का उपयोग करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपभोक्ता मूल्य सूचकांक (CPI - Consumer Price Index)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2014 से पूर्व RBI अपने REER सूचकांक में घरेलू मुद्रास्फीति मापने हेतु किसका उपयोग करता था जिसे बाद में बदला गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">थोक मूल्य सूचकांक (WPI) का; जिसे रघुराम राजन समिति की सिफारिश पर अंतरराष्ट्रीय मानकों के अनुरूप CPI से प्रतिस्थापित किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि भारत का REER सूचकांक अपने आधार वर्ष के 100 से बढ़कर 110 हो जाता है, तो इस स्थिति को तकनीकी रूप से क्या कहा जाएगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रुपये का लगभग 10% 'वास्तविक अधिमूल्यन' (Overvaluation of Rupee); जो यह दर्शाता है कि भारतीय निर्यात अंतरराष्ट्रीय स्तर पर कम प्रतिस्पर्धी हो गए हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि भारत का REER सूचकांक 100 से गिरकर 92 पर आ जाता है, तो यह क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये का 8% 'वास्तविक अवमूल्यन' (Undervaluation); जो भारतीय निर्यातकों को वैश्विक मूल्य प्रतिस्पर्धा में बढ़त प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसी देश का केंद्रीय बैंक REER सूचकांक पर निरंतर पैनी नजर क्यों रखता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह जांचने के लिए कि क्या राष्ट्रीय मुद्रा कृत्रिम रूप से अधिमूल्यित होकर देश के निर्यातों और विनिर्माण क्षेत्र को नुकसान तो नहीं पहुंचा रही है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि नाममात्र विनिमय दर (NER) में गिरावट आ रही हो, किंतु घरेलू मुद्रास्फीति विदेशी मुद्रास्फीति से बहुत अधिक हो, तो REER का क्या व्यवहार हो सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NER गिरने के बावजूद REER बढ़ सकती है (वास्तविक अधिमूल्यन हो सकता है); क्योंकि उच्च घरेलू मुद्रास्फीति नाममात्र मूल्यह्रास के लाभ को पूरी तरह समाप्त कर देती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'क्रय शक्ति समता सिद्धांत' (Purchasing Power Parity - PPP Theory) का प्रतिपादन आधुनिक अर्थशास्त्र में किसने किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वीडिश अर्थशास्त्री गुस्ताव कैसल (Gustav Cassel) ने वर्ष 1918 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूर्ण क्रय शक्ति समता (Absolute PPP) का 'एक मूल्य का नियम' (Law of One Price - LOOP) क्या कहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिवहन लागत और व्यापार बाधाओं के अभाव में एक समान वस्तु का मूल्य विश्व के सभी बाजारों में एक ही मुद्रा में व्यक्त करने पर समान होना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सापेक्ष क्रय शक्ति समता (Relative PPP) सिद्धांत विनिमय दर और मुद्रास्फीति के संबंध में क्या भविष्यवाणी करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दो मुद्राओं के बीच नाममात्र विनिमय दर में प्रतिशत परिवर्तन दोनों देशों के बीच मुद्रास्फीति दर के अंतर के बराबर होना चाहिए (%Δe = Inflation_domestic - Inflation_foreign)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि भारत में वार्षिक मुद्रास्फीति 6% हो और अमेरिका में 2% हो, तो सापेक्ष PPP सिद्धांत के अनुसार रुपये का क्या होना चाहिए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये का डॉलर के मुकाबले प्रतिवर्ष लगभग 4% (6% - 2%) नाममात्र मूल्यह्रास (Depreciation) होना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रसिद्ध अंतरराष्ट्रीय पत्रिका 'द इकोनॉमिस्ट' (The Economist) द्वारा 1986 में शुरू किया गया 'बिग मैक सूचकांक' (Big Mac Index) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मैकडॉनल्ड्स के बिग मैक बर्गर की विभिन्न देशों में स्थानीय कीमतों की तुलना करके यह जांचने का एक अनौपचारिक और लोकप्रिय PPP संकेतक कि कोई मुद्रा कितनी अधिमूल्यित या अवमूल्यित है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वास्तविक जीवन में क्रय शक्ति समता (PPP) सिद्धांत के पूरी तरह लागू न हो पाने की तीन प्रमुख व्यावहारिक बाधाएं क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. परिवहन और सीमा शुल्क लागतें, 2. गैर-व्यापारिक वस्तुएं व सेवाएं (जैसे बाल काटना, मकान किराया), और 3. विशाल सट्टा पूंजी प्रवाह जो व्यापार की तुलना में विनिमय दर को अधिक प्रभावित करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'बालासा-सैमुअलसन प्रभाव' (Balassa-Samuelson Effect) क्या स्पष्ट करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तीव्र उत्पादकता वृद्धि वाले विकासशील देशों में व्यापारिक क्षेत्र की मजदूरी बढ़ने से गैर-व्यापारिक सेवाओं की कीमतें बढ़ती हैं, जिससे उनकी वास्तविक विनिमय दर (REER) समय के साथ स्वाभाविक रूप से अधिमूल्यित होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डच रोग (Dutch Disease) की अवधारणा विनिमय दर के संदर्भ में क्या दर्शाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राकृतिक संसाधनों की अचानक भारी खोज या विशाल पूंजी प्रवाह से राष्ट्रीय मुद्रा का तीव्र वास्तविक अधिमूल्यन होना, जिससे गैर-संसाधन विनिर्माण और कृषि निर्यात तबाह हो जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार की शर्तें (Terms of Trade - ToT) और वास्तविक विनिमय दर (RER) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ToT केवल निर्यात मूल्य और आयात मूल्य का अनुपात (Px/Pm) है, जबकि RER देश की संपूर्ण समग्र मूल्य स्तर की तुलना विदेशी मूल्य स्तर से करती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नाममात्र विनिमय दर (NER) और वास्तविक विनिमय दर (RER) में सबसे मौलिक अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NER केवल मुद्राओं का मौद्रिक अनुपात है, जबकि RER मुद्रास्फीति-समायोजित होकर दो देशों की वस्तुओं और सेवाओं की वास्तविक क्रय शक्ति और व्यापारिक प्रतिस्पर्धा को दर्शाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या नाममात्र विनिमय दर में 10% की गिरावट का अर्थ यह है कि देश की निर्यात प्रतिस्पर्धा स्वतः 10% बढ़ गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; यदि उसी समय देश की आंतरिक मुद्रास्फीति विदेशी मुद्रास्फीति से 10% अधिक बढ़ गई हो, तो वास्तविक विनिमय दर (RER) अपरिवर्तित रहेगी और प्रतिस्पर्धा में शून्य लाभ होगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन या मूल्यह्रास के बाद व्यापार घाटे के अल्पकालिक और दीर्घकालिक व्यवहार को दर्शाने वाला 'जे-वक्र प्रभाव' (J-Curve Effect) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा अवमूल्यन के तुरंत बाद अल्पावधि में व्यापार घाटा पहले और गहराता है (J का निचला मोड़), क्योंकि पुराने आयात अनुबंध महंगे हो जाते हैं; किंतु मध्यम अवधि में जब मात्रात्मक समायोजन होता है तो निर्यात बढ़कर व्यापार घाटे में टिकाऊ सुधार आता है (J का ऊपरी उभार)।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मार्शल-लर्नर शर्त' (Marshall-Lerner Condition) क्या कहती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू मुद्रा के मूल्यह्रास से व्यापार संतुलन केवल तभी सुधरेगा जब निर्यातों और आयातों की मांग की मूल्य लोच (Price Elasticity of Demand) का कुल योग 1 से अधिक हो (|e_x + e_m| > 1)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश में मार्शल-लर्नर शर्त पूरी न हो (|e_x + e_m| < 1), तो मुद्रा अवमूल्यन का व्यापार घाटे पर क्या प्रभाव पड़ेगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापार घाटा घटने के बजाय और अधिक बढ़ जाएगा (Perverse Effect)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय वित्तीय त्रिविध दुविधा या 'असंभव त्रिमूर्ति' (Impossible Trinity / Mundell-Fleming Trilemma) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोई भी देश एक साथ निम्नलिखित तीन लक्ष्यों को कभी हासिल नहीं कर सकता: 1. स्थिर विनिमय दर, 2. स्वतंत्र मौद्रिक नीति, और 3. पूर्ण मुक्त पूंजी प्रवाह; उसे किसी एक का अनिवार्य त्याग करना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के बाद भारत ने 'असंभव त्रिमूर्ति' (Trilemma) में किन दो स्तंभों को मुख्य रूप से चुना है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वतंत्र मौद्रिक नीति और प्रबंधित पूंजी प्रवाह को चुना है, जबकि विनिमय दर को बाजार-आधारित लचीला (Managed Float) बनने दिया है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'गोल्ड स्टैंडर्ड' (स्वर्ण मान - 1870-1914) किस प्रकार की विनिमय दर व्यवस्था थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक कठोर स्थिर विनिमय दर व्यवस्था; जहां प्रत्येक देश अपनी मुद्रा का मूल्य स्वर्ण की एक निश्चित मात्रा में तय करता था और मुद्राओं का विनिमय स्वर्ण समता (Mint Parity) पर होता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ब्रेटन वुड्स प्रणाली (Bretton Woods System - 1944-1971) की विनिमय दर संरचना कैसी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'समायोज्य खूंटीदार प्रणाली' (Adjustable Peg System); जहां अमेरिकी डॉलर का मूल्य सोने से बंधा था ($35 प्रति औंस) और विश्व की अन्य सभी मुद्राओं का मूल्य डॉलर के साथ स्थिर खूंटीदार तय था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ब्रेटन वुड्स प्रणाली 1971 में क्यों ढह गई (Nixon Shock)?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि अमेरिका ने डॉलर के बदले सोना देने की अपनी वैधानिक प्रतिबद्धता को एकतरफा निलंबित कर दिया (ट्रिफिन दुविधा - Triffin Dilemma के कारण)।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत ने 1947 से 1971 तक अपनी विनिमय दर को मुख्य रूप से किस मुद्रा के साथ आबद्ध (Pegged) रखा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ब्रिटिश पाउंड स्टर्लिंग (GBP) के साथ।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1975 से 1992 तक भारतीय रिजर्व बैंक ने रुपये की विनिमय दर निर्धारण हेतु कौन-सी व्यवस्था अपनाई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापार-भारित बहु-मुद्रा बास्केट खूंटीदार प्रणाली (Multi-Currency Basket Peg); जहां दर का दैनिक निर्धारण RBI द्वारा प्रशासनिक रूप से किया जाता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के भुगतान संतुलन संकट के समय रुपये का ऐतिहासिक दो-चरणीय अवमूल्यन (Devaluation) कब किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 जुलाई 1991 (~9%) और 3 जुलाई 1991 (~11%) को; कुल संचयी अवमूल्यन लगभग 18.5% से 19% था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मार्च 1992 में शुरू की गई 'उदारीकृत विनिमय दर प्रबंधन प्रणाली' (LERMS) क्या थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक संक्रमणकालीन दोहरी विनिमय दर प्रणाली (Dual Exchange Rate); जहां निर्यात अर्जनों का 40% आधिकारिक दर पर सरकार को देना होता था और 60% बाजार दर पर भुनाया जा सकता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत ने दोहरी विनिमय दर व्यवस्था (LERMS) को समाप्त कर एकीकृत बाजार-निर्धारित विनिमय दर प्रणाली (Unified Market-Determined Exchange Rate) कब अपनाई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मार्च 1993 के केंद्रीय बजट में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत ने अंतरराष्ट्रीय मुद्रा कोष (IMF) के अनुच्छेद VIII के तहत चालू खाते पर रुपये की पूर्ण परिवर्तनीयता कब स्वीकार की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">19 अगस्त 1994 को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में भारत की विनिमय दर व्यवस्था का आधिकारिक विनियामक वर्गीकरण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रबंधित फ्लोटिंग व्यवस्था (Managed Floating Regime / बिना पूर्व-घोषित लक्ष्य के लचीली दर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रबंधित फ्लोटिंग के तहत भारतीय रिजर्व बैंक (RBI) का घोषित नीतिगत रुख क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI रुपये के किसी विशिष्ट मूल्य स्तर या लक्ष्य को तय नहीं करता, बल्कि उसका एकमात्र उद्देश्य विदेशी मुद्रा बाजार में अत्यधिक सट्टेबाजी और अचानक आने वाली अस्थिरता (Excess Volatility) को रोकना होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब विदेशी मुद्रा बाजार में डॉलर की अत्यधिक कमी हो जाती है और रुपया तेजी से टूटने लगता है, तो RBI क्या हस्तक्षेप करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI अपने विदेशी मुद्रा भंडार से खुले बाजार में अमेरिकी डॉलर बेचता है, ताकि डॉलर की आपूर्ति बढ़ाकर रुपये की गिरावट को थामा जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब भारत में भारी विदेशी पूंजी (FDI/FPI) का अंतर्प्रवाह होता है और रुपया अत्यधिक मजबूत होने लगता है, तो RBI क्या कदम उठाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI बाजार से अतिरिक्त डॉलर खरीदकर अपने विदेशी मुद्रा भंडार में संचित कर लेता है, ताकि रुपये के अत्यधिक अधिमूल्यन को रोककर निर्यातकों की रक्षा की जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय बैंक द्वारा विदेशी मुद्रा बाजार हस्तक्षेप के घरेलू मुद्रा आपूर्ति पर पड़ने वाले प्रभाव को निष्प्रभावी करने की प्रक्रिया क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'स्टेरलाइजेशन' या बंध्याकरण (Sterilization); जो खुले बाजार की क्रियाओं (OMOs) या मार्केट स्टेबिलाइजेशन स्कीम (MSS) द्वारा सरकारी प्रतिभूतियां बेचकर की जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मार्केट स्टेबिलाइजेशन स्कीम (MSS) की शुरुआत RBI और सरकार द्वारा किस वर्ष की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अप्रैल 2004 में; भारी विदेशी पूंजी अंतर्प्रवाह के कारण प्रणाली में आई अतिरिक्त रुपये की तरलता को सोखने हेतु विशेष सरकारी बॉन्ड जारी करके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा अनिवासी जमा [FCNR(B)] खातों में विनिमय दर जोखिम (Exchange Rate Risk) कौन वहन करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वाणिज्यिक बैंक स्वयं वहन करते हैं (1991 से पूर्व FCNR(A) में यह जोखिम RBI और सरकार उठाती थी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मुद्रा युद्ध' (Currency War / प्रतिस्पर्धी अवमूल्यन) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब विभिन्न देश अपने निर्यातों को सस्ता बनाकर व्यापारिक लाभ कमाने हेतु जानबूझकर अपनी मुद्राओं का प्रतिस्पर्धी अवमूल्यन (Beggar-thy-neighbour Policy) करने की होड़ में लग जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अमेरिका के ट्रेजरी विभाग द्वारा किसी देश को 'करेंसी मैनिपुलेटर' (मुद्रा हेरफेरकर्ता) की निगरानी सूची में डालने के तीन मानक क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. अमेरिका के साथ महत्वपूर्ण द्विपक्षीय व्यापार अधिशेष, 2. जीडीपी के 3% से अधिक का चालू खाता अधिशेष, और 3. अपनी मुद्रा को कमजोर रखने हेतु फॉरेक्स बाजार में लगातार एकतरफा डॉलर खरीद।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'हार्ड करेंसी' (Hard Currency) की क्या पहचान होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैश्विक स्तर पर व्यापक रूप से स्वीकृत, अत्यधिक स्थिर और सुरक्षित मुद्रा (जैसे अमेरिकी डॉलर, यूरो, जापानी येन, ब्रिटिश पाउंड, स्विस फ्रैंक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'सॉफ्ट करेंसी' (Soft Currency) किसे कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह विकासशील देश की मुद्रा जिसकी अंतरराष्ट्रीय मांग कम होती है, मूल्य में भारी उतार-चढ़ाव होता है और जिसे वैश्विक स्तर पर व्यापार में आसानी से स्वीकार नहीं किया जाता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'हॉट मनी' (Hot Money) का विनिमय दर पर क्या प्रभाव होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक विदेशी पोर्टफोलियो पूंजी (FPI) जो उच्च ब्याज या शेयर लाभ की तलाश में तेजी से देश में आती है और संकट में तुरंत बाहर भाग जाती है, जिससे विनिमय दर में अत्यधिक अस्थिरता पैदा होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2013 के 'टेपर टैंट्रम' (Taper Tantrum) संकट के दौरान भारतीय रुपये पर क्या असर हुआ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमेरिकी फेड द्वारा बॉन्ड खरीद घटाने के संकेत पर विदेशी निवेशकों ने भारत से भारी पूंजी निकाली, जिससे रुपया कुछ ही महीनों में डॉलर के मुकाबले ऐतिहासिक रूप से टूटकर ₹54 से ₹68 पर पहुंच गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय मुद्रा कोष (IMF) का 'विशेष आहरण अधिकार' (SDR) किन पाँच मुद्राओं के भारित बास्केट पर आधारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमेरिकी डॉलर, यूरो, चीनी युआन (रेनमिनबी), जापानी येन, और ब्रिटिश पाउंड स्टर्लिंग।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रुपये के अंतरराष्ट्रीयकरण (Internationalisation of Rupee) से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सीमा-पार व्यापार और वित्तीय लेन-देनों में डॉलर पर निर्भरता घटाकर भारतीय रुपये को चालान, निपटान और विदेशी मुद्रा भंडार की मुद्रा के रूप में वैश्विक स्तर पर स्थापित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 2022 में भारतीय रिजर्व बैंक ने रुपये में अंतरराष्ट्रीय व्यापार निपटान हेतु किस विशेष बैंकिंग तंत्र की अनुमति दी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशेष रुपया वोस्ट्रो खाते (Special Rupee Vostro Accounts - SRVA)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वोस्ट्रो खाता (Vostro Account) और नोस्ट्रो खाता (Nostro Account) में क्या मूलभूत अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नोस्ट्रो खाता ('हमारा खाता आपके पास'): भारतीय बैंक का विदेश में विदेशी मुद्रा में खाता; वोस्ट्रो खाता ('आपका खाता हमारे पास'): विदेशी बैंक का भारत में रुपये में संचालित खाता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रुपये में सीमा-पार व्यापार निपटान का भारत के विदेशी मुद्रा भंडार पर क्या रणनीतिक प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कच्चे तेल व आवश्यक आयातों के भुगतान हेतु अमेरिकी डॉलर की मांग घटती है और विदेशी मुद्रा भंडार के क्षरण पर रोक लगती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत ने हाल के वर्षों में किन प्रमुख देशों के साथ स्थानीय मुद्राओं (रुपया-दिरहम, रुपया-रूबल) में व्यापार निपटान समझौते किए हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संयुक्त अरब अमीरात (UAE), रूस, मॉरीशस और श्रीलंका।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा परिवर्तनीयता (Currency Convertibility) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू मुद्रा को बिना किसी सरकारी प्रतिबंध या लाइसेंस के बाजार दर पर किसी भी प्रमुख विदेशी मुद्रा में स्वतंत्र रूप से बदलने की कानूनी छूट।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में रुपये की वर्तमान परिवर्तनीयता की क्या विनियामक स्थिति है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाते (Current Account) पर रुपया पूर्णतः परिवर्तनीय है, जबकि पूंजी खाते (Capital Account) पर रुपया आंशिक रूप से परिवर्तनीय (Partially Convertible) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूंजी खाता परिवर्तनीयता (Full Capital Account Convertibility) की जांच हेतु गठित तारापोर समितियों (1997 एवं 2006) ने क्या पूर्व-शर्तें रखी थीं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राजकोषीय घाटा जीडीपी के 3.5% से कम होना, मुद्रास्फीति 3-5% के दायरे में रहना, बैंकों का एनपीए 5% से नीचे होना और पर्याप्त विदेशी मुद्रा भंडार होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उदारीकृत प्रेषण योजना (Liberalised Remittance Scheme - LRS) के तहत भारतीय निवासी प्रति वित्तीय वर्ष कितनी विदेशी मुद्रा विदेश भेज सकते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रति व्यक्ति प्रति वित्तीय वर्ष अधिकतम 2,50,000 अमेरिकी डॉलर ($2.5 लाख)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'टोक्यो, लंदन और न्यूयॉर्क' का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ये विश्व के तीन सबसे बड़े विदेशी मुद्रा व्यापार केंद्र (Forex Trading Hubs) हैं, जो विभिन्न समय क्षेत्रों (Time Zones) में मिलकर 24 घंटे का निर्बाध वैश्विक फॉरेक्स बाजार बनाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा भंडार में 'स्वर्ण भंडार' और 'विदेशी मुद्रा परिसंपत्तियों' (FCA) का विनिमय दर स्थिरता में क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह वैश्विक वित्तीय बाजारों में देश की संप्रभु साख को बनाए रखता है और केंद्रीय बैंक को सट्टेबाजी के हमलों के विरुद्ध अपनी मुद्रा का बचाव करने की अभेद्य वित्तीय ढाल प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विनिमय दर और राष्ट्रीय व्यापार के संपूर्ण विश्लेषण का अंतिम और स्थायी आर्थिक निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नाममात्र विनिमय दर केवल मौद्रिक लेन-देन की सुविधा देती है, जबकि वास्तविक प्रभावी विनिमय दर (REER) देश की वास्तविक उत्पादकता, तकनीकी दक्षता और अंतरराष्ट्रीय प्रतिस्पर्धा का सच्चा दर्पण है; अतः किसी देश की मुद्रा की दीर्घकालिक मजबूती कृत्रिम हस्तक्षेप से नहीं, बल्कि सुदृढ़ घरेलू आर्थिक बुनियादी सिद्धांतों से तय होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

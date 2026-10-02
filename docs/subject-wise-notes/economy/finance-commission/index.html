@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="वित्त आयोग Part 1">
+<title>वित्त आयोग Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / वित्त आयोग Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>वित्त आयोग Part 1</h1>
+    <p class="topic-subtitle">वित्त आयोग का संवैधानिक आधार (अनुच्छेद 280-281), गठन प्रक्रिया, आवधिकता, 1+4 संरचना तथा वैधानिक योग्यताओं का गहन समष्टिगत विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">वित्त आयोग Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>वित्त आयोग पहलू</th><th>संवैधानिक/संरचनात्मक विशेषता</th><th>भूमिका</th></tr></thead><tbody><tr><td><div class="primary-cell">संवैधानिक आधार (अनुच्छेद 280)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारतीय संविधान के भाग XII (वित्त, संपत्ति, संविदाएं और वाद) के अध्याय I के अंतर्गत एक स्वतंत्र, अर्द्ध-न्यायिक (Quasi-Judicial) निकाय।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारतीय राजकोषीय संघवाद की रीढ़; केंद्र और राज्यों के बीच वित्तीय संसाधनों के निष्पक्ष और पारदर्शी बंटवारे का संवैधानिक तंत्र।</div></div></td></tr><tr><td><div class="primary-cell">गठन की शक्ति (अनुच्छेद 280(1))</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत के राष्ट्रपति द्वारा संविधान लागू होने के दो वर्ष के भीतर और उसके बाद प्रत्येक 5वें वर्ष या आवश्यकतानुसार उससे पूर्व गठन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वित्तीय असंतुलनों (ऊर्ध्वाधर व क्षैतिज) की निरंतर समीक्षा कर बदलते आर्थिक परिवेश के अनुसार समयबद्ध सिफारिशें प्रस्तुत करना।</div></div></td></tr><tr><td><div class="primary-cell">आयोग की संरचना (1+4 प्रारूप)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">एक अध्यक्ष (Chairman) और चार अन्य सदस्य (Four other members); कुल 5 सदस्यीय उच्चस्तरीय विशेषज्ञ निकाय।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सार्वजनिक मामलों, न्यायपालिका, सरकारी वित्त व लेखा, वित्तीय प्रशासन और अर्थशास्त्र के गहन ज्ञान का संस्थागत समन्वय।</div></div></td></tr><tr><td><div class="primary-cell">अर्हताएं एवं चयन (अधिनियम 1951)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">संसद द्वारा पारित वित्त आयोग (प्रकीर्ण उपबंध) अधिनियम 1951 के तहत अध्यक्ष व सदस्यों की विशिष्ट वैधानिक योग्यताओं का निर्धारण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">राजनीतिक दबावों से परे निष्पक्षता, उच्च बौद्धिक क्षमता और तकनीकी विशेषज्ञता सुनिश्चित करना।</div></div></td></tr><tr><td><div class="primary-cell">सिविल कोर्ट की शक्तियां (धारा 8)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सिविल प्रक्रिया संहिता (CPC) 1908 के तहत गवाहों को समन करने, सार्वजनिक दस्तावेज मंगाने और शपथ पर साक्ष्य लेने का अधिकार।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">केंद्र और राज्य सरकारों से गोपनीय वित्तीय और कर डेटा की निर्बाध व प्रामाणिक प्राप्ति सुनिश्चित करना।</div></div></td></tr><tr><td><div class="primary-cell">अनुच्छेद 281 (प्रतिवेदन प्रस्तुति)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">राष्ट्रपति आयोग की प्रत्येक सिफारिश और उस पर की गई कार्रवाई के व्याख्यात्मक ज्ञापन (Action Taken Report) को संसद के दोनों सदनों में रखवाते हैं।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वित्तीय पारदर्शिता, कार्यपालिका की विधायिका के प्रति जवाबदेही और संघवाद के लोकतांत्रिक सिद्धांतों का संरक्षण।</div></div></td></tr><tr><td><div class="primary-cell">अनुच्छेद 280(3)(bb) व (c)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">73वें और 74वें संविधान संशोधन (1992) द्वारा अंतःस्थापित; राज्य वित्त आयोगों की सिफारिशों पर पंचायतों व नगरपालिकाओं हेतु संचित निधि संवर्धन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">तृतीय स्तर के स्थानीय ग्रामीण व शहरी स्वशासन को वित्तीय रूप से सुदृढ़ कर राजकोषीय विकेंद्रीकरण को धरातल पर उतारना।</div></div></td></tr><tr><td><div class="primary-cell">सिफारिशों की प्रकृति (परामर्शकारी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">संवैधानिक रूप से आयोग की संस्तुतियां केंद्र सरकार पर केवल सलाहकारी (Advisory) होती हैं, कानूनी रूप से बाध्यकारी नहीं।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">स्थापित सुदृढ़ लोकतांत्रिक परंपराओं के अनुसार केंद्र सरकार सामान्यतः कर बंटवारे संबंधी सिफारिशों को अक्षरशः स्वीकार करती है।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>भारतीय संविधान के किस अनुच्छेद के अंतर्गत वित्त आयोग (Finance Commission) के गठन का स्पष्ट प्रावधान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 280 के अंतर्गत।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग संविधान के किस भाग और किस अध्याय में स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भाग XII (वित्त, संपत्ति, संविदाएं और वाद) के अध्याय I (वित्त) में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग किस प्रकार की संस्था है - संवैधानिक, सांविधिक या गैर-संवैधानिक?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह एक संवैधानिक (Constitutional) और अर्द्ध-न्यायिक (Quasi-Judicial) संस्था है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग को 'अर्द्ध-न्यायिक निकाय' (Quasi-Judicial Body) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इसे सिविल प्रक्रिया संहिता 1908 के तहत सिविल कोर्ट जैसी साक्ष्य जुटाने, समन जारी करने और दस्तावेज मंगाने की न्यायिक शक्तियां प्राप्त हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संविधान के किस अनुच्छेद के तहत वित्त आयोग की सिफारिशों को संसद के पटल पर रखा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 281 के तहत।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुच्छेद 281 के अनुसार वित्त आयोग की सिफारिशों को संसद के समक्ष कौन प्रस्तुत करवाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत के राष्ट्रपति।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संसद के समक्ष वित्त आयोग की रिपोर्ट के साथ सरकार को कौन-सा दस्तावेज प्रस्तुत करना अनिवार्य होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिफारिशों पर की गई कार्रवाई का व्याख्यात्मक ज्ञापन (Action Taken Report - ATR / Explanatory Memorandum)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या संविधान में वित्त आयोग की सिफारिशों को केंद्र सरकार पर कानूनी रूप से बाध्यकारी (Legally Binding) बनाया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; संवैधानिक दृष्टि से आयोग की सिफारिशें केवल सलाहकारी (Advisory in nature) हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सलाहकारी प्रकृति होने के बावजूद क्या सरकार वित्त आयोग की कर-बंटवारे की सिफारिशों को खारिज कर सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यावहारिक परंपरा के अनुसार सरकार कर हस्तांतरण (Tax Devolution) की मुख्य सिफारिशों को सामान्यतः पूरी तरह स्वीकार करती है, क्योंकि यह एक निष्पक्ष संवैधानिक मध्यस्थ है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय राजकोषीय संघवाद (Fiscal Federalism) में वित्त आयोग को किस रूपक (Metaphor) से वर्णित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'राजकोषीय संघवाद का संतुलन चक्र' (Balancing Wheel of Fiscal Federalism)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संविधान का अनुच्छेद 275 किस वित्तीय विषय से संबंधित है जिसकी सिफारिश वित्त आयोग करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संसद द्वारा राज्यों को दिए जाने वाले वैधानिक सहायता अनुदान (Grants-in-aid to the States)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुच्छेद 282 के तहत दिए जाने वाले अनुदान और अनुच्छेद 275 के अनुदान में क्या मूलभूत अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 275 वित्त आयोग की सिफारिश पर दिया जाने वाला अनिवार्य वैधानिक अनुदान है, जबकि अनुच्छेद 282 केंद्र सरकार द्वारा दिया जाने वाला स्वैच्छिक/विवेकाधीन अनुदान (Discretionary Grants) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>73वें संविधान संशोधन अधिनियम 1992 द्वारा वित्त आयोग के अधिदेश में कौन-सा नया संवैधानिक उपबंध जोड़ा गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 280(3)(bb); जो राज्य वित्त आयोग की सिफारिशों के आधार पर पंचायतों के संसाधनों की पूर्ति हेतु राज्य की संचित निधि के संवर्धन के उपाय सुझाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>74वें संविधान संशोधन अधिनियम 1992 द्वारा वित्त आयोग के कार्यों में कौन-सा खंड अंतःस्थापित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 280(3)(c); जो नगरपालिकाओं के संसाधनों की पूर्ति हेतु राज्य की संचित निधि के संवर्धन के उपाय सुझाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संविधान का अनुच्छेद 280(3)(d) राष्ट्रपति को वित्त आयोग के संदर्भ में क्या विशेष शक्ति प्रदान करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुदृढ़ वित्त के हित में (In the interests of sound finance) राष्ट्रपति द्वारा आयोग को कोई भी अन्य विशिष्ट वित्तीय मामला सौंपने की शक्ति।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संविधान के अनुच्छेद 270 में 80वें संविधान संशोधन (2000) द्वारा क्या युगांतरकारी बदलाव किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'विभाज्य कर पूल' (Divisible Pool) की शुरुआत की गई; जिसके तहत संघ के लगभग सभी केंद्रीय करों (कुछ अपवादों को छोड़कर) को राज्यों के साथ साझा करना अनिवार्य किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>80वें संविधान संशोधन अधिनियम 2000 को किस वित्त आयोग की सिफारिशों के आधार पर पारित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">10वें वित्त आयोग (जिसके अध्यक्ष के. सी. पंत थे)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुच्छेद 268 के अंतर्गत आने वाले करों की संवैधानिक प्रकृति क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संघ द्वारा लगाए जाने वाले किंतु राज्यों द्वारा संगृहीत और विनियोजित किए जाने वाले शुल्क (जैसे स्टाम्प शुल्क)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुच्छेद 269 के तहत कौन-से कर आते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतर-राज्यीय व्यापार या वाणिज्य के दौरान माल के क्रय या विक्रय पर संघ द्वारा लगाए और वसूले जाने वाले कर, जो राज्यों को सौंप दिए जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुच्छेद 269A किस कर के संकलन और विभाजन से संबंधित है जिसे 101वें संविधान संशोधन (2016) द्वारा जोड़ा गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतर-राज्यीय व्यापार में एकीकृत माल और सेवा कर (IGST) के संकलन और केंद्र-राज्यों के बीच विभाजन से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संविधान के अनुच्छेद 271 के तहत लगाए जाने वाले 'अधिभार' (Surcharge) और 'उपकर' (Cess) की क्या वित्तीय विशेषता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ये केवल केंद्र सरकार के विशिष्ट प्रयोजनों हेतु होते हैं और इन्हें विभाज्य पूल में शामिल नहीं किया जाता (राज्यों के साथ साझा नहीं होते)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राज्यों द्वारा केंद्रीय विभाज्य पूल में उपकरों (Cesses) और अधिभारों (Surcharges) के अत्यधिक उपयोग पर क्या आपत्ति जताई जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कि केंद्र सरकार करों के स्थान पर सेस और सरचार्ज बढ़ाकर राज्यों को मिलने वाले वास्तविक हस्तांतरण योग्य कर हिस्से को संकुचित कर देती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डॉ. बी. आर. अंबेडकर ने संविधान सभा में वित्त आयोग के प्रावधान को शामिल करते समय इसका मुख्य उद्देश्य क्या बताया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राजनीतिक दबावों से मुक्त होकर केंद्र और राज्यों के बीच वित्तीय संसाधनों का निष्पक्ष, अर्ध-न्यायिक और लचीला समायोजन सुनिश्चित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऑस्ट्रेलिया के किस निकाय से भारतीय संविधान निर्माताओं ने वित्त आयोग की अवधारणा की प्रेरणा ली थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऑस्ट्रेलियाई कॉमनवेल्थ अनुदान आयोग (Australian Commonwealth Grants Commission)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या भारतीय संविधान में वित्त आयोग के सदस्यों की संख्या और उनके सेवा नियमों का विस्तृत उल्लेख सीधे मूल संविधान में दिया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; अनुच्छेद 280(2) के तहत संसद को यह अधिकार दिया गया कि वह विधि द्वारा इनकी अर्हताएं और चयन प्रक्रिया निर्धारित करे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वित्त आयोग का गठन औपचारिक रूप से किसके द्वारा किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत के राष्ट्रपति (President of India) द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राष्ट्रपति वित्त आयोग का गठन किस प्रकार के आधिकारिक दस्तावेज के माध्यम से करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अपने हस्ताक्षर और मुद्रा सहित अधिपत्र (Warrant under hand and seal) तथा भारत के राजपत्र में अधिसूचना द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संसद ने वित्त आयोग के अध्यक्ष और सदस्यों की अर्हताओं को निर्धारित करने हेतु किस अधिनियम को पारित किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्त आयोग (प्रकीर्ण उपबंध) अधिनियम, 1951 [The Finance Commission (Miscellaneous Provisions) Act, 1951]।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग (प्रकीर्ण उपबंध) अधिनियम 1951 में पहला महत्वपूर्ण संशोधन किस वर्ष किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1955 में [वित्त आयोग (प्रकीर्ण उपबंध) संशोधन अधिनियम, 1955]।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के गठन के समय राष्ट्रपति द्वारा जारी आदेश में आयोग के कार्यों की जो सीमा तय की जाती है, उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विचारार्थ विषय (Terms of Reference - ToR)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के 'विचारार्थ विषय' (ToR) का मसौदा मूलतः किस मंत्रालय द्वारा तैयार किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय वित्त मंत्रालय के आर्थिक कार्य विभाग (DEA) द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या राष्ट्रपति विचारार्थ विषयों (ToR) में राज्यों की सहमति लेने के लिए कानूनी रूप से बाध्य हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; यह केंद्र सरकार (केंद्रीय मंत्रिमंडल) की सहायता और सलाह पर राष्ट्रपति द्वारा तय किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15वें वित्त आयोग के विचारार्थ विषयों (ToR) में किस वर्ष की जनसंख्या के उपयोग को लेकर दक्षिणी राज्यों ने कड़ा विरोध जताया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">2011 की जनगणना के उपयोग को लेकर (क्योंकि इससे जनसंख्या नियंत्रण में सफल दक्षिणी राज्यों का कर हिस्सा घटने की आशंका थी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के प्रथम वित्त आयोग का गठन राष्ट्रपति द्वारा किस वर्ष और किस तिथि को किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">22 नवंबर 1951 को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के प्रथम वित्त आयोग (First Finance Commission) के अध्यक्ष कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्षितीश चंद्र नियोगी (K. C. Neogy)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रथम वित्त आयोग की कार्य अवधि (Award Period) क्या थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1952 से 1957 तक (5 वर्ष)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रथम वित्त आयोग ने संघ के शुद्ध आयकर में से राज्यों को कितने प्रतिशत हिस्सेदारी सौंपने की सिफारिश की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">55% हिस्सेदारी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग का गठन केंद्र में किस संवैधानिक संस्था की सलाह पर किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय मंत्रिमंडल (प्रधानमंत्री की अध्यक्षता वाली मंत्रिपरिषद) की सलाह पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग एक स्थायी (Permanent) संस्था है या तदर्थ/आवधिक (Ad-hoc/Periodic) संस्था है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह एक आवधिक या तदर्थ (Periodic/Ad-hoc) संवैधानिक संस्था है; जो अपनी रिपोर्ट सौंपने के बाद भंग हो जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के भंग होने के बाद उसके प्रशासनिक कार्यों और अनुवर्ती प्रक्रियाओं को कौन देखता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय वित्त मंत्रालय के व्यय विभाग में स्थित 'वित्त आयोग प्रभाग' (Finance Commission Division)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग को एक स्थायी निकाय (Permanent Body) बनाने की कोई उच्चस्तरीय सिफारिश कभी की गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; नीति आयोग और कई अर्थशास्त्रियों ने वित्त आयोग को स्थायी सचिवालय सहित स्थायी निकाय बनाने का सुझाव दिया है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संविधान के अनुच्छेद 280(1) के अनुसार राष्ट्रपति को कितने समय के अंतराल पर वित्त आयोग का गठन करना अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संविधान लागू होने के 2 वर्ष के भीतर और उसके बाद प्रत्येक 5वें वर्ष की समाप्ति पर या उससे पहले (Every fifth year or earlier)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुच्छेद 280(1) में प्रयुक्त शब्दावली 'आवश्यक समझे तो उससे पूर्व' (Earlier as the President considers necessary) का क्या व्यावहारिक अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यदि आर्थिक या राजनीतिक परिस्थितियां मांग करें, तो राष्ट्रपति 5 वर्ष पूरे होने से पहले (जैसे 4 या साढ़े 4 वर्ष में) भी नए आयोग का गठन कर सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सामान्यता किसी नए वित्त आयोग का गठन उसके द्वारा अनुशंसित 5-वर्षीय अवधि के प्रारंभ से कितने समय पहले किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 2 वर्ष पहले; ताकि आयोग को राज्यों का दौरा करने, डेटा एकत्र करने और रिपोर्ट तैयार करने का पर्याप्त समय मिल सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसी वित्त आयोग को अपनी विस्तृत सिफारिशी रिपोर्ट तैयार करने हेतु सामान्यतः कितना समय दिया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 18 महीने से 2 वर्ष (आवश्यकता पड़ने पर राष्ट्रपति द्वारा अवधि बढ़ाई जा सकती है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग की सिफारिशें सामान्यतः कितने वर्षों की अवधि (Award Period) हेतु लागू होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">5 वर्षों की अवधि हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय इतिहास में वह कौन-सा अपवाद था जब किसी वित्त आयोग की सिफारिशें 6 वर्षों के लिए लागू की गईं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">15वां वित्त आयोग (एन. के. सिंह की अध्यक्षता में); जिसकी सिफारिशें 2020-21 (1 वर्ष) और 2021-26 (5 वर्ष) मिलाकर कुल 6 वर्षों हेतु लागू हुईं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15वें वित्त आयोग की सिफारिशों को दो अलग-अलग अवधियों (1 वर्ष + 5 वर्ष) में क्यों विभाजित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जम्मू-कश्मीर राज्य के पुनर्गठन (दो केंद्र शासित प्रदेशों में विभाजन) और कोविड-19 महामारी के कारण उत्पन्न अभूतपूर्व आर्थिक अनिश्चितता के कारण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या 15वें वित्त आयोग से पूर्व किसी अन्य वित्त आयोग का कार्यकाल भी 5 वर्ष से भिन्न रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; द्वितीय वित्त आयोग और 11वें वित्त आयोग को भी अंतरिम रिपोर्ट और कार्यकाल विस्तार की स्थिति का सामना करना पड़ा था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दिसंबर 2023 में केंद्र सरकार द्वारा गठित 16वें वित्त आयोग (16th Finance Commission) के अध्यक्ष कौन नियुक्त किए गए हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. अरविंद पनगढ़िया (Dr. Arvind Panagariya - नीति आयोग के पूर्व प्रथम उपाध्यक्ष)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>16वें वित्त आयोग (16th FC) को अपनी अंतिम रिपोर्ट राष्ट्रपति को कब तक सौंपने का अधिदेश दिया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">31 अक्टूबर 2025 तक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>16वें वित्त आयोग की सिफारिशें किस 5-वर्षीय अवधि हेतु लागू होंगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 अप्रैल 2026 से 31 मार्च 2031 तक (2026-2031)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>14वें वित्त आयोग (जिसने राज्यों का कर हिस्सा 32% से बढ़ाकर 42% किया) के अध्यक्ष कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. वाई. वी. रेड्डी (Y. V. Reddy - पूर्व RBI गवर्नर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>14वें वित्त आयोग का सिफारिशी कालखंड (Award Period) क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">2015 से 2020 तक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>13वें वित्त आयोग (2010-2015) के अध्यक्ष कौन थे जिन्होंने भारत में GST लागू करने का विस्तृत रोडमैप दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. विजय केलकर (Dr. Vijay Kelkar)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>12वें वित्त आयोग (2005-2010) के अध्यक्ष कौन थे जिन्होंने FRBM अधिनियम और ऋण राहत की सिफारिश की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. सी. रंगराजन (Dr. C. Rangarajan)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक के पूर्व गवर्नरों में से किन प्रमुख व्यक्तियों ने वित्त आयोग के अध्यक्ष पद को भी सुशोभित किया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">के. सी. नियोगी, डॉ. आई. जी. पटेल (नामित किंतु पद नहीं संभाला), डॉ. सी. रंगराजन, और डॉ. वाई. वी. रेड्डी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग का गठन न होने की स्थिति में केंद्र और राज्यों के बीच करों का बंटवारा रुक सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; जब तक नया आयोग रिपोर्ट नहीं देता, तब तक संसद के अनुमोदन से पिछले आयोग की व्यवस्था या अंतरिम व्यवस्था जारी रहती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संविधान के अनुच्छेद 280(1) के अनुसार वित्त आयोग की कुल सदस्य संख्या कितनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 5 सदस्य (एक अध्यक्ष और चार अन्य सदस्य - 1 + 4 प्रारूप)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के अध्यक्ष (Chairman) पद हेतु संविधान और 1951 के अधिनियम में क्या अनिवार्य योग्यता निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसा व्यक्ति जिसे 'सार्वजनिक मामलों का व्यापक अनुभव' (Experience in Public Affairs) हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1951 के अधिनियम के अनुसार वित्त आयोग के चार अन्य सदस्यों का चयन किन चार विशिष्ट क्षेत्रों में से किया जाना अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. उच्च न्यायालय के न्यायाधीश या उस पद के योग्य व्यक्ति, 2. सरकारी वित्त व लेखा का विशेष ज्ञान रखने वाला, 3. वित्तीय व प्रशासनिक मामलों का व्यापक अनुभवी, और 4. अर्थशास्त्र का विशेष ज्ञाता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के किस सदस्य हेतु न्यायपालिका (Judiciary) से जुड़ाव अनिवार्य योग्यता का एक विकल्प है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रथम सदस्य श्रेणी हेतु: जो उच्च न्यायालय का न्यायाधीश हो या रहा हो या ऐसा न्यायाधीश नियुक्त होने के योग्य हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग में सरकारी लेखा और वित्तीय आंकड़ों की समझ हेतु किस योग्यता वाले सदस्य को शामिल किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जिसके पास सरकार के वित्त और लेखाओं (Finances and Accounts of Government) का विशेष ज्ञान हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग में प्रशासनिक दक्षता सुनिश्चित करने हेतु किस योग्यता का प्रावधान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जिसके पास वित्तीय मामलों और प्रशासन (Financial Matters and Administration) का विस्तृत अनुभव हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग में समष्टिगत आर्थिक नीतियों के विश्लेषण हेतु किस अनिवार्य योग्यता वाले व्यक्ति को सदस्य बनाया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जिसके पास 'अर्थशास्त्र का विशेष ज्ञान' (Special Knowledge of Economics) हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग (प्रकीर्ण उपबंध) अधिनियम 1951 की धारा 5 के अनुसार किसी व्यक्ति को सदस्य बनने से अयोग्य (Disqualified) कब ठहराया जा सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यदि वह विकृतचित्त (Unsound mind) हो, दिवालिया घोषित हो, किसी नैतिक अधमता के अपराध में दोषी सिद्ध हुआ हो, या उसका कोई ऐसा वित्तीय हित हो जो निष्पक्षता को प्रभावित करे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग के किसी सदस्य को इसलिए अयोग्य ठहराया जा सकता है क्योंकि उसका किसी कंपनी या वित्तीय संस्था में व्यक्तिगत आर्थिक हित जुड़ा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; यदि राष्ट्रपति की दृष्टि में उसका ऐसा वित्तीय या अन्य हित है जिससे आयोग के सदस्य के रूप में उसके कार्यों पर पूर्वाग्रह आने की संभावना हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के अध्यक्ष और सदस्यों का कार्यकाल (Tenure) कौन निर्धारित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत के राष्ट्रपति द्वारा उनकी नियुक्ति के आदेश में विनिर्दिष्ट किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग का कोई सदस्य अपना कार्यकाल पूरा होने के बाद पुनः नियुक्ति (Re-appointment) का पात्र होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; वित्त आयोग अधिनियम 1951 की धारा 6 के अनुसार प्रत्येक सदस्य अपनी नियुक्ति की शर्तों के अधीन पुनर्नियुक्ति का पात्र होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग के सदस्य पूर्णकालिक (Full-time) होते हैं या अंशकालिक (Part-time)?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रपति के आदेशानुसार सदस्य पूर्णकालिक या अंशकालिक दोनों हो सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग का प्रशासनिक और अनुसंधान कार्य संचालित करने हेतु प्रशासनिक प्रमुख कौन होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयोग का सचिव (Secretary to the Commission - सामान्यतः भारत सरकार के सचिव स्तर का वरिष्ठ IAS अधिकारी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>16वें वित्त आयोग के सचिव के रूप में किसे नियुक्त किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋत्विक रंजनम पांडेय (Ritvik Ranjanam Pandey)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग अधिनियम 1951 की धारा 8 के तहत आयोग को सिविल प्रक्रिया संहिता 1908 के तहत कौन-सी विशिष्ट न्यायिक शक्तियां प्राप्त हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी व्यक्ति को समन करना और उपस्थित कराना, दस्तावेजों की खोज व प्रस्तुति की मांग करना, हलफनामों पर साक्ष्य प्राप्त करना, और किसी भी कार्यालय से सार्वजनिक रिकॉर्ड मांगना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग किसी राज्य सरकार या केंद्रीय मंत्रालय से गोपनीय वित्तीय दस्तावेज प्रस्तुत करने की मांग कर सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; आयोग को किसी भी अदालत या सरकारी कार्यालय से कोई भी सार्वजनिक दस्तावेज या रिकॉर्ड मंगाने का कानूनी अधिकार है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग के समक्ष होने वाली कार्यवाही को भारतीय दंड संहिता (IPC) के तहत 'न्यायिक कार्यवाही' माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; IPC की धारा 193 और 228 के प्रयोजनों हेतु इसे न्यायिक कार्यवाही (Judicial Proceeding) माना जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय दंड प्रक्रिया संहिता (CrPC) की धारा 195 के तहत वित्त आयोग को किस रूप में मान्यता प्राप्त है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक सिविल कोर्ट (Civil Court) के रूप में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के अध्यक्ष का दर्जा और प्रोटोकॉल सामान्यतः केंद्र सरकार में किसके समकक्ष माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय कैबिनेट मंत्री (Cabinet Minister) के समकक्ष।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के पूर्णकालिक सदस्यों का दर्जा किसके समकक्ष माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय राज्य मंत्री (Minister of State) अथवा नीति आयोग के सदस्यों के समकक्ष।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या भारत का कोई पूर्व मुख्य चुनाव आयुक्त या संघ लोक सेवा आयोग (UPSC) का पूर्व अध्यक्ष वित्त आयोग का अध्यक्ष या सदस्य बन सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; यदि वह सार्वजनिक मामलों के व्यापक अनुभव या अन्य विहित योग्यताओं को पूरा करता हो (संविधान में इस पर कोई रोक नहीं है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजकोषीय संघवाद में 'ऊर्ध्वाधर वित्तीय असंतुलन' (Vertical Fiscal Imbalance - VFI) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्र सरकार के पास व्यापक कराधान शक्तियां (राजस्व अधिशेष) होना, जबकि राज्य सरकारों के पास भारी विकासात्मक व सामाजिक व्यय की जिम्मेदारियां (राजस्व घाटा) होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजकोषीय संघवाद में 'क्षैतिज वित्तीय असंतुलन' (Horizontal Fiscal Imbalance - HFI) से क्या आशय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विभिन्न राज्यों के बीच प्राकृतिक संसाधनों, औद्योगीकरण, भौगोलिक विषमताओं और राजस्व अर्जन क्षमताओं में भारी अंतर होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऊर्ध्वाधर वित्तीय असंतुलन (VFI) को पाटने हेतु वित्त आयोग कौन-सा मुख्य उपाय सुझाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऊर्ध्वाधर कर हस्तांतरण (Vertical Devolution); अर्थात् केंद्रीय करों के शुद्ध आगमों का एक निश्चित प्रतिशत (जैसे 41%) सभी राज्यों को हस्तांतरित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्षैतिज वित्तीय असंतुलन (HFI) को दूर करने हेतु वित्त आयोग क्या निर्धारित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्षैतिज वितरण सूत्र (Horizontal Sharing Formula); विभिन्न सामाजिक-आर्थिक संकेतकों (आय दूरी, जनसंख्या, क्षेत्रफल, वन आदि) के आधार पर राज्यों के बीच करों का आनुपातिक बंटवारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'कर हस्तांतरण' (Tax Devolution) और 'सहायता अनुदान' (Grants-in-aid) में क्या मूलभूत अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर हस्तांतरण राज्यों का संवैधानिक हक (Unconditional Entitlement) है जिसे वे अपनी मर्जी से खर्च कर सकते हैं, जबकि अनुदान विशिष्ट कमियों को पाटने हेतु सशर्त या लक्षित सहायता होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुच्छेद 279 के अनुसार करों के 'शुद्ध आगम' (Net Proceeds) का क्या अर्थ है और इसे कौन प्रमाणित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी कर से प्राप्त सकल राजस्व में से संग्रहण लागत को घटाकर बची शुद्ध राशि; और इसे भारत के नियंत्रक एवं महालेखापरीक्षक (CAG) द्वारा प्रमाणित किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या CAG द्वारा प्रमाणित करों के 'शुद्ध आगम' पर कोई विवाद या पुनर्विचार हो सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; संविधान के अनुच्छेद 279(1) के अनुसार CAG का प्रमाण-पत्र अंतिम और निर्विवाद (Final) होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>योजना आयोग (1950-2014) के अस्तित्व के दौरान वित्त आयोग की भूमिका किस प्रकार सीमित हो गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्त आयोग केवल गैर-योजनागत राजस्व अंतर (Non-Plan Revenue Gap) तक सिमट गया था, जबकि बड़े विकासात्मक और पूंजीगत अनुदान योजना आयोग द्वारा बांटे जाते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रसिद्ध अर्थशास्त्री पी. वी. राजमन्नार (चौथे वित्त आयोग के अध्यक्ष) ने योजना आयोग और वित्त आयोग के संबंधों पर क्या टिप्पणी की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कि योजना आयोग के बढ़ते प्रभाव ने संविधान द्वारा स्थापित वित्त आयोग की महत्ता और स्वायत्तता को गंभीर रूप से संकुचित कर दिया है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2015 में योजना आयोग के समाप्त होने और 14वें वित्त आयोग की सिफारिशों के बाद वित्त आयोग की स्थिति में क्या बदलाव आया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्त आयोग पुनः केंद्र-राज्य वित्तीय हस्तांतरण का एकमात्र और निर्विवाद संवैधानिक केंद्र बिंदु बन गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग राज्यों के सार्वजनिक ऋण (Public Debt) और वित्तीय उत्तरदायित्व की समीक्षा भी कर सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; राष्ट्रपति के विचारार्थ विषयों (ToR) के तहत आयोग राज्यों के ऋण स्तर, घाटे और राजकोषीय अनुशासन (FRBM लक्ष्यों) की विस्तृत समीक्षा करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राज्य वित्त आयोगों (State Finance Commissions - SFCs) का गठन संविधान के किन अनुच्छेदों के तहत होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 243-I (पंचायतों हेतु) तथा अनुच्छेद 243-Y (नगरपालिकाओं हेतु) के तहत राज्य के राज्यपाल द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय वित्त आयोग और राज्य वित्त आयोग (SFC) के बीच क्या संवैधानिक संबंध है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 280(3)(bb) और (c) के तहत केंद्रीय वित्त आयोग राज्य वित्त आयोगों की सिफारिशों का अध्ययन कर राज्यों की संचित निधि के संवर्धन हेतु केंद्रीय अनुदान के उपाय सुझाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय वित्त आयोगों ने राज्य सरकारों द्वारा राज्य वित्त आयोगों (SFCs) के संचालन के प्रति क्या गंभीर चिंता जताई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राज्यों द्वारा SFCs का समय पर गठन न करना, संसाधनों की कमी और उनकी सिफारिशों को ठंडे बस्ते में डाल देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15वें वित्त आयोग ने स्थानीय निकायों (पंचायतों व नगरपालिकाओं) हेतु अनुदान देने के लिए राज्यों पर कौन-सी दो पूर्व-शर्तें अनिवार्य की थीं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. स्थानीय निकायों के ऑनलाइन अंकेक्षित खातों (Audited Accounts) की सार्वजनिक उपलब्धता, और 2. राज्य वित्त आयोग (SFC) का विधिवत गठन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग केंद्र और राज्यों के बीच रक्षा और आंतरिक सुरक्षा हेतु विशेष वित्तपोषण तंत्र की सिफारिश कर सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; 15वें वित्त आयोग ने ToR के तहत 'रक्षा और आंतरिक सुरक्षा हेतु आधुनिकीकरण कोष' (MFDIS) के गठन की सिफारिश की थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग अपनी सिफारिशें तैयार करते समय विभिन्न राज्यों का दौरा क्यों करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्येक राज्य के मुख्यमंत्री, वित्त मंत्री, स्थानीय निकायों और व्यापारिक संगठनों से मिलकर उनकी विशिष्ट विकासात्मक व भौगोलिक आवश्यकताओं का प्रत्यक्ष आकलन करने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग राजनीतिक दलों और अर्थशास्त्रियों से भी परामर्श करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; यह राष्ट्रीय व क्षेत्रीय राजनीतिक दलों, प्रख्यात अर्थशास्त्रियों और उद्योग मंडलों (CII, FICCI) के साथ संरचित बैठकें करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के अध्यक्ष या सदस्यों को उनके पद से हटाने (Removal) की क्या प्रक्रिया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्त आयोग अधिनियम 1951 के तहत विहित अयोग्यता उत्पन्न होने पर भारत के राष्ट्रपति द्वारा पद से हटाया जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग के किसी सदस्य का त्यागपत्र सीधे राष्ट्रपति को संबोधित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; सदस्य राष्ट्रपति को अपने हस्ताक्षर सहित लिखित त्यागपत्र देकर पदमुक्त हो सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि वित्त आयोग के कार्यकाल के दौरान किसी सदस्य का पद रिक्त हो जाए, तो क्या आयोग की कार्यवाही रुक जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; राष्ट्रपति द्वारा शेष अवधि हेतु नए सदस्य की नियुक्ति की जाती है और आयोग की कार्यवाहियां वैध बनी रहती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के विचारार्थ विषयों (ToR) में 'जनसांख्यिकीय प्रदर्शन' (Demographic Performance) का क्या आशय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उन राज्यों को वित्तीय रूप से पुरस्कृत करना जिन्होंने जनसंख्या नियंत्रण और प्रजनन दर (TFR) घटाने में सराहनीय सफलता प्राप्त की है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15वें वित्त आयोग ने जनसांख्यिकीय प्रदर्शन हेतु क्षैतिज फॉर्मूले में कितना भारांक (Weightage) निर्धारित किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">12.5% भारांक (TFR के आधार पर मापा गया)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्षैतिज कर वितरण फॉर्मूले में 'आय दूरी' (Income Distance) संकेतक क्या मापता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शीर्ष प्रति व्यक्ति आय वाले राज्य की तुलना में किसी पिछड़े राज्य की आय में कितना अंतर है; जो राज्य जितना गरीब होगा, उसे उतना अधिक कर हिस्सा मिलेगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15वें वित्त आयोग के क्षैतिज वितरण फॉर्मूले में 'आय दूरी' को सर्वाधिक कितना भारांक दिया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">45% का विशाल भारांक (वित्तीय समानता साधने हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्षैतिज वितरण में 'वन और पारिस्थितिकी' (Forest and Ecology) संकेतक को शामिल करने का क्या पर्यावरणीय औचित्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उन राज्यों को क्षतिपूर्ति देना जो घने जंगलों का संरक्षण कर देश को कार्बन सिंक प्रदान करते हैं किंतु वनों के कारण औद्योगिक विकास नहीं कर पाते।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15वें वित्त आयोग ने वन और पारिस्थितिकी को क्षैतिज फॉर्मूले में कितना प्रतिशत भारांक आवंटित किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">10% भारांक (अत्यंत घने और मध्यम घने वनों के क्षेत्रफल के आधार पर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्षैतिज कर बंटवारे में 'कर और राजकोषीय प्रयास' (Tax and Fiscal Effort) संकेतक क्या सुनिश्चित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उन राज्यों को पुरस्कृत करना जो अपने स्वयं के कर राजस्व को बढ़ाने में उच्च दक्षता और राजकोषीय अनुशासन दिखाते हैं (2.5% भारांक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग द्वारा अनुशंसित 'राजस्व घाटा अनुदान' (Post-Devolution Revenue Deficit Grants - PDRDG) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर हस्तांतरण के बाद भी जिन राज्यों का राजस्व खाता घाटे में रहता है, उनके घाटे को पाटने हेतु संविधान के अनुच्छेद 275 के तहत दिया जाने वाला सीधा अनुदान।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग प्राकृतिक आपदाओं से निपटने हेतु राज्यों को दिए जाने वाले वित्तीय तंत्र का भी निर्धारण करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; राज्य आपदा मोचन कोष (SDRF) और राष्ट्रीय आपदा मोचन कोष (NDRF) के आवंटन और वित्तपोषण अनुपात (75:25 या 90:10) की सिफारिश आयोग करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15वें वित्त आयोग ने आपदा जोखिम प्रबंधन हेतु कौन-से दो नए कोष बनाने की सिफारिश की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राज्य आपदा शमन कोष (SDMF) और राष्ट्रीय आपदा शमन कोष (NDMF)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्र और राज्यों के बीच वित्तीय संबंधों में वित्त आयोग को 'न्याय का तराजू' क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यह केंद्र की राष्ट्रीय सुरक्षा व समष्टिगत आर्थिक प्राथमिकताओं और राज्यों की क्षेत्रीय व विकासात्मक आवश्यकताओं के बीच निष्पक्ष संतुलन साधता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग की सिफारिशों को किसी न्यायालय में न्यायिक समीक्षा (Judicial Review) के तहत चुनौती दी जा सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिफारिशों की सलाहकारी प्रकृति के कारण प्रत्यक्ष चुनौती सीमित है, किंतु सरकार द्वारा की गई मनमानी कार्रवाई या संवैधानिक प्रक्रिया के उल्लंघन की न्यायिक समीक्षा संभव है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतर-राज्य परिषद (Inter-State Council - अनुच्छेद 263) और वित्त आयोग में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतर-राज्य परिषद केंद्र-राज्य नीतिगत विवादों के समाधान का राजनीतिक मंच है, जबकि वित्त आयोग विशुद्ध रूप से वित्तीय संसाधनों के बंटवारे का विशेषज्ञ संवैधानिक निकाय है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जीएसटी परिषद (GST Council - अनुच्छेद 279A) और वित्त आयोग के बीच राजकोषीय क्षेत्राधिकार का क्या द्वंद्व देखा गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीएसटी परिषद अप्रत्यक्ष करों की दरें और नीतियां तय करती है (राजस्व संकलन को प्रभावित करती है), जबकि वित्त आयोग उस संकलित राजस्व के बंटवारे की सिफारिश करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डॉ. वाई. वी. रेड्डी और एन. के. सिंह ने जीएसटी परिषद और वित्त आयोग के बीच किस संस्थागत तंत्र की वकालत की है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दोनों संवैधानिक निकायों के बीच एक औपचारिक समन्वय समिति या संस्थागत संवाद तंत्र की स्थापना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग के विचारार्थ विषयों में 'प्रदर्शन-आधारित प्रोत्साहन' (Performance-based Incentives) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राज्यों को विद्युत क्षेत्र में सुधार, प्रत्यक्ष लाभ अंतरण (DBT), वायु गुणवत्ता सुधार और ठोस अपशिष्ट प्रबंधन जैसे विशिष्ट सुधार करने पर अतिरिक्त वित्तीय अनुदान देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वित्त आयोग केंद्र सरकार के वित्तीय खातों और बजट की विश्वसनीयता पर भी टिप्पणी कर सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; 15वें वित्त आयोग ने केंद्र सरकार के 'ऑफ-बजट उधारी' (Off-Budget Borrowings) पर रोक लगाने और बजट में पूर्ण पारदर्शिता लाने की कड़ी सिफारिश की थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्र सरकार ने 15वें वित्त आयोग की सिफारिश के बाद बजट में 'ऑफ-बजट उधारी' के संबंध में क्या सुधारात्मक कदम उठाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FCI और अन्य सार्वजनिक उपक्रमों द्वारा NSSF से लिए गए ऋणों को सीधे केंद्रीय बजट के राजकोषीय घाटे में शामिल कर पूरी पारदर्शिता बहाल की।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग की ऐतिहासिक विकास यात्रा यह क्या सिद्ध करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कि यह भारतीय लोकतंत्र का वह लचीला और विश्वसनीय संवैधानिक स्तंभ है जिसने स्वतंत्रता के बाद से देश की अखंडता, संघीय संतुलन और समतामूलक क्षेत्रीय विकास को अक्षुण्ण बनाए रखा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्त आयोग Part 1 के संपूर्ण संवैधानिक और संरचनात्मक विश्लेषण का अंतिम समष्टिगत निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 280 के तहत स्थापित वित्त आयोग केवल एक वित्तीय संस्था नहीं बल्कि भारतीय संघवाद का नैतिक व संवैधानिक संरक्षक है, जो तकनीकी विशेषज्ञता (1+4 संरचना) और अर्ध-न्यायिक स्वतंत्रता के माध्यम से केंद्र और राज्यों के बीच वित्तीय सहकार्यता को दीर्घकालिक स्थायित्व प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

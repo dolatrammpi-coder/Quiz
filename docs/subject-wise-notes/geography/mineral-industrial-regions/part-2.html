@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Mineral Industrial Regions 2">
+<title>Mineral Industrial Regions 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Geography / भूगोल / Mineral Industrial Regions 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Geography — भूगोल</div>
+    <h1>Mineral Industrial Regions 2</h1>
+    <p class="topic-subtitle">भारत एवं विश्व के प्रमुख खनिज-औद्योगिक प्रदेश, औद्योगिक संकुल तथा औद्योगिक अवस्थिति के प्रमुख शास्त्रीय सिद्धांत</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Mineral Industrial Regions 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>औद्योगिक क्षेत्र</th><th>प्रमुख खनिज</th><th>प्रमुख उद्योग</th></tr></thead><tbody><tr><td><div class="primary-cell">मुंबई-पुणे औद्योगिक प्रदेश</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बॉम्बे हाई कच्चा पेट्रोलियम व प्राकृतिक गैस, बॉक्साइट (कोल्हापुर) व पश्चिमी घाट जलविद्युत</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सूती वस्त्र (कॉटनोपोलिस), पेट्रोरसायन, ऑटोमोबाइल, तेल शोधन, भारी मशीनरी, फार्मास्यूटिकल्स व सॉफ्टवेयर</div></div></td></tr><tr><td><div class="primary-cell">हुगली औद्योगिक प्रदेश</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">रानीगंज व दामोदर घाटी कोयला, छोटानागपुर लौह अयस्क व चूना पत्थर, हुगली नदी का स्वच्छ जल</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पटसन (जूट), भारी इंजीनियरिंग, पोत निर्माण, रसायन, रेशम, कागज, रेल वैगन व चमड़ा उद्योग</div></div></td></tr><tr><td><div class="primary-cell">बेंगलुरु-चेन्नई औद्योगिक प्रदेश</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सेलम व कुद्रेमुख लौह अयस्क, नेवेली लिग्नाइट कोयला, पाइकरा व मेट्टूर जलविद्युत शक्ति</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सूचना प्रौद्योगिकी (IT / सिलिकॉन वैली), एयरोस्पेस, ऑटोमोबाइल, रेशम वस्त्र, इलेक्ट्रॉनिक्स व भारी मशीन टूल्स</div></div></td></tr><tr><td><div class="primary-cell">गुजरात औद्योगिक प्रदेश</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अंकलेश्वर, कलोल व लूनेज पेट्रोलियम, प्राकृतिक गैस, समुद्री नमक व कच्छ लिग्नाइट</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सूती व कृत्रिम रेशा वस्त्र, पेट्रोरसायन (जामनगर), तेल रिफाइनरी, रासायनिक उर्वरक व हीरा तराशी</div></div></td></tr><tr><td><div class="primary-cell">छोटा नागपुर औद्योगिक प्रदेश</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उच्च-ग्रेड हेमेटाइट (सिंहभूम), कोकिंग कोयला (झरिया), बॉक्साइट (लोहरदगा), तांबा व चूना पत्थर</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">एकीकृत लौह-इस्पात (जमशेदपुर, बोकारो), भारी इंजीनियरिंग (HEC रांची), एल्युमिनियम (मूरी) व सीमेंट</div></div></td></tr><tr><td><div class="primary-cell">विशाखापट्टनम-गुंटूर प्रदेश</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैलाडिला लौह अयस्क, कृष्णा-गोदावरी बेसिन प्राकृतिक गैस, चूना पत्थर व मरीन लवण</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">तटीय लौह-इस्पात (RINL विजाग), पेट्रोलियम शोधन, पेट्रोरसायन, पोत निर्माण, उर्वरक व सीमेंट उद्योग</div></div></td></tr><tr><td><div class="primary-cell">गुरुग्राम-दिल्ली-मेरठ प्रदेश</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">स्थानीय धात्विक खनिजों का अभाव; निकटवर्ती अरावली अधात्विक खनिज व बाहरी खनिज आयात</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऑटोमोबाइल, इलेक्ट्रॉनिक्स, सॉफ्टवेयर/आईटी, होजरी वस्त्र, कृषि उपकरण व उपभोक्ता वस्तुएं</div></div></td></tr><tr><td><div class="primary-cell">कोल्लम-तिरुवनंतपुरम प्रदेश</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">तटीय मोनाजाइट व इल्मेनाइट बालू, बॉक्साइट, चीनी मिट्टी (काओलिन) व समृद्ध जलविद्युत</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">काजू प्रसंस्करण, कॉयर (नारियल रेशा), रबर उत्पाद, एल्युमिनियम प्रगलन, रसायन व मत्स्य डिब्बाबंदी</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Mineral Industrial Regions 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>औद्योगिक क्षेत्र</th><th>प्रमुख खनिज</th><th>प्रमुख उद्योग</th></tr></thead><tbody><tr><td><div class="primary-cell">रूर औद्योगिक प्रदेश (जर्मनी)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">रूर बेसिन का उच्च कोटि कोकिंग कोयला, लिग्नाइट व राइन जलमार्ग से आयातित लौह अयस्क</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">यूरोप का सबसे सघन लौह-इस्पात संकुल, भारी मशीनरी, रसायन, ऑटोमोबाइल व रक्षा विनिर्माण उद्योग</div></div></td></tr><tr><td><div class="primary-cell">ग्रेट लेक्स-पिट्सबर्ग (USA)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मेसाबी रेंज लौह अयस्क (सुपीरियर झील) व अप्लेशियन उच्च कोटि कोकिंग कोयला</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऐतिहासिक 'स्टील सिटी' (पिट्सबर्ग), ऑटोमोबाइल की राजधानी (डेट्रायट), कृषि यंत्र व भारी मशीनरी</div></div></td></tr><tr><td><div class="primary-cell">कांटो मैदान प्रदेश (जापान)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">खनिजों का लगभग पूर्ण अभाव; शत-प्रतिशत आयातित लौह अयस्क, कोयला व कच्चा तेल</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऑटोमोबाइल, उपभोक्ता इलेक्ट्रॉनिक्स, रोबोटिक्स, परिशुद्ध मशीनरी, पेट्रोरसायन व जहाज निर्माण</div></div></td></tr><tr><td><div class="primary-cell">शंघाई-यांग्त्सी डेल्टा (चीन)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">यांग्त्सी जलमार्ग से अंतर्देशीय कोयला-लौह परिवहन तथा आयातित कच्चा माल व ऊर्जा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">चीन का सबसे बड़ा औद्योगिक संकुल; बाओशान एकीकृत इस्पात, जहाज निर्माण, वस्त्र, ऑटोमोबाइल व आईटी</div></div></td></tr><tr><td><div class="primary-cell">यूराल औद्योगिक प्रदेश (रूस)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मैग्नीटोगोर्स्क का लौह अयस्क, तांबा, बॉक्साइट, पोटाश व कुजबास से आयातित कोयला</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारी धातुकर्म, रेलवे इंजन, भारी सैन्य उपकरण, रासायनिक उद्योग व खनन मशीनरी निर्माण</div></div></td></tr><tr><td><div class="primary-cell">पो नदी घाटी प्रदेश (इटली)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आल्प्स पर्वतीय जलविद्युत, पो बेसिन प्राकृतिक गैस तथा आयातित धातु व ऊर्जा संसाधन</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऑटोमोबाइल (ट्यूरिन/फिएट), वस्त्र व फैशन (मिलान), रसायन, कृषि प्रसंस्करण व हल्के इंजीनियरिंग सामान</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>उद्योगों के भौगोलिक संकेंद्रण के फलस्वरूप विकसित होने वाले सघन आर्थिक-भौगोलिक क्षेत्र को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">औद्योगिक प्रदेश (Industrial Region)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक प्रदेश के परिसीमन (सीमांकन) के लिए भूगोलवेत्ताओं द्वारा किन प्रमुख सूचकांकों का प्रयोग किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">औद्योगिक श्रमिकों की संख्या, कुल विनिर्माण मूल्यवर्धन, ऊर्जा की खपत और कारखानों की सघनता</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में मुख्य रूप से कितने प्रमुख औद्योगिक प्रदेश (Major Industrial Regions) पहचाने गए हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आठ प्रमुख औद्योगिक प्रदेश</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में लघु औद्योगिक प्रदेशों (Minor Industrial Regions) और औद्योगिक जिलों की संख्या क्रमशः कितनी मानी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">13 लघु औद्योगिक प्रदेश और लगभग 50 औद्योगिक जिले</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का सबसे पहला विकसित, आर्थिक रूप से सर्वाधिक संपन्न और सबसे बड़ा औद्योगिक प्रदेश कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुंबई-पुणे औद्योगिक प्रदेश (Mumbai-Pune Industrial Region)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुंबई-पुणे औद्योगिक प्रदेश के ऐतिहासिक विकास की आधारशिला किस उद्योग ने रखी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूती वस्त्र उद्योग ने (1854 में प्रथम सफल सूती मिल की स्थापना के बाद)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1869 में स्वेज नहर के खुलने का मुंबई-पुणे औद्योगिक प्रदेश पर क्या सीधा प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुंबई बंदरगाह यूरोप के निकट आ गया जिससे कच्ची कपास के निर्यात और भारी मशीनरी के आयात में भारी उछाल आया</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुंबई-पुणे औद्योगिक प्रदेश को ऊर्जा की नियमित आपूर्ति किन प्रमुख स्रोतों से प्राप्त होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पश्चिमी घाट के जलविद्युत केंद्र (खोपोली/भिवपुरी), तारापुर परमाणु ऊर्जा केंद्र और बॉम्बे हाई खनिज तेल व गैस</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुंबई-पुणे औद्योगिक प्रदेश के प्रमुख औद्योगिक उप-केंद्र कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुंबई, ठाणे, नवी मुंबई, कल्याण, अंबरनाथ, पुणे, पिंपरी, चिंचवाड़, नासिक और रोहा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हुगली नदी के दोनों किनारों पर संकीर्ण पट्टी के रूप में विस्तृत भारत का दूसरा सबसे पुराना औद्योगिक क्षेत्र कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हुगली औद्योगिक प्रदेश (पश्चिम बंगाल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हुगली औद्योगिक प्रदेश का भौगोलिक विस्तार कहाँ से कहाँ तक पाया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तर में बांसबेरिया से लेकर दक्षिण में बिड़लानगर तक (लगभग 100 किमी लंबी नदी तटीय पट्टी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हुगली औद्योगिक प्रदेश के जन्म और सघन संकेंद्रण का प्राथमिक प्रेरक उद्योग कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पटसन (जूट) उद्योग (1855 में रिशरा में पहली मिल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हुगली औद्योगिक प्रदेश को आवश्यक ऊर्जा और कच्चे माल की आपूर्ति किन पड़ोसी क्षेत्रों से प्राप्त होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दामोदर घाटी और रानीगंज से कोयला तथा छोटा नागपुर पठार से लौह अयस्क और खनिज</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1947 में देश के विभाजन का हुगली औद्योगिक प्रदेश के जूट उद्योग पर क्या प्रतिकूल प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कच्चे जूट उत्पादक उपजाऊ क्षेत्र पूर्वी पाकिस्तान (बांग्लादेश) चले गए जिससे मिलों को कच्चे माल का भारी संकट झेलना पड़ा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बेंगलुरु-चेन्नई औद्योगिक प्रदेश किन दो दक्षिणी राज्यों के विस्तृत भूभाग में फैला हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर्नाटक और तमिलनाडु</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बेंगलुरु-चेन्नई औद्योगिक प्रदेश 1960 के दशक तक मुख्य रूप से किन उद्योगों पर केंद्रित था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वस्त्र उद्योग, चमड़ा उद्योग, हल्के इंजीनियरिंग और रेल कोच निर्माण पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बेंगलुरु शहर को किस आधुनिक ज्ञान-आधारित उद्योग के संकेंद्रण के कारण 'भारत की सिलिकॉन वैली' कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूचना प्रौद्योगिकी (IT) और सॉफ्टवेयर सेवा उद्योग के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चेन्नई महानगर को ऑटोमोबाइल और भारी वाहन विनिर्माण के सघन केंद्र के रूप में किस उपनाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'डेट्रायट ऑफ साउथ एशिया' (Detroit of South Asia)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बेंगलुरु-चेन्नई प्रदेश को ऊर्जा आपूर्ति किन ऐतिहासिक जलविद्युत और ताप परियोजनाओं से होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शिवसमुद्रम व पाइकरा जलविद्युत, मेट्टूर बांध, नेवेली लिग्नाइट ताप विद्युत और कलपक्कम परमाणु संयंत्र</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुजरात औद्योगिक प्रदेश का भौगोलिक विस्तार मुख्य रूप से किन नगरों के मध्य एक अक्ष के रूप में है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अहमदाबाद-वडोदरा-सूरत-भरूच अक्ष (कालिंदी-खंभात तटीय पट्टी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अहमदाबाद नगर को सूती वस्त्रों के ऐतिहासिक सघन उत्पादन के कारण क्या उपाधि दी गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'भारत का मैनचेस्टर' (Manchester of India)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुजरात औद्योगिक प्रदेश में 1960 के दशक के बाद कौन-से दो नए उद्योग तेजी से विकसित होकर इसके आधार स्तंभ बने?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पेट्रोलियम शोधन और पेट्रोरसायन उद्योग (अंकलेश्वर और कलोल में तेल खोज के बाद)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व का सबसे बड़ा एकल तेल रिफाइनरी संकुल गुजरात के किस शहर में अवस्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जामनगर (रिलायंस इंडस्ट्रीज)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हीरा तराशी और पॉलिशिंग (Diamond Polishing) उद्योग का विश्व में सबसे बड़ा केंद्र गुजरात का कौन-सा शहर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूरत (Surat)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारी धातुकर्म और खनिज-आधारित उद्योगों की सर्वाधिक सघनता वाला भारत का औद्योगिक प्रदेश कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">छोटा नागपुर औद्योगिक प्रदेश (झारखंड, ओडिशा व पश्चिम बंगाल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छोटा नागपुर औद्योगिक प्रदेश को 'भारत का रूर' क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यहाँ जर्मनी के रूर बेसिन के समान ही उच्च कोटि का कोकिंग कोयला और लौह अयस्क एक ही स्थान पर मिलते हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छोटा नागपुर औद्योगिक प्रदेश के प्रमुख भारी औद्योगिक केंद्र कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जमशेदपुर (TISCO), बोकारो (BSL), दुर्गापुर, बर्नपुर-कुल्टी, रांची (HEC) और धनबाद</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रांची में स्थापित 'भारी इंजीनियरिंग निगम' (HEC) को किस उपनाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'कारखानों का कारखाना' (Mother of Industries - इस्पात मिलों की मशीनें बनाने वाला)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विशाखापट्टनम-गुंटूर औद्योगिक प्रदेश किस राज्य के तटीय गलियारे में विकसित हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आंध्र प्रदेश (विशाखापट्टनम से लेकर दक्षिण में विजयवाड़ा और गुंटूर तक)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विशाखापट्टनम में स्थित 'हिंदुस्तान शिपयार्ड लिमिटेड' (HSL) किस औद्योगिक गतिविधि का प्रमुख केंद्र है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आधुनिक पोत निर्माण और समुद्री जहाजों की मरम्मत (Shipbuilding)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का प्रथम तटीय अवस्थिति वाला आधुनिक एकीकृत इस्पात संयंत्र कहाँ स्थापित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशाखापट्टनम (राष्ट्रीय इस्पात निगम लिमिटेड - RINL / विजाग स्टील)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विशाखापट्टनम-गुंटूर प्रदेश को कच्चा माल और गैस कहाँ से सुलभता से प्राप्त होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैलाडिला से लौह अयस्क तथा कृष्णा-गोदावरी (KG) बेसिन से प्राकृतिक गैस</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुरुग्राम-दिल्ली-मेरठ औद्योगिक प्रदेश के तीव्र विकास का सबसे प्रमुख अवस्थिति कारक क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय राजधानी का विशाल उपभोक्ता बाजार, उत्कृष्ट कनेक्टिविटी, वित्तीय संसाधन और प्रशासनिक सन्निकटता</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गुरुग्राम (हरियाणा) मुख्य रूप से किन दो आधुनिक उद्योगों के वैश्विक केंद्र के रूप में उभरा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऑटोमोबाइल उद्योग (मारुति सुजुकी) और सूचना प्रौद्योगिकी/बीपीओ (IT/ITeS)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कोल्लम-तिरुवनंतपुरम औद्योगिक प्रदेश भारत के किस तटीय राज्य में विस्तृत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केरल के दक्षिणी तटीय भाग में</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कोल्लम-तिरुवनंतपुरम प्रदेश का औद्योगिक ढांचा शेष भारतीय औद्योगिक प्रदेशों से किस प्रकार भिन्न है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यहाँ भारी उद्योगों के स्थान पर कृषि-आधारित, बागवानी, काजू, कॉयर, रबर और मत्स्य प्रसंस्करण का प्रभुत्व है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जर्मनी का कौन-सा औद्योगिक प्रदेश यूरोप का सबसे बड़ा ऐतिहासिक भारी औद्योगिक संकुल रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रूर औद्योगिक प्रदेश (Ruhr Industrial Region - राइन की सहायक रूर नदी बेसिन)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रूर औद्योगिक प्रदेश के विकास का मूल प्राकृतिक आधार क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यंत सघन और उच्च कोटि के बिटुमिनस कोकिंग कोयले के विस्तृत भूमिगत भंडार</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रूर क्षेत्र के प्रमुख औद्योगिक शहर कौन-से हैं जिन्हें जर्मनी का औद्योगिक हृदय कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एसेन (क्रुप्स इस्पात घराना), डॉर्टमुंड, डुइसबर्ग (विश्व का सबसे बड़ा अंतर्देशीय नदी पत्तन) और बोचुम</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कोयला खदानों के बंद होने और पुरानी भारी मिलों के ह्रास के कारण औद्योगिक भूगोल में रूर क्षेत्र को किस उपनाम से पुकारा गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'जंग का कटोरा' (Rust Bowl of Germany - यद्यपि अब यह पर्यावरण-अनुकूल उच्च-तकनीक केंद्र में बदल चुका है)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>फ्रांस और जर्मनी की सीमा पर स्थित वह प्रसिद्ध औद्योगिक क्षेत्र कौन-सा है जहाँ उच्च गुणवत्ता का कोयला पाया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार बेसिन (Saar Basin)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>फ्रांस का कौन-सा क्षेत्र निम्न-ग्रेड 'मिनैट' (Minette) लौह अयस्क और इस्पात निर्माण हेतु ऐतिहासिक रूप से प्रसिद्ध रहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लोरेन औद्योगिक क्षेत्र (Lorraine Industrial Region)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इटली का सबसे प्रमुख और समृद्ध औद्योगिक संकुल किस नदी घाटी में स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पो नदी घाटी औद्योगिक प्रदेश (Po Valley - उत्तरी इटली)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पो घाटी औद्योगिक प्रदेश के दो सबसे प्रमुख स्तंभ महानगर कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मिलान (वस्त्र, फैशन और वित्तीय केंद्र) और ट्यूरिन (फिएट ऑटोमोबाइल की राजधानी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ब्रिटेन की औद्योगिक क्रांति की जन्मस्थली माने जाने वाले बर्मिंघम और उसके आसपास के कोयला क्षेत्र को क्या कहा जाता था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'ब्लैक कंट्री' (The Black Country / मिडलैंड्स औद्योगिक क्षेत्र)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ब्रिटेन का 'शेफील्ड' (Sheffield) शहर विश्व में किस विशिष्ट उत्पाद के लिए प्रसिद्ध रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्टेनलेस स्टील और उच्च कोटि की कटलरी (चाकू-कैंची औजार) निर्माण हेतु</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संयुक्त राज्य अमेरिका का 'ग्रेट लेक्स औद्योगिक प्रदेश' किन प्रमुख झीलों के तटों पर विस्तृत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुपीरियर, मिशिगन, ह्यूरॉन, एरी और ओंटारियो झीलों के किनारे</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रेट लेक्स क्षेत्र में लौह-इस्पात उद्योग के अभूतपूर्व विकास का प्रमुख भौगोलिक कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मेसाबी रेंज से सस्ता जलमार्ग द्वारा लौह अयस्क और अप्लेशियन बेसिन से कोयले का सुगम मिलन</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अमेरिका के 'पिट्सबर्ग' (Pittsburgh) नगर को विश्व इतिहास में किस उपनाम से जाना गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'विश्व की इस्पात राजधानी' (Steel Capital of the World)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मिशिगन झील के तट पर स्थित अमेरिका का दूसरा सबसे बड़ा औद्योगिक केंद्र कौन-सा है जो मांस डिब्बाबंदी और इस्पात हेतु प्रसिद्ध रहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शिकागो-गैरी औद्योगिक संकुल (Chicago-Gary Complex)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अमेरिका के किस नगर को हेनरी फोर्ड द्वारा असेंबली लाइन शुरुआत के बाद 'विश्व की ऑटोमोबाइल राजधानी' कहा गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डेट्रायट (Detroit, मिशिगन)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रेट लेक्स और पिट्सबर्ग के पुराने इस्पात कारखानों के बंद होने और ह्रास के कारण इस क्षेत्र को भूगोल में क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रस्ट बेल्ट (Rust Belt / जंग की पेटी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अमेरिका के अटलांटिक तटीय सबसे पुराने औद्योगिक प्रदेश को किस नाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यू इंग्लैंड औद्योगिक प्रदेश (New England - बोस्टन, प्रोविडेंस / वस्त्र व परिशुद्ध मशीनरी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कैलिफ़ोर्निया के सैन फ्रांसिस्को खाड़ी क्षेत्र में स्थित विश्व का सबसे प्रमुख उच्च-तकनीक नवाचार केंद्र क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिलिकॉन वैली (Silicon Valley - सांता क्लारा घाटी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कनाडा का सबसे महत्वपूर्ण और सघन विनिर्माण प्रदेश कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओंटारियो और सेंट लॉरेंस घाटी औद्योगिक प्रदेश (टोरंटो, हैमिल्टन, मॉन्ट्रियल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कनाडा के किस शहर को प्रचुर इस्पात उत्पादन के कारण 'कनाडा का बर्मिंघम' कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हैमिल्टन (Hamilton, ओंटारियो)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान का सबसे बड़ा, सबसे सघन और सबसे महत्वपूर्ण औद्योगिक प्रदेश कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कांटो मैदान औद्योगिक प्रदेश (Kanto Plain - टोक्यो-योकोहामा संकुल / 'केहिन' प्रदेश)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कांटो औद्योगिक प्रदेश की सबसे बड़ी भौगोलिक विवशता और विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">खनिज व ऊर्जा संसाधनों का पूर्ण अभाव; शत-प्रतिशत आयातित कच्चे माल और बंदरगाहों पर पूर्ण निर्भरता</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान का दूसरा सबसे बड़ा औद्योगिक प्रदेश कौन-सा है जिसे 'हांशिन प्रदेश' भी कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किंकी या कंसाई औद्योगिक प्रदेश (Kinki / Kansai - ओसाका, कोबे और क्योटो)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान के 'ओसाका' (Osaka) शहर को ऐतिहासिक रूप से किस उपनाम से जाना जाता रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'जापान का मैनचेस्टर' (वस्त्र उद्योग के सघन विकास के कारण)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान के नागोया औद्योगिक क्षेत्र (चुबू प्रदेश) को ऑटोमोबाइल (टोयोटा) के विशाल उत्पादन के कारण क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'जापान का डेट्रायट' (Detroit of Japan)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान का सबसे पुराना भारी लौह-इस्पात केंद्र कौन-सा है जो क्यूशू द्वीप पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किताक्यूशू-यावाता औद्योगिक प्रदेश (Kitakyushu-Yawata)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चीन का सबसे बड़ा, सबसे आधुनिक और सबसे विविधतापूर्ण औद्योगिक संकुल कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यांग्त्सी नदी डेल्टा प्रदेश (Yangtze River Delta - शंघाई, नानजिंग, हांग्जो, सूझोउ)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शंघाई के निकट स्थित चीन का सबसे बड़ा और आधुनिक एकीकृत तटीय इस्पात संयंत्र कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाओशान इस्पात संयंत्र (Baoshan / Baosteel)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चीन का कौन-सा पूर्वोत्तर औद्योगिक प्रदेश देश का सबसे पुराना भारी औद्योगिक केंद्र रहा है जिसे 'चीन का पिट्सबर्ग' कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंशन-शेनयांग प्रदेश (मंचूरिया / लियाओनिंग प्रांत)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चीन की 'ग्रेटर बे एरिया' (पर्ल नदी डेल्टा) में स्थित कौन-सा शहर हार्डवेयर और इलेक्ट्रॉनिक्स की वैश्विक राजधानी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शेन्ज़ेन (Shenzhen) और गुआंगझोउ</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रूस का सबसे पुराना और प्रमुख औद्योगिक प्रदेश कौन-सा है जो कपड़ा और उपभोक्ता सामानों हेतु विकसित हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मॉस्को-गोर्की-तुला औद्योगिक प्रदेश (केंद्रीय औद्योगिक क्षेत्र)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रूस का दूसरा सबसे बड़ा औद्योगिक केंद्र जो बाल्टिक सागर तट पर स्थित है, कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सेंट पीटर्सबर्ग औद्योगिक प्रदेश (पोत निर्माण और परिशुद्ध इंजीनियरिंग)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रूस के यूराल औद्योगिक प्रदेश का सबसे बड़ा इस्पात उत्पादक केंद्र कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मैग्नीटोगोर्स्क (Magnitogorsk - 'लौह पर्वत')</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>साइबेरिया में स्थित रूस का प्रमुख कोयला और भारी धातुकर्म संकुल क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुजनेत्स्क बेसिन या कुजबास (Kuzbass)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यूक्रेन का कौन-सा बेसिन ऐतिहासिक रूप से सोवियत संघ का प्रमुख कोयला और इस्पात केंद्र रहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डोनबास क्षेत्र (डोनेट्स बेसिन) तथा क्रिवोय रोग लौह क्षेत्र</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ब्राजील का सबसे प्रमुख और दक्षिण अमेरिका का सबसे विशाल औद्योगिक संकुल कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">साओ पाउलो-रियो डी जनेरियो-बेलो होरिजोंटे त्रिभुज</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक अवस्थिति (Industrial Location) का अध्ययन भूगोल की किस शाखा के अंतर्गत किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थिक भूगोल (Economic Geography) के</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उद्योग की स्थापना के स्थान का चयन करने वाले सबसे महत्वपूर्ण भौगोलिक और आर्थिक कारक कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कच्चा माल, शक्ति/ऊर्जा स्रोत, बाजार, परिवहन लागत, कुशल श्रम, पूंजी, भूमि और सरकारी नीतियां</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक अवस्थिति का पहला वैज्ञानिक और शास्त्रीय सिद्धांत 1909 में किस जर्मन अर्थशास्त्री ने दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्फ्रेड वेबर (Alfred Weber - 'Theory of the Location of Industries')</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अल्फ्रेड वेबर का औद्योगिक अवस्थिति सिद्धांत किस मूल अवधारणा पर आधारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम परिवहन लागत सिद्धांत (Least Transport Cost Theory)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वेबर ने परिवहन लागत के निर्धारण में किन दो भौतिक चरों को सबसे महत्वपूर्ण माना?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माल का भार (Weight) और परिवहन की जाने वाली दूरी (Distance)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वेबर के सिद्धांत में 'पदार्थ सूचकांक' (Material Index - MI) की क्या परिभाषा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थानीयकृत कच्चे माल के भार और निर्मित अंतिम उत्पाद के भार का अनुपात (MI = Weight of Raw Material / Weight of Product)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वेबर के अनुसार जब किसी कच्चे माल का पदार्थ सूचकांक 1 से अधिक (MI > 1) होता है, तो वह कैसा कच्चा माल है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भार-ह्रासी कच्चा माल (Weight-losing / Impure Material - जैसे गन्ना, लौह अयस्क)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भार-ह्रासी कच्चे माल (MI > 1) पर आधारित उद्योग की स्थापना वेबर के अनुसार कहाँ होनी चाहिए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कच्चे माल के स्रोत क्षेत्र के निकट (Material-oriented Location - जैसे चीनी मिलें)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब पदार्थ सूचकांक 1 के बराबर या उससे कम (MI ≤ 1) होता है, तो वह किस प्रकार का माल कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शुद्ध या सर्वसुलभ कच्चा माल (Pure Material - जैसे कपास, बेकरी उत्पाद)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शुद्ध कच्चे माल (MI = 1) पर आधारित उद्योग की स्थापना कहाँ अनुकूल मानी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाजार के निकट (Market-oriented) या परिवहन मार्ग पर कहीं भी</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वेबर के मॉडल में एक ही कच्चे माल या उत्पाद के लिए समान परिवहन लागत वाले बिंदुओं को मिलाने वाली रेखा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आइसोटिम (Isotim / समान परिवहन रेखा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कच्चे माल और तैयार माल की कुल संयुक्त परिवहन लागत के समान मान वाले बिंदुओं को जोड़ने वाली रेखा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आइसोडोपेन (Isodapane / समान कुल लागत रेखा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वह विशिष्ट आइसोडोपेन जहाँ सस्ते श्रम या संकुलन से होने वाली बचत अतिरिक्त परिवहन लागत के बिल्कुल बराबर हो जाती है, क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्रांतिक आइसोडोपेन (Critical Isodapane)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वेबर के अनुसार यदि सस्ते श्रम स्थल पर मिलने वाली बचत क्रांतिक आइसोडोपेन के भीतर हो, तो उद्योग पर क्या प्रभाव पड़ेगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उद्योग न्यूनतम परिवहन लागत बिंदु से हटकर सस्ते श्रम वाले स्थान पर स्थानांतरित हो जाएगा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एक ही स्थान पर कई उद्योगों के एक साथ स्थापित होने से मिलने वाले साझे लाभ (अवसंरचना, साझा श्रम, बाजार) को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संकुलन या समूहन की मितव्ययिताएं (Agglomeration Economies)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब किसी औद्योगिक नगर में अत्यधिक भीड़, भूमि की ऊंची लागत और प्रदूषण के कारण उद्योग बाहर जाने लगते हैं, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विसंकुलन की अमितव्ययिताएं (Deglomeration Diseconomies)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वे उद्योग जिनकी अवस्थिति कच्चे माल या बाजार के वजन से प्रभावित नहीं होती और जो कहीं भी लगाए जा सकते हैं, क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वच्छंद उद्योग (Footloose Industries - जैसे इलेक्ट्रॉनिक चिप्स, सॉफ्टवेयर, हीरा तराशी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्वच्छंद उद्योगों (Footloose Industries) की प्रमुख विशेषताएं क्या होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यंत कम वजन का उच्च मूल्य उत्पाद, प्रदूषण-मुक्त कार्यप्रणाली और सड़क/हवाई परिवहन पर निर्भरता</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1940 में जर्मन अर्थशास्त्री ऑगस्ट लॉश (August Lösch) ने औद्योगिक अवस्थिति का कौन-सा सिद्धांत प्रतिपादित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिकतम लाभ या बाजार क्षेत्र सिद्धांत (Market Area / Profit Maximization Theory)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऑगस्ट लॉश का सिद्धांत वेबर के सिद्धांत से किस मौलिक बिंदु पर भिन्न है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वेबर ने न्यूनतम लागत (लागत पक्ष) पर बल दिया, जबकि लॉश ने अधिकतम आय और बाजार मांग (मांग पक्ष) पर बल दिया</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऑगस्ट लॉश के अनुसार किसी उत्पाद की मांग और दूरी के बीच कैसा संबंध होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दूरी बढ़ने पर परिवहन लागत जुड़ने से कीमत बढ़ती है जिससे मांग घटती है (मांग शंकु / Demand Cone)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लॉश के सिद्धांत में पूरे बाजार क्षेत्र को बिना किसी रिक्त स्थान के घेरने के लिए बाजार की आदर्श ज्यामितीय आकृति क्या बनती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">षट्कोणीय बाजार जाल (Hexagonal Market Structure)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डी.एम. स्मिथ (David M. Smith) ने 1971 में औद्योगिक अवस्थिति का कौन-सा यथार्थवादी मॉडल प्रस्तुत किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थानिक लाभप्रदता सीमांत सिद्धांत (Spatial Margins of Profitability)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डी.एम. स्मिथ के अनुसार कोई उद्योग किस पूरे भौगोलिक क्षेत्र के भीतर लाभ में संचालित हो सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जहाँ कुल आय वक्र (Total Revenue) कुल लागत वक्र (Total Cost) से ऊपर रहता है (Spatial Margin)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एलन प्रेड (Allan Pred) ने 1967 में औद्योगिक निर्णयों के अध्ययन हेतु कौन-सा दृष्टिकोण विकसित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यवहारवादी उपागम (Behavioral Approach - सूचना की उपलब्धता और निर्णयकर्ता की क्षमता का मैट्रिक्स)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रसिद्ध समाजशास्त्री गुन्नार मिर्डल (Gunnar Myrdal) का 'संचयी कार्य-कारण सिद्धांत' (Cumulative Causation) औद्योगिक विकास को कैसे समझाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक बार किसी क्षेत्र में प्रारंभिक लाभ मिलने पर बैकवाश (Backwash) और स्प्रेड (Spread) प्रभावों से विकास वहीं संकेंद्रित होता जाता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>फ्रांस्वा पेरोक्स (François Perroux) द्वारा 1955 में प्रतिपादित कौन-सा क्षेत्रीय सिद्धांत औद्योगिक समूहों की व्याख्या करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विकास ध्रुव सिद्धांत (Growth Pole Theory - Pôles de Croissance)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विकास ध्रुव सिद्धांत के अनुसार आर्थिक विकास सर्वत्र समान न होकर कहाँ उत्पन्न होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशिष्ट प्रेरक उद्योगों (Propulsive Industries) वाले संकेंद्रित विकास बिंदुओं या ध्रुवों पर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में स्वतंत्रता के बाद भिलाई, राउरकेला और दुर्गापुर में पिछड़े क्षेत्रों में इस्पात संयंत्र लगाना किस नीति का उदाहरण था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विकास ध्रुव दृष्टिकोण द्वारा संतुलित क्षेत्रीय औद्योगिक विकास (Balanced Regional Development) प्राप्त करना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>परिवहन लागत के संदर्भ में जब दूरी बढ़ने के साथ प्रति किमी परिवहन दर घटती जाती है, तो इस सिद्धांत को क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दूरी क्षीणन या टेपरिंग सिद्धांत (Tapering Principle of Freight Rates)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दो अलग-अलग परिवहन साधनों (जैसे रेल से जहाज) के मिलन स्थल पर माल उतारने-चढ़ाने की लागत क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ट्रांसशिपमेंट या ब्रेक-ऑफ-बल्क लागत (Break-of-Bulk Point Cost)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ब्रेक-ऑफ-बल्क बिंदुओं (जैसे समुद्री बंदरगाहों) पर अक्सर कौन-से उद्योग स्थापित होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तेल रिफाइनरियां, आटा मिलें, चीनी रिफाइनरी और आयातित कच्चे माल पर आधारित इस्पात संयंत्र</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में 'राष्ट्रीय विनिर्माण नीति' (NMP) के तहत विनिर्माण को गति देने हेतु कौन-से विशाल क्षेत्र विकसित किए जा रहे हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय निवेश और विनिर्माण क्षेत्र (NIMZ) तथा औद्योगिक गलियारे (Industrial Corridors)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का सबसे महत्वाकांक्षी 1,504 किमी लंबा हाई-स्पीड औद्योगिक गलियारा कौन-सा है जो 6 राज्यों से गुजरता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिल्ली-मुंबई औद्योगिक गलियारा (DMIC - जापान के सहयोग से डेडिकेटेड फ्रेट कॉरिडोर पर आधारित)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक भूगोल में 'सनराइज इंडस्ट्रीज' (Sunrise Industries) से क्या अभिप्राय होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे नए और तेजी से उभरते हुए उच्च-विकास उद्योग जिनमें भविष्य में भारी संभावनाएं हैं (जैसे ग्रीन एनर्जी, सेमीकंडक्टर, एआई, ईवी)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पुरानी तकनीकों पर आधारित ह्रासमान और प्रदूषणकारी पारंपरिक उद्योगों को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सनसेट इंडस्ट्रीज (Sunset Industries - जैसे पारंपरिक कपड़ा मिलें, भारी फाउंड्री)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>औद्योगिक नीति 1991 के बाद भारत में उद्योगों की अवस्थिति का रुझान कच्चे माल से हटकर किस ओर तेजी से बढ़ा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बड़े महानगरीय बाजारों, प्रमुख बंदरगाहों और एक्सप्रेसवे कनेक्टिविटी वाले नोड्स की ओर</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

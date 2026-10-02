@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="वित्तीय बाजार Part 2">
+<title>वित्तीय बाजार Part 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / वित्तीय बाजार Part 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>वित्तीय बाजार Part 2</h1>
+    <p class="topic-subtitle">वित्तीय बाजार का परिचय, मुद्रा बाजार की संरचना, प्रमुख अल्पकालिक वित्तीय साधन (Call Money, T-Bills, CP, CD, Repo, Commercial Bills) तथा उच्च तरलता का समष्टिगत महत्व</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">वित्तीय बाजार Part 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>वित्तीय साधन/बाजार</th><th>प्रमुख विशेषता</th><th>उपयोग या भूमिका</th></tr></thead><tbody><tr><td><div class="primary-cell">मांग व सूचना मुद्रा (Call &amp; Notice Money)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">असुरक्षित अंतर-बैंक अल्पकालिक ऋण बाजार; 1 दिन (Call) से 14 दिन (Notice); ब्याज दर पूर्णतः बाजार मांग-आपूर्ति से निर्धारित।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वाणिज्यिक बैंकों द्वारा दैनिक CRR और SLR की अनिवार्यताओं को बनाए रखना तथा अंतर-बैंक नकदी असंतुलन का त्वरित समायोजन।</div></div></td></tr><tr><td><div class="primary-cell">ट्रेजरी बिल (Treasury Bills - T-Bills)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत सरकार की ओर से RBI द्वारा जारी शून्य-कूपन संप्रभु ऋण साधन (91, 182 और 364 दिन); न्यूनतम ₹25,000 मूल्यवर्ग; बट्टे पर जारी।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सरकार के अस्थायी नकदी बेमेल को बिना मुद्रा छपाई पूरा करना, बैंकों हेतु SLR प्रतिभूति और अर्थव्यवस्था का जोखिम-मुक्त अल्पकालिक बेंचमार्क।</div></div></td></tr><tr><td><div class="primary-cell">वाणिज्यिक पत्र (Commercial Paper - CP)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उच्च क्रेडिट रेटिंग (न्यूनतम A-2) वाली कंपनियों द्वारा जारी अल्पकालिक असुरक्षित वचन-पत्र (7 दिन से 1 वर्ष; न्यूनतम ₹5 लाख)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कॉर्पोरेट घरानों को कार्यशील पूंजी (Working Capital) हेतु बैंकों के पारंपरिक ऋणों से सस्ता, लचीला और प्रत्यक्ष बाजार वित्तपोषण।</div></div></td></tr><tr><td><div class="primary-cell">जमा प्रमाण पत्र (Certificate of Deposit - CD)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अनुसूचित बैंकों (7 दिन से 1 वर्ष) और AIFIs (1 से 3 वर्ष) द्वारा जारी परिक्राम्य (Negotiable) सावधि प्रपत्र; न्यूनतम ₹1 लाख।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऋण विस्तार के दौर में बैंकों द्वारा बड़े संस्थागत निवेशकों से एकमुश्त थोक तरलता जुटाना; द्वितीयक बाजार में सुगमता से व्यापार योग्य।</div></div></td></tr><tr><td><div class="primary-cell">वाणिज्यिक बिल (Commercial / Trade Bills)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वास्तविक व्यापारिक वस्तुओं की उधार बिक्री पर क्रेता पर आहरित विनिमय पत्र (Bill of Exchange); बैंकों द्वारा बट्टाकरण (Discounting)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आपूर्तिकर्ताओं को बिल बट्टाकरण और TReDS प्लेटफॉर्म के माध्यम से तुरंत नकदी उपलब्ध कराकर व्यापारिक चक्र को निर्बाध गति देना।</div></div></td></tr><tr><td><div class="primary-cell">बाजार रेपो एवं रिवर्स रेपो (Market Repo)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सरकारी प्रतिभूतियों के संपार्श्विक पर आधारित पुनर्खरीद अनुबंध; विनिर्दिष्ट हेयरकट और पूर्व-निर्धारित पुनर्खरीद मूल्य।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वित्तीय संस्थानों को सुरक्षित अल्पकालिक उधार और अधिशेष नकदी पर प्रतिफल; प्रतिपक्ष जोखिम से मुक्त संपार्श्विक तरलता प्रबंधन।</div></div></td></tr><tr><td><div class="primary-cell">त्रिपक्षीय रेपो (Tri-Party Repo - TREPS)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">CCIL की मध्यस्थता वाला केंद्रीय समाशोधित संपार्श्विक बाजार; अज्ञात ऑर्डर मिलान और बहुपक्षीय निवल निपटान।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">म्यूचुअल फंड्स, बीमा कंपनियों और NBFCs को बिना बैंक मध्यस्थता के अधिशेष नकदी को सुरक्षित रूप से रातों-रात उधार देने का मंच।</div></div></td></tr><tr><td><div class="primary-cell">कैश मैनेजमेंट बिल (Cash Management Bills - CMBs)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत सरकार की अप्रत्याशित नकदी जरूरतों को पूरा करने हेतु 91 दिनों से कम परिपक्वता अवधि वाले गैर-मानक अल्पकालिक संप्रभु साधन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सरकार के नकदी प्रवाह में अचानक आए अंतर को पाटना; अत्यधिक लचीला और त्वरित तरलता प्रबंधन उपकरण।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में 'वित्तीय बाजार' (Financial Market) का प्राथमिक और सबसे महत्वपूर्ण कार्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिशेष इकाइयों (बचतकर्ताओं/परिवारों) से वित्तीय संसाधनों को जुटाकर घाटे वाली इकाइयों (उद्यमियों/सरकारों) में उत्पादक निवेश हेतु गतिमान करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय बाजार किस प्रक्रिया के माध्यम से बचतकर्ताओं और निवेशकों के बीच सेतु का कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'वित्तीय मध्यस्थता' (Financial Intermediation) की प्रक्रिया द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय परिसंपत्तियों के संदर्भ में 'मूल्य खोज' (Price Discovery) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मांग और आपूर्ति की पारदर्शी प्रतिस्पर्धी बाजार शक्तियों द्वारा वित्तीय परिसंपत्तियों (शेयर, बॉन्ड, बिल) का निष्पक्ष बाजार मूल्य तय होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय बाजार निवेशकों को 'तरलता' (Liquidity) कैसे प्रदान करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रतिभूतियों को किसी भी समय न्यूनतम लागत और बिना किसी बड़े मूल्य नुकसान के नकद मुद्रा में बदलने का तैयार मंच देकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>परिपक्वता अवधि (Maturity Period) के आधार पर वित्तीय बाजार को किन दो मुख्य खंडों में विभाजित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. मुद्रा बाजार (Money Market - अल्पकालिक, 1 वर्ष तक) तथा 2. पूंजी बाजार (Capital Market - मध्यम व दीर्घकालिक, 1 वर्ष से अधिक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रतिभूतियों के निर्गमन के आधार पर वित्तीय बाजार किन दो भागों में वर्गीकृत होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राथमिक बाजार (Primary Market - नए निर्गम) तथा द्वितीयक बाजार (Secondary Market - पूर्व-जारी प्रतिभूतियों का क्रय-विक्रय)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दावे की प्रकृति (Nature of Claim) के आधार पर वित्तीय बाजार के दो प्रमुख घटक कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋण बाजार (Debt Market) तथा इक्विटी बाजार (Equity Market)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संगठित वित्तीय बाजार (Organized Financial Market) की विनियामक पहचान क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह औपचारिक कानूनों, मानकीकृत नियमों और वैधानिक विनियामकों (RBI, SEBI, IRDAI, PFRDA) के प्रत्यक्ष पर्यवेक्षण में कार्य करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय वित्तीय प्रणाली में असंगठित बाजार (Unorganized Market) के मुख्य घटक कौन-से रहे हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देशी बैंकर (Indigenous Bankers), ग्रामीण साहूकार, महाजन, चिट फंड और गैर-पंजीकृत वित्तीय मंडलियां।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय बाजारों में 'सूचना विषमता' (Information Asymmetry) को कम करने में बाजार की क्या भूमिका होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वजनिक वित्तीय प्रकटीकरण, अनिवार्य ऑडिट और रेटिंग व्यवस्था के माध्यम से निवेशकों को समान और प्रामाणिक सूचना उपलब्ध कराना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय बाजार में 'लेन-देन लागत' (Transaction Costs) में कमी कैसे आती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्रेताओं और विक्रेताओं को केंद्रीकृत तकनीकी प्लेटफॉर्म पर लाकर खोज लागत, दलाली लागत और अनुबंध प्रवर्तन लागत को न्यूनतम करके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वित्तीय क्षेत्र के विभिन्न विनियामकों के मध्य अंतर-संस्थागत समन्वय हेतु गठित शीर्ष निकाय कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय स्थिरता और विकास परिषद (Financial Stability and Development Council - FSDC)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>FSDC की अध्यक्षता किसके द्वारा की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय वित्त मंत्री द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>FSDC की उप-समिति (Sub-Committee) का पदेन अध्यक्ष कौन होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक के गवर्नर (Governor of RBI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय परिसंपत्ति (Financial Asset) की कानूनी और आर्थिक प्रकृति क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह भविष्य के नकदी प्रवाह, ब्याज या लाभांश का प्रतिनिधित्व करने वाला एक अमूर्त संविदात्मक कानूनी दावा (Contractual Claim) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय परिसंपत्तियों के भौतिक प्रमाणपत्रों को इलेक्ट्रॉनिक रूप में बदलने की प्रक्रिया को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अभौतिकीकरण या डीमैटरियलाइजेशन (Dematerialization / Demat)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में डीमैट प्रतिभूतियों का सुरक्षित इलेक्ट्रॉनिक भंडारण करने वाली दो केंद्रीय संस्थाएं कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NSDL (नेशनल सिक्योरिटीज डिपॉजिटरी लिमिटेड) तथा CDSL (सेंट्रल डिपॉजिटरी सर्विसेज लिमिटेड)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में शेयर बाजार में वर्तमान में मानक रूप से कौन-सा निपटान चक्र (Settlement Cycle) संचालित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">T+1 निपटान चक्र (सौदा होने के 24 घंटे / 1 कार्यदिवस के भीतर पूर्ण निपटान)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय बाजार में 'प्रतिपक्ष जोखिम' (Counterparty Risk) को शून्य करने का कार्य कौन-सी संस्था करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समाशोधन निगम (Clearing Corporation), जो केंद्रीय प्रतिपक्ष (CCP) बनकर निपटान की कानूनी गारंटी देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूंजी निर्माण (Capital Formation) की प्रक्रिया में वित्तीय बाजार का क्या योगदान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह घरेलू बचतों को जुटाकर नई फैक्ट्रियों, पुलों, बिजली संयंत्रों और अवसंरचना में दीर्घकालिक स्थायी पूंजी में बदलता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मुद्रा बाजार' (Money Market) की मानक आर्थिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक वित्तीय परिसंपत्तियों (जिनकी मूल परिपक्वता अवधि 1 दिन से लेकर अधिकतम 1 वर्ष तक होती है) के उधार, निवेश और व्यापार का बाजार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार के वित्तीय साधनों की तीन सार्वभौमिक विशेषताएं कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. अल्पकालिक परिपक्वता (1 वर्ष तक), 2. अत्यधिक उच्च तरलता (High Liquidity), और 3. न्यूनतम डिफ़ॉल्ट जोखिम (Low Default Risk)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार के साधनों को अर्थशास्त्र में 'समीप मुद्रा' (Near Money) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इन्हें बिना किसी बड़े पूंजीगत नुकसान और न्यूनतम समय में तुरंत वास्तविक नकद मुद्रा में रूपांतरित किया जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय मुद्रा बाजार का सर्वोच्च नियामक और संचालक कौन है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक (Reserve Bank of India - RBI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार और पूंजी बाजार में समयावधि का मुख्य विभाजक बिंदु क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 वर्ष की अवधि; 1 वर्ष तक का बाजार मुद्रा बाजार है और 1 वर्ष से अधिक का बाजार पूंजी बाजार है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार मुख्य रूप से किस प्रकार की वित्तीय आवश्यकताओं की पूर्ति करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यवसायों, बैंकों और सरकारों की अल्पकालिक कार्यशील पूंजी (Working Capital) और दैनिक तरलता की आवश्यकताओं की।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार को 'थोक बाजार' (Wholesale Market) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इसमें लेन-देन करोड़ों रुपये के विशाल वित्तीय आकार में होते हैं और इसमें मुख्य रूप से बड़े संस्थागत खिलाड़ी भाग लेते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय मुद्रा बाजार के सुधारों की आधारशिला रखने वाली 1987 की ऐतिहासिक समिति कौन-सी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एन. वाघुल समिति (N. Vaghul Committee on Money Market)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाघुल समिति की सिफारिश पर 1988 में किस विशेष संस्था का गठन मुद्रा बाजार को तरलता देने हेतु किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डिस्काउंट एंड फाइनेंस हाउस ऑफ इंडिया (DFHI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार मौद्रिक नीति संचरण (Monetary Policy Transmission) का पहला चैनल क्यों बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि RBI द्वारा नीतिगत रेपो दर बदलते ही सबसे पहला प्रभाव मुद्रा बाजार की अंतर-बैंक कॉल दरों और T-Bills की यील्ड पर पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई की मौद्रिक नीति का आधिकारिक 'परिचालन लक्ष्य' (Operating Target) कौन-सा मुद्रा बाजार दर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारित औसत कॉल मनी दर (Weighted Average Call Rate - WACR)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'शुद्ध उधारकर्ता' (Net Borrowers) सामान्यतः कौन होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वाणिज्यिक बैंक (तरलता की कमी वाले), केंद्र सरकार, प्राथमिक डीलर और बड़े कॉर्पोरेट घराने।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'शुद्ध ऋणदाता' (Net Lenders) सामान्यतः कौन-सी संस्थाएं होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिशेष नकदी वाले बैंक, म्यूचुअल फंड्स (विशेषकर लिक्विड फंड्स), और बीमा कंपनियां (LIC आदि)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार सरकारी वित्तपोषण में किस प्रकार केंद्रीय भूमिका निभाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकार को कर राजस्व आने से पहले होने वाले दैनिक खर्चों के नकदी बेमेल को T-Bills और CMBs के माध्यम से बिना नोट छापे पूरा करने की सुविधा देकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'प्राथमिक डीलर' (Primary Dealers - PDs) की क्या भूमिका होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI द्वारा अधिकृत विशेषज्ञ संस्थाएं जो सरकारी प्रतिभूतियों और T-Bills के प्राथमिक निर्गमों में अनिवार्य बोली लगाती हैं और बाजार को तरलता देती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'कॉल मनी' (Call Money) की सटीक समय-सीमा क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मात्र 1 दिन या रातों-रात (Overnight) की अवधि हेतु दिया जाने वाला अंतर-बैंक ऋण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'नोटिस मनी' (Notice Money) किसे कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">2 दिन से लेकर 14 दिन तक की पूर्व-निर्धारित अवधि हेतु अंतर-बैंक उधार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'टर्म मनी' (Term Money) की अवधि क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">15 दिन से अधिक और अधिकतम 1 वर्ष तक की अवधि हेतु अंतर-बैंक ऋण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉल मनी बाजार की सबसे अनूठी ऋण विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह पूर्णतः 'असुरक्षित' (Uncollateralized / Clean) बाजार है; इसमें कोई प्रतिभूति या संपत्ति गिरवी नहीं रखी जाती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉल/नोटिस मनी बाजार में उधार लेने और देने की अनुमति किन संस्थाओं तक सीमित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल अनुसूचित वाणिज्यिक बैंक (लघु वित्त बैंक व RRBs सहित), सहकारी बैंक और अधिकृत प्राथमिक डीलर (PDs)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉल मनी बाजार में गैर-बैंकिंग वित्तीय कंपनियों (NBFCs) और म्यूचुअल फंड्स के सीधे उधार लेने पर रोक क्यों है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतर-बैंक वित्तीय प्रणाली को गैर-बैंकिंग जोखिमों और संक्रामक संकट (Contagion Risk) से सुरक्षित रखने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंक कॉल मनी बाजार से मुख्य रूप से किस वैधानिक आवश्यकता के समायोजन हेतु उधार लेते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई द्वारा अनिवार्य दैनिक नकद आरक्षित अनुपात (CRR) के अस्थायी घाटे को पाटने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉल मनी दर (Call Rate) की अस्थिरता को सीमित रखने हेतु RBI कौन-सा गलियारा (Corridor) संचालित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एलएएफ ब्याज दर गलियारा (LAF Corridor); जिसकी निचली सीमा SDF दर और ऊपरी सीमा MSF दर होती है, तथा केंद्र में रेपो दर होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ट्रेजरी बिल (T-Bills) किसके द्वारा और किसकी ओर से जारी किए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत सरकार की ओर से भारतीय रिजर्व बैंक (RBI) द्वारा जारी किए जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या भारत में राज्य सरकारें ट्रेजरी बिल जारी कर सकती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; ट्रेजरी बिल जारी करने का संप्रभु अधिकार केवल भारत की केंद्र सरकार के पास है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में भारत में नियमित रूप से किन तीन अवधियों के T-Bills जारी किए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">91-दिवसीय, 182-दिवसीय तथा 364-दिवसीय T-Bills।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ट्रेजरी बिल किस प्रकार के वित्तीय प्रतिफल साधन (Yield Instrument) हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शून्य-कूपन प्रतिभूतियां (Zero-Coupon Securities); इन पर कोई कूपन ब्याज नहीं होता, बल्कि ये बट्टे पर जारी होते हैं और अंकित मूल्य पर भुनाए जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि ₹100 अंकित मूल्य का 91-दिवसीय T-Bill ₹98.50 पर जारी होता है, तो ₹1.50 की छूट क्या दर्शाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निवेशक का वास्तविक अर्जित ब्याज या वित्तीय प्रतिफल (Discount Yield)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ट्रेजरी बिलों में निवेश हेतु न्यूनतम राशि कितनी निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम ₹25,000 और उसके बाद ₹25,000 के गुणकों में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>T-Bills की प्राथमिक नीलामी (Primary Auction) किस इलेक्ट्रॉनिक प्लेटफॉर्म पर आयोजित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई के 'ई-कुबेर' (E-Kuber) कोर बैंकिंग सिस्टम पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>T-Bills की नीलामी में 'गैर-प्रतियोगी बोली' (Non-Competitive Bidding) की सुविधा किन्हें मिलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">खुदरा व्यक्तिगत निवेशकों, राज्य सरकारों और भविष्य निधियों को; जिन्हें नीलामी की भारित औसत दर पर सीधे आवंटन मिलता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>खुदरा निवेशकों को सरकारी प्रतिभूतियों और T-Bills में सीधी पहुंच देने वाली RBI की योजना कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई रिटेल डायरेक्ट योजना (RBI Retail Direct Scheme - नवंबर 2021)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कैश मैनेजमेंट बिल (Cash Management Bills - CMBs) क्या होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">91 दिनों से कम की परिपक्वता अवधि वाले गैर-मानक अल्पकालिक T-Bills, जो सरकार की अप्रत्याशित तात्कालिक नकदी जरूरत हेतु जारी होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में तदर्थ ट्रेजरी बिलों (Ad-hoc T-Bills) की प्रणाली को 1997 में समाप्त कर किस व्यवस्था को लागू किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अर्थोपाय अग्रिम प्रणाली (Ways and Means Advances - WMA)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों के लिए ट्रेजरी बिल क्यों अत्यधिक आकर्षक होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि ये 100% जोखिम-मुक्त होते हैं, तुरंत नकद में बिक सकते हैं और बैंकों की वैधानिक तरलता अनुपात (SLR) आवश्यकता को पूरा करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक पत्र (Commercial Paper - CP) की मानक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शीर्ष साख वाली कॉर्पोरेट कंपनियों, वित्तीय संस्थानों और PDs द्वारा अल्पकालिक कार्यशील पूंजी जुटाने हेतु जारी किया जाने वाला असुरक्षित वचन-पत्र (Unsecured Promissory Note)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वाणिज्यिक पत्र (CP) की शुरुआत किस वर्ष की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1990 में (वाघुल समिति की सिफारिशों के आधार पर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक पत्र (CP) की न्यूनतम और अधिकतम परिपक्वता अवधि क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम 7 दिन तथा अधिकतम 1 वर्ष (जारी करने की तिथि से)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक पत्र (CP) का न्यूनतम निर्गम मूल्यवर्ग (Minimum Denomination) कितना होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम ₹5 लाख और उसके बाद ₹5 लाख के गुणकों में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसी कंपनी को CP जारी करने हेतु न्यूनतम कितनी मूर्त निवल संपत्ति (Tangible Net Worth) होना अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम ₹4 करोड़ (नवीनतम संपरीक्षित तुलन पत्र के अनुसार)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>CP जारी करने हेतु क्रेडिट रेटिंग एजेंसी से न्यूनतम कितनी अल्पकालिक रेटिंग प्राप्त होना आवश्यक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम 'A-2' या सेबी द्वारा विहित उसके समकक्ष क्रेडिट रेटिंग।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक पत्र में 'इश्यूइंग एंड पेइंग एजेंट' (IPA) के रूप में कौन कार्य कर सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल एक अनुसूचित वाणिज्यिक बैंक (Scheduled Commercial Bank)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉर्पोरेट कंपनियों के लिए बैंक ऋण की तुलना में CP जारी करने का मुख्य आर्थिक लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्च साख वाली कंपनियों को बैंकों की ऋण दरों (MCLR/EBLR) की तुलना में खुले बाजार से सस्ती ब्याज दरों पर कार्यशील पूंजी मिल जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक पत्र (CP) किस प्रारूप में जारी और रखे जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनिवार्य रूप से डिमैट (Demat) प्रारूप में, NSDL या CDSL डिपॉजिटरी के माध्यम से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जमा प्रमाण पत्र (Certificate of Deposit - CD) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुसूचित वाणिज्यिक बैंकों और अखिल भारतीय वित्तीय संस्थानों (AIFIs) द्वारा एक निश्चित अवधि हेतु जमा की गई एकमुश्त राशि के बदले जारी किया जाने वाला परिक्राम्य (Negotiable) सावधि प्रपत्र।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में जमा प्रमाण पत्र (CD) की शुरुआत किस वर्ष हुई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1989 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों द्वारा जारी CD की न्यूनतम और अधिकतम परिपक्वता अवधि क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम 7 दिन तथा अधिकतम 1 वर्ष।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अखिल भारतीय वित्तीय संस्थानों (NABARD, SIDBI, EXIM Bank, NHB) द्वारा जारी CD की अवधि कितनी हो सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम 1 वर्ष और अधिकतम 3 वर्ष।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जमा प्रमाण पत्र (CD) का न्यूनतम निर्गम आकार कितना होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम ₹1 लाख और उसके बाद ₹1 लाख के गुणकों में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>साधारण बैंक फिक्स्ड डिपॉजिट (FD) और जमा प्रमाण पत्र (CD) में सबसे मौलिक अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FD अहस्तांतरणीय होती है और परिपक्वता से पूर्व बैंक में तोड़ी जाती है, जबकि CD एक परिक्राम्य प्रपत्र (Negotiable Instrument) है जिसे परिपक्वता से पूर्व द्वितीयक बाजार में किसी अन्य निवेशक को बेचा जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या बैंक अपने स्वयं के द्वारा जारी किए गए CD के बदले ऋण दे सकते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; RBI के विनियामक नियमों के अनुसार बैंक अपने CD के विरुद्ध ऋण नहीं दे सकते और न ही समय से पूर्व उन्हें वापस खरीद (Buyback) सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमा प्रमाण पत्र (CD) का सहारा मुख्य रूप से किस परिस्थिति में लेते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब अर्थव्यवस्था में ऋण की मांग बहुत तेज हो किंतु खुदरा बैंक जमाओं की वृद्धि दर धीमी हो, तो बैंक थोक संस्थागत तरलता आकर्षित करने हेतु CD जारी करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बिल (Commercial Bills) का उद्भव किस आर्थिक गतिविधि से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापारिक लेन-देन में वस्तुओं की वास्तविक उधार खरीद-बिक्री के आधार पर विक्रेता द्वारा क्रेता पर लिखे गए विनिमय पत्र (Bill of Exchange) से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापारिक बिल (Trade Bill) 'वाणिज्यिक बिल' कब बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब उस व्यापारिक बिल को किसी वाणिज्यिक बैंक द्वारा आधिकारिक रूप से स्वीकार (Accept) कर लिया जाता है या बट्टे पर भुना (Discount) दिया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बिल बट्टाकरण (Bill Discounting) से आपूर्तिकर्ता को क्या लाभ होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उसे क्रेता की 60 या 90 दिन की साख अवधि की प्रतीक्षा किए बिना बैंक से तुरंत नकद राशि (मामूली बट्टा कटवाकर) मिल जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MSMEs के व्यापारिक बिलों के ऑनलाइन बट्टाकरण हेतु RBI द्वारा संचालित अधिकृत प्रणाली कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टीआरईडीएस (TReDS - Trade Receivables Discounting System)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>TReDS प्लेटफॉर्म पर किन तीन पक्षों का ऑनलाइन संगम होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. MSME विक्रेता, 2. कॉर्पोरेट/सरकारी क्रेता, और 3. वित्तीय संस्थान (फाइनेंसर्स/बैंक जो प्रतिस्पर्धी बट्टा बोली लगाते हैं)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो (Repo - Repurchase Agreement) अनुबंध का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ऐसा समझौता जिसमें एक पक्ष अनुमोदित सरकारी प्रतिभूतियां बेचकर नकदी लेता है और भविष्य की तारीख पर पूर्व-निर्धारित मूल्य पर उन्हें वापस खरीदने का कानूनी अनुबंध करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रिवर्स रेपो (Reverse Repo) अनुबंध क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो का विपरीत दृष्टिकोण; जिसमें एक पक्ष नकदी उधार देकर प्रतिभूतियां लेता है और बाद में उन्हें वापस बेचकर अपना मूलधन और ब्याज प्राप्त करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो अनुबंध में 'रेपो दर' (Repo Rate) क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रतिभूतियों के मूल विक्रय मूल्य और पुनर्खरीद मूल्य के बीच का अंतर, जो उधारकर्ता द्वारा चुकाई गई ब्याज दर होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो सौदों में 'हेयरकट' (Haircut / मार्जिन) क्यों लगाया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संपार्श्विक प्रतिभूतियों के बाजार मूल्य में होने वाले संभावित उतार-चढ़ाव से ऋणदाता को सुरक्षा प्रदान करने हेतु (जैसे ₹100 की प्रतिभूति पर ₹95 का ऋण देना)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>त्रिपक्षीय रेपो (Tri-Party Repo - TREPS) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ऐसा केंद्रीय समाशोधित संपार्श्विक बाजार जहां एक तटस्थ तीसरा पक्ष (CCIL) संपार्श्विक प्रबंधन, मार्जिन और निपटान की पूरी गारंटी देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>TREPS ने नवंबर 2018 में भारतीय मुद्रा बाजार के किस पुराने साधन को प्रतिस्थापित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सीबीएलओ (CBLO - Collateralized Borrowing and Lending Obligation) को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय समाशोधन निगम (CCIL) मुद्रा बाजार के रेपो और TREPS सौदों में क्या भूमिका निभाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह 'केंद्रीय प्रतिपक्ष' (Central Counterparty - CCP) के रूप में कार्य कर बहुपक्षीय निवल निपटान करता है और दोनों पक्षों के डिफ़ॉल्ट जोखिम को समाप्त करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार म्यूचुअल फंड (MMMFs / लिक्विड फंड्स) अपनी निधियों का निवेश कहाँ करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल 91 दिनों तक की अवशिष्ट परिपक्वता वाले अत्यधिक तरल और सुरक्षित मुद्रा बाजार उपकरणों (T-Bills, CP, CD, TREPS) में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई की 'स्थायी जमा सुविधा' (Standing Deposit Facility - SDF) की क्या विशेषता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अप्रैल 2022 में शुरू की गई सुविधा जिसके तहत बैंक बिना किसी संपार्श्विक सरकारी प्रतिभूति के बदले सीधे अपनी अतिरिक्त नकदी RBI के पास जमा कर ब्याज कमा सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सीमांत स्थायी सुविधा (Marginal Standing Facility - MSF) का मुद्रा बाजार में क्या उपयोग है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गंभीर आपातकालीन नकदी संकट के समय बैंक अपनी वैधानिक SLR प्रतिभूतियों को एक सीमा तक गिरवी रखकर रेपो दर से उच्च दंडात्मक ब्याज पर RBI से ओवरनाइट ऋण ले सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतर-बैंक सहभागिता प्रमाण पत्र (Inter-Bank Participation Certificates - IBPCs) क्या होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक अंतर-बैंक साधन जिनके माध्यम से बैंक अपने ऋण पोर्टफोलियो का एक हिस्सा (जोखिम साझा करते हुए या बिना साझा किए) दूसरे बैंकों को हस्तांतरित करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकर स्वीकृति (Banker's Acceptance) क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक वाणिज्यिक बिल जिसकी परिपक्वता पर भुगतान की गारंटी किसी प्रतिष्ठित बैंक द्वारा आधिकारिक रूप से अपनी मुहर लगाकर दी जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में वित्तीय परिसंपत्ति के संदर्भ में 'तरलता' (Liquidity) की प्रामाणिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी परिसंपत्ति को बिना किसी बड़े मूल्य नुकसान, अत्यधिक न्यूनतम समय और कम-से-कम लेन-देन लागत में तुरंत नकद मुद्रा में परिवर्तित करने की क्षमता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'उच्च तरलता' (High Liquidity) का होना अनिवार्य पूर्व-शर्त क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ताकि वित्तीय संस्थान और कॉर्पोरेट्स अपनी अप्रत्याशित नकदी कमियों को बिना किसी देरी और बिना किसी दिवालियापन के जोखिम के तुरंत पूरा कर सकें।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार की उच्च तरलता वाणिज्यिक बैंकों के दैनिक संचालन को कैसे सुगम बनाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों को अपनी जमाओं का बहुत बड़ा हिस्सा शून्य-ब्याज वाली निष्क्रिय नकदी के रूप में रखने की आवश्यकता नहीं पड़ती; वे उसे मुद्रा बाजार में लगाकर ब्याज कमाते हैं और जरूरत पड़ने पर तुरंत निकाल लेते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉर्पोरेट क्षेत्र के लिए मुद्रा बाजार की उच्च तरलता का क्या प्रत्यक्ष लाभ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कंपनियों के दैनिक परिचालन, कच्चे माल की खरीद और कर्मचारियों के वेतन भुगतान हेतु कार्यशील पूंजी का चक्र कभी बाधित नहीं होता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सरकार के राजकोषीय प्रबंधन में मुद्रा बाजार की तरलता की क्या भूमिका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर राजस्व के तिमाही चक्र और दैनिक सरकारी व्यय के बीच आने वाले अस्थायी नकदी अंतर को T-Bills जारी कर तुरंत वित्तपोषित किया जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि मुद्रा बाजार में तरलता अचानक सूख जाए (Liquidity Freeze), तो अर्थव्यवस्था पर क्या तात्कालिक असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक ब्याज दरें अप्रत्याशित उछल जाती हैं, बैंक एक-दूसरे को उधार देना बंद कर देते हैं, कंपनियों के व्यावसायिक पत्र (CP) रोलओवर नहीं हो पाते और साख संकट (Credit Crunch) उत्पन्न हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2008 के वैश्विक वित्तीय संकट में अमेरिकी मुद्रा बाजार में तरलता जमने (Freeze) का मुख्य कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लेहमन ब्रदर्स के दिवालिया होने के बाद परिसंपत्ति-समर्थित वाणिज्यिक पत्रों (ABCP) और अंतर-बैंक बाजार में प्रतिपक्ष अविश्वास का चरम पर पहुंच जाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सितंबर 2018 में भारत में IL&FS संकट ने घरेलू मुद्रा बाजार की तरलता को कैसे हिला दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">IL&FS द्वारा अपने वाणिज्यिक पत्रों (CPs) के पुनर्भुगतान में डिफ़ॉल्ट करने से म्यूचुअल फंड्स ने NBFCs के CPs को रोलओवर करना बंद कर दिया, जिससे संपूर्ण गैर-बैंकिंग क्षेत्र में गंभीर तरलता संकट पैदा हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बासेल III (Basel III) विनियामक ढांचे के तहत बैंकों हेतु 'तरलता कवरेज अनुपात' (Liquidity Coverage Ratio - LCR) क्या अनिवार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों के पास 30 दिनों के गंभीर वित्तीय तनाव परिदृश्य का सामना करने हेतु 100% उच्च-गुणवत्ता वाली तरल परिसंपत्तियां (HQLA जैसे सरकारी बॉन्ड, T-Bills) होना अनिवार्य है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बासेल III के अंतर्गत 'नेट स्टेबल फंडिंग रेशियो' (Net Stable Funding Ratio - NSFR) का क्या उद्देश्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों को अपनी 1 वर्ष से अधिक की दीर्घकालिक परिसंपत्तियों को केवल अल्पकालिक अत्यधिक अस्थिर मुद्रा बाजार उधारों से वित्तपोषित करने से रोकना (परिपक्वता बेमेल की रोकथाम)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में 'अत्यधिक तरलता' (Excess Liquidity) होने का क्या समष्टिगत जोखिम होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक ब्याज दरें गिरकर अत्यधिक नीचे आ जाती हैं, सट्टेबाजी बढ़ती है और मुद्रा आपूर्ति में अनियंत्रित विस्तार से मुद्रास्फीति भड़कने का खतरा पैदा होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब अर्थव्यवस्था में अत्यधिक अधिशेष तरलता हो, तो RBI मुद्रा बाजार में क्या कार्रवाई करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI रिवर्स रेपो या SDF के माध्यम से बैंकों से नकदी सोखता है, अथवा वेरिएबल रेट रिवर्स रेपो (VRRR) नीलामियां संचालित करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में 'तरलता की कमी' (Liquidity Deficit) होने पर आर्थिक गतिविधियों पर क्या विपरीत प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋण प्रवाह रुक जाता है, उधार लेना अत्यधिक महंगा हो जाता है और आर्थिक विकास की गति सुस्त पड़ जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तरलता की गंभीर कमी होने पर RBI मुद्रा बाजार को राहत देने हेतु किन उपकरणों का उपयोग करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो नीलामियां, लक्षित दीर्घकालिक रेपो परिचालन (TLTRO), खुले बाजार की खरीद क्रियाएं (OMO Purchases), और MSF विंडो खोलना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'द्विपक्षीय बाजार' (Bilateral Market) और 'बहुपक्षीय समाशोधित बाजार' (Multilaterally Cleared Market) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">द्विपक्षीय में दो पक्ष सीधे जोखिम उठाते हैं, जबकि बहुपक्षीय समाशोधित बाजार (जैसे TREPS/CCIL) में केंद्रीय प्रतिपक्ष के कारण व्यक्तिगत प्रतिपक्ष जोखिम पूरी तरह समाप्त हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार की उच्च दक्षता का देश के शेयर और बॉन्ड बाजार (पूंजी बाजार) पर क्या सकारात्मक प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह प्रतिभूति दलालों, अंडरराइटर्स और संस्थागत निवेशकों को उनके दैनिक मार्जिन और सौदों के निपटान हेतु त्वरित और सस्ती अल्पकालिक साख उपलब्ध कराता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार में 'यील्ड कर्व' (Yield Curve) का अल्पकालिक छोर (Short End) क्या निर्धारित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI की वर्तमान मौद्रिक नीति की सख्ती या ढिलाई और बाजार की तात्कालिक तरलता की स्थिति को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय मुद्रा बाजार के डिजिटलीकरण में 'नेगोशिएटेड डीलिंग सिस्टम' (NDS-OM) की क्या भूमिका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकारी प्रतिभूतियों और T-Bills के द्वितीयक बाजार व्यापार हेतु RBI का गुमनाम, स्क्रीन-आधारित इलेक्ट्रॉनिक ऑर्डर मिलान प्लेटफॉर्म।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा बाजार की तरलता वित्तीय प्रणाली में 'बैंक रन' (Bank Run) के जोखिम को कैसे टालती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यदि किसी बैंक से जमाकर्ता अचानक भारी नकदी निकालने लगें, तो वह बैंक तुरंत अपनी तरल मुद्रा बाजार परिसंपत्तियों (T-Bills, CDs) को बेचकर या रेपो कर नकदी जुटा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय बाजार Part 2 के संपूर्ण अध्ययन का अंतिम और स्थायी समष्टिगत आर्थिक निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा बाजार किसी भी वित्तीय प्रणाली का वह संवेदनशील स्नायु तंत्र है जो अल्पकालिक तरलता, जोखिम-मुक्त मूल्य निर्धारण और मौद्रिक नीति संचरण को सुगम बनाता है; इसके बिना न तो बैंकिंग प्रणाली सुचारू रूप से कार्य कर सकती है और न ही पूंजी बाजार की दीर्घकालिक इमारत स्थिर रह सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

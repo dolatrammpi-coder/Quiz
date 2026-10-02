@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="मुद्रास्फीति Part 2">
+<title>मुद्रास्फीति Part 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / मुद्रास्फीति Part 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>मुद्रास्फीति Part 2</h1>
+    <p class="topic-subtitle">मुद्रास्फीति और मौद्रिक नीति का संबंध, लचीला मुद्रास्फीति लक्ष्यीकरण (FIT), मौद्रिक नीति संचरण तंत्र (EBLR/MCLR), रेपो दर की भूमिका तथा आपूर्ति बाधाएं</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">मुद्रास्फीति Part 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>मौद्रिक नीति उपाय</th><th>प्रमुख भूमिका</th><th>मुद्रास्फीति पर प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">रेपो दर में वृद्धि (Policy Rate Hike)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आरबीआई द्वारा बैंकों को दिए जाने वाले अल्पकालिक पुनर्वित्त की ब्याज दर बढ़ाना; संपूर्ण वित्तीय तंत्र में उधारी लागत में वृद्धि।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ऋण मांग, उपभोक्ता व्यय और व्यावसायिक निवेश में संकुचन; समग्र मांग (Aggregate Demand) घटाकर मांग-जनित मुद्रास्फीति पर प्रभावी नियंत्रण।</div></div></td></tr><tr><td><div class="primary-cell">स्थायी जमा सुविधा (Standing Deposit Facility - SDF)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आरबीआई द्वारा बिना किसी सरकारी प्रतिभूति के संपार्श्विक के बैंकों से अतिरिक्त अधिशेष तरलता को ओवरनाइट सोखने की गैर-संपार्श्विक सुविधा।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकिंग प्रणाली से अतिरिक्त नकदी को निष्प्रभावी कर अंतर-बैंक कॉल दरों को नीचे गिरने से रोकना; तरलता जनित मूल्य दबावों को दबाना।</div></div></td></tr><tr><td><div class="primary-cell">नकद आरक्षित अनुपात में वृद्धि (CRR Hike)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वाणिज्यिक बैंकों द्वारा अपनी कुल शुद्ध मांग और समय देनदारियों (NDTL) का अनिवार्य नकद हिस्सा आरबीआई के पास शून्य ब्याज पर रखना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकिंग प्रणाली की साख-सृजन क्षमता (Credit Multiplier) में सीधा संकुचन; अर्थव्यवस्था में मुद्रा आपूर्ति (M3) घटाकर मुद्रास्फीति पर रोक।</div></div></td></tr><tr><td><div class="primary-cell">खुले बाजार की बिक्री (Open Market Sales - OMOs)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आरबीआई द्वारा द्वितीयक बाजार में वाणिज्यिक बैंकों और वित्तीय संस्थानों को सरकारी प्रतिभूतियों (G-Secs) की नकद बिक्री करना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बाजार से अधिशेष टिकाऊ तरलता को स्थायी रूप से खींचना; मुद्रा आपूर्ति कम कर मांग-खींच मुद्रास्फीति को नियंत्रित करना।</div></div></td></tr><tr><td><div class="primary-cell">बाहरी बेंचमार्क आधारित ऋण दर (EBLR)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अक्टूबर 2019 से खुदरा और एमएसएमई ऋणों की ब्याज दरों को सीधे रेपो दर या ट्रेजरी बिल यील्ड जैसे बाहरी बाजार बेंचमार्क से जोड़ना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मौद्रिक नीति संचरण (Monetary Transmission) को तीव्र व पारदर्शी बनाना; रेपो दर बदलते ही उपभोक्ताओं की ईएमआई में त्वरित समायोजन।</div></div></td></tr><tr><td><div class="primary-cell">मुद्रास्फीति प्रत्याशाओं का प्रबंधन (Expectations Anchoring)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मौद्रिक नीति समिति (MPC) के दूरदर्शी मार्गदर्शन (Forward Guidance) और स्पष्ट मुद्रास्फीति लक्ष्यीकरण (4% +/- 2%) द्वारा जनता का विश्वास जीतना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मजदूरी-मूल्य सर्पिल (Wage-Price Spiral) और जमाखोरी की मनोवैज्ञानिक प्रवृत्तियों को रोककर भविष्य की मुद्रास्फीति को स्थिर करना।</div></div></td></tr><tr><td><div class="primary-cell">विदेशी मुद्रा परिचालन (Forex Operations / Swaps)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">घरेलू मुद्रा (रुपये) के अत्यधिक अवमूल्यन को रोकने हेतु विदेशी मुद्रा बाजार में डॉलर बेचना अथवा तरलता निष्प्रभावीकरण करना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कच्चे तेल और आयातित कच्चे माल की घरेलू कीमतों में उछाल को रोकना; आयातित लागत-प्रेरित मुद्रास्फीति (Imported Inflation) पर नियंत्रण।</div></div></td></tr><tr><td><div class="primary-cell">चयनात्मक साख नियंत्रण (Qualitative Credit Controls)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सट्टेबाजी वाली संवेदनशील वस्तुओं (अनाज, तिलहन, रियल एस्टेट) पर मार्जिन आवश्यकता बढ़ाना और नैतिक दबाव (Moral Suasion) लागू करना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आवश्यक वस्तुओं की जमाखोरी हेतु मिलने वाले बैंक ऋण को ब्लॉक कर सट्टा-जनित कृत्रिम मूल्य वृद्धि पर सीधा अंकुश लगाना।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में 'मौद्रिक नीति' (Monetary Policy) का प्राथमिक और सर्वोपरि संवैधानिक उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थिक संवृद्धि के उद्देश्य को ध्यान में रखते हुए 'मूल्य स्थिरता' (Price Stability) बनाए रखना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक अधिनियम, 1934 की प्रस्तावना में 2016 के संशोधन द्वारा मौद्रिक नीति का क्या स्पष्ट जनादेश (Mandate) शामिल किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'भारत में मौद्रिक स्थिरता बनाए रखने के लिए बैंक नोटों के निर्गमन का विनियमन करना और मूल्य स्थिरता बनाए रखने के लिए मौद्रिक नीति फ्रेमवर्क का संचालन करना।'</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में 'लचीला मुद्रास्फीति लक्ष्यीकरण' (Flexible Inflation Targeting - FIT) ढांचा किस समिति की सिफारिश पर अपनाया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. उर्जित पटेल समिति (2014) की सिफारिश पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत सरकार और भारतीय रिजर्व बैंक के बीच 'मौद्रिक नीति फ्रेमवर्क समझौता' (MPFA) औपचारिक रूप से कब हस्ताक्षरित हुआ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">20 फरवरी 2015 को (तथा जून 2016 में वित्त अधिनियम द्वारा आरबीआई अधिनियम 1934 में विधिवत संशोधन किया गया)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उर्जित पटेल समिति की सिफारिश पर मौद्रिक नीति के प्राथमिक एंकर के रूप में किस मूल्य सूचकांक को अपनाया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपभोक्ता मूल्य सूचकांक - संयुक्त (CPI-Combined / CPI-C)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति हेतु थोक मूल्य सूचकांक (WPI) के स्थान पर उपभोक्ता मूल्य सूचकांक (CPI) को प्राथमिकता क्यों दी गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि WPI में सेवाओं (शिक्षा, स्वास्थ्य, परिवहन) का कोई समावेश नहीं था और यह आम उपभोक्ताओं द्वारा चुकाए जाने वाले वास्तविक खुदरा मूल्य स्तर को नहीं दर्शाता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई अधिनियम, 1934 की धारा 45ZA के तहत केंद्र सरकार द्वारा आरबीआई के परामर्श से क्या आधिकारिक मुद्रास्फीति लक्ष्य अधिसूचित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">4% उपभोक्ता मूल्य सूचकांक (CPI) मुद्रास्फीति, जिसमें +/- 2% का सहनशीलता बैंड (Tolerance Band) शामिल है (अर्थात् 2% से 6% का दायरा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति लक्ष्यीकरण ढांचे में +/- 2% के 'सहनशीलता बैंड' (Tolerance Band) का क्या आर्थिक औचित्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विकासशील अर्थव्यवस्थाओं में कृषि और कच्चे तेल से जुड़े अप्रत्याशित आपूर्ति आघातों (Supply Shocks) को समायोजित करने हेतु आवश्यक नीतिगत लचीलापन प्रदान करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई अधिनियम 1934 की धारा 45ZB के तहत नीतिगत ब्याज दरें तय करने हेतु किस वैधानिक संस्था का गठन किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मौद्रिक नीति समिति (Monetary Policy Committee - MPC)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति समिति (MPC) में कुल कितने सदस्य होते हैं और उनकी संरचना क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 6 सदस्य; 3 सदस्य आरबीआई से (गवर्नर, डिप्टी गवर्नर-प्रभारी, और 1 अन्य अधिकारी) तथा 3 स्वतंत्र बाह्य विशेषज्ञ केंद्र सरकार द्वारा नियुक्त।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति समिति (MPC) का पदेन अध्यक्ष (Ex-officio Chairperson) कौन होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक के गवर्नर (Governor of RBI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MPC के केंद्र सरकार द्वारा नियुक्त बाह्य सदस्यों का कार्यकाल कितना होता है और क्या वे पुनर्नियुक्ति के पात्र होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">4 वर्ष का कार्यकाल होता है और वे पुनर्नियुक्ति के पात्र नहीं होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति समिति में निर्णय किस आधार पर लिए जाते हैं और मत बराबरी की स्थिति में क्या नियम है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपस्थित सदस्यों के बहुमत के आधार पर (प्रत्येक सदस्य का 1 वोट); तथा मत बराबर होने पर आरबीआई गवर्नर को 'निर्णायक मत' (Casting Vote) देने का अधिकार है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई अधिनियम के अनुसार MPC की एक वर्ष में न्यूनतम कितनी बैठकें होना अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष में कम से कम 4 बैठकें होना अनिवार्य है (यद्यपि स्थापित परंपरा के अनुसार यह प्रत्येक दो माह में अर्थात् वर्ष में 6 बार बैठती है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MPC की बैठक हेतु न्यूनतम गणपूर्ति (Quorum) कितने सदस्यों की निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम से कम 4 सदस्यों की।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई अधिनियम, 1934 के तहत मौद्रिक नीति समिति की 'मुद्रास्फीति विफलता' (Failure to Meet Inflation Target) की क्या वैधानिक परिभाषा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यदि औसत CPI मुद्रास्फीति लगातार तीन तिमाहियों (Three Consecutive Quarters) तक 6% की ऊपरी सीमा से अधिक या 2% की निचली सीमा से कम बनी रहे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति लक्ष्य हासिल करने में विफल रहने पर आरबीआई को केंद्र सरकार को क्या औपचारिक दस्तावेज प्रस्तुत करना अनिवार्य होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक लिखित विशेष प्रतिवेदन (Report); जिसमें विफलता के कारण, सुधारात्मक उपाय, और लक्ष्य को पुनः प्राप्त करने की अनुमानित समय-सीमा दर्शानी होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2016 में FIT ढांचा लागू होने के बाद आरबीआई को पहली बार केंद्र सरकार को औपचारिक विफलता रिपोर्ट किस वर्ष सौंपनी पड़ी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नवंबर 2022 में; क्योंकि 2022 की पहली तीनों तिमाहियों में मुद्रास्फीति लगातार 6% से ऊपर बनी रही थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति के संदर्भ में 'हॉकिश रुख' (Hawkish Stance) का क्या अर्थ होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रास्फीति को नियंत्रित करने हेतु आक्रामक नीतिगत रुख; जिसके तहत केंद्रीय बैंक ब्याज दरें बढ़ाता है और मुद्रा आपूर्ति को संकुचित करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'डोविश रुख' (Dovish Stance) या 'समायोजनकारी रुख' (Accommodative Stance) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थिक संवृद्धि को गति देने हेतु केंद्रीय बैंक द्वारा ब्याज दरों को कम रखना और बाजार में तरलता का पर्याप्त प्रवाह बनाए रखना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति में 'तटस्थ रुख' (Neutral Stance) का क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय बैंक ब्याज दरें बढ़ाने या घटाने दोनों दिशाओं में जाने हेतु स्वतंत्र है; निर्णय आने वाले नए आर्थिक आंकड़ों पर निर्भर करेगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'समायोजन की वापसी' (Withdrawal of Accommodation) का क्या नीतिगत संकेत होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संकट के समय दी गई अत्यधिक सस्ती ब्याज दरों और अतिरिक्त नकदी को धीरे-धीरे सामान्य स्तर पर वापस खींचना ताकि मुद्रास्फीति न भड़के।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'टेलर का नियम' (Taylor's Rule) मौद्रिक नीति के संबंध में क्या बताता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह सूत्रबद्ध मार्गदर्शन कि जब वास्तविक मुद्रास्फीति लक्षित मुद्रास्फीति से विचलित हो और उत्पादन अपने संभावित स्तर से भटके, तो केंद्रीय बैंक को अपनी नीतिगत ब्याज दर में कितना समायोजन करना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति के विरुद्ध लड़ाई में 'केंद्रीय बैंक की विश्वसनीयता' (Central Bank Credibility) क्यों सबसे बड़ा अस्त्र मानी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यदि जनता को यह पक्का विश्वास हो कि केंद्रीय बैंक मुद्रास्फीति को 4% पर रखने हेतु प्रतिबद्ध है, तो भविष्य की मुद्रास्फीति प्रत्याशाएं स्वतः स्थिर हो जाती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति के संचालन में 'दूरदर्शी मार्गदर्शन' (Forward Guidance) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय बैंक द्वारा वित्तीय बाजारों को यह स्पष्ट संकेत देना कि वह भविष्य में ब्याज दरों और तरलता के संबंध में क्या रुख अपनाने की योजना बना रहा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समष्टि अर्थशास्त्र में 'मौद्रिक नीति संचरण' (Monetary Policy Transmission) की मानक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय बैंक द्वारा अपनी नीतिगत ब्याज दर (रेपो दर) में किए गए बदलावों का संपूर्ण वित्तीय प्रणाली (बैंकों की ऋण/जमा दरें, बॉन्ड बाजार) से होते हुए वास्तविक अर्थव्यवस्था (खर्च, निवेश, रोजगार और अंततः मुद्रास्फीति) तक पहुंचने की समग्र प्रक्रिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति संचरण के पांच प्रमुख पारंपरिक चैनल (Transmission Channels) कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. ब्याज दर चैनल, 2. क्रेडिट/ऋण चैनल, 3. परिसंपत्ति मूल्य चैनल, 4. विनिमय दर चैनल, और 5. मुद्रास्फीति प्रत्याशा चैनल।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक संचरण में 'ब्याज दर चैनल' (Interest Rate Channel) कैसे कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर बढ़ने से बैंकों की उधारी लागत बढ़ती है → बैंक अपनी ऋण दरें बढ़ाते हैं → उधार लेना महंगा होने से उपभोक्ता टिकाऊ वस्तुओं और कॉरपोरेट निवेश में कमी आती है → मांग घटकर मुद्रास्फीति नियंत्रित होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक संचरण में 'क्रेडिट चैनल' (Credit Channel / Bank Lending Channel) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर और CRR बढ़ने से बैंकों के पास ऋण देने योग्य अतिरिक्त नकदी घट जाती है, जिससे बैंक नए ऋण वितरण को कड़ा कर देते हैं और अर्थव्यवस्था में कुल साख प्रवाह संकुचित हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक संचरण का 'परिसंपत्ति मूल्य चैनल' (Asset Price Channel) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ब्याज दरें बढ़ने से शेयर बाजार और रियल एस्टेट की कीमतें गिरती हैं; जिससे निवेशकों की संपत्ति का मूल्य घटता है (नेगेटिव वेल्थ इफेक्ट) और वे अपना उपभोग व्यय घटा देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक संचरण में 'विनिमय दर चैनल' (Exchange Rate Channel) मुद्रास्फीति को कैसे प्रभावित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू ब्याज दरें बढ़ने से विदेशी पूंजी (FPI) आकर्षित होती है → घरेलू मुद्रा (रुपया) मजबूत होती है → कच्चे तेल और आयातित सामानों का बिल सस्ता हो जाता है → आयातित मुद्रास्फीति घटती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक संचरण का 'प्रत्याशा चैनल' (Expectations Channel) किस प्रकार कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय बैंक द्वारा दरें बढ़ाने की दृढ़ता देखकर उपभोक्ता और वेतनभोगी यह मान लेते हैं कि भविष्य में कीमतें नहीं बढ़ेंगी; जिससे मजदूरी बढ़ाने का दबाव और सट्टेबाजी जमाखोरी स्वतः रुक जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति संचरण में 'समय अंतराल' या लैग (Time Lag) से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर बदलने के निर्णय और जमीन पर मुद्रास्फीति व जीडीपी में वास्तविक परिणाम दिखने के बीच लगने वाला समय (सामान्यतः 9 से 18 महीने का अंतराल)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति संचरण में 'आंतरिक अंतराल' (Inside Lag) और 'बाह्य अंतराल' (Outside Lag) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आंतरिक अंतराल समस्या को पहचानने और केंद्रीय बैंक द्वारा नीतिगत दर बदलने के बीच का समय है, जबकि बाह्य अंतराल नीति बदलने के बाद अर्थव्यवस्था के उत्पादन और कीमतों पर वास्तविक प्रभाव पड़ने का लंबा समय है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में मौद्रिक संचरण के ऐतिहासिक रूप से धीमा और असममित (Asymmetric) रहने के प्रमुख संरचनात्मक कारण क्या रहे हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों में गैर-निष्पादित परिसंपत्तियों (NPA) का उच्च बोझ, सावधि जमाओं (FDs) की दीर्घकालिक निश्चित दरें, तथा लघु बचत योजनाओं (PPF, सुकन्या) पर सरकार द्वारा दी जाने वाली उच्च ब्याज दरें।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों द्वारा ब्याज दरें तय करने के ऐतिहासिक क्रम में कौन-सी चार प्रणालियां लागू रहीं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. प्राइम लेंडिंग रेट (PLR), 2. बेंचमार्क प्राइम लेंडिंग रेट (BPLR - 2003), 3. बेस रेट प्रणाली (2010), और 4. एमसीएलआर (MCLR - 2016)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'निधियों की सीमांत लागत पर आधारित ऋण दर' (MCLR) प्रणाली आरबीआई द्वारा किस वर्ष लागू की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 अप्रैल 2016 से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MCLR प्रणाली की गणना किन चार प्रमुख घटकों पर आधारित थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. निधियों की सीमांत लागत (Marginal Cost of Funds), 2. ऋणात्मक कैरी ऑन सीआरआर, 3. परिचालन लागत, और 4. अवधि प्रीमियम (Tenor Premium)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MCLR प्रणाली भी मौद्रिक नीति के पूर्ण और त्वरित संचरण में क्यों विफल साबित हुई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यह बैंकों की आंतरिक जमा लागत (Internal Benchmark) पर आधारित थी; जब आरबीआई रेपो दर घटाता था तब भी बैंक पुरानी महंगी सावधि जमाओं का बहाना बनाकर अपनी ऋण दरें नहीं घटाते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई ने संचरण की विफलता को समाप्त करने हेतु 1 अक्टूबर 2019 से कौन-सी क्रांतिकारी व्यवस्था अनिवार्य की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाहरी बेंचमार्क आधारित ऋण दर (External Benchmark-based Lending Rate - EBLR)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>EBLR व्यवस्था के तहत बैंकों को अपने सभी नए फ्लोटिंग रेट खुदरा (होम/ऑटो लोन) और एमएसएमई ऋणों को किससे जोड़ना अनिवार्य किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई द्वारा अधिकृत किसी पारदर्शी 'बाहरी बाजार बेंचमार्क' (External Market Benchmark) से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई के दिशानिर्देशों के अनुसार बैंक EBLR के तहत किन स्वीकृत बाहरी बेंचमार्क में से किसी एक को चुन सकते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. आरबीआई की नीतिगत रेपो दर, 2. भारत सरकार का 91-दिवसीय ट्रेजरी बिल यील्ड, 3. 182-दिवसीय ट्रेजरी बिल यील्ड, अथवा 4. FBIL द्वारा प्रकाशित कोई अन्य वित्तीय बेंचमार्क।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय वाणिज्यिक बैंकों ने EBLR हेतु सबसे व्यापक रूप से किस बाहरी बेंचमार्क को अपनाया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई की नीतिगत रेपो दर (Repo Rate) को (जिसे 'रेपो-लिंक्ड लेंडिंग रेट' या RLLR कहा जाता है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>EBLR प्रणाली के तहत बैंक को कितने समय के भीतर अपनी ऋण ब्याज दरों को बाहरी बेंचमार्क के अनुसार पुनः निर्धारित (Reset) करना अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम से कम प्रत्येक तीन महीने (तिमाही) में एक बार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>EBLR लागू होने के बाद भारतीय मौद्रिक नीति संचरण में क्या सबसे बड़ा गुणात्मक सुधार आया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जैसे ही MPC रेपो दर में बदलाव करती है, बैंकों की होम लोन और एमएसएमई ऋणों की ब्याज दरों में कुछ ही हफ्तों के भीतर लगभग 100% संचरण (Transmission) संभव हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति नियंत्रण हेतु केंद्रीय बैंक के पारंपरिक 'मात्रात्मक' (Quantitative) और 'गुणात्मक' (Qualitative) उपकरणों में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मात्रात्मक उपकरण संपूर्ण अर्थव्यवस्था में साख की कुल मात्रा को अप्रत्यक्ष रूप से नियंत्रित करते हैं, जबकि गुणात्मक उपकरण विशिष्ट क्षेत्रों की साख के प्रवाह और उपयोग की दिशा को नियंत्रित करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति नियंत्रण में 'नकद आरक्षित अनुपात' (Cash Reserve Ratio - CRR) का क्या उपयोग है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई जब CRR बढ़ाता है, तो बैंकों को अपनी जमाओं का अधिक नकद हिस्सा आरबीआई के पास रखना पड़ता है, जिससे बैंकों की ऋण देने योग्य निधियां तुरंत घट जाती हैं और मुद्रा आपूर्ति संकुचित होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या वाणिज्यिक बैंकों को आरबीआई के पास रखे जाने वाले CRR पर कोई ब्याज मिलता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; CRR पर आरबीआई द्वारा बैंकों को शून्य (0%) ब्याज दिया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा अगस्त 2023 में लागू किया गया 'वृद्धिशील नकद आरक्षित अनुपात' (Incremental CRR - I-CRR) क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">₹2,000 के नोटों की वापसी के बाद बैंकों में आई अप्रत्याशित अतिरिक्त नकदी को सोखने हेतु 19 मई से 28 जुलाई 2023 के बीच बढ़ी जमाओं पर लगाया गया 10% का अस्थायी अतिरिक्त CRR।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'वैधानिक तरलता अनुपात' (Statutory Liquidity Ratio - SLR) मुद्रास्फीति नियंत्रण में कैसे मदद करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों को अपनी कुल जमाओं का एक निश्चित प्रतिशत अनिवार्य रूप से अनुमोदित तरल संपत्तियों (मुख्यतः सरकारी प्रतिभूतियों) में निवेशित रखना पड़ता है, जिससे बैंक अंधाधुंध जोखिमपूर्ण निजी ऋण नहीं बांट पाते।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति के समय आरबीआई 'खुले बाजार की क्रियाओं' (Open Market Operations - OMOs) के तहत क्या कदम उठाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई द्वितीयक बाजार में बैंकों को सरकारी प्रतिभूतियां (G-Secs) बेचता है (OMO Sale), जिससे बैंकों का पैसा आरबीआई के पास आ जाता है और बाजार की अतिरिक्त तरलता सोख ली जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा अप्रैल 2022 में शुरू की गई 'स्थायी जमा सुविधा' (Standing Deposit Facility - SDF) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ऐसा विनियामक तरलता उपकरण जिसके तहत बैंक बिना किसी सरकारी प्रतिभूति के संपार्श्विक के अपनी अतिरिक्त नकदी आरबीआई के पास जमा कर ब्याज कमा सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SDF की शुरुआत से पूर्व रिवर्स रेपो परिचालन में आरबीआई के समक्ष कौन-सी तकनीकी सीमा आड़े आती थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रिवर्स रेपो में आरबीआई को बैंकों से नकदी लेने के बदले सरकारी प्रतिभूतियां गिरवी रखनी पड़ती थीं; यदि बाजार में अतिरिक्त नकदी बहुत विशाल हो तो आरबीआई के पास प्रतिभूतियों की कमी पड़ सकती थी; SDF ने इस संपार्श्विक सीमा को समाप्त कर दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान तरलता समायोजन सुविधा (LAF) के ब्याज दर गलियारे (Corridor) का ढांचा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गलियारे का केंद्र 'रेपो दर' (Repo Rate) है; निचली सीमा 'SDF दर' (रेपो - 0.25%) है; तथा ऊपरी सीमा 'MSF दर' (रेपो + 0.25%) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'सीमांत स्थायी सुविधा' (Marginal Standing Facility - MSF) क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आपातकालीन स्थिति में जब अंतर-बैंक तरलता पूरी तरह सूख जाए, तो बैंक अपनी वैधानिक SLR प्रतिभूतियों को एक विनिर्दिष्ट सीमा (NDTL के 2%) तक गिरवी रखकर रेपो दर से 25 आधार अंक उच्च दंडात्मक ब्याज पर आरबीआई से रातों-रात (Overnight) उधार ले सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति नियंत्रण में 'मार्जिन आवश्यकता' (Margin Requirements) नामक गुणात्मक उपकरण कैसे कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई गिरवी रखी जाने वाली संपत्ति और दिए जाने वाले ऋण के बीच का सुरक्षा अंतर बढ़ा देता है (जैसे ₹100 के सोने पर ऋण ₹80 से घटाकर ₹60 करना), जिससे सट्टेबाजी वाले क्षेत्रों में साख प्रवाह सीमित हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'साख की राशनिंग' (Credit Rationing) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विभिन्न व्यावसायिक क्षेत्रों या उद्योगों हेतु बैंक ऋण की अधिकतम वित्तीय सीमा (Credit Quota / Ceiling) तय कर देना ताकि गैर-प्राथमिक क्षेत्रों में अत्यधिक ऋण न जाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नियंत्रण में 'नैतिक दबाव' (Moral Suasion) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई द्वारा वाणिज्यिक बैंकों के प्रमुखों के साथ बैठकों, परिपत्रों और अपीलों के माध्यम से बिना कोई प्रत्यक्ष कानूनी दंड लगाए मौद्रिक सख्ती के निर्देशों का पालन करने हेतु राजी करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति की सबसे प्रमुख 'आंतरिक सीमा' क्या है जब मुद्रास्फीति विशुद्ध आपूर्ति झटकों से उत्पन्न हो?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर बढ़ाने से मांग तो घट सकती है, किंतु यह सूखे के कारण फसल का नष्ट होना, रूस-यूक्रेन युद्ध से उर्वरक की कमी या वैश्विक तेल आपूर्ति की रुकावट को ठीक नहीं कर सकती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'राजकोषीय प्रभुत्व' (Fiscal Dominance) मौद्रिक नीति की स्वायत्तता को कैसे बाधित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब सरकार का राजकोषीय घाटा अत्यधिक विशाल हो, तो सरकार की भारी बाजार उधारी ब्याज दरों को ऊंचा खींचती है और केंद्रीय बैंक पर सरकारी ऋण को सस्ता रखने का भारी दबाव रहता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'रेपो दर' (Repo Rate - Repurchase Option Rate) की मानक तकनीकी परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह ब्याज दर जिस पर भारतीय रिजर्व बैंक (RBI) वाणिज्यिक बैंकों को उनकी अल्पकालिक तरलता की कमी को पूरा करने हेतु सरकारी प्रतिभूतियों के संपार्श्विक (Collateral) पर अल्पकालिक ऋण प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर को अर्थव्यवस्था की 'मुख्य नीतिगत दर' (Key Policy Rate / Signaling Rate) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि संपूर्ण वित्तीय प्रणाली की सभी ब्याज दरें (कॉल मनी, टी-बिल्स, वाणिज्यिक पत्र, बैंक जमा और ऋण दरें) रेपो दर के स्तर और दिशा के अनुसार ही तय होती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब अर्थव्यवस्था में मुद्रास्फीति अपने सहनीय बैंड (6%) से ऊपर निकलती है, तो MPC रेपो दर में क्या बदलाव करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर में वृद्धि (Rate Hike) करती है (कठोर या संकुचनकारी मौद्रिक नीति)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर में 50 आधार अंकों (50 bps) की वृद्धि का क्या गणितीय अर्थ होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नीतिगत ब्याज दर में 0.50% की सीधी वृद्धि होना (1 आधार अंक = 0.01%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर बढ़ने का बैंकों की 'निधियों की सीमांत लागत' पर क्या तात्कालिक असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों हेतु केंद्रीय बैंक से और खुले मुद्रा बाजार से उधार लेना महंगा हो जाता है, जिससे बैंकों की समग्र पूंजी जुटाने की लागत बढ़ जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर बढ़ने पर वाणिज्यिक बैंक अपने जमाकर्ताओं (Depositors) को क्या प्रोत्साहन देते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक अपनी सावधि जमाओं (Fixed Deposits - FDs) और बचत खातों पर ब्याज दरें बढ़ा देते हैं, ताकि जनता से अधिक नकदी आकर्षित की जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सावधि जमा (FD) की दरों में वृद्धि मुद्रास्फीति को नियंत्रित करने में कैसे मदद करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपभोक्ता तत्काल उपभोग व्यय करने के बजाय बैंकों में पैसा बचाकर भविष्य हेतु निवेश करने हेतु प्रेरित होते हैं, जिससे बाजार में वर्तमान वस्तुओं की मांग घटती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर में वृद्धि का आम नागरिकों के होम लोन और कार लोन की 'ईएमआई' (EMI) पर क्या सीधा असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋण की ब्याज दरें बढ़ने से मासिक ईएमआई बढ़ जाती है अथवा ऋण की अवधि लंबी हो जाती है, जिससे परिवारों के पास अन्य दैनिक उपभोग की वस्तुओं पर खर्च करने हेतु उपलब्ध प्रयोज्य आय (Disposable Income) घट जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर में वृद्धि से 'उपभोक्ता टिकाऊ वस्तुओं' (Automobiles, Real Estate, Electronics) की मांग सबसे पहले क्यों गिरती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इन महंगी वस्तुओं की 80% से अधिक खरीदारी बैंक ऋणों और ईएमआई (EMI) पर निर्भर होती है; ब्याज दर बढ़ते ही उपभोक्ता अपनी खरीदारी टाल देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉर्पोरेट क्षेत्र के दृष्टिकोण से रेपो दर बढ़ने का क्या परिणाम होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कंपनियों के लिए कार्यशील पूंजी और नई फैक्ट्रियों के निर्माण हेतु पूंजीगत ऋण (Capex Loans) महंगे हो जाते हैं, जिससे वे नए निवेश और विस्तार योजनाओं को कुछ समय के लिए धीमा कर देती हैं।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में समग्र मांग (Aggregate Demand) के घटने से मांग-खींच मुद्रास्फीति कैसे ठंडी पड़ती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब दुकानों और शोरूमों में खरीदारों की भीड़ कम हो जाती है, तो उत्पादक और व्यापारी माल बेचने हेतु कीमतें बढ़ाना बंद कर देते हैं और छूट (Discounts) देने लगते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर में वृद्धि का देश की 'मुद्रा आपूर्ति' (M3 / Broad Money) पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों द्वारा नए ऋणों का सृजन धीमा होने से मुद्रा गुणक (Money Multiplier) सिकुड़ता है और अर्थव्यवस्था में कुल मुद्रा आपूर्ति की संवृद्धि दर घट जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर में वृद्धि 'विदेशी पूंजी प्रवाह' (Foreign Capital Inflows) को कैसे प्रभावित करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत और विकसित देशों के बीच ब्याज दर अंतर (Interest Rate Differential) बढ़ जाता है, जिससे विदेशी निवेशक भारतीय ऋण बाजार में डॉलर लाते हैं, रुपया मजबूत होता है और आयातित मुद्रास्फीति रुकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर में अत्यधिक और लगातार वृद्धि करने का अर्थव्यवस्था के विकास पर क्या गंभीर जोखिम होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थिक संवृद्धि की गति बहुत सुस्त पड़ सकती है, औद्योगिक उत्पादन सिकुड़ सकता है और मंदी (Economic Slowdown) आ सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'सॉफ्ट लैंडिंग' (Soft Landing) की संकल्पना क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय बैंक द्वारा ब्याज दरों को इस कुशलता से बढ़ाना कि अर्थव्यवस्था को भीषण मंदी में धकेले बिना मुद्रास्फीति को सफलतापूर्वक नियंत्रित कर लिया जाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'हार्ड लैंडिंग' (Hard Landing) किसे कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रास्फीति को दबाने के चक्कर में केंद्रीय बैंक द्वारा ब्याज दरों में इतनी भारी और आक्रामक वृद्धि कर देना कि अर्थव्यवस्था गहरी मंदी और बड़े पैमाने पर बेरोजगारी में फंस जाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मई 2022 से फरवरी 2023 के बीच भारतीय रिजर्व बैंक (RBI) ने मुद्रास्फीति को नियंत्रित करने हेतु रेपो दर में क्या त्वरित कार्रवाई की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर को 4.00% से बढ़ाकर मात्र 9 महीनों में 250 आधार अंक (2.50%) की आक्रामक वृद्धि करते हुए 6.50% के स्तर पर पहुंचा दिया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब अर्थव्यवस्था में मुद्रास्फीति पूर्णतः नियंत्रण में हो और आर्थिक संवृद्धि सुस्त पड़ रही हो, तो MPC रेपो दर में क्या रुख अपनाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर में कटौती (Rate Cut / Dovish Stance) करती है; ताकि ऋण सस्ता हो, निवेश और उपभोग बढ़े और जीडीपी संवृद्धि को गति मिले।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कोविड-19 महामारी (2020) के दौरान आर्थिक पतन को रोकने हेतु आरबीआई ने रेपो दर को घटाकर किस ऐतिहासिक निचले स्तर पर ला दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">4.00% के ऐतिहासिक निचले स्तर पर (तथा रिवर्स रेपो को घटाकर 3.35% कर दिया था)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर का 'बॉन्ड यील्ड' (Bond Yield) पर क्या सीधा प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर बढ़ते ही सरकारी और कॉरपोरेट बॉन्ड्स की यील्ड बढ़ जाती है और बॉन्ड्स की बाजार कीमतें गिर जाती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>खाद्य कीमतों के अस्थायी उछाल के समय आरबीआई तुरंत रेपो दर क्यों नहीं बढ़ाता?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि मौद्रिक नीति टमाटर या प्याज की फसल को नहीं उगा सकती; दरें तभी बढ़ाई जाती हैं जब खाद्य मुद्रास्फीति गैर-खाद्य क्षेत्रों में फैलकर 'कोर मुद्रास्फीति' को भड़काने लगे (Second-round effects)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति के संदर्भ में 'द्वितीयक दौर के प्रभाव' (Second-Round Effects) क्या होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब खाद्य या पेट्रोल के अस्थायी मूल्य झटके स्थायी होकर परिवहन, होटल, विनिर्माण और श्रमिकों की वेतन मांगों में जुड़ जाते हैं और व्यापक मुद्रास्फीति बन जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति समिति की द्विमासिक बैठक के निर्णयों के कितने दिनों बाद बैठक का विस्तृत कार्यवृत्त (Minutes) सार्वजनिक किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैठक के 14वें दिन (आरबीआई अधिनियम की धारा 45ZL के तहत); जिसमें प्रत्येक सदस्य के वोट और नीतिगत तर्कों का पूर्ण प्रकटीकरण होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा प्रत्येक छह माह में जारी की जाने वाली 'मौद्रिक नीति रिपोर्ट' (Monetary Policy Report - MPR) में क्या शामिल होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रास्फीति के स्रोत, भावी मुद्रास्फीति का पूर्वानुमान मॉडल, उत्पादन अंतराल का अनुमान और विभिन्न बाह्य आर्थिक परिदृश्यों का जोखिम विश्लेषण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उपभोक्ता विश्वास सर्वेक्षण (Consumer Confidence Survey - CCS) मौद्रिक नीति निर्माण में कैसे सहायता करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह परिवारों की वर्तमान आर्थिक स्थिति, रोजगार, मूल्य स्तर और आय के संबंध में उनकी भविष्य की धारणाओं और खर्च करने की इच्छा को मापता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>परिवारों का मुद्रास्फीति प्रत्याशा सर्वेक्षण (Inflation Expectations Survey of Households - IESH) आरबीआई क्यों आयोजित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह जानने हेतु कि आम नागरिक अगले 3 महीने और 1 वर्ष में मुद्रास्फीति के किस स्तर की उम्मीद कर रहे हैं, ताकि मौद्रिक नीति को उसी अनुसार समायोजित किया जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या मौद्रिक नीति अकेले किसी देश में शून्य मुद्रास्फीति और उच्च विकास हासिल कर सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; मौद्रिक नीति केवल मांग का प्रबंधन कर सकती है; स्थायी मूल्य स्थिरता हेतु सरकार की विवेकपूर्ण राजकोषीय नीति, मजबूत आपूर्ति श्रृंखला और कृषि सुधार अनिवार्य होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति नियंत्रण में 'राजकोषीय नीति' और 'मौद्रिक नीति' के बीच समन्वय (Policy Coordination) क्यों अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यदि आरबीआई रेपो दर बढ़ाकर मांग घटा रहा हो और दूसरी ओर सरकार बेलगाम खर्च बढ़ाकर घाटा बढ़ा रही हो, तो नीतियां परस्पर टकराएंगी और मुद्रास्फीति अनियंत्रित हो जाएगी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में 'मुद्रास्फीति-अनुक्रमित बॉन्ड्स' (Inflation-Indexed Bonds - IIBs) का क्या उद्देश्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निवेशकों को मुद्रास्फीति के जोखिम से पूर्ण सुरक्षा देना; जहां मूलधन और ब्याज को थोक या खुदरा मूल्य सूचकांक से सीधे जोड़ दिया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति के समय 'ऋणात्मक वास्तविक ब्याज दर' (Negative Real Interest Rate) रहने से अर्थव्यवस्था को क्या नुकसान होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों में वित्तीय बचत करने वाले जमाकर्ताओं को वास्तविक घाटा होता है, जिससे वे पैसा बैंकों से निकालकर सोने या रियल एस्टेट जैसी अनुत्पादक संपत्तियों में सट्टा लगाने लगते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई का प्राथमिक परिचालन लक्ष्य (Operating Target) क्या होता है जिसे रेपो दर के माध्यम से संरेखित रखा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारित औसत कॉल मनी दर (Weighted Average Call Rate - WACR)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब बैंकिंग प्रणाली में तरलता का भारी अधिशेष (Surplus Liquidity) होता है, तो WACR किस दर के करीब पहुंच जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">SDF दर (गलियारे की निचली सीमा) के करीब।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब बैंकिंग प्रणाली में तरलता की भारी कमी (Deficit) होती है, तो WACR किस दर के करीब पहुंच जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">MSF दर (गलियारे की ऊपरी सीमा) के करीब।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा 'परिवर्तनीय दर रिवर्स रेपो' (VRRR) नीलामियों का संचालन किस उद्देश्य से किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाजार से 7-दिन, 14-दिन या 28-दिन की निश्चित अवधि हेतु अधिशेष तरलता को प्रतिस्पर्धी बाजार दरों पर सोखने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति नियंत्रण में 'आपूर्ति पक्षीय राजकोषीय उपायों' (Supply-side Fiscal Measures) के प्रमुख भारतीय उदाहरण क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पेट्रोल और डीजल पर केंद्रीय उत्पाद शुल्क में कटौती, खाद्य तेलों और दालों पर आयात शुल्क को शून्य करना, तथा गेहूं और गैर-बासमती चावल के निर्यात पर प्रतिबंध लगाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई की स्वायत्तता और लचीला मुद्रास्फीति लक्ष्यीकरण (FIT) ढांचा भारत को वैश्विक वित्तीय झटकों से कैसे बचाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह विदेशी निवेशकों को यह स्पष्ट और विश्वसनीय संकेत देता है कि भारत अपने समष्टिगत आर्थिक बुनियादी सिद्धांतों और मूल्य स्थिरता से कभी समझौता नहीं करेगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश में मुद्रास्फीति 6% हो और नाममात्र जीडीपी संवृद्धि 12% हो, तो वास्तविक जीडीपी संवृद्धि दर क्या होगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 6% (12% - 6% = 6%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति के दौर में बैंकों की गैर-निष्पादित परिसंपत्तियों (NPA) पर क्या प्रभाव पड़ सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर बढ़ने से कंपनियों और खुदरा उधारकर्ताओं की ऋण चुकौती लागत बढ़ जाती है, जिससे कमजोर क्षेत्रों में डिफ़ॉल्ट और एनपीए बढ़ने का जोखिम पैदा होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा वर्ष में दो बार प्रकाशित की जाने वाली 'वित्तीय स्थिरता रिपोर्ट' (Financial Stability Report - FSR) में मुद्रास्फीति का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह मैक्रो-स्ट्रेस टेस्ट के माध्यम से परखती है कि उच्च मुद्रास्फीति और बढ़ती ब्याज दरों के झटकों को झेलने में भारतीय बैंकिंग प्रणाली कितनी सक्षम है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय बैंक डिजिटल मुद्रा (CBDC / e₹) भविष्य में मौद्रिक संचरण को कैसे तेज कर सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिना किसी बैंक मध्यस्थता के सीधे डिजिटल वॉलेट में प्रोग्रामेबल सब्सिडी और तत्काल तरलता समायोजन की सुविधा प्रदान करके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आपूर्ति बाधाओं को दूर करने हेतु पीएम गतिशक्ति और राष्ट्रीय लॉजिस्टिक्स नीति मुद्रास्फीति को कैसे कम करती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिवहन अड़चनों को समाप्त कर और माल ढुलाई लागत घटाकर खाद्य और औद्योगिक वस्तुओं में होने वाली लागत-प्रेरित मुद्रास्फीति को स्थायी रूप से नीचे लाकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जमा बीमा और प्रत्यय गारंटी निगम (DICGC) द्वारा ₹5 लाख तक का बीमा कवर मुद्रास्फीति के समय बैंकिंग स्थिरता को कैसे सहारा देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह छोटे जमाकर्ताओं में पूर्ण सुरक्षा का विश्वास बनाए रखता है, जिससे घबराहट में बैंक-रन (Bank Run) की स्थिति उत्पन्न नहीं होती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मूल्य स्थिरीकरण कोष (Price Stabilization Fund - PSF) और मौद्रिक नीति का तालमेल कैसे काम करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब मौद्रिक नीति ब्याज दरें बढ़ाकर समग्र मांग संभालती है, तब PSF खुले बाजार में दालों और प्याज का बफर स्टॉक बेचकर तात्कालिक आपूर्ति की कमी को दूर करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय खाद्य निगम (FCI) द्वारा संचालित ओपन मार्केट सेल स्कीम (OMSS) का मौद्रिक नीति से क्या संबंध है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह अनाज के थोक बाजार में गेहूं और चावल की आपूर्ति बढ़ाकर अनाज मुद्रास्फीति को रोकता है, जिससे मौद्रिक नीति को ब्याज दरें अत्यधिक बढ़ाने की विवशता से मुक्ति मिलती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कोर मुद्रास्फीति का 'दृढ़ बने रहना' (Persistence of Core Inflation) केंद्रीय बैंक के लिए क्यों चिंता का विषय होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि इसका अर्थ है कि मुद्रास्फीति केवल मौसम या तेल तक सीमित नहीं है, बल्कि वह संपूर्ण विनिर्माण और सेवा क्षेत्र में स्थायी रूप से घर कर चुकी है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वैश्विक 'कमोडिटी सुपर-साइकिल' (Commodity Super-Cycle) घरेलू मौद्रिक नीति को कैसे प्रभावित करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धातुओं, उर्वरकों और कच्चे तेल की वैश्विक कीमतों में दीर्घकालिक तेजी घरेलू विनिर्माण लागत को बढ़ाती है, जिससे केंद्रीय बैंक को लंबे समय तक उच्च ब्याज दरें बनाए रखनी पड़ती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में हस्तक्षेप करते समय आरबीआई 'मुद्रास्फीति और विनिमय दर' में संतुलन कैसे साधता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये को बचाने हेतु डॉलर बेचते समय बाजार से रुपये सोखे जाते हैं (तरलता घटती है), जिसे OMO खरीद या रेपो द्वारा पुनः निष्प्रभावी (Sterilization) किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बासेल-III मानदंडों के तहत 'तरलता कवरेज अनुपात' (LCR) बैंकों की मौद्रिक तरलता को कैसे अनुशासित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों को 30 दिनों के नकदी संकट से निपटने हेतु अनिवार्य रूप से उच्च गुणवत्ता वाली तरल संपत्तियां (सरकारी बॉन्ड) रखने हेतु बाध्य करके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'अमृत काल' में भारत का मुद्रास्फीति नियंत्रण और संवृद्धि संतुलन का क्या राष्ट्रीय विजन है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रास्फीति को निरंतर 4% के केंद्रीय लक्ष्य के इर्द-गिर्द स्थिर रखते हुए 7% से 8% की टिकाऊ वास्तविक जीडीपी संवृद्धि दर हासिल करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रास्फीति Part 2 के संपूर्ण अध्ययन का अंतिम और सारगर्भित समष्टिगत निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मौद्रिक नीति मूल्य स्थिरता की सर्वोच्च संप्रभु संरक्षक है; जहां लचीले मुद्रास्फीति लक्ष्यीकरण (4% +/- 2%) के तहत रेपो दर, EBLR संचरण तंत्र और तरलता प्रबंधन द्वारा मांग-जनित दबावों को कुशलता से साधा जाता है, वहीं मौद्रिक अनुशासन और सरकार के आपूर्ति-पक्षीय प्रबंधन का सटीक तालमेल ही भारत में समावेशी, संधारणीय और तीव्र आर्थिक संवृद्धि की मजबूत गारंटी है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

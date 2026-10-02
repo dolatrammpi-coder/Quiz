@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="बैंकिंग सुधार Part 2">
+<title>बैंकिंग सुधार Part 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / बैंकिंग सुधार Part 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>बैंकिंग सुधार Part 2</h1>
+    <p class="topic-subtitle">नरसिम्हम समिति-II, सार्वजनिक बैंकों का समेकन व विलय, निजी बैंकों का विकास तथा डिजिटल वित्तीय प्रौद्योगिकी क्रांति का संपूर्ण विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">बैंकिंग सुधार Part 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>समिति/सुधार</th><th>प्रमुख सिफारिश या विशेषता</th><th>बैंकिंग पर प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">नरसिम्हम समिति-II (1998)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पूंजी पर्याप्तता अनुपात (CRAR) को बढ़ाकर 10% करना, कमजोर बैंकों हेतु 'संकीर्ण बैंकिंग' (Narrow Banking) तथा सरकारी हिस्सेदारी घटाकर 33% करना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकों की बैलेंस शीट में अंतरराष्ट्रीय वित्तीय मजबूती आई, नियामक स्वतंत्रता बढ़ी और जोखिम प्रबंधन का आधुनिकीकरण हुआ।</div></div></td></tr><tr><td><div class="primary-cell">बैंक विलय एवं समेकन नीति</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">2017 से 2020 के दौरान 27 सार्वजनिक बैंकों का 12 बड़े बैंकों में समेकन (SBI सहयोगी विलय, बैंक ऑफ बड़ौदा विलय और 10 बैंकों का 4 में मेगा-विलय)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वैश्विक स्तर के बड़े बैंकों का निर्माण, पैमाने की मितव्ययिताएं (Economies of Scale), परिचालन लागत में कमी और ऋण वहन क्षमता में विस्तार।</div></div></td></tr><tr><td><div class="primary-cell">निजी क्षेत्र के बैंकों का प्रवेश (1993, 2001, 2013)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">एचडीएफसी, आईसीआईसीआई, एक्सिस, कोटक महिंद्रा, बंधन व आईडीएफसी फर्स्ट बैंक को सख्त पूंजी व कॉरपोरेट प्रशासन शर्तों पर लाइसेंस।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकिंग क्षेत्र में स्वस्थ प्रतिस्पर्धा, नवीन वित्तीय उत्पादों का आगमन, ग्राहक सेवा में क्रांतिकारी सुधार और निजी परिसंपत्ति हिस्सेदारी ~35-40% पहुंचना।</div></div></td></tr><tr><td><div class="primary-cell">विभेदित बैंक (Differentiated Banks)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">नचिकेत मोर समिति की सिफारिश पर पेमेंट बैंक (Payments Banks) और स्मॉल फाइनेंस बैंक (Small Finance Banks - SFBs) की स्थापना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अंतिम छोर तक वित्तीय समावेशन, प्रवासी कामगारों हेतु सुगम डिजिटल भुगतान और छोटे व्यवसायों व सीमांत किसानों को औपचारिक सूक्ष्म ऋण।</div></div></td></tr><tr><td><div class="primary-cell">कोर बैंकिंग सॉल्यूशंस (CBS)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सभी बैंक शाखाओं को एक केंद्रीय सर्वर से जोड़ना, जिससे ग्राहक 'शाखा का ग्राहक' न रहकर 'पूरे बैंक का ग्राहक' बन गया।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">इंटर-ब्रांच बैंकिंग, कहीं भी कभी भी लेन-देन, चेक समाशोधन में तेजी और वास्तविक समय (Real-Time) खाता प्रचालन संभव हुआ।</div></div></td></tr><tr><td><div class="primary-cell">भारतीय राष्ट्रीय भुगतान निगम (NPCI)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भुगतान एवं निपटान प्रणाली अधिनियम 2007 के तहत RBI और IBA द्वारा 2008 में स्थापित खुदरा भुगतानों का शीर्ष छत्र संगठन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आईएमपीएस (IMPS), रुपे (RuPay), यूपीआई (UPI), बीबीपीएस (BBPS) और एईपीएस (AePS) जैसे स्वदेशी और विश्वस्तरीय भुगतान तंत्रों का विकास।</div></div></td></tr><tr><td><div class="primary-cell">यूनिफाइड पेमेंट्स इंटरफेस (UPI)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मोबाइल नंबर और वर्चुअल पेमेंट एड्रेस (VPA) के माध्यम से 24x7 तत्काल अंतर-बैंक फंड ट्रांसफर और मर्चेंट क्यूआर भुगतान।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत वैश्विक डिजिटल खुदरा भुगतान क्रांति का सिरमौर बना; नकदी निर्भरता में भारी गिरावट और फिनटेक पारिस्थितिकी तंत्र का अभूतपूर्व उछाल।</div></div></td></tr><tr><td><div class="primary-cell">सेंट्रल बैंक डिजिटल करेंसी (CBDC / e₹)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारतीय रिजर्व बैंक द्वारा संप्रभु डिजिटल मुद्रा (डिजिटल रुपया) का थोक (e₹-W) और खुदरा (e₹-R) पायलट परीक्षण (2022 से)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कागजी नोटों की छपाई व प्रबंधन लागत में कमी, सीमा-पार भुगतान निपटान में तेजी और वित्तीय सुरक्षा में संप्रभु गारंटी।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II (बैंकिंग क्षेत्र सुधार समिति) का गठन भारत सरकार द्वारा किस वर्ष किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिसंबर 1997 में (और समिति ने अपनी ऐतिहासिक रिपोर्ट अप्रैल 1998 में प्रस्तुत की)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I (1991) और नरसिम्हम समिति-II (1998) के प्राथमिक कार्यक्षेत्र में क्या मूल अंतर था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समिति-I का ध्यान वित्तीय दमन हटाने और उदारीकरण पर था, जबकि समिति-II का मुख्य ध्यान बैंकिंग प्रणाली की मजबूती, संस्थागत पुनर्गठन और अंतरराष्ट्रीय वित्तीय एकीकरण पर था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंकों के पूंजी पर्याप्तता अनुपात (CRAR) को 8% से बढ़ाकर कितने प्रतिशत करने की सिफारिश की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2000 तक 9% और दीर्घकाल में 10% करने की सिफारिश।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने कमजोर और बीमार बैंकों (Weak Banks) के संकट को टालने हेतु किस विशेष अवधारणा का प्रतिपादन किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'संकीर्ण बैंकिंग' (Narrow Banking), जिसके तहत कमजोर बैंकों को जोखिम भरे वाणिज्यिक ऋण देने से रोककर केवल जोखिम-मुक्त सरकारी प्रतिभूतियों में निवेश तक सीमित किया जाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने सार्वजनिक क्षेत्र के बैंकों में भारत सरकार की शेयरधारिता को घटाकर कितने प्रतिशत करने का सुझाव दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम 33% तक घटाने की सिफारिश, ताकि बैंकों को अपनी पूंजी बाजार से जुटाने और प्रबंधन में स्वायत्तता मिले।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने सार्वजनिक क्षेत्र के बैंकों के विलय (Bank Mergers) के संदर्भ में क्या कड़ा सिद्धांत दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विलय केवल दो मजबूत बैंकों के बीच व्यावसायिक लाभ हेतु होना चाहिए; किसी मजबूत बैंक का किसी कमजोर बैंक के साथ प्रशासनिक आधार पर जबरन विलय कभी नहीं किया जाना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने एनपीए के त्वरित समाधान हेतु किस वित्तीय संस्था के गठन की पुरजोर संस्तुति की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिसंपत्ति पुनर्निर्माण कंपनियों (Asset Reconstruction Companies - ARCs) की स्थापना की।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने भारतीय रिजर्व बैंक (RBI) की दोहरी भूमिका पर क्या आपत्ति दर्ज की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI एक ही समय में बैंकों का नियामक (Regulator) और सार्वजनिक बैंकों (जैसे SBI, NHB, NABARD) का मालिक (Owner) नहीं हो सकता; अतः उसे अपनी स्वामित्व हिस्सेदारी छोड़नी चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II की सिफारिश पर RBI ने भारतीय स्टेट बैंक (SBI) में अपनी संपूर्ण शेयरधारिता केंद्र सरकार को कब बेची?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2007-08 में (लगभग ₹35,531 करोड़ में SBI की 59.7% हिस्सेदारी सरकार को हस्तांतरित की गई)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने नेगोशिएबल इंस्ट्रूमेंट्स एक्ट 1881 में चेक बाउंसिंग के संबंध में क्या कानूनी सुधार सुझाया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चेक बाउंस को कठोर आपराधिक अपराध बनाना और त्वरित निपटारे हेतु विशेष प्रक्रिया अपनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंकों के निदेशकमंडल (Board of Directors) के गठन के संबंध में क्या संस्तुति दी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बोर्ड में राजनीतिक नियुक्तियों को पूरी तरह समाप्त करना और केवल पेशेवर, स्वतंत्र व वित्तीय विशेषज्ञों को शामिल करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने विदेशी बैंकों के भारत में विस्तार के संबंध में क्या उदार दृष्टिकोण अपनाने का सुझाव दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी बैंकों को पूर्ण स्वामित्व वाली सहायक कंपनियों (WOS) के रूप में कार्य करने और भारतीय निजी बैंकों में हिस्सेदारी लेने की अनुमति देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने सरकारी बैंकों में भर्ती और मानव संसाधन प्रबंधन के संबंध में क्या स्वायत्तता मांगी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग सेवा भर्ती बोर्ड (BSRB) को समाप्त करना और प्रत्येक बैंक को बाजार दरों पर अपनी प्रतिभा सीधे नियुक्त करने की स्वतंत्रता देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग सेवा भर्ती बोर्ड (BSRB) को औपचारिक रूप से किस वर्ष समाप्त किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2002 में, जिसके बाद बैंकों ने IBPS या अपनी स्वतंत्र चयन प्रक्रिया अपनाई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंकों के विदेशी मुद्रा जोखिम (Forex Exposure) और ब्याज दर जोखिम हेतु क्या व्यवस्था सुझाई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिसंपत्ति-देनदारी प्रबंधन (Asset-Liability Management - ALM) प्रणाली को प्रत्येक बैंक में अनिवार्य रूप से लागू करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने भारतीय बैंकिंग में सूचना प्रौद्योगिकी के उपयोग हेतु क्या निर्देश दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सभी प्रमुख शाखाओं का पूर्ण कम्प्यूटरीकरण, इंटर-बैंक कनेक्टिविटी और ई-बैंकिंग का त्वरित विस्तार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंकिंग लोकपाल योजना (Banking Ombudsman Scheme) को अधिक प्रभावी बनाने हेतु क्या सिफारिश की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लोकपाल के क्षेत्राधिकार का विस्तार करना और उसके निर्णयों को बैंकों पर कानूनी रूप से बाध्यकारी बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने ग्रामीण ऋण में क्षेत्रीय ग्रामीण बैंकों (RRBs) के पुनर्गठन हेतु क्या मॉडल प्रस्तुत किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समान प्रायोजक बैंकों के अधीन आने वाले निकटवर्ती RRBs का राज्य स्तर पर एकीकरण (Amalgamation) करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंकों के आंतरिक नियंत्रण हेतु किस ऑडिट प्रणाली को अनिवार्य करने की सिफारिश की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जोखिम-आधारित आंतरिक लेखापरीक्षा (Risk-Based Internal Audit - RBIA)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने प्राथमिकता प्राप्त क्षेत्र ऋण (PSL) के संबंध में क्या सुझाव दोहराया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">PSL के दायरे को संकुचित कर केवल वास्तव में कमजोर व जरूरतमंद वर्गों तक सीमित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने एनपीए की पहचान हेतु किस वैश्विक समयावधि मानक को अपनाने की सिफारिश की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">90 दिनों के अतिदेय मानदंड (90-day overdue norm) को अपनाने की सिफारिश (जो 2004 से लागू हुआ)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंकों के शुद्ध एनपीए (Net NPA) को किस स्तर तक लाने का कड़ा लक्ष्य दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2000 तक शुद्ध एनपीए को 5% से नीचे और 2002 तक 3% से नीचे लाने का लक्ष्य।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंकों के पूंजी पर्याप्तता ढांचे में बाजार जोखिम (Market Risk) को शामिल करने हेतु क्या कहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकारी प्रतिभूतियों और विदेशी मुद्रा परिसंपत्तियों में मूल्य उतार-चढ़ाव के जोखिम हेतु अतिरिक्त पूंजी बफर बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंकों में अधिक कर्मचारियों की समस्या से निपटने हेतु किस योजना का मार्ग प्रशस्त किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वैच्छिक सेवानिवृत्ति योजना (Voluntary Retirement Scheme - VRS), जिसे 2000-01 में सार्वजनिक बैंकों में बड़े पैमाने पर लागू किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने वित्तीय संस्थानों (जैसे IDBI, ICICI, IFCI) के वाणिज्यिक बैंकों में रूपांतरण की क्या सिफारिश की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दीर्घकालिक विकास वित्तीय संस्थानों (DFIs) को सार्वभौमिक बैंकों (Universal Banks) में परिवर्तित होने की छूट देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II की सिफारिशों को भारतीय बैंकिंग इतिहास में किस रूप में आंका जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय बैंकिंग को 'उदारीकरण' से आगे ले जाकर 'वैश्विक वित्तीय मानकों और जोखिम प्रबंधन' की ठोस धरातल पर स्थापित करने वाली मार्गदर्शिका।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों के समेकन (Consolidation) का प्राथमिक आर्थिक उद्देश्य क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैश्विक आकार और वित्तीय क्षमता वाले बड़े राष्ट्रीय बैंकों का निर्माण करना, परिचालन लागत घटाना और बड़े बुनियादी ढांचा प्रोजेक्ट्स को ऋण देने में सक्षम बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1993 में राष्ट्रीयकरण के बाद सार्वजनिक क्षेत्र के बैंकों के आपसी विलय का पहला ऐतिहासिक उदाहरण कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यू बैंक ऑफ इंडिया (New Bank of India) का पंजाब नेशनल बैंक (PNB) में विलय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2004 में संकटग्रस्त निजी बैंक 'ग्लोबल ट्रस्ट बैंक' (GTB) का किस सरकारी बैंक में विलय कराया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओरिएंटल बैंक ऑफ कॉमर्स (OBC) में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय स्टेट बैंक (SBI) में उसके सहयोगी बैंकों (Associate Banks) के विलय की प्रक्रिया का पहला चरण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2008 में स्टेट बैंक ऑफ सौराष्ट्र का SBI में विलय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SBI में सहयोगी बैंकों के विलय का दूसरा चरण किस वर्ष और किस बैंक के साथ हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2010 में स्टेट बैंक ऑफ इंदौर का SBI में विलय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय स्टेट बैंक (SBI) का ऐतिहासिक महा-विलय (Mega-Merger) किस तिथि को प्रभावी हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 अप्रैल 2017 को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 अप्रैल 2017 को SBI में किन 5 सहयोगी बैंकों और 1 अन्य बैंक का एक साथ विलय किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">5 सहयोगी बैंक (SBBJ, SBM, SBP, SBT, SBH) तथा भारतीय महिला बैंक (BMB)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2017 के महा-विलय के पश्चात SBI वैश्विक रैंकिंग में किस मुकाम पर पहुंचा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व के शीर्ष 50 सबसे बड़े बैंकों (Top 50 Global Banks) के प्रतिष्ठित क्लब में शामिल होने वाला पहला भारतीय बैंक बना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 अप्रैल 2019 को सार्वजनिक क्षेत्र के किन दो बैंकों का 'बैंक ऑफ बड़ौदा' (Bank of Baroda) में त्रि-पक्षीय विलय हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विजया बैंक (Vijaya Bank) और देना बैंक (Dena Bank) का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगस्त 2019 में घोषित और 1 अप्रैल 2020 से प्रभावी '10 सार्वजनिक बैंकों का 4 बड़े बैंकों में मेगा-विलय' के तहत PNB में किन बैंकों का विलय हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओरिएंटल बैंक ऑफ कॉमर्स (OBC) और यूनाइटेड बैंक ऑफ इंडिया का पंजाब नेशनल बैंक (PNB) में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 अप्रैल 2020 के मेगा-विलय के तहत केनरा बैंक (Canara Bank) में किस बैंक का विलय किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिंडीकेट बैंक (Syndicate Bank) का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 अप्रैल 2020 के मेगा-विलय के अंतर्गत यूनियन बैंक ऑफ इंडिया में किन दो बैंकों का विलय हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आंध्रा बैंक (Andhra Bank) और कॉर्पोरेशन बैंक (Corporation Bank) का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 अप्रैल 2020 के मेगा-विलय के अंतर्गत इंडियन बैंक (Indian Bank) में किस प्राचीन बैंक का विलय किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इलाहाबाद बैंक (Allahabad Bank - भारत का सबसे पुराना संयुक्त स्टॉक बैंक) का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों के विलय प्रस्तावों को सैद्धांतिक मंजूरी देने हेतु केंद्र सरकार ने किस उच्चस्तरीय संस्थागत तंत्र का गठन किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैकल्पिक तंत्र (Alternative Mechanism - AM), जिसकी अध्यक्षता केंद्रीय वित्त मंत्री करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2017 में विलय प्रक्रिया प्रारंभ होने से पूर्व भारत में सार्वजनिक क्षेत्र के बैंकों (PSBs) की कुल संख्या कितनी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 27 बैंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 अप्रैल 2020 के मेगा-विलय के उपरांत भारत में राष्ट्रीयकृत और सार्वजनिक क्षेत्र के बैंकों की कुल संख्या घटकर कितनी रह गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 12 बैंक (SBI सहित 12 PSBs)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में भारत के 12 सार्वजनिक क्षेत्र के बैंकों में से कौन-से 6 बैंक स्वतंत्र (Unmerged) बने रहे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. बैंक ऑफ इंडिया, 2. सेंट्रल बैंक ऑफ इंडिया, 3. इंडियन ओवरसीज बैंक, 4. यूको बैंक, 5. बैंक ऑफ महाराष्ट्र, और 6. पंजाब एंड सिंध बैंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक विलय का सबसे बड़ा परिचालन लाभ (Operational Benefit) क्या रहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ही क्षेत्र में एक-दूसरे के निकट स्थित अनावश्यक शाखाओं का युक्तिकरण, प्रशासनिक लागत में भारी कमी और आईटी प्लेटफॉर्म का केंद्रीकरण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक विलय की प्रक्रिया में सबसे गंभीर व्यावहारिक चुनौती क्या सामने आई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मानव संसाधन (HR) एकीकरण, विभिन्न बैंकों की भिन्न कार्य-संस्कृतियां, वरिष्ठता विवाद और अलग-अलग कोर बैंकिंग सॉफ्टवेयर (CBS) का तालमेल।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विलय के दौरान विभिन्न बैंकों के कोर बैंकिंग सॉफ्टवेयर (जैसे Finacle और BaNCS) के एकीकरण में क्या तकनीकी कदम उठाए गए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डेटा माइग्रेशन और सामान्य इंटरफेस का विकास, ताकि विलय होने वाले बैंक के ग्राहक बिना रुकावट मूल बैंक के प्लेटफॉर्म पर आ सकें।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घरेलू प्रणालीगत महत्वपूर्ण बैंक (D-SIBs / 'Too Big to Fail') की अवधारणा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे बैंक जिनका आकार और अंतर-संबद्धता इतनी विशाल होती है कि उनकी विफलता संपूर्ण राष्ट्रीय अर्थव्यवस्था को पंगु बना सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में भारतीय रिजर्व बैंक द्वारा D-SIBs (प्रणालीगत महत्वपूर्ण बैंक) के रूप में किन तीन बैंकों को वर्गीकृत किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. स्टेट बैंक ऑफ इंडिया (SBI), 2. HDFC बैंक, और 3. ICICI बैंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>D-SIBs के रूप में वर्गीकृत बैंकों को सामान्य बैंकों की तुलना में कौन-सी अतिरिक्त विनियामक शर्त पूरी करनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अतिरिक्त सामान्य इक्विटी टियर-1 (CET-1) पूंजी बफर बनाए रखना अनिवार्य होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विलय के उपरांत सार्वजनिक बैंकों के बैलेंस शीट आकार में वृद्धि ने कॉरपोरेट जगत को कैसे लाभान्वित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों की 'एकल उधारकर्ता जोखिम सीमा' (Single Borrower Exposure Limit) बढ़ गई, जिससे वे विशाल मेगा-इन्फ्रास्ट्रक्चर परियोजनाओं को बिना कंसोर्टियम के भी बड़ा ऋण देने में सक्षम हुए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पी. जे. नायक समिति (2014) ने सार्वजनिक क्षेत्र के बैंकों के शासन सुधार हेतु किस क्रांतिकारी मॉडल की सिफारिश की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'बैंक इन्वेस्टमेंट कंपनी' (BIC) का गठन कर सरकार की शेयरधारिता उसे सौंपना, जिससे बैंकों में सरकारी हस्तक्षेप पूरी तरह समाप्त हो सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक विलय से बैंकों की 'ऋण मूल्यांकन क्षमता' (Credit Appraisal Capabilities) पर क्या सकारात्मक प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जोखिम प्रबंधन और फोरेंसिक ऑडिटिंग हेतु समर्पित विशिष्ट विशेषज्ञ इकाइयों की स्थापना संभव हुई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1993 में भारतीय रिजर्व बैंक द्वारा जारी दिशा-निर्देशों के तहत नए निजी बैंकों की स्थापना हेतु न्यूनतम चुकता पूंजी (Paid-up Capital) क्या थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम ₹100 करोड़।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1993 के प्रथम दौर में लाइसेंस प्राप्त प्रमुख निजी बैंक कौन-से थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">HDFC बैंक, ICICI बैंक, UTI बैंक (वर्तमान Axis बैंक), इंडसइंड बैंक, बैंक ऑफ पंजाब, और सेंचुरियन बैंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2001 में जारी निजी बैंकों के दूसरे दौर के दिशा-निर्देशों में न्यूनतम पूंजी सीमा बढ़ाकर कितनी की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रारंभिक ₹200 करोड़ (जिसे 3 वर्ष में बढ़ाकर ₹300 करोड़ करना अनिवार्य था)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2001 के दिशा-निर्देशों के तहत स्थापित होने वाले दो प्रमुख सफल निजी बैंक कौन-से थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोटक महिंद्रा बैंक (2003 में NBFC से परिवर्तित) और यस बैंक (2004)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2013 के दिशा-निर्देशों के तहत सार्वभौमिक बैंक (Universal Bank) लाइसेंस हेतु न्यूनतम पूंजी सीमा कितनी तय की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम ₹500 करोड़।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2013-14 के लाइसेंसिंग दौर में आरबीआई द्वारा किन दो वित्तीय संस्थाओं को पूर्ण बैंक लाइसेंस दिया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बंधन बैंक (Bandhan Bank) और आईडीएफसी फर्स्ट बैंक (IDFC FIRST Bank), जिन्होंने 2015 में परिचालन शुरू किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक द्वारा वर्ष 2016 में सार्वभौमिक बैंकों हेतु शुरू की गई 'ऑन-टैप लाइसेंसिंग' (On-Tap Licensing) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक लाइसेंस हेतु विनियामक विंडो वर्ष भर खुली रहना; योग्य आवेदक किसी भी समय बैंक लाइसेंस हेतु आवेदन कर सकते हैं, विशेष घोषणा की प्रतीक्षा किए बिना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निजी क्षेत्र के बैंकों में प्रमोटर की शेयरधारिता के संबंध में RBI का क्या अनिवार्य दीर्घावधि नियम है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">15 वर्षों के भीतर प्रमोटर की चुकता मतदान इक्विटी पूंजी हिस्सेदारी को घटाकर 26% (पूर्व में 15%) पर लाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निजी क्षेत्र के बैंकों में प्रत्यक्ष विदेशी निवेश (FDI) की अधिकतम कानूनी सीमा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 74% तक (49% तक स्वचालित मार्ग से और 49% से 74% तक सरकारी अनुमोदन मार्ग से)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों (PSBs) में FDI की अधिकतम विनियामक सीमा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिकतम 20% तक (सरकारी अनुमोदन मार्ग से)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निजी बैंकों के तीव्र विस्तार ने भारतीय बैंकिंग प्रणाली में किस प्रकार की दक्षता लाई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्कृष्ट परिसंपत्ति गुणवत्ता, उच्च पूंजी पर्याप्तता (CRAR), आधुनिक डिजिटल तकनीक, उच्च RoA (परिसंपत्ति पर प्रतिफल) और पारदर्शी ऋण संस्कृति।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय बैंकिंग परिसंपत्तियों में निजी क्षेत्र के बैंकों की हिस्सेदारी 1991 के 3-4% से बढ़कर वर्तमान में कितनी हो चुकी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 35% से 40% (तथा कुल वृद्धिशील ऋण प्रवाह में 50% से अधिक हिस्सेदारी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2020 में निजी क्षेत्र के किस बड़े बैंक में गंभीर वित्तीय संकट के बाद RBI ने मोराटोरियम लगाकर पुनर्गठन किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यस बैंक (Yes Bank), जिसे SBI और अन्य वित्तीय संस्थानों के कंसोर्टियम द्वारा पूंजी डालकर उबारा गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2020 में वित्तीय संकट में फंसे प्राचीन निजी बैंक 'लक्ष्मी विलास बैंक' (LVB) का किस विदेशी बैंक में विलय कराया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डीबीएस बैंक इंडिया (DBS Bank India Limited - सिंगापुर स्थित DBS की पूर्ण स्वामित्व वाली सहायक कंपनी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 2023 में भारत के कॉरपोरेट इतिहास का सबसे बड़ा रिवर्स-विलय (Reverse Merger) किन दो वित्तीय दिग्गजों के बीच हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एचडीएफसी लिमिटेड (HDFC Ltd - आवास वित्त कंपनी) का एचडीएफसी बैंक (HDFC Bank) में विलय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>HDFC लिमिटेड के विलय के पश्चात HDFC बैंक बाजार पूंजीकरण की दृष्टि से वैश्विक स्तर पर किस स्थान पर पहुंचा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व के शीर्ष 4-5 सबसे मूल्यवान बैंकों के क्लब में शामिल हुआ।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छोटे व्यवसायों और कम आय वाले परिवारों हेतु 'विभेदित बैंकों' (Differentiated Banks) की अवधारणा किस समिति ने दी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. नचिकेत मोर समिति (2013 - 'निम्न आय परिवारों और छोटे व्यवसायों के लिए व्यापक वित्तीय सेवाएं')।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में दो प्रकार के विभेदित बैंक (Differentiated Banks) कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. भुगतान बैंक (Payments Banks) और 2. लघु वित्त बैंक (Small Finance Banks - SFBs)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान बैंकों (Payments Banks) के परिचालन की सबसे प्रमुख विनियामक पाबंदी क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे किसी भी प्रकार का ऋण (Loans) या क्रेडिट कार्ड जारी नहीं कर सकते; केवल मांग जमा स्वीकार कर सकते हैं और विप्रेषण सेवाएं दे सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान बैंकों में प्रति व्यक्तिगत ग्राहक अधिकतम जमा सीमा वर्तमान में कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिन के अंत में अधिकतम ₹2,00,000 (2 लाख रुपये)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान बैंकों को अपनी कुल मांग जमाराशियों का कितना प्रतिशत सरकारी प्रतिभूतियों (SLR योग्य) में रखना अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम 75% हिस्सा 1 वर्ष तक की परिपक्वता वाली सांविधिक तरलता प्रतिभूतियों में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में परिचालन शुरू करने वाला पहला भुगतान बैंक कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एयरटेल पेमेंट्स बैंक (Airtel Payments Bank - जनवरी 2017)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डाक विभाग के विशाल राष्ट्रव्यापी नेटवर्क का उपयोग करने हेतु 2018 में किस भुगतान बैंक की शुरुआत हुई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंडिया पोस्ट पेमेंट्स बैंक (IPPB)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लघु वित्त बैंकों (Small Finance Banks - SFBs) के लिए प्राथमिकता प्राप्त क्षेत्र ऋण (PSL) का क्या कड़ा लक्ष्य निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अपने कुल समायोजित निवल बैंक ऋण (ANBC) का न्यूनतम 75% हिस्सा PSL में देना अनिवार्य है (सामान्य बैंकों हेतु 40% है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लघु वित्त बैंकों (SFBs) के ऋण पोर्टफोलियो पर ऋण आकार की क्या अनिवार्य शर्त लागू है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उनके कुल ऋण पोर्टफोलियो का कम से कम 50% हिस्सा ₹25 लाख तक के छोटे ऋणों का होना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में परिचालन शुरू करने वाला पहला स्मॉल फाइनेंस बैंक कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कैपिटल स्मॉल फाइनेंस बैंक (Capital Small Finance Bank - अप्रैल 2016)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लघु वित्त बैंक (SFB) के रूप में लाइसेंस प्राप्त करने वाले प्रमुख संस्थान कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एयू स्मॉल फाइनेंस बैंक, इक्विटास, उज्जीवन, जना और ईएसएएफ स्मॉल फाइनेंस बैंक (अधिकांश पूर्व में माइक्रोफाइनेंस संस्थाएं थीं)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लघु वित्त बैंकों को सार्वभौमिक बैंक (Universal Bank) में बदलने हेतु RBI द्वारा निर्धारित मुख्य पात्रता शर्त क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम से कम 5 वर्षों का संतोषजनक ट्रैक रिकॉर्ड, शेयर बाजार में सूचीबद्धता और न्यूनतम ₹1,000 करोड़ का शुद्ध मूल्य।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्थानीय क्षेत्र बैंक (Local Area Banks - LABs) योजना किस वर्ष प्रारंभ की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अगस्त 1996 में (अधिकतम 3 निकटवर्ती जिलों के भौगोलिक क्षेत्र में कार्य करने हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निजी बैंकों में कॉरपोरेट प्रशासन को सुदृढ़ करने हेतु प्रबंध निदेशक एवं सीईओ (MD & CEO) का अधिकतम कार्यकाल कितना निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रमोटर सीईओ हेतु अधिकतम 12-15 वर्ष तथा गैर-प्रमोटर सीईओ हेतु अधिकतम 15 वर्ष (अधिकतम आयु सीमा 70 वर्ष)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक में भारतीय बैंकिंग में कम्प्यूटरीकरण की रूपरेखा तैयार करने वाली दो समितियों के अध्यक्ष कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. सी. रंगराजन (1984 एवं 1989 की समितियां)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग में कोर बैंकिंग सॉल्यूशंस (Core Banking Solutions - CBS) का क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक केंद्रीकृत सॉफ्टवेयर नेटवर्क जहां बैंक की सभी शाखाएं एक मास्टर डेटाबेस से जुड़ी होती हैं, जिससे ग्राहक किसी भी शाखा, एटीएम या डिजिटल माध्यम से अपना खाता संचालित कर सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में सार्वजनिक और निजी बैंकों द्वारा व्यापक रूप से प्रयुक्त होने वाले दो प्रमुख सीबीएस सॉफ्टवेयर कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फिनाकल (Finacle - इन्फोसिस द्वारा विकसित) और टीसीएस बांक्स (TCS BaNCS)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में पहली बार एटीएम (Automated Teller Machine) किस बैंक ने और कब स्थापित किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">HSBC बैंक ने 1987 में मुंबई में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'व्हाइट लेबल एटीएम' (White Label ATMs - WLAs) किन्हें कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे एटीएम जो बैंकों द्वारा नहीं, बल्कि गैर-बैंकिंग कंपनियों द्वारा स्वामित्व और संचालित किए जाते हैं (जैसे टाटा कम्युनिकेशंस का इंडिकैश - Indicash)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'ब्राउन लेबल एटीएम' (Brown Label ATMs) क्या होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे एटीएम जहां हार्डवेयर और मशीन किसी तृतीय-पक्ष सेवा प्रदाता की होती है, किंतु कनेक्टिविटी, नकद प्रबंधन और बैंक का लोगो प्रायोजक बैंक का होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>देश के सभी अंतर-बैंक एटीएम नेटवर्कों को आपस में जोड़ने वाला राष्ट्रीय स्विच कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नेशनल फाइनेंशियल स्विच (National Financial Switch - NFS), जिसे वर्तमान में NPCI संचालित करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नेशनल इलेक्ट्रॉनिक फंड्स ट्रांसफर (NEFT) प्रणाली की शुरुआत भारतीय रिजर्व बैंक द्वारा किस वर्ष की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नवंबर 2005 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NEFT प्रणाली की निपटान (Settlement) पद्धति क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आस्थगित शुद्ध निपटान (Deferred Net Settlement - DNS), जो आधे-आधे घंटे के बैचों में लेन-देन का निपटान करती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NEFT सेवा को 24x7x365 (वर्ष भर चौबीसों घंटे) कब से उपलब्ध कराया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिसंबर 2019 से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रियल टाइम ग्रॉस सेटलमेंट (RTGS) प्रणाली भारत में कब प्रारंभ की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मार्च 2004 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RTGS प्रणाली में फंड ट्रांसफर की न्यूनतम राशि सीमा (Minimum Limit) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम ₹2,00,000 (दो लाख रुपये); जबकि इसकी कोई अधिकतम सीमा नहीं है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RTGS प्रणाली को 24x7x365 परिचालन हेतु कब अधिकृत किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिसंबर 2020 से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NEFT और RTGS में मूल तकनीकी अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NEFT बैचों में आस्थगित निपटान करता है और कोई न्यूनतम सीमा नहीं होती, जबकि RTGS वास्तविक समय में सकल आधार पर (लेन-देन दर लेन-देन) न्यूनतम ₹2 लाख का तत्काल निपटान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चेक समाशोधन में लगने वाले समय को घटाने हेतु शुरू की गई 'चेक ट्रंकेशन सिस्टम' (CTS) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कागजी चेक के भौतिक आवागमन को समाप्त कर उसकी इलेक्ट्रॉनिक डिजिटल छवि और MICR डेटा के आधार पर समाशोधन करना (2008 में शुरू)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चेक धोखाधड़ी रोकने हेतु 1 जनवरी 2021 से लागू 'पॉजिटिव पे सिस्टम' (Positive Pay System - PPS) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">₹50,000 से अधिक के चेक जारी करने पर खाताधारक द्वारा चेक विवरण (तारीख, नाम, राशि) बैंक को इलेक्ट्रॉनिक रूप से पुनः सत्यापित कराने की व्यवस्था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय राष्ट्रीय भुगतान निगम (NPCI) की स्थापना किस कानून के तहत और कब की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भुगतान और निपटान प्रणाली अधिनियम 2007 (PSS Act 2007) के तहत वर्ष 2008 में (कंपनी अधिनियम की धारा 8 के तहत गैर-लाभकारी कंपनी के रूप में)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NPCI के संस्थापक प्रवर्तक (Promoters) कौन हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक (RBI) और भारतीय बैंक संघ (IBA) के मार्गदर्शन में 10 प्रमुख सार्वजनिक, निजी व विदेशी बैंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तत्काल भुगतान सेवा (Immediate Payment Service - IMPS) का शुभारंभ NPCI द्वारा किस वर्ष किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नवंबर 2010 में, जिसने मोबाइल और इंटरनेट के जरिए 24x7 तत्काल अंतर-बैंक फंड ट्रांसफर संभव बनाया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का स्वदेशी कार्ड भुगतान नेटवर्क 'रुपे' (RuPay) औपचारिक रूप से कब समर्पित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मई 2014 में, जिसने विदेशी कार्डों (Visa/Mastercard) के एकाधिकार को तोड़ा और परिचालन लागत घटाई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यूनिफाइड पेमेंट्स इंटरफेस (UPI) का औपचारिक शुभारंभ तत्कालीन RBI गवर्नर डॉ. रघुराम राजन द्वारा कब किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">11 अप्रैल 2016 को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>UPI प्रणाली किस तकनीकी बुनियादी ढांचे पर कार्य करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">IMPS (तत्काल भुगतान सेवा) की कोर लेयर पर, जो वर्चुअल पेमेंट एड्रेस (VPA) के जरिए बैंक खाता विवरण साझा किए बिना सुरक्षित लेन-देन करती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत सरकार द्वारा दिसंबर 2016 में विमुद्रीकरण के उपरांत शुरू किया गया सरकारी यूपीआई ऐप कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भीम (BHIM - Bharat Interface for Money)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बिना इंटरनेट वाले फीचर फोन पर डिजिटल भुगतान हेतु 2022 में कौन-सा यूपीआई संस्करण लॉन्च किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">UPI 123Pay (आईवीआर कॉल, मिस्ड कॉल और ध्वनि आधारित तकनीक द्वारा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इंटरनेट कनेक्टिविटी के बिना ऑफलाइन खुदरा लेन-देन हेतु कौन-सी यूपीआई सेवा शुरू की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">UPI Lite और UPI Lite X (ऑन-डिवाइस वॉलेट के माध्यम से छोटे मूल्य के भुगतान)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आधार सक्षम भुगतान प्रणाली (Aadhaar Enabled Payment System - AePS) क्या सुविधा देती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक मित्रों/माइक्रो-एटीएम पर केवल आधार नंबर और बायोमेट्रिक अंगूठे के निशान से नकदी निकासी, जमा और बैलेंस पूछताछ की सुविधा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत बिल भुगतान प्रणाली (Bharat Bill Payment System - BBPS) का क्या कार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिजली, पानी, गैस, टेलीफोन, डीटीएच और नगर निगम करों के भुगतान हेतु एकल एकीकृत राष्ट्रीय मंच।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नेशनल इलेक्ट्रॉनिक टोल कलेक्शन (NETC) के तहत प्रयुक्त 'फास्टैग' (FASTag) किस वायरलेस तकनीक पर कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेडियो फ्रीक्वेंसी आइडेंटिफिकेशन (RFID) तकनीक पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इंटर-ऑपरेबल इंटरनेट बैंकिंग और सब्सिडी वितरण को एकीकृत करने वाला NPCI का सिस्टम कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नेशनल ऑटोमेटेड क्लियरिंग हाउस (NACH) तथा आधार पेमेंट ब्रिज (APB) सिस्टम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ई-रुपी (e-RUPI) डिजिटल वाउचर किस प्रकार कार्य करता है जिसे 2021 में लॉन्च किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह विशिष्ट प्रयोजन हेतु जारी एक कैशलेस, संपर्क रहित एसएमएस स्ट्रिंग या क्यूआर कोड वाउचर है (जैसे विशिष्ट कल्याणकारी लाभों हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक द्वारा सेंट्रल बैंक डिजिटल करेंसी (CBDC / Digital Rupee - e₹) का पहला पायलट कब शुरू हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 नवंबर 2022 को थोक खंड (e₹-W) हेतु तथा 1 दिसंबर 2022 को खुदरा खंड (e₹-R) हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय बैंक डिजिटल मुद्रा (CBDC) और सामान्य वाणिज्यिक बैंक डिजिटल मनी में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CBDC सीधे केंद्रीय बैंक (RBI) की कानूनी देनदारी (Sovereign Liability / संप्रभु मुद्रा) है, जबकि बैंक जमा वाणिज्यिक बैंक की देनदारी होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अकाउंट एग्रीगेटर (Account Aggregator - AA) नेटवर्क क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI द्वारा विनियमित एक सहमति-आधारित वित्तीय डेटा साझाकरण मंच, जो ग्राहकों को अपनी वित्तीय जानकारी ऋणदाता संस्थानों से सुरक्षित साझा करने में सक्षम बनाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय बजट 2022-23 की घोषणा के तहत देश भर में स्थापित 75 'डिजिटल बैंकिंग इकाइयां' (DBUs) क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशिष्ट न्यूनतम डिजिटल इंफ्रास्ट्रक्चर वाले आउटलेट जो चौबीसों घंटे स्वचालित और स्व-सेवा मोड में बुनियादी बैंकिंग सेवाएं प्रदान करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डेबिट और क्रेडिट कार्ड की सुरक्षा हेतु 1 अक्टूबर 2022 से अनिवार्य बनाई गई 'टोकनाइजेशन' (Tokenization) व्यवस्था क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऑनलाइन मर्चेंट वेबसाइटों पर कार्ड के 16 अंकों के वास्तविक नंबर के स्थान पर एक अनूठे वैकल्पिक कोड (Token) का उपयोग करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वित्तीय धोखाधड़ी को रोकने हेतु गृह मंत्रालय और भारतीय साइबर अपराध समन्वय केंद्र (I4C) का हेल्पलाइन नंबर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1930 (राष्ट्रीय साइबर वित्तीय धोखाधड़ी रिपोर्टिंग हेल्पलाइन)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा फिनटेक नवाचारों के सुरक्षित परीक्षण हेतु स्थापित 'नियामकीय सैंडबॉक्स' (Regulatory Sandbox) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक नियंत्रित लाइव विनियामक वातावरण जहां फिनटेक कंपनियां सीमित ग्राहकों के साथ अपने नए उत्पादों का परीक्षण कर सकती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ओपन क्रेडिट इनेबलमेंट नेटवर्क (OCEN) का प्राथमिक उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋणदाताओं और विभिन्न डिजिटल प्लेटफॉर्मों के बीच एक साझा प्रोटोकॉल स्थापित कर छोटे एमएसएमई को नकदी-प्रवाह आधारित तत्काल सूक्ष्म ऋण उपलब्ध कराना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक की 'पेमेंट्स विजन 2025' (Payments Vision 2025) का मूल विषय (Core Theme) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'4Es: E-payments for Everyone, Everywhere, Everytime' (सभी के लिए, हर जगह, हर समय ई-भुगतान)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग क्षेत्र में आर्टिफिशियल इंटेलिजेंस (AI) और मशीन लर्निंग (ML) का सर्वाधिक प्रभावी उपयोग कहाँ हो रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्रेडिट अंडरराइटिंग, त्वरित ऋण साख मूल्यांकन, वास्तविक समय में वित्तीय धोखाधड़ी की पहचान और ग्राहक सेवा चैटबॉट्स में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का यूपीआई (UPI) नेटवर्क अब किन प्रमुख विदेशी देशों में सीमा-पार लेन-देन हेतु सक्रिय हो चुका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सिंगापुर (PayNow लिंकेज), यूएई, मॉरीशस, भूटान, नेपाल, श्रीलंका और फ्रांस।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों में ग्राहकों की डिजिटल पहचान और ऑनबोर्डिंग को कागज-रहित बनाने हेतु RBI द्वारा 2020 में कौन-सी प्रणाली स्वीकृत की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वीडियो आधारित ग्राहक पहचान प्रक्रिया (V-CIP / Video KYC)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'नियो-बैंक' (Neobanks) की क्या विशिष्टता होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे 100% डिजिटल वित्तीय संस्थान होते हैं जिनकी कोई भौतिक शाखा नहीं होती और वे पारंपरिक बैंकों के साथ साझेदारी में मोबाइल ऐप आधारित सेवाएं देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत सरकार द्वारा वित्तीय संपत्तियों में सुरक्षित सरकारी गारंटीकृत निवेश हेतु शुरू किया गया 'आरबीआई रिटेल डायरेक्ट' (RBI Retail Direct) पोर्टल क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आम खुदरा निवेशकों को बिना बिचौलिए के सीधे प्राथमिक व द्वितीयक बाजार से सरकारी प्रतिभूतियां (G-Secs) और ट्रेजरी बिल खरीदने की सुविधा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग क्षेत्र में तकनीकी सुधारों का वित्तीय समावेशन (Financial Inclusion) पर सबसे क्रांतिकारी प्रभाव क्या रहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">JAM ट्रिनिटी (जन धन, आधार, मोबाइल) के माध्यम से 50 करोड़ से अधिक बैंक खाते खोलकर प्रत्यक्ष लाभ अंतरण (DBT) द्वारा सरकारी योजनाओं का 100% रिसाव-मुक्त वितरण संभव हुआ।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग क्षेत्र के आधुनिक सुधारों का समग्र समष्टिगत निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुदृढ़ पूंजी पर्याप्तता, 12 विशाल सार्वजनिक बैंकों का समेकन, प्रतिस्पर्धी निजी बैंक और विश्व-अग्रणी डिजिटल बुनियादी ढांचा मिलकर भारतीय बैंकिंग को एक लचीली और वैश्विक महाशक्ति बनाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

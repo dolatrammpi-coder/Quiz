@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="बैंकिंग सुधार Part 1">
+<title>बैंकिंग सुधार Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / बैंकिंग सुधार Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>बैंकिंग सुधार Part 1</h1>
+    <p class="topic-subtitle">भारत में बैंकिंग सुधारों की आवश्यकता, नरसिम्हम समिति (I व II), गैर-निष्पादित परिसंपत्तियां (NPA) तथा IRAC मानदंडों का गहन विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">बैंकिंग सुधार Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>सुधार उपाय</th><th>प्रमुख प्रावधान</th><th>बैंकिंग क्षेत्र पर प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">आरक्षित अनुपातों (CRR व SLR) में चरणबद्ध कटौती</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">नरसिम्हम समिति-I की संस्तुति पर CRR को 15% से घटाकर 3-5% और SLR को 38.5% से घटाकर 25% (वर्तमान में 18%) के स्तर पर लाना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकों के वित्तीय पूर्व-अधिग्रहण (Financial Pre-emption) में कमी, वाणिज्यिक ऋण वितरण हेतु भारी तरलता की उपलब्धता और लाभप्रदता में वृद्धि।</div></div></td></tr><tr><td><div class="primary-cell">ब्याज दरों का वि-नियमन (Deregulation of Interest Rates)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जमा और अग्रिमों पर जटिल प्रशासनिक ब्याज नियंत्रण समाप्त; केवल बचत बैंक खाते और प्राथमिकता प्राप्त क्षेत्र की चुनिंदा दरों को छोड़कर दरें बाजार-संचालित।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकों के बीच स्वस्थ मूल्य प्रतिस्पर्धा का विकास, निवल ब्याज मार्जिन (NIM) का पारदर्शी निर्धारण और जमाकर्ताओं को बाजार आधारित रिटर्न।</div></div></td></tr><tr><td><div class="primary-cell">आय मान्यता एवं परिसंपत्ति वर्गीकरण (IRAC Norms)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उपार्जन आधार (Accrual Basis) त्यागकर वास्तविक नकदी वसूली आधार पर आय दर्ज करना; परिसंपत्तियों का 4 श्रेणियों में वैज्ञानिक वर्गीकरण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">छिपे हुए एनपीए बाहर आए, बैंकों की बैलेंस शीट में पारदर्शिता आई और अंतरराष्ट्रीय वित्तीय रिपोर्टिंग मानकों से तालमेल स्थापित हुआ।</div></div></td></tr><tr><td><div class="primary-cell">पूंजी पर्याप्तता अनुपात (CRAR / Basel Norms)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जोखिम भारित परिसंपत्तियों के सापेक्ष न्यूनतम 8% (बाद में नरसिम्हम-II द्वारा 9-10%) पूंजी पर्याप्तता अनुपात बनाए रखना अनिवार्य।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकों की वित्तीय शोधन क्षमता और पूंजीगत आधार मजबूत हुआ; आर्थिक आघातों और भारी ऋण चूक को सहने की प्रतिरोधक क्षमता विकसित हुई।</div></div></td></tr><tr><td><div class="primary-cell">निजी क्षेत्र के नए बैंकों को प्रवेश की अनुमति (1993)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कठोर विनियामक शर्तों और न्यूनतम ₹100 करोड़ पूंजी के साथ एचडीएफसी, आईसीआईसीआई, यूटीआई (एक्सिस) जैसे नए निजी बैंकों को लाइसेंस।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकिंग क्षेत्र में प्रौद्योगिकी, सीबीएस (कोर बैंकिंग), एटीएम, ग्राहक केंद्रित सेवाओं और कार्यकुशलता की अभूतपूर्व क्रांति।</div></div></td></tr><tr><td><div class="primary-cell">ऋण वसूली अधिकरणों (DRT) की स्थापना (1993)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">RDDBFI अधिनियम 1993 के तहत बैंकों के ₹10 लाख (वर्तमान में ₹20 लाख) से अधिक के फंसे कर्जों की त्वरित न्यायिक वसूली हेतु समर्पित न्यायाधिकरण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पारंपरिक दीवानी अदालतों में वर्षों लंबी मुकदमेबाजी से मुक्ति; एनपीए की त्वरित वसूली प्रक्रिया को वैधानिक बल मिला।</div></div></td></tr><tr><td><div class="primary-cell">शाखा लाइसेंसिंग नीति का उदारीकरण</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकों को अपनी परिचालन आवश्यकताओं और लाभप्रदता के आधार पर नए वाणिज्यिक केंद्र खोलने और घाटे वाली शाखाओं को स्थानांतरित करने की स्वायत्तता।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकों की परिचालन लागत में कमी, शहरी व अर्ध-शहरी क्षेत्रों में शाखाओं का तर्कसंगत नेटवर्क और वाणिज्यिक व्यवहार्यता में सुधार।</div></div></td></tr><tr><td><div class="primary-cell">प्राथमिकता प्राप्त क्षेत्र ऋण (PSL) का युक्तिकरण</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कुल बैंक ऋण का 40% हिस्सा कृषि, एमएसएमई और कमजोर वर्गों हेतु अनिवार्य रखना, किंतु उप-लक्ष्यों और पात्रता श्रेणियों को लचीला व व्यावहारिक बनाना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सामाजिक बैंकिंग और वाणिज्यिक लाभप्रदता के बीच संतुलन; प्राथमिकता प्राप्त क्षेत्र में खराब ऋणों (NPA) के संचय पर नियंत्रण।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>1969 में भारत में 14 प्रमुख निजी वाणिज्यिक बैंकों का राष्ट्रीयकरण किस मुख्य उद्देश्य से किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग सेवाओं का लोकतंत्रीकरण करना, बड़े औद्योगिक घरानों के एकाधिकार को तोड़ना और कृषि, लघु उद्योगों व ग्रामीण क्षेत्रों तक संस्थागत ऋण पहुंचाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 में बैंकों के राष्ट्रीयकरण के दूसरे चरण में कितने निजी बैंकों का राष्ट्रीयकरण किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">6 प्रमुख वाणिज्यिक बैंकों का (जिनकी कुल शुद्ध मांग एवं समय देनदारियां ₹200 करोड़ से अधिक थीं)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व भारतीय बैंकिंग प्रणाली की स्थिति को अर्थशास्त्री किस तकनीकी शब्द से वर्णित करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'वित्तीय दमन' (Financial Repression), जहां राज्य कड़े प्रशासनिक नियंत्रणों के माध्यम से बैंकिंग संसाधनों का मनमाना दोहन करता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्री रोनाल्ड मैकिनन और एडवर्ड शॉ के अनुसार 'वित्तीय दमन' का अर्थव्यवस्था पर क्या मुख्य प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय मध्यस्थता कमजोर होती है, वास्तविक ब्याज दरें ऋणात्मक हो जाती हैं और उत्पादक निवेश हेतु पूंजी की गंभीर कमी हो जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व बैंकों की निधियों के 'पूर्व-अधिग्रहण' (Pre-emption of Funds) का क्या अर्थ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक उच्च CRR और SLR के माध्यम से बैंकों की कुल जमाराशियों का आधे से अधिक हिस्सा (53.5% से अधिक) सरकार द्वारा कम ब्याज पर अपने घाटे की भरपाई हेतु ब्लॉक कर दिया जाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 में सांविधिक तरलता अनुपात (SLR) और नकद आरक्षित अनुपात (CRR) किस चरम स्तर पर पहुंच गए थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">SLR लगभग 38.5% और CRR 15% (कुल पूर्व-अधिग्रहण 53.5%) के ऐतिहासिक शिखर पर पहुंच गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व SLR प्रतिभूतियों पर बैंकों को मिलने वाले प्रतिफल (Yield) की क्या स्थिति थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाजार दरों से काफी कम प्रशासनिक ब्याज दर मिलती थी, जिससे बैंकों को सरकार को अनिवार्य उधार देने पर भारी वित्तीय घाटा उठाना पड़ता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व भारत में ब्याज दर निर्धारण की क्या प्रणाली थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रशासित ब्याज दर व्यवस्था (Administered Interest Rate Regime), जहां बचत, सावधि जमा और ऋणों की ब्याज दरें बाजार मांग-आपूर्ति के बजाय RBI द्वारा जटिल तालिकाओं में तय होती थीं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रशासित ब्याज दर प्रणाली का बैंकों की लाभप्रदता पर क्या प्रतिकूल प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जमा की लागत और ऋण पर प्रतिफल के बीच का अंतर (Spreads) संकुचित हो गया, जिससे बैंकों की परिचालन लाभप्रदता नगण्य रह गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक में राजनीतिक दबाव में आयोजित होने वाले किन आयोजनों ने बैंकों की परिसंपत्ति गुणवत्ता को गंभीर क्षति पहुंचाई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'ऋण मेले' (Loan Melas), जहां बिना किसी ऋण साख जांच या संपार्श्विक के राजनीतिक आधार पर ऋण बांटे गए और वसूली पूरी तरह ठप हो गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व भारतीय बैंकों में परिसंपत्तियों की गुणवत्ता मापने हेतु कौन-सी अपारदर्शी प्रणाली प्रचलित थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'स्वास्थ्य कोड प्रणाली' (Health Code System - 1 से 8 श्रेणियों में), जिसमें बैंक खराब ऋणों को छुपाकर उन पर काल्पनिक ब्याज आय जोड़ते रहते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व बैंकों द्वारा अपनाई जाने वाली 'उपार्जन लेखांकन पद्धति' (Accrual Basis of Accounting) की मुख्य खामी क्या थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न मिले हुए और अनिश्चित ब्याज को भी बैंक अपनी आय के रूप में दर्ज कर लेते थे, जिससे घाटे में चल रहे बैंक भी कागजों पर भारी मुनाफा दिखाते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 में सार्वजनिक क्षेत्र के बैंकों की शुद्ध लाभप्रदता (Return on Assets - RoA) किस स्तर पर गिर गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मात्र 0.15% से भी कम (कई बड़े बैंक भारी वास्तविक घाटे में थे)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व बैंक शाखाओं के विस्तार के संबंध में क्या कठोर विनियामक नियम लागू था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कठोर शाखा लाइसेंसिंग प्रणाली, जिसके तहत बैंक RBI की पूर्व-अनुमति के बिना कोई नई शाखा नहीं खोल सकते थे और उन्हें 4:1 अनुपात में ग्रामीण शाखाएं खोलनी अनिवार्य थीं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों में अत्यधिक राजनीतिक और नौकरशाही हस्तक्षेप का बैंक प्रबंधन पर क्या असर हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यावसायिक स्वायत्तता समाप्त हो गई, ऋण आवंटन में क्रोनी-कैपिटलिज्म पनपा और ऋण जोखिम मूल्यांकन की जवाबदेही खत्म हो गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व बैंकों के पास ग्राहकों को आकर्षित करने हेतु मूल्य प्रतिस्पर्धा (Price Competition) क्यों नहीं थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि सभी बैंकों की जमा और ऋण दरें RBI द्वारा एक समान तय थीं और निजी क्षेत्र की उपस्थिति नगण्य थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के पूर्व भारतीय बैंकिंग क्षेत्र में ग्राहक सेवा की गुणवत्ता कैसी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यंत दयनीय और सुस्त, जिसमें कागजी लेजर प्रविष्टियां, चेक समाशोधन में हफ्तों की देरी और आधुनिक तकनीक का पूर्ण अभाव था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों द्वारा औद्योगिक क्षेत्र को दिए जाने वाले कार्यशील पूंजी ऋण पर 1991 से पूर्व किस समिति के कठोर मानदंड लागू थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">टंडन समिति (1975) और चोरे समिति (1979) के मानदंड, जिन्होंने ऋण सीमा पर अत्यधिक प्रशासनिक प्रतिबंध लगा रखे थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व प्राथमिकता प्राप्त क्षेत्र ऋण (PSL) का राष्ट्रीय लक्ष्य कितना निर्धारित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल बैंक ऋण का 40% (कृषि, कमजोर वर्ग, छोटे निर्यातक आदि हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PSL लक्ष्यों की कठोरता और कमजोर वसूली तंत्र ने बैंकों के बही-खातों को कैसे प्रभावित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राथमिकता प्राप्त क्षेत्र में फंसे ऋणों (NPA) का अंबार लग गया, जिसकी भरपाई हेतु बैंकों के पास कोई पूंजीगत बफर उपलब्ध नहीं था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के पूर्व भारतीय बैंकों की पूंजी पर्याप्तता (Capital Adequacy) की क्या स्थिति थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूंजी आधार अत्यंत क्षीण था; बैंकों के पास जोखिम भारित परिसंपत्तियों के सापेक्ष मात्र 1% से 2% की ही वास्तविक पूंजी उपलब्ध थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 से पूर्व भारत में ऋणों की न्यायिक वसूली में कौन-सी सबसे बड़ी विधिक बाधा थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समर्पित वसूली कानून का अभाव; बैंकों को वसूली हेतु पारंपरिक दीवानी अदालतों में जाना पड़ता था जहां मुकदमों के निपटारे में 15 से 20 वर्ष लग जाते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या 1991 से पूर्व बैंकों के पास गिरवी रखी गई संपार्श्विक संपत्ति (Collateral) को सीधे जब्त करने का अधिकार था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं, अदालत के आदेश के बिना बैंक किसी भी बंधक संपत्ति को न तो जब्त कर सकते थे और न ही बेच सकते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक के अंत में भारतीय बैंकिंग प्रणाली में 'सिस्टमैटिक रिस्क' (Systemic Risk) का मुख्य कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वजनिक क्षेत्र के अधिकांश बैंकों का दिवालियापन के कगार पर होना, यदि अंतरराष्ट्रीय लेखांकन मानकों से उनका मूल्यांकन किया जाता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के पूर्व बैंक कर्मचारियों के संघों (Trade Unions) का बैंकों के कम्प्यूटरीकरण के प्रति क्या रुख था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कड़ा विरोध; यूनियनों का मानना था कि कंप्यूटर आने से नौकरियों में भारी कटौती होगी, जिससे बैंकों का तकनीकी आधुनिकीकरण दशकों तक रुका रहा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों में कम्प्यूटरीकरण और सूचना प्रौद्योगिकी के क्रमिक उपयोग हेतु 1980 के दशक में किस समिति ने संस्तुति दी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. सी. रंगराजन समिति (1984 एवं 1989)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के पूर्व क्षेत्रीय ग्रामीण बैंकों (RRBs) की वित्तीय स्थिति कैसी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यंत दयनीय; लगभग सभी आरआरबी भारी संचित घाटे में थे और उनकी ऋण वसूली दर 40% से भी कम थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के आर्थिक संकट ने बैंकिंग सुधारों को अपरिहार्य क्यों बना दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि एक पंगु, बीमार और पूंजी-विहीन बैंकिंग प्रणाली खुली बाजार अर्थव्यवस्था और विदेशी व्यापार को वित्तपोषित करने में पूरी तरह असमर्थ थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग सुधारों का प्राथमिक उद्देश्य क्या तय किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों को वित्तीय रूप से व्यावहारिक, परिचालन रूप से दक्ष, स्वायत्त और अंतरराष्ट्रीय मानकों के अनुरूप प्रतिस्पर्धी बनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगस्त 1991 में भारत सरकार द्वारा गठित ऐतिहासिक 'वित्तीय प्रणाली समिति' (CFS) के अध्यक्ष कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मैदावोलू नरसिम्हम (M. Narasimham), जो भारतीय रिजर्व बैंक के 13वें गवर्नर रह चुके थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने अपनी युगांतरकारी रिपोर्ट सरकार को कब सौंपी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नवंबर 1991 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I का मुख्य मार्गदर्शक दर्शन क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग प्रणाली को राजनीतिक एवं प्रशासनिक नियंत्रणों से मुक्त कर व्यावसायिक स्वायत्तता, पारदर्शिता और वित्तीय अनुशासन प्रदान करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने वैधानिक तरलता अनुपात (SLR) को 38.5% से घटाकर कितने प्रतिशत करने की सिफारिश की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चरणबद्ध तरीके से घटाकर 25% पर लाने की संस्तुति।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान समय में भारतीय रिजर्व बैंक द्वारा निर्धारित SLR की दर लगभग कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">18.0%।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने नकद आरक्षित अनुपात (CRR) के संबंध में क्या संस्तुति दी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CRR के अत्यधिक उच्च स्तर को घटाकर 3% से 5% के स्तर पर लाना, ताकि बैंकों के पास उत्पादक ऋण देने हेतु तरलता बचे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान समय में भारतीय रिजर्व बैंक द्वारा निर्धारित CRR की दर लगभग कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">4.50% (4% से 4.5% के दायरे में)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने ब्याज दरों के संबंध में क्या क्रांतिकारी प्रस्ताव रखा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ब्याज दरों का पूर्ण वि-नियमन (Deregulation); बैंकों को अपने जोखिम मूल्यांकन के आधार पर जमा और अग्रिम दरें तय करने की छूट देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने प्राथमिकता प्राप्त क्षेत्र ऋण (PSL) के अनिवार्य 40% लक्ष्य के संदर्भ में क्या विवादास्पद संस्तुति की थी जिसे सरकार ने स्वीकार नहीं किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">PSL लक्ष्य को 40% से घटाकर 10% करने की सिफारिश की थी (सामाजिक-राजनीतिक कारणों से सरकार ने इसे खारिज कर 40% ही बनाए रखा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने अंतरराष्ट्रीय बैंक फॉर इंटरनेशनल सेटलमेंट्स (BIS) के किन मानकों को भारतीय बैंकों पर लागू करने की सिफारिश की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बासेल-I पूंजी पर्याप्तता मानदंड (Basel-I Capital Adequacy Norms), जिसके तहत न्यूनतम 8% जोखिम भारित परिसंपत्ति अनुपात (CRAR) तय किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने ऋणों की वसूली हेतु किस विशेष न्यायिक तंत्र की स्थापना की सिफारिश की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशेष ऋण वसूली अधिकरणों (Debt Recovery Tribunals - DRTs) की स्थापना की।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने भारतीय बैंकिंग की भविष्य की संरचना हेतु किस त्रि-स्तरीय मॉडल का प्रस्ताव दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. अंतरराष्ट्रीय स्तर के 3-4 बड़े बैंक, 2. राष्ट्रीय स्तर के 8-10 बैंक, और 3. स्थानीय व क्षेत्रीय स्तर के बैंक (RRBs आदि)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I की सिफारिश पर भारतीय रिजर्व बैंक ने निजी क्षेत्र के नए बैंकों को लाइसेंस देने हेतु दिशा-निर्देश कब जारी किए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जनवरी 1993 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1993 के दिशा-निर्देशों के तहत स्थापित होने वाले भारत के पहले नए युग के निजी बैंक (New Private Banks) कौन-से थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">UTI बैंक (वर्तमान एक्सिस बैंक), HDFC बैंक, ICICI बैंक और इंडसइंड बैंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-I ने बैंकों के पर्यवेक्षण (Bank Supervision) को मजबूत करने हेतु RBI के तहत किस निकाय के गठन की सिफारिश की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय पर्यवेक्षण बोर्ड (Board for Financial Supervision - BFS), जिसकी स्थापना 1994 में RBI के अधीन की गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दिसंबर 1997 में गठित 'बैंकिंग क्षेत्र सुधार समिति' (नरसिम्हम समिति-II) ने अपनी रिपोर्ट कब प्रस्तुत की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अप्रैल 1998 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II का प्राथमिक फोकस किन मुद्दों पर था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग प्रणाली का सुदृढ़ीकरण, संरचनात्मक विलय, एनपीए में भारी कमी, आईटी एकीकरण और विनियामक स्वतंत्रता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने पूंजी पर्याप्तता अनुपात (CRAR) को 8% से बढ़ाकर कितने प्रतिशत करने की सिफारिश की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2000 तक 9% और बाद में 10% करने की सिफारिश।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने कमजोर और बीमार बैंकों (Weak Banks) के संकट को टालने हेतु किस अनूठी अवधारणा की वकालत की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'संकीर्ण बैंकिंग' (Narrow Banking), जिसके तहत कमजोर बैंकों को जोखिम भरे वाणिज्यिक ऋण देने से रोककर केवल जोखिम-मुक्त सरकारी प्रतिभूतियों में निवेश की अनुमति दी जाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने सार्वजनिक क्षेत्र के बैंकों में सरकारी हिस्सेदारी घटाकर कितने प्रतिशत करने की संस्तुति दी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घटाकर 33% तक करने की सिफारिश।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने बैंक विलय (Bank Mergers) के संबंध में क्या स्पष्ट सिद्धांत प्रतिपादित किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल दो मजबूत बैंकों का विलय होना चाहिए; किसी मजबूत बैंक का किसी कमजोर/बीमार बैंक के साथ जबरन विलय कभी नहीं किया जाना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने एनपीए के त्वरित समाधान हेतु किस विशेष परिसंपत्ति पुनर्गठन तंत्र का सुझाव दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिसंपत्ति पुनर्निर्माण कंपनियों (Asset Reconstruction Companies - ARCs) की स्थापना का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने भारतीय रिजर्व बैंक (RBI) की दोहरी भूमिका पर क्या आपत्ति उठाई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI एक ही समय में बैंकों का विनियामक (Regulator) और सार्वजनिक बैंकों (जैसे SBI) का मालिक (Owner) नहीं हो सकता; स्वामित्व सरकार को स्थानांतरित किया जाना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II की सिफारिश पर SBI में RBI की संपूर्ण शेयरधारिता केंद्र सरकार को कब स्थानांतरित की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2007-08 में (RBI ने SBI में अपनी 59.7% हिस्सेदारी सरकार को बेच दी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति ने बैंकों के निदेशकमंडल (Board of Directors) के संबंध में क्या सुधार सुझाए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राजनीतिक नियुक्तियों पर पूर्ण रोक, स्वतंत्र व पेशेवर निदेशकों की नियुक्ति और प्रबंधन को परिचालन स्वायत्तता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति ने बैंकों के शाखा लाइसेंसिंग नियंत्रण के संबंध में क्या सुझाव दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शाखा लाइसेंसिंग को पूरी तरह समाप्त करना; सुदृढ़ बैंकों को अपनी व्यावसायिक आवश्यकतानुसार कहीं भी शाखा खोलने की आजादी देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति-II ने विदेशी बैंकों के भारत में प्रवेश के संबंध में क्या नीतिगत सिफारिश की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी बैंकों को पूर्ण स्वामित्व वाली सहायक कंपनियों (WOS) के रूप में कार्य करने और भारतीय निजी बैंकों में हिस्सेदारी लेने की अनुमति देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समितियों की सिफारिशों को भारतीय बैंकिंग इतिहास में किस रूप में जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय बैंकिंग का मैग्ना कार्टा (Magna Carta of Indian Banking), जिसने भारतीय बैंकों को आधुनिक, डिजिटल और वैश्विक मानकों के अनुरूप ढाला।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक के अनुसार 'गैर-निष्पादित परिसंपत्ति' (Non-Performing Asset - NPA) की मानक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोई भी अग्रिम या ऋण जिस पर ब्याज या मूलधन की किस्त की देय तिथि के बाद लगातार 90 दिनों तक भुगतान न किया गया हो (90-day overdue norm)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में एनपीए की पहचान हेतु 90 दिनों का अतिदेय मानदंड (90-day Norm) औपचारिक रूप से कब लागू किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">31 मार्च 2004 से (इससे पूर्व 1993 में यह 180 दिन और 1992 में 360 दिन था)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कृषि ऋणों (Agricultural Loans) के मामले में कोई ऋण एनपीए कब घोषित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक मौसमी फसलों के लिए 2 फसल मौसमों (Crop Seasons) तक और दीर्घकालिक फसलों के लिए 1 फसल मौसम तक अतिदेय रहने पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सकल एनपीए (Gross NPA - GNPA) से क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक द्वारा दिए गए कुल ऋणों में से उन सभी ऋणों का कुल जोड़ जिन्हें एनपीए के रूप में वर्गीकृत किया गया है, बिना किसी प्रोविजनिंग या कटौती के।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सकल एनपीए अनुपात (Gross NPA Ratio) ज्ञात करने का सूत्र क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">(कुल सकल एनपीए / कुल सकल अग्रिम) × 100।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शुद्ध एनपीए (Net NPA - NNPA) की गणना कैसे की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सकल एनपीए में से बैंक द्वारा अलग रखे गए कुल प्रोविजन (Provisioning) और अन्य स्वीकार्य कटौतियों को घटाकर (NNPA = GNPA - Provisions)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शुद्ध एनपीए (Net NPA) बैंक की वित्तीय सेहत का सकल एनपीए से अधिक सटीक संकेतक क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यह बैंक की पूंजी पर खराब ऋणों के उस वास्तविक जोखिम को दर्शाता है जिसकी भरपाई हेतु बैंक ने पहले से कोई वित्तीय सुरक्षा बफर नहीं बनाया है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'विलफुल डिफॉल्टर' (Willful Defaulter / इरादतन चूककर्ता) की कानूनी परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसा उधारकर्ता जिसके पास ऋण चुकाने की पूर्ण वित्तीय क्षमता होने के बावजूद वह जानबूझकर कर्ज नहीं चुकाता, अथवा ऋण राशि का उपयोग उस उद्देश्य से इतर अन्यत्र डायवर्ट/गबन कर देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विल्फुल डिफॉल्टर्स पर RBI के नियमों के अनुसार क्या दंडात्मक पाबंदियां लगाई जाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे 5 वर्षों तक किसी भी बैंक या वित्तीय संस्थान से नया ऋण नहीं ले सकते, किसी नई कंपनी के बोर्ड में निदेशक नहीं बन सकते और उनके विरुद्ध आपराधिक मुकदमा दर्ज होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'ऋणों की सदाबहार व्यवस्था' (Evergreening of Loans) का बैंकिंग में क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी संकटग्रस्त उधारकर्ता को पुराने डिफॉल्ट से बचाने हेतु गुपचुप तरीके से नया ऋण स्वीकृत करना, ताकि वह पुराने ऋण का ब्याज चुका सके और खाता एनपीए दर्ज होने से बच जाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय अर्थव्यवस्था में 'ट्विन बैलेंस शीट समस्या' (Twin Balance Sheet Problem) से क्या आशय था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ही समय में अत्यधिक कर्ज में दबे कॉर्पोरेट घरानों की बैलेंस शीट का बिगड़ना और उन पर दिए गए खराब ऋणों के कारण सरकारी बैंकों की बैलेंस शीट का एनपीए से पंगु हो जाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 2015 में तत्कालीन RBI गवर्नर डॉ. रघुराम राजन द्वारा प्रारंभ किए गए 'एसेट क्वालिटी रिव्यू' (AQR) का क्या उद्देश्य था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों द्वारा बही-खातों में छिपाए गए और रिस्ट्रक्चर किए गए फंसे कर्जों की गहरी फोरेंसिक जांच कर वास्तविक एनपीए को जबरन उजागर करवाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>AQR (2015-16) के क्रियान्वयन का भारतीय बैंकिंग क्षेत्र पर क्या तात्कालिक प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वजनिक बैंकों का सकल एनपीए 2015 के ~5% से उछलकर मार्च 2018 में लगभग 11.5% (₹10 लाख करोड़ से अधिक) के ऐतिहासिक शिखर पर पहुंच गया और बैंकों को भारी घाटा हुआ।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एनपीए बढ़ने से बैंकों के 'निवल ब्याज मार्जिन' (Net Interest Margin - NIM) पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NIM में भारी गिरावट आती है; क्योंकि फंसे कर्जों पर ब्याज आय शून्य हो जाती है जबकि बैंक को अपनी जमाराशियों पर लगातार ब्याज चुकाना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एनपीए का आम ईमानदार और अच्छे उधारकर्ताओं (Creditworthy Borrowers) पर क्या अप्रत्यक्ष प्रतिकूल प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक अपने एनपीए के नुकसान की भरपाई हेतु ऋणों पर ब्याज दरें (Spreads) बढ़ा देते हैं, जिससे अच्छे ग्राहकों हेतु पूंजी महंगी हो जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'क्रेडिट फ्रीज' (Credit Freeze / Risk Aversion) की स्थिति कब उत्पन्न होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब उच्च एनपीए के डर और सतर्कता के कारण बैंक नई परियोजनाओं और निजी उद्योग को ऋण देना लगभग बंद कर देते हैं, जिससे आर्थिक विकास सुस्त पड़ जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2008 के वैश्विक वित्तीय संकट के बाद भारत में भारी एनपीए संचय का मुख्य बाह्य व नीतिगत कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बुनियादी ढांचा, इस्पात और बिजली क्षेत्रों में अनियंत्रित ऋण वितरण, जिसके बाद भूमि अधिग्रहण विवाद, पर्यावरणीय मंजूरियों में अड़चनें और कोयला ब्लॉक रद्दीकरण से परियोजनाएं ठप हो गईं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉर्पोरेट ऋण पुनर्गठन (Corporate Debt Restructuring - CDR) प्रणाली की सबसे बड़ी विफलता क्या रही?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों ने इसका दुरुपयोग एनपीए छुपाने और लोन एवरग्रीनिंग के औजार के रूप में किया, जिससे 2014 तक अधिकांश पुनर्गठित ऋण अंततः विशाल एनपीए में बदल गए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एनपीए की समस्या से निपटने हेतु केंद्र सरकार द्वारा 2015 में घोषित सात-सूत्रीय सुधार योजना का नाम क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'इंद्रधनुष' (Indradhanush Plan); जिसमें नियुक्तियां, बैंक बोर्ड ब्यूरो, पूंजीकरण, तनाव मुक्ति, सशक्तिकरण, जवाबदेही और सुधार शामिल थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एनपीए के दबाव से निपटने हेतु सरकार द्वारा जारी 'पुनर्पूंजीकरण बॉन्ड' (Recapitalization Bonds) क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशेष सरकारी बॉन्ड जिन्हें बैंक खरीदते हैं और सरकार उस धन का उपयोग बैंकों में नई इक्विटी पूंजी डालकर उनकी शोधन क्षमता बहाल करने हेतु करती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IRAC का पूर्ण रूप (Full Form) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आय मान्यता और परिसंपत्ति वर्गीकरण (Income Recognition and Asset Classification)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक द्वारा IRAC दिशा-निर्देश सर्वप्रथम किस वर्ष लागू किए गए थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय वर्ष 1992-93 में (नरसिम्हम समिति-I की सिफारिशों के आधार पर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IRAC मानदंडों के तहत आय मान्यता (Income Recognition) का स्वर्ण नियम क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एनपीए खातों पर ब्याज आय को केवल तभी बही-खातों में आय दर्ज किया जा सकता है जब वह वास्तव में नकद में वसूल (Cash Realization) हो चुकी हो, उपार्जन (Accrual) के आधार पर कभी नहीं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी मानक खाते (Standard Asset) को चालू वित्तीय वर्ष में एनपीए घोषित किया जाता है, तो पिछले न मिले ब्याज का क्या होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पिछले तिमाहियों में दर्ज किए गए किंतु वास्तव में अप्राप्त ब्याज को बैंक को अपनी चालू लाभ-हानि खाते में रिवर्स (Reverse / बट्टे खाते) करना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IRAC मानदंडों के अनुसार बैंकों की परिसंपत्तियों (ऋणों) को मुख्य रूप से किन दो व्यापक श्रेणियों में विभाजित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. निष्पादित परिसंपत्तियां / मानक परिसंपत्तियां (Performing / Standard Assets), और 2. गैर-निष्पादित परिसंपत्तियां (Non-Performing Assets - NPAs)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मानक परिसंपत्ति' (Standard Asset) की क्या पहचान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसा ऋण खाता जिसमें मूलधन और ब्याज का नियमित भुगतान हो रहा हो और जिसमें चूक (Default) का कोई सामान्य से अधिक जोखिम मौजूद न हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IRAC मानदंडों के अंतर्गत गैर-निष्पादित परिसंपत्तियों (NPAs) को किन तीन श्रेणियों में वर्गीकृत किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. उप-मानक परिसंपत्तियां (Sub-Standard Assets), 2. संदिग्ध परिसंपत्तियां (Doubtful Assets), और 3. हानि परिसंपत्तियां (Loss Assets)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'उप-मानक परिसंपत्ति' (Sub-Standard Asset) किसे कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसा ऋण खाता जो 12 महीने या उससे कम अवधि तक लगातार एनपीए (NPA) बना रहा हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'संदिग्ध परिसंपत्ति' (Doubtful Asset) की क्या परिभाषा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसा ऋण खाता जो 12 महीने से अधिक अवधि तक 'उप-मानक' (Sub-Standard) श्रेणी में बना रहा हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संदिग्ध परिसंपत्तियों (Doubtful Assets) को जोखिम और समय के आधार पर किन तीन उप-श्रेणियों में बांटा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. D1 (1 वर्ष तक संदिग्ध), 2. D2 (1 से 3 वर्ष तक संदिग्ध), और 3. D3 (3 वर्ष से अधिक समय तक संदिग्ध)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'हानि परिसंपत्ति' (Loss Asset) की क्या तकनीकी परिभाषा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसी परिसंपत्ति जिसे बैंक, उसके आंतरिक/बाहरी लेखा परीक्षकों या RBI निरीक्षकों द्वारा पूर्णतः अप्राप्य (Uncollectible) मान लिया गया हो, भले ही उसे बही-खातों से औपचारिक रूप से पूरी तरह बट्टे खाते (Write-off) न डाला गया हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण खातों में शुरुआती तनाव को पकड़ने हेतु RBI द्वारा शुरू किए गए 'विशेष उल्लेख खातों' (Special Mention Accounts - SMA) की क्या प्रणाली है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एनपीए बनने से पूर्व (1 से 90 दिन के भीतर) अतिदेय ऋणों की प्रारंभिक पहचान और अग्रिम चेतावनी प्रणाली।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SMA-0 श्रेणी के अंतर्गत कौन-से ऋण खाते आते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे खाते जिनमें मूलधन या ब्याज 1 से 30 दिन तक अतिदेय (Overdue) हो, अथवा जिनमें तनाव के अन्य प्रारंभिक लक्षण दिख रहे हों।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SMA-1 श्रेणी की समयावधि क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे ऋण खाते जिनमें भुगतान 31 से 60 दिन तक लगातार अतिदेय रहता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SMA-2 श्रेणी की समयावधि क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे ऋण खाते जिनमें भुगतान 61 से 90 दिन तक लगातार अतिदेय रहता है (एनपीए बनने से ठीक पहले का अंतिम चरण)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग में 'प्रोविजनिंग' (Provisioning) से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संभावित या वास्तविक ऋण हानियों की भरपाई हेतु बैंक द्वारा अपने परिचालन लाभ में से एक निश्चित राशि को अलग सुरक्षित कोष में रखना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या बैंकों को पूरी तरह नियमित 'मानक परिसंपत्तियों' (Standard Assets) पर भी सामान्य प्रोविजनिंग करनी पड़ती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; सामान्य मानक अग्रिमों पर 0.40%, कृषि व लघु उद्योगों पर 0.25%, और वाणिज्यिक रियल एस्टेट (CRE) ऋणों पर 1.0% का सामान्य प्रोविजन अनिवार्य है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उप-मानक परिसंपत्तियों (Sub-Standard Assets) पर सुरक्षित ऋणों (Secured Portion) हेतु न्यूनतम कितनी प्रोविजनिंग अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल बकाया राशि का 15%।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उप-मानक परिसंपत्तियों के असुरक्षित हिस्से (Unsecured Portion) पर प्रोविजनिंग दर क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल असुरक्षित राशि का 25% (बुनियादी ढांचा ऋणों में 20%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>D1 श्रेणी की संदिग्ध परिसंपत्तियों (1 वर्ष तक Doubtful) के सुरक्षित हिस्से पर कितना प्रोविजन अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुरक्षित हिस्से का 25% (तथा असुरक्षित हिस्से का 100%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>D2 श्रेणी की संदिग्ध परिसंपत्तियों (1 से 3 वर्ष तक Doubtful) के सुरक्षित हिस्से पर प्रोविजनिंग दर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुरक्षित हिस्से का 40% (तथा असुरक्षित हिस्से का 100%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>D3 श्रेणी की संदिग्ध परिसंपत्तियों (3 वर्ष से अधिक Doubtful) पर अनिवार्य प्रोविजनिंग कितनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संपूर्ण बकाया राशि (सुरक्षित और असुरक्षित दोनों) पर 100% प्रोविजनिंग।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हानि परिसंपत्तियों (Loss Assets) के लिए RBI के दिशा-निर्देशों के अनुसार कितनी प्रोविजनिंग आवश्यक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शत-प्रतिशत (100%) प्रोविजनिंग अनिवार्य है, अथवा उसे बही-खातों से तुरंत पूरी तरह अपलिखित (Write-off) करना होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'प्रोविजन कवरेज अनुपात' (Provisioning Coverage Ratio - PCR) की क्या परिभाषा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक द्वारा अपने कुल सकल एनपीए के सापेक्ष बनाए गए कुल संचयी प्रोविजन का प्रतिशत (Total Provisions / Gross NPA × 100)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक के अनुसार वाणिज्यिक बैंकों के लिए एक स्वस्थ और सुरक्षित PCR बेंचमार्क क्या माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम से कम 70% या उससे अधिक (वर्तमान में अधिकांश मजबूत भारतीय बैंकों का PCR 75% से 80% पार कर चुका है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च प्रोविजन कवरेज अनुपात (High PCR) बैंक की वित्तीय सुरक्षा को कैसे बढ़ाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यदि भविष्य में फंसे ऋणों की बिल्कुल भी वसूली न हो, तब भी बैंक की पूंजी और इक्विटी सुरक्षित रहती है क्योंकि नुकसान का पूरा प्रावधान पहले ही किया जा चुका होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग में 'राइट-ऑफ' (Technical / Prudential Write-off) और 'वेवर' (Loan Waiver / कर्ज माफी) में क्या बुनियादी अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राइट-ऑफ केवल बैलेंस शीट स्वच्छ करने की एक लेखांकन प्रक्रिया है जिसमें कानूनी वसूली जारी रहती है, जबकि लोन वेवर में कर्जदार का कर्ज पूरी तरह माफ कर दिया जाता है और कोई वसूली नहीं होती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय बैंक द्वारा स्थापित 'CRILC' का पूर्ण रूप क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय बड़े ऋण सूचना भंडार (Central Repository of Information on Large Credits)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>CRILC प्रणाली के तहत बैंकों को कितने रुपये या उससे अधिक के सभी बड़े उधारकर्ताओं के ऋण खातों की स्थिति RBI को रिपोर्ट करनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">₹5 करोड़ और उससे अधिक के कुल फंड-आधारित व गैर-फंड आधारित एक्सपोजर वाले खातों की।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SARFAESI अधिनियम किस वर्ष संसद द्वारा पारित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2002 में (वित्तीय आस्तियों का प्रतिभूतिकरण और पुनर्गठन तथा प्रतिभूति हित का प्रवर्तन अधिनियम)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SARFAESI अधिनियम 2002 ने बैंकों को कौन-सी असाधारण शक्ति प्रदान की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिना किसी अदालत या न्यायाधिकरण के हस्तक्षेप के डिफॉल्ट होने पर सुरक्षित बंधक संपत्तियों को सीधे अपने कब्जे में लेने और नीलामी द्वारा बेचने का वैधानिक अधिकार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SARFAESI अधिनियम किन संपत्तियों पर लागू नहीं होता?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कृषि भूमि (Agricultural Land) पर तथा ₹1 लाख से कम के बकाया ऋणों या जहाँ बकाया राशि मूलधन और ब्याज के 20% से कम बची हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SARFAESI अधिनियम के तहत बंधक संपत्ति पर कब्जा करने से पूर्व बैंक को उधारकर्ता को कितने दिनों का वैधानिक नोटिस देना अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">60 दिनों का मांग नोटिस (Demand Notice under Section 13(2))।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में पहली परिसंपत्ति पुनर्निर्माण कंपनी (ARC) कौन-सी थी और कब स्थापित हुई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ARCIL (Asset Reconstruction Company of India Limited), वर्ष 2002-03 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ARCs बैंकों से खराब ऋणों को खरीदकर किस रूप में भुगतान करती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नकद (Cash) और सुरक्षा रसीदों (Security Receipts - SRs) के संयोजन में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण समाधान में तेजी लाने हेतु वर्ष 2016 में किस ऐतिहासिक कानून को लागू किया गया जिसने भारत के कॉर्पोरेट ऋण परिदृश्य को पूरी तरह बदल दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिवाला एवं शोधन अक्षमता संहिता 2016 (Insolvency and Bankruptcy Code - IBC, 2016)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IBC 2016 के तहत कॉर्पोरेट दिवाला समाधान प्रक्रिया (CIRP) शुरू करने हेतु कंपनियों के मामलों की सुनवाई कौन-सा न्यायाधिकरण करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय कंपनी विधि न्यायाधिकरण (National Company Law Tribunal - NCLT)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IBC 2016 ने ऋण संस्कृति में 'उधारकर्ता के नियंत्रण' (Debtor in Control) को बदलकर किस मॉडल में स्थापित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'लेनदारों के नियंत्रण' (Creditors in Control) मॉडल में, जहां डिफॉल्ट होते ही कंपनी का प्रबंधन प्रमोटर से छिनकर रिजॉल्यूशन प्रोफेशनल (RP) के हाथ चला जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IBC 2016 के तहत कॉर्पोरेट दिवाला समाधान प्रक्रिया (CIRP) को पूरा करने की अधिकतम कानूनी समय-सीमा क्या निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">180 दिन (जिसे 90 दिन और बढ़ाया जा सकता है) तथा मुकदमों सहित अधिकतम 330 दिन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय बैड बैंक (Bad Bank) के रूप में 2021 में किस दोहरी संरचना का गठन किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NARCL (राष्ट्रीय परिसंपत्ति पुनर्निर्माण कंपनी लिमिटेड) और IDRCL (भारत ऋण समाधान कंपनी लिमिटेड)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NARCL द्वारा बैंकों से अधिग्रहित किए जाने वाले खराब ऋणों के भुगतान में क्या अनुपात तय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">15% नकद (Cash) तथा 85% सरकार द्वारा गारंटीकृत सुरक्षा रसीदें (Security Receipts)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्र सरकार ने NARCL द्वारा जारी की जाने वाली सुरक्षा रसीदों (SRs) के भुगतान हेतु कितनी संप्रभु गारंटी स्वीकृत की है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">₹30,600 करोड़ की संप्रभु गारंटी (5 वर्षों की अवधि हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा कमजोर और संकटग्रस्त बैंकों के परिचालन सुधार हेतु लागू 'त्वरित सुधारात्मक कार्रवाई' (PCA) ढांचा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रॉम्प्ट करेक्टिव एक्शन (Prompt Corrective Action - PCA Framework), जो CRAR, शुद्ध एनपीए और लाभप्रदता के पूर्व-निर्धारित ट्रिगर्स टूटने पर बैंक के नए ऋण देने, लाभांश बांटने और शाखा विस्तार पर प्रतिबंध लगाता है।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PCA ढांचे के तहत बैंकों की वित्तीय स्थिति की निगरानी हेतु किन तीन प्राथमिक वित्तीय पैमानों (Financial Metrics) का उपयोग किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. पूंजी पर्याप्तता अनुपात (CRAR/CET-1), 2. शुद्ध एनपीए अनुपात (NNPA), और 3. उत्तोलन अनुपात (Leverage Ratio)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों के शीर्ष प्रबंधन और निदेशकों के चयन में पारदर्शिता लाने हेतु 2016 में पी. जे. नायक समिति की सिफारिश पर क्या स्थापित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक बोर्ड ब्यूरो (Banks Board Bureau - BBB), जिसे 2022 में 'वित्तीय सेवा संस्थान ब्यूरो' (FSIB) के रूप में पुनर्गठित किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 2019-20 में 10 बड़े सार्वजनिक क्षेत्र के बैंकों का 4 बड़े बैंकों में मेगा-विलय (Mega Merger) करने का मुख्य आर्थिक औचित्य क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पैमाने की मितव्ययिताएं (Economies of Scale) हासिल करना, बैलेंस शीट को मजबूत करना और वैश्विक स्तर पर प्रतिस्पर्धी बड़े राष्ट्रीय बैंक तैयार करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मेगा-विलय के उपरांत भारत में सार्वजनिक क्षेत्र के बैंकों (PSBs) की कुल संख्या घटकर कितनी रह गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 12 बैंक (SBI सहित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IRAC मानदंडों के सख्त अनुपालन और दिवाला संहिता (IBC) के संयुक्त प्रभाव से 2018 के 11.5% के चरम स्तर से मार्च 2024-2026 तक भारतीय बैंकों का सकल एनपीए गिरकर किस स्तर पर आ गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 2.8% से 3.0% के दशक के ऐतिहासिक न्यूनतम स्तर पर, और शुद्ध एनपीए 0.6% से 0.8% के अत्यंत सुरक्षित स्तर पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण सूचना कंपनियों (CICs जैसे CIBIL, Experian) का एनपीए नियंत्रण में क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह उधारकर्ताओं के क्रेडिट इतिहास का व्यापक रिकॉर्ड उपलब्ध कराती हैं, जिससे बैंकों को ऋण स्वीकृति से पूर्व डिफ़ॉल्ट के जोखिम का सटीक आकलन करने में मदद मिलती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छोटे मूल्य के विवादों में बिना अदालत जाए बैंकों के फंसे कर्जों के त्वरित समझौते हेतु कौन-सा मंच अत्यंत लोकप्रिय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लोक अदालतें (Lok Adalats - ₹20 लाख तक के ऋणों हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग लोकपाल योजना (Banking Ombudsman Scheme) को एकीकृत कर 2021 में किस नए रूप में लागू किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक - एकीकृत लोकपाल योजना 2021 (Reserve Bank - Integrated Ombudsman Scheme)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग क्षेत्र में 'सदाबहार सुधारों' (Continuous Reforms) का दीर्घकालिक समष्टिगत लक्ष्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय बैंकिंग प्रणाली को इतना सुदृढ़, पारदर्शी और तकनीक-सक्षम बनाना कि वह बिना किसी एनपीए संकट के देश की 5 ट्रिलियन से 10 ट्रिलियन डॉलर अर्थव्यवस्था की विशाल ऋण आवश्यकताओं को सुरक्षित रूप से वित्तपोषित कर सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

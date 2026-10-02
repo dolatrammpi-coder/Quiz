@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="बैंकिंग प्रणाली Part 1">
+<title>बैंकिंग प्रणाली Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / बैंकिंग प्रणाली Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>बैंकिंग प्रणाली Part 1</h1>
+    <p class="topic-subtitle">भारतीय बैंकिंग प्रणाली की संरचना, RBI की मौद्रिक व विनियामक भूमिका, वाणिज्यिक बैंक तथा सार्वजनिक क्षेत्र के बैंकों का संपूर्ण विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">बैंकिंग प्रणाली Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>बैंकिंग घटक</th><th>प्रमुख भूमिका</th><th>आर्थिक महत्व</th></tr></thead><tbody><tr><td><div class="primary-cell">भारतीय रिजर्व बैंक (RBI)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">देश का केंद्रीय बैंक; मौद्रिक नीति का संचालन, मुद्रा जारी करना, विदेशी मुद्रा भंडार का प्रबंधन तथा संपूर्ण बैंकिंग तंत्र का विनियमन व पर्यवेक्षण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मूल्य स्थिरता बनाए रखना, आर्थिक संवृद्धि को समर्थन देना, वित्तीय प्रणाली में जनविश्वास सुनिश्चित करना तथा 'अंतिम ऋणदाता' (Lender of Last Resort) के रूप में कार्य करना।</div></div></td></tr><tr><td><div class="primary-cell">अनुसूचित वाणिज्यिक बैंक (SCBs)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">RBI अधिनियम 1934 की दूसरी अनुसूची में शामिल बैंक; जनता से मांग व सावधि जमा स्वीकार करना, ऋण वितरण और साख सृजन (Credit Creation)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अर्थव्यवस्था में वित्तीय मध्यस्थता की मुख्य धुरी; बचत को उत्पादक पूंजी निर्माण में लगाना और देश के भुगतान एवं निपटान तंत्र को संचालित करना।</div></div></td></tr><tr><td><div class="primary-cell">सार्वजनिक क्षेत्र के बैंक (PSBs)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वे बैंक जिनमें सरकार की 51% या अधिक हिस्सेदारी होती है (वर्तमान में SBI सहित 12 PSBs); व्यापक शाखा नेटवर्क के माध्यम से सामाजिक व वाणिज्यिक बैंकिंग।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्राथमिकता प्राप्त क्षेत्र (कृषि, MSME) को रियायती ऋण, वित्तीय समावेशन (PMJDY), प्रत्यक्ष लाभ अंतरण (DBT) और दूरदराज के क्षेत्रों तक बैंकिंग पहुंच का विस्तार।</div></div></td></tr><tr><td><div class="primary-cell">निजी क्षेत्र के बैंक (Private Banks)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">निजी शेयरधारकों द्वारा संचालित बैंक; उच्च तकनीक, पेशेवर प्रबंधन, नवाचार और ग्राहक-केंद्रित बैंकिंग सेवाओं का संचालन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकिंग क्षेत्र में स्वस्थ प्रतिस्पर्धा को बढ़ावा, सेवा गुणवत्ता में सुधार, डिजिटल उत्पादों का द्रुतगामी प्रसार तथा कॉरपोरेट व खुदरा ऋण में तीव्र वृद्धि।</div></div></td></tr><tr><td><div class="primary-cell">विदेशी बैंक (Foreign Banks)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अन्य देशों में निगमित बैंक जो भारत में शाखाओं या पूर्ण स्वामित्व वाली सहायक कंपनियों (WOS) के माध्यम से कार्यरत हैं।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विदेशी व्यापार वित्तपोषण (Trade Finance), सीमा-पार पूंजी प्रवाह, बहुराष्ट्रीय कंपनियों को कॉर्पोरेट बैंकिंग और वैश्विक सर्वोत्तम विनियामक पद्धतियों का आगमन।</div></div></td></tr><tr><td><div class="primary-cell">क्षेत्रीय ग्रामीण बैंक (RRBs)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">केंद्र, राज्य और प्रायोजक बैंक के संयुक्त स्वामित्व (50:15:35) वाले बैंक; विशेष रूप से ग्रामीण और अर्ध-शहरी क्षेत्रों पर केंद्रित।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">छोटे व सीमांत किसानों, खेतिहर मजदूरों और ग्रामीण कारीगरों को संस्थागत ऋण व बैंकिंग सुविधाएं देकर ग्रामीण अर्थव्यवस्था को सशक्त बनाना।</div></div></td></tr><tr><td><div class="primary-cell">सहकारी बैंक (Cooperative Banks)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">'एक सदस्य, एक मत' और 'नो प्रॉफिट, नो लॉस' सिद्धांत पर आधारित; शहरी (UCBs) और ग्रामीण त्रिस्तरीय अल्पकालिक व दीर्घकालिक संरचना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">स्थानीय स्तर पर लोकतांत्रिक वित्तीय सेवाएं, सूक्ष्म ऋण वितरण और कमजोर वर्गों को साहूकारों के शोषण से मुक्ति दिलाना।</div></div></td></tr><tr><td><div class="primary-cell">जमा बीमा और प्रत्यय गारंटी निगम (DICGC)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">RBI की पूर्ण स्वामित्व वाली सहायक संस्था; किसी बैंक के विफल होने पर जमाकर्ताओं की जमाराशियों का कानूनी बीमा करना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्रति जमाकर्ता प्रति बैंक ₹5 लाख तक की सुरक्षा प्रदान कर बैंकिंग प्रणाली में जनता का अटूट विश्वास बनाए रखना और बैंक-रन (Bank Run) को रोकना।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>बैंकिंग विनियमन अधिनियम 1949 की धारा 5(b) के अनुसार 'बैंकिंग' की प्रामाणिक कानूनी परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उधार देने या निवेश करने के उद्देश्य से जनता से धन की ऐसी जमाएं स्वीकार करना जो मांग पर या अन्यथा प्रतिदेय हों तथा चेक, ड्राफ्ट, आदेश या अन्य किसी माध्यम से निकाली जा सकें।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आधुनिक अर्थशास्त्र में किसी वित्तीय संस्थान को 'बैंक' मानने की दो अनिवार्य पूर्व-शर्तें क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. जनता से मांग जमा (Demand Deposits) स्वीकार करना, और 2. चेक जारी करने की सुविधा के साथ ऋण व अग्रिम प्रदान करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गैर-बैंकिंग वित्तीय कंपनियां (NBFCs) वाणिज्यिक बैंकों से किस प्रकार भिन्न हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NBFCs मांग जमा (Demand Deposits) स्वीकार नहीं कर सकतीं, स्वयं चेक जारी नहीं कर सकतीं और उनके जमाकर्ताओं को DICGC बीमा सुरक्षा नहीं मिलती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में आधुनिक यूरोपीय पद्धति पर आधारित स्थापित होने वाला पहला बैंक कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक ऑफ हिंदुस्तान (Bank of Hindostan - 1770 में कलकत्ता में स्थापित), जिसे अलेक्जेंडर एंड कंपनी द्वारा प्रवर्तित किया गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1786 में ईस्ट इंडिया कंपनी द्वारा स्थापित किस बैंक को भारत के शुरुआती सामान्य बैंकों में गिना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जनरल बैंक ऑफ इंडिया (General Bank of India - 1786)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सीमित दायित्व (Limited Liability) के सिद्धांत पर भारतीयों द्वारा प्रबंधित पहला बैंक कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवध कमर्शियल बैंक (Oudh Commercial Bank - 1881 में फैजाबाद में स्थापित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूर्णतः भारतीय पूंजी और प्रबंधन से स्थापित होने वाला पहला स्वदेशी भारतीय बैंक कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पंजाब नेशनल बैंक (PNB - 1894 में लाहौर में स्थापित), जिसकी स्थापना में लाला लाजपत राय और दयाल सिंह मजीठिया की केंद्रीय भूमिका थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्वदेशी आंदोलन (1905-1911) के दौरान स्थापित होने वाले प्रमुख भारतीय बैंक कौन-से थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक ऑफ इंडिया (1906), इंडियन बैंक (1907), बैंक ऑफ बड़ौदा (1908), और सेंट्रल बैंक ऑफ इंडिया (1911)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सेंट्रल बैंक ऑफ इंडिया (1911) को भारतीय बैंकिंग इतिहास में क्या ऐतिहासिक गौरव प्राप्त है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह पहला पूर्णतः स्वदेशी वाणिज्यिक बैंक था जिसका स्वामित्व और प्रबंधन दोनों शत-प्रतिशत भारतीयों के हाथ में था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ब्रिटिश काल के तीन प्रेसीडेंसी बैंकों (बैंक ऑफ बंगाल 1806, बैंक ऑफ बॉम्बे 1840, बैंक ऑफ मद्रास 1843) का विलय कर 1921 में किस बैंक का गठन किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंपीरियल बैंक ऑफ इंडिया (Imperial Bank of India)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1955 में अखिल भारतीय ग्रामीण ऋण सर्वेक्षण समिति (गोरेवाला समिति) की सिफारिश पर इंपीरियल बैंक का राष्ट्रीयकरण कर किस संस्था का निर्माण हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय स्टेट बैंक (State Bank of India - SBI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय बैंकिंग संरचना को मुख्य रूप से किन दो व्यापक श्रेणियों में विभाजित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. अनुसूचित बैंक (Scheduled Banks) और 2. गैर-अनुसूचित बैंक (Non-Scheduled Banks)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'अनुसूचित बैंक' (Scheduled Bank) की वैधानिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसा बैंक जो भारतीय रिजर्व बैंक अधिनियम 1934 की 'दूसरी अनुसूची' (Second Schedule) में शामिल हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI अधिनियम 1934 की दूसरी अनुसूची में शामिल होने के लिए किसी बैंक को कौन-सी दो अनिवार्य शर्तें पूरी करनी होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. चुकता पूंजी और आरक्षित निधियों का न्यूनतम मूल्य ₹5 लाख (वर्तमान में ₹500 करोड़) से कम न हो, और 2. उसके कार्यकलाप जमाकर्ताओं के हितों के प्रतिकूल न हों।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुसूचित बैंकों को भारतीय रिजर्व बैंक से कौन-सी विशिष्ट विनियामक सुविधाएं प्राप्त होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक दर और रेपो दर पर RBI से वित्तीय पुनर्वित्त/ऋण प्राप्त करने का अधिकार तथा स्वचालित रूप से समाशोधन गृह (Clearing House) की सदस्यता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'गैर-अनुसूचित बैंक' (Non-Scheduled Bank) किन्हें कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे बैंक जो RBI अधिनियम 1934 की दूसरी अनुसूची में शामिल नहीं हैं; इन्हें सामान्य परिस्थितियों में RBI से पुनर्वित्त की सुविधा नहीं मिलती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय बैंकिंग प्रणाली का नियामक एवं पर्यवेक्षी ढांचा किन दो प्रमुख अधिनियमों द्वारा संचालित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. भारतीय रिजर्व बैंक अधिनियम 1934 (RBI Act 1934) और 2. बैंकिंग विनियमन अधिनियम 1949 (Banking Regulation Act 1949)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग विनियमन अधिनियम (BR Act) 1949 मूल रूप से किस नाम से अधिनियमित हुआ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग कंपनीज एक्ट 1949 (Banking Companies Act, 1949); जिसे मार्च 1966 में संशोधित कर 'बैंकिंग विनियमन अधिनियम 1949' नाम दिया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>BR Act 1949 की धारा 22 के तहत भारत में किसी भी बैंक को व्यवसाय शुरू करने हेतु किसकी अनुमति अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक (RBI) से बैंकिंग लाइसेंस प्राप्त करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुसूचित वाणिज्यिक बैंकों (SCBs) का संरचनात्मक वर्गीकरण किन चार श्रेणियों में किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. सार्वजनिक क्षेत्र के बैंक, 2. निजी क्षेत्र के बैंक, 3. विदेशी बैंक, और 4. क्षेत्रीय ग्रामीण बैंक (RRBs)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों (Commercial Banks) और सहकारी बैंकों (Cooperative Banks) में क्या मूलभूत संरचनात्मक अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वाणिज्यिक बैंक संयुक्त स्टॉक कंपनियों के रूप में लाभ अर्जन हेतु कार्य करते हैं, जबकि सहकारी बैंक आपसी सहयोग, 'एक सदस्य-एक मत' और सेवा के सिद्धांत पर कार्य करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में प्राथमिक (शहरी) सहकारी बैंकों (UCBs) का विनियामक नियंत्रण वर्तमान में किसके पास है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग विनियमन संशोधन अधिनियम 2020 के बाद अब इनका संपूर्ण बैंकिंग नियमन और पर्यवेक्षण सीधे RBI के अधीन है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रामीण सहकारी साख संरचना कितने स्तरों में संगठित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक ऋण हेतु त्रिस्तरीय संरचना: 1. राज्य सहकारी बैंक (शीर्ष), 2. जिला केंद्रीय सहकारी बैंक (मध्यवर्ती), और 3. प्राथमिक कृषि साख समितियां (PACS - ग्राम स्तर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या प्राथमिक कृषि साख समितियां (PACS) सीधे भारतीय रिजर्व बैंक द्वारा विनियमित होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं, PACS सीधे बैंकिंग विनियमन अधिनियम के दायरे में नहीं आती हैं; वे संबंधित राज्य के सहकारिता विभाग द्वारा प्रशासित होती हैं और नाबार्ड द्वारा पुनर्वित्तपोषित होती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जमा बीमा और प्रत्यय गारंटी निगम (DICGC) अधिनियम 1961 के तहत वर्तमान में प्रति जमाकर्ता कितनी बीमा सुरक्षा प्राप्त है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रति जमाकर्ता प्रति बैंक अधिकतम ₹5,00,000 (पाँच लाख रुपये) तक की मूलधन और ब्याज सुरक्षा (फरवरी 2020 से ₹1 लाख से बढ़ाकर ₹5 लाख की गई)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>DICGC बीमा के लिए प्रीमियम का भुगतान कौन करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संबंधित बैंक स्वयं भुगतान करता है (प्रति ₹100 जमा पर 12 पैसे वार्षिक); जमाकर्ताओं से कोई शुल्क नहीं लिया जाता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>DICGC संशोधन अधिनियम 2021 के अनुसार यदि किसी बैंक पर मोराटोरियम (रोक) लगाया जाता है, तो जमाकर्ताओं को कितने दिनों के भीतर ₹5 लाख तक की बीमा राशि मिलनी अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिकतम 90 दिनों के भीतर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या भारत में कार्यरत विदेशी बैंकों की भारतीय शाखाओं में जमा धन भी DICGC द्वारा बीमित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ, भारत में कार्यरत सभी वाणिज्यिक बैंकों (सार्वजनिक, निजी, विदेशी, RRBs) की जमाएं DICGC द्वारा बीमित होती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>DICGC बीमा के दायरे से किन जमाओं को स्पष्ट रूप से बाहर रखा गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी सरकारों की जमाएं, केंद्र/राज्य सरकारों की जमाएं, अंतर-बैंक जमाएं और राज्य भूमि विकास बैंकों की जमाएं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में बैंकिंग प्रणाली की सघनता को मापने वाला 'शाखा घनत्व' (Branch Density) स्वतंत्रता के समय और वर्तमान में कैसा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1969 में प्रति 64,000 व्यक्तियों पर एक बैंक शाखा थी, जो वर्तमान में सुधरकर प्रति 9,500 से 10,000 व्यक्तियों पर एक शाखा हो चुकी है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय समावेशन (Financial Inclusion) का बैंकिंग व्यवस्था में क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वंचित, गरीब और निम्न आय वाले वर्गों को वहन करने योग्य लागत पर औपचारिक वित्तीय सेवाओं (बचत, ऋण, बीमा, पेंशन) तक सार्वभौमिक पहुंच सुनिश्चित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में बैंकिंग विस्तार हेतु शुरू की गई 'नो-फ्रिल्स खाता' (No-Frills Account) प्रणाली का परिवर्तित आधुनिक रूप क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मूल बचत बैंक जमा खाता (BSBDA - Basic Savings Bank Deposit Account), जिसमें न्यूनतम बैलेंस की कोई बाध्यता नहीं होती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक रहित ग्रामीण क्षेत्रों में बैंकिंग सेवाएं पहुंचाने हेतु 2006 में RBI द्वारा शुरू की गई व्यवस्था क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिजनेस कॉरेस्पोंडेंट (BC / बैंक मित्र) मॉडल।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में केंद्रीय बैंक (Central Bank) की स्थापना की सिफारिश किस शाही आयोग ने की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रॉयल कमीशन ऑन इंडियन करेंसी एंड फाइनेंस (हिल्टन यंग कमीशन - 1926)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिल्टन यंग कमीशन के अलावा किस अन्य समिति ने भारत में एक केंद्रीय बैंक की अनिवार्यता पर बल दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय बैंकिंग जांच समिति (Central Banking Enquiry Committee - 1931)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक (RBI) की स्थापना किस ऐतिहासिक तिथि और किस अधिनियम के तहत हुई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 अप्रैल 1935 को, भारतीय रिजर्व बैंक अधिनियम 1934 (RBI Act, 1934) के तहत।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रारंभ में RBI का केंद्रीय कार्यालय कहाँ स्थापित किया गया था और उसे स्थायी रूप से मुंबई कब स्थानांतरित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रारंभ में कलकत्ता (कोलकाता) में स्थापित हुआ था, जिसे 1937 में स्थायी रूप से मुंबई स्थानांतरित किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्थापना के समय RBI का स्वामित्व किस प्रकार का था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह पूर्णतः एक निजी शेयरधारकों का बैंक (Private Shareholders' Bank) था, जिसकी अधिकृत पूंजी ₹5 करोड़ थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक का राष्ट्रीयकरण (Nationalization) किस अधिनियम के तहत और कब किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 जनवरी 1949 को, सार्वजनिक स्वामित्व में अंतरण अधिनियम 1948 (Transfer to Public Ownership Act, 1948) के तहत।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक के प्रथम गवर्नर कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सर ओसबोर्न स्मिथ (Sir Osborne Smith - 1935 से 1937 तक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक के प्रथम भारतीय मूल के गवर्नर कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सर सी. डी. देशमुख (Chintaman Dwarkanath Deshmukh - 1943 से 1949 तक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI की प्रस्तावना (Preamble) के अनुसार उसका प्राथमिक अधिदेश (Core Mandate) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक नोटों के निर्गमन को विनियमित करना, भारत में मौद्रिक स्थिरता बनाए रखने के लिए आरक्षित निधियां रखना, और संवृद्धि के उद्देश्य को ध्यान में रखते हुए मूल्य स्थिरता बनाए रखना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक के कामकाज का सामान्य अधीक्षण और निर्देशन किसके द्वारा किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI के केंद्रीय निदेशक बोर्ड (Central Board of Directors) द्वारा, जिसमें आधिकारिक और गैर-आधिकारिक निदेशक शामिल होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI के केंद्रीय निदेशक बोर्ड में अधिकतम कितने डिप्टी गवर्नर हो सकते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिकतम 4 डिप्टी गवर्नर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI अधिनियम 1934 की धारा 22 के तहत भारत में करेंसी नोट जारी करने का अनन्य वैधानिक एकाधिकार किसके पास है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल भारतीय रिजर्व बैंक (RBI) के पास।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में ₹1 के नोट और सभी मूल्यवर्ग के सिक्के (Coins) किसके द्वारा जारी किए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत सरकार (वित्त मंत्रालय) द्वारा जारी किए जाते हैं; ₹1 के नोट पर वित्त सचिव के हस्ताक्षर होते हैं, यद्यपि इनका संचलन और वितरण RBI करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>₹2 और उससे अधिक के सभी बैंक नोटों पर किसके हस्ताक्षर होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक के गवर्नर के।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में RBI किस नोट निर्गमन प्रणाली (Note Issue System) का पालन करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम आरक्षित प्रणाली (Minimum Reserve System - MRS), जिसे 1956 में अपनाया गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>न्यूनतम आरक्षित प्रणाली (MRS) के तहत RBI को सदैव अपने पास कितनी न्यूनतम आरक्षित संपत्ति रखनी अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल ₹200 करोड़ की संपत्ति, जिसमें कम से कम ₹115 करोड़ का स्वर्ण (Gold) और ₹85 करोड़ की विदेशी मुद्रा परिसंपत्तियां होना कानूनी रूप से अनिवार्य है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1956 से पूर्व RBI किस नोट निर्गमन प्रणाली का पालन करता था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आनुपातिक आरक्षित प्रणाली (Proportional Reserve System), जिसके तहत जारी कुल नोटों का कम से कम 40% स्वर्ण और विदेशी प्रतिभूतियों में रखना होता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI को 'सरकार का बैंक' (Banker to the Government) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि RBI केंद्र और राज्य सरकारों के बैंकिंग खातों का संचालन करता है, उनके सार्वजनिक ऋण का प्रबंधन करता है और उन्हें अर्थोपाय अग्रिम (WMA) प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थोपाय अग्रिम (Ways and Means Advances - WMA) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकार की प्राप्तियों और भुगतानों के बीच के अस्थायी नकदी प्रवाह अंतराल को पाटने हेतु RBI द्वारा दिया जाने वाला अल्पकालिक ऋण (अधिकतम 90 दिनों हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI को 'बैंकों का बैंक' (Banker's Bank) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि सभी अनुसूचित बैंक अपने वैधानिक नकद भंडार (CRR) RBI के पास रखते हैं, बैंकों के आपसी दावों का निपटान RBI के माध्यम से होता है और संकट में RBI उन्हें ऋण देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'अंतिम ऋणदाता' (Lender of Last Resort - LOLR) के रूप में RBI की क्या भूमिका होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी शोधनक्षम बैंक को बाजार के किसी भी अन्य स्रोत से वित्तीय तरलता नहीं मिलती, तो वित्तीय पतन और घबराहट रोकने हेतु RBI उसे आपात तरलता सहायता प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI अधिनियम 1934 की धारा 45ZB के तहत मौद्रिक नीति समिति (Monetary Policy Committee - MPC) का गठन किस वर्ष किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2016 में (डॉ. उर्जित पटेल समिति की सिफारिशों के आधार पर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति समिति (MPC) की कुल सदस्य संख्या और संरचना क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 6 सदस्य: 3 सदस्य RBI से (RBI गवर्नर, डिप्टी गवर्नर और 1 अधिकारी) तथा 3 स्वतंत्र बाहरी सदस्य भारत सरकार द्वारा नियुक्त।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति समिति (MPC) की अध्यक्षता कौन करता है और बराबर मत होने पर क्या प्रावधान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI के गवर्नर पदेन अध्यक्ष होते हैं; मत बराबर होने की स्थिति में गवर्नर को निर्णायक मत (Casting Vote) देने का अधिकार होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लचीला मुद्रास्फीति लक्ष्यीकरण (Flexible Inflation Targeting - FIT) ढांचे के तहत भारत का आधिकारिक मुद्रास्फीति लक्ष्य क्या निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपभोक्ता मूल्य सूचकांक (CPI) आधारित 4% मुद्रास्फीति, जिसमें +/- 2% का सहनशीलता बैंड (Tolerance Band: 2% से 6%) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि मुद्रास्फीति लगातार कितने समय तक 2% से नीचे या 6% से ऊपर बनी रहे, तो RBI को सरकार को विफलता की औपचारिक रिपोर्ट देनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगातार 3 तिमाहियों (Three Consecutive Quarters) तक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रेपो दर (Repo Rate - Repurchase Option) की मानक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह ब्याज दर जिस पर वाणिज्यिक बैंक सरकारी प्रतिभूतियों को संपार्श्विक के रूप में रखकर RBI से अल्पकालिक तरलता उधार लेते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रिवर्स रेपो दर (Reverse Repo Rate) क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह ब्याज दर जिस पर RBI वाणिज्यिक बैंकों से सरकारी प्रतिभूतियों के एवज में अल्पकालिक अधिशेष तरलता को सोखता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्थायी जमा सुविधा (Standing Deposit Facility - SDF) को RBI ने 2022 में किस रूप में प्रारंभ किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिना किसी सरकारी प्रतिभूति को गिरवी रखे बैंकों से अतिरिक्त तरलता सोखने का एक कोलैटरल-मुक्त साधन, जो तरलता समायोजन सुविधा (LAF) का नया निचला तल (Floor) बना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सीमांत स्थायी सुविधा (Marginal Standing Facility - MSF) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसी दंडात्मक ओवरनाइट उधारी खिड़की जिसके तहत अनुसूचित बैंक आपातकालीन नकदी संकट में अपने SLR कोटे की प्रतिभूतियों को गिरवी रखकर RBI से उधार ले सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक दर (Bank Rate) और रेपो दर में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रेपो दर अल्पकालिक उधारी हेतु संपार्श्विक-आधारित दर है, जबकि बैंक दर दीर्घकालिक ऋणों हेतु बिना किसी संपार्श्विक के दी जाने वाली रियायती/दंडात्मक दर है (वर्तमान में यह MSF के बराबर होती है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>खुले बाजार की क्रियाएं (Open Market Operations - OMOs) क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अर्थव्यवस्था में मुद्रा आपूर्ति को नियंत्रित करने हेतु RBI द्वारा खुले बाजार में सरकारी प्रतिभूतियों (G-Secs) की सीधी खरीद या बिक्री करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब RBI खुले बाजार में सरकारी प्रतिभूतियां बेचता है, तो बाजार की तरलता पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाजार से तरलता सोख ली जाती है (तरलता संकुचित होती है), जिससे मुद्रा आपूर्ति घटती है और मुद्रास्फीति पर अंकुश लगता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नकद आरक्षित अनुपात (Cash Reserve Ratio - CRR) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्येक वाणिज्यिक बैंक को अपनी कुल शुद्ध मांग और समय देनदारियों (NDTL) का एक निश्चित प्रतिशत नकद रूप में RBI के पास अनिवार्य रूप से रखना होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या RBI बैंकों को उनके द्वारा CRR के रूप में रखी गई नकदी पर कोई ब्याज चुकाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं, CRR शेष पर RBI द्वारा कोई ब्याज नहीं दिया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सांविधिक तरलता अनुपात (Statutory Liquidity Ratio - SLR) की क्या परिभाषा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्येक बैंक को अपनी कुल NDTL का एक निश्चित प्रतिशत स्वर्ण, नकदी अथवा अनुमोदित सरकारी प्रतिभूतियों (G-Secs) के रूप में स्वयं अपने पास तरल रूप में रखना अनिवार्य है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग विनियमन अधिनियम 1949 की धारा 35 के तहत RBI को कौन-सा महत्वपूर्ण पर्यवेक्षी अधिकार प्राप्त है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी भी वाणिज्यिक बैंक की शाखाओं, बही-खातों और वित्तीय लेन-देनों का औचक या आवधिक भौतिक निरीक्षण (Inspection) करने का अधिकार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>BR Act 1949 की धारा 36AA के तहत RBI को बैंक प्रबंधन के विरुद्ध क्या कठोर शक्ति प्राप्त है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जनहित या बैंक के हित में किसी भी बैंक के अध्यक्ष, निदेशक, सीईओ या किसी अन्य अधिकारी को पद से हटाने का अधिकार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई का 'वित्तीय पर्यवेक्षण बोर्ड' (BFS) किस वर्ष स्थापित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1994 में (नरसिम्हम समिति-I की सिफारिश पर), वाणिज्यिक बैंकों, वित्तीय संस्थानों और NBFCs के एकीकृत पर्यवेक्षण हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा प्रबंधन अधिनियम (FEMA) 1999 के तहत देश के विदेशी मुद्रा भंडार का अभिरक्षक (Custodian) कौन है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक (RBI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों (Commercial Banks) का सबसे प्राथमिक आर्थिक कार्य क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बचतकर्ताओं से निष्क्रिय जमाराशियां जुटाना और उन्हें उत्पादक निवेशकों व व्यापारियों को ऋण के रूप में वितरित करना (वित्तीय मध्यस्थता)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों द्वारा स्वीकार की जाने वाली जमाओं के दो मुख्य प्रकार कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. मांग जमा (Demand Deposits - चालू खाता व बचत खाता), और 2. समय/सावधि जमा (Time Deposits - फिक्स्ड डिपॉजिट व रेकरिंग डिपॉजिट)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते (Current Account) और बचत खाते (Savings Account) में क्या मूलभूत अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाता व्यवसायियों हेतु होता है जिस पर कोई ब्याज नहीं मिलता और निकासी की कोई सीमा नहीं होती, जबकि बचत खाता व्यक्तिगत बचत हेतु होता है जिस पर ब्याज मिलता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>CASA अनुपात (Current Account Savings Account Ratio) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी बैंक की कुल जमाराशियों में चालू खाता और बचत खाता जमाओं का प्रतिशत (CASA / Total Deposits × 100)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च CASA अनुपात (High CASA Ratio) किसी बैंक के लिए अत्यधिक लाभदायक क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि चालू खाते पर शून्य ब्याज और बचत खाते पर बहुत कम ब्याज देना पड़ता है, जिससे बैंक की निधियों की कुल लागत (Cost of Funds) बहुत कम हो जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंक अर्थव्यवस्था में 'साख सृजन' (Credit Creation) किस प्रकार करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राथमिक जमाओं के एक हिस्से को नकद आरक्षित रखकर शेष राशि को नए ऋणों के रूप में बार-बार उधार देकर द्वितीयक/व्युत्पन्न जमाएं (Derivative Deposits) सृजित करके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा गुणक (Money Multiplier - m) ज्ञात करने का सैद्धांतिक सूत्र क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">m = 1 / r (जहाँ r अनिवार्य वैधानिक आरक्षित अनुपात / LRR है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि वैधानिक आरक्षित अनुपात (LRR) 10% हो और प्रारंभिक प्राथमिक जमा ₹1,000 करोड़ हो, तो बैंकिंग प्रणाली कुल कितनी साख सृजित कर सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल ₹10,000 करोड़ (1,000 × 1/0.10)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक की बैलेंस शीट में 'परिसंपत्तियां' (Assets) क्या होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक द्वारा दिए गए सभी ऋण और अग्रिम, सरकारी प्रतिभूतियों में निवेश, नकद शेष और भौतिक भवन/उपकरण; जिनसे बैंक को आय प्राप्त होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक की बैलेंस शीट में 'देनदारियां' (Liabilities) क्या होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्राहकों की संपूर्ण जमाराशियां (Demand & Time Deposits), अन्य बैंकों व RBI से लिया गया उधार और शेयर पूंजी; जो बैंक को भविष्य में वापस लौटानी है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निवल ब्याज आय (Net Interest Income - NII) की गणना कैसे की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NII = बैंक द्वारा ऋणों व अग्रिमों पर अर्जित कुल ब्याज आय - जमाकर्ताओं व उधारों पर चुकाया गया कुल ब्याज व्यय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>निवल ब्याज मार्जिन (Net Interest Margin - NIM) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक की कुल ब्याज अर्जक परिसंपत्तियों के सापेक्ष उसकी शुद्ध ब्याज आय का अनुपात (NII / Total Earning Assets × 100)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों के लिए 'गैर-ब्याज आय' (Non-Interest Income / Fee-based Income) के प्रमुख स्रोत क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कमीशन, ब्रोकरेज, लॉकर किराया, विदेशी मुद्रा विनिमय शुल्क, ऋण प्रोसेसिंग फीस और म्यूचुअल फंड/बीमा उत्पादों के वितरण से प्राप्त शुल्क।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूंजी पर्याप्तता अनुपात (CRAR / Capital to Risk-Weighted Assets Ratio) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक की कुल पूंजी (टियर-1 + टियर-2) का उसकी जोखिम भारित परिसंपत्तियों (Risk-Weighted Assets) से अनुपात।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जोखिम भारित परिसंपत्तियों (Risk-Weighted Assets - RWA) से क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक के विभिन्न ऋणों और परिसंपत्तियों को उनके डिफॉल्ट जोखिम के अनुसार अलग-अलग प्रतिशत भार (Weight) देकर मापा गया कुल मूल्य (जैसे सरकारी प्रतिभूतियों पर 0% जोखिम भार, जबकि असुरक्षित व्यक्तिगत ऋणों पर 100-125% भार)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बासेल-III (Basel-III) मानदंडों के अनुसार भारतीय अनुसूचित वाणिज्यिक बैंकों के लिए न्यूनतम अनिवार्य CRAR कितना है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम 9.0% (जबकि अंतरराष्ट्रीय बासेल मानक 8.0% है) तथा 2.5% पूंजी संरक्षण बफर (CCB) मिलाकर कुल 11.5%।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>टियर-1 पूंजी (Tier-1 Capital / Core Capital) में मुख्य रूप से क्या शामिल होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चुकता इक्विटी शेयर पूंजी, वैधानिक आरक्षित निधियां और अवितरित लाभ (Retained Earnings); जो बिना बैंक का परिचालन रोके किसी भी आकस्मिक घाटे को सोखने में सक्षम होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>टियर-2 पूंजी (Tier-2 Capital / Supplementary Capital) में कौन-से घटक आते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पुनर्मूल्यांकन भंडार, सामान्य प्रोविजन और दीर्घकालिक गौण ऋण (Subordinated Debt)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तरलता कवरेज अनुपात (Liquidity Coverage Ratio - LCR) का उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह सुनिश्चित करना कि किसी बैंक के पास 30 दिनों के गंभीर तरलता तनाव को झेलने हेतु पर्याप्त उच्च गुणवत्ता वाली तरल परिसंपत्तियां (HQLA) उपलब्ध हों।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शुद्ध स्थिर वित्तपोषण अनुपात (Net Stable Funding Ratio - NSFR) किस समय-सीमा के संरचनात्मक तरलता जोखिम को नियंत्रित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम से कम 1 वर्ष की क्षितिज अवधि के दीर्घकालिक तरलता जोखिम को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्राथमिकता प्राप्त क्षेत्र ऋण (Priority Sector Lending - PSL) के अंतर्गत घरेलू अनुसूचित वाणिज्यिक बैंकों हेतु कुल लक्ष्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समायोजित निवल बैंक ऋण (ANBC) अथवा ऑफ-बैलेंस शीट एक्सपोजर के समतुल्य का 40%।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घरेलू वाणिज्यिक बैंकों के लिए PSL के 40% कोटे के भीतर कृषि क्षेत्र हेतु अनिवार्य उप-लक्ष्य कितना है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल ANBC का 18% (जिसमें से 10% छोटे एवं सीमांत किसानों हेतु समर्पित है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>PSL के तहत सूक्ष्म उद्यमों (Micro Enterprises) और कमजोर वर्गों (Weaker Sections) हेतु निर्धारित उप-लक्ष्य क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूक्ष्म उद्यमों हेतु 7.5% तथा कमजोर वर्गों हेतु 12%।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि कोई वाणिज्यिक बैंक अपने अनिवार्य 40% PSL लक्ष्य को पूरा करने में विफल रहता है, तो उसे क्या दंडात्मक कार्रवाई झेलनी पड़ती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कमी की राशि को नाबार्ड द्वारा प्रबंधित 'ग्रामीण बुनियादी ढांचा विकास कोष' (RIDF) या सिडबी/मुद्रा कोष में कम ब्याज पर जमा करना अनिवार्य होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्राथमिकता प्राप्त क्षेत्र ऋण प्रमाणपत्र (PSLC) क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक बाजार-आधारित व्यापार योग्य लिखत जिसके माध्यम से लक्ष्य से अधिक PSL ऋण देने वाले बैंक अपनी अतिरिक्त साख को लक्ष्य से पिछड़ने वाले बैंकों को बेच सकते हैं, बिना वास्तविक ऋण अंतरण के।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों द्वारा ग्राहकों को दी जाने वाली 'साख पत्र' (Letter of Credit - LC) सुविधा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक वित्तीय गारंटी दस्तावेज जिसमें बैंक विक्रेता को आश्वस्त करता है कि क्रेता द्वारा भुगतान न किए जाने पर बैंक स्वयं भुगतान करेगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक गारंटी (Bank Guarantee - BG) और लेटर ऑफ क्रेडिट (LC) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">LC में बैंक प्राथमिक भुगतानकर्ता होता है, जबकि BG में बैंक केवल तभी भुगतान करता है जब मूल ग्राहक अनुबंध का उल्लंघन करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंक (Public Sector Banks - PSBs) किन्हें कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे वाणिज्यिक बैंक जिनमें भारत सरकार अथवा सार्वजनिक संस्थाओं की इक्विटी शेयरधारिता 51% या उससे अधिक होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>19 जुलाई 1969 को तत्कालीन प्रधानमंत्री श्रीमती इंदिरा गांधी द्वारा 14 बड़े बैंकों का राष्ट्रीयकरण किस अध्यादेश के माध्यम से किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग कंपनीज (उपक्रमों का अर्जन और अंतरण) अध्यादेश 1969 के माध्यम से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1969 में 14 बैंकों के राष्ट्रीयकरण हेतु पात्रता का क्या वित्तीय पैमाना तय किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे बैंक जिनकी कुल शुद्ध जमा राशि (Deposits) ₹50 करोड़ या उससे अधिक थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1969 में राष्ट्रीयकृत होने वाले प्रमुख बैंकों में कौन शामिल थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सेंट्रल बैंक ऑफ इंडिया, बैंक ऑफ इंडिया, पंजाब नेशनल बैंक, बैंक ऑफ बड़ौदा, यूको बैंक, केनरा बैंक, सिंडीकेट बैंक और यूनियन बैंक ऑफ इंडिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15 अप्रैल 1980 को दूसरे दौर के राष्ट्रीयकरण में किन 6 बैंकों का अधिग्रहण किया गया जिनकी जमाएं ₹200 करोड़ से अधिक थीं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आंध्रा बैंक, कॉर्पोरेशन बैंक, न्यू बैंक ऑफ इंडिया, ओरिएंटल बैंक ऑफ कॉमर्स, पंजाब एंड सिंध बैंक, और विजया बैंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1969 और 1980 के बैंक राष्ट्रीयकरण का भारत के ग्रामीण विकास पर क्या क्रांतिकारी प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रामीण भारत में बैंक शाखाओं की बाढ़ आ गई, कृषि और लघु उद्योगों को संस्थागत ऋण का प्रवाह कई गुना बढ़ा और साहूकारों का एकाधिकार टूटा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक राष्ट्रीयकरण के विरुद्ध सर्वोच्च न्यायालय में दायर ऐतिहासिक वाद कौन-सा था जिसमें न्यायालय ने मुआवजा पद्धति पर प्रश्न उठाए थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर. सी. कूपर बनाम भारत संघ (1970 - बैंक राष्ट्रीयकरण वाद)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय स्टेट बैंक (SBI) का गठन किस अधिनियम के तहत किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय स्टेट बैंक अधिनियम 1955 (State Bank of India Act, 1955) के तहत, 1 जुलाई 1955 को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>SBI अधिनियम 1959 के तहत किन देशी रियासतों के बैंकों को SBI के सहयोगी बैंक (Subsidiary/Associate Banks) का दर्जा दिया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">8 प्रमुख स्टेट बैंक: पटियाला, बीकानेर, जयपुर, हैदराबाद, इंदौर, सौराष्ट्र, मैसूर और त्रावणकोर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय स्टेट बैंक (SBI) का भारत की संपूर्ण बैंकिंग प्रणाली में क्या सापेक्ष आकार और महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह देश का सबसे बड़ा वाणिज्यिक बैंक है, जिसके पास कुल बैंकिंग जमाराशियों और अग्रिमों का लगभग 23% से 25% का विशाल बाजार हिस्सा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 2017 से 2020 के दौरान संपन्न हुए मेगा-विलय के उपरांत वर्तमान में भारत में कुल कितने सार्वजनिक क्षेत्र के बैंक (PSBs) कार्यरत हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल 12 सार्वजनिक क्षेत्र के बैंक (SBI + 11 राष्ट्रीयकृत बैंक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में भारत के 12 सार्वजनिक क्षेत्र के बैंक कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. स्टेट बैंक ऑफ इंडिया, 2. पंजाब नेशनल बैंक, 3. बैंक ऑफ बड़ौदा, 4. केनरा बैंक, 5. यूनियन बैंक ऑफ इंडिया, 6. बैंक ऑफ इंडिया, 7. इंडियन बैंक, 8. सेंट्रल बैंक ऑफ इंडिया, 9. इंडियन ओवरसीज बैंक, 10. यूको बैंक, 11. बैंक ऑफ महाराष्ट्र, और 12. पंजाब एंड सिंध बैंक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों में अध्यक्ष और प्रबंध निदेशक (CMD) के पद को विभाजित कर गैर-कार्यकारी अध्यक्ष (Non-Executive Chairman) की नियुक्ति किस वर्ष शुरू की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2015 में (पी. जे. नायक समिति की सिफारिशों के आधार पर कॉरपोरेट प्रशासन सुधारने हेतु)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों के पूंजीगत आधार को मजबूत करने हेतु केंद्र सरकार ने 2015 में किस 7-सूत्रीय एजेंडे की घोषणा की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'इंद्रधनुष मिशन' (Mission Indradhanush)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों में निरंतर सुधारों की प्रगति मापने हेतु वित्त मंत्रालय और IBA द्वारा कौन-सा सूचकांक जारी किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ईज इंडेक्स (EASE Index - Enhanced Access and Service Excellence)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>EASE सुधारों का प्राथमिक जोर किन प्रमुख स्तंभों पर रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डिजिटल सक्षम बैंकिंग, ग्राहक सुविधा, पारदर्शी एनपीए प्रबंधन, एमएसएमई को त्वरित ऋण और डेटा एनालिटिक्स आधारित जोखिम प्रबंधन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रधानमंत्री जन धन योजना (PMJDY) के क्रियान्वयन में सार्वजनिक क्षेत्र के बैंकों की क्या भूमिका रही है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">खोले गए 50 करोड़ से अधिक जन धन खातों में से 80% से अधिक खाते अकेले सार्वजनिक क्षेत्र के बैंकों द्वारा खोले गए हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों को निजी बैंकों की तुलना में कौन-सी संरचनात्मक और सामाजिक जिम्मेदारियां अधिक वहन करनी पड़ती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दूरदराज व गैर-लाभकारी ग्रामीण शाखाओं का संचालन, सरकारी प्रत्यक्ष लाभ अंतरण (DBT), मुद्रा ऋण और फसल बीमा जैसी सामाजिक योजनाओं का निष्पादन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों के निजीकरण (Privatization) के संबंध में केंद्रीय बजट 2021-22 में क्या नीतिगत घोषणा की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रणनीतिक विनिवेश नीति के तहत दो सार्वजनिक क्षेत्र के बैंकों और एक सामान्य बीमा कंपनी का निजीकरण करने का प्रस्ताव।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों के निजीकरण के पक्ष में अर्थशास्त्रियों का क्या मुख्य तर्क है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">करदाताओं के धन से बार-बार होने वाले पुनर्पूंजीकरण (Bailouts) से मुक्ति, परिचालन दक्षता में वृद्धि और राजनीतिक हस्तक्षेप की समाप्ति।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों के निजीकरण के विरोध में क्या प्रमुख सामाजिक-आर्थिक तर्क दिए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निजी बैंकों द्वारा ग्रामीण व वंचित क्षेत्रों की उपेक्षा का डर, सामाजिक बैंकिंग व वित्तीय समावेशन का कमजोर होना और जन-जमाओं की सुरक्षा पर संशय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लीड बैंक योजना (Lead Bank Scheme) किस वर्ष और किस समिति की सिफारिश पर प्रारंभ की गई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1969 में, एफ. के. एफ. नरीमन समिति (Nariman Committee) और गाडगिल अध्ययन दल की संस्तुति पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लीड बैंक योजना का मुख्य कार्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्येक जिले में एक प्रमुख वाणिज्यिक बैंक को 'लीड बैंक' घोषित करना, जो जिले की साख क्षमता का सर्वेक्षण कर जिला साख योजना (DCP) तैयार करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सेवा क्षेत्र दृष्टिकोण (Service Area Approach - SAA) किस योजना का परिष्कृत रूप है जिसे 1989 में लागू किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लीड बैंक योजना का; जिसके तहत प्रत्येक ग्रामीण बैंक शाखा को 15 से 25 गांवों का एक विशिष्ट सेवा क्षेत्र आवंटित किया गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक बोर्ड ब्यूरो (Banks Board Bureau - BBB) को 2022 में किस नए नाम और विस्तारित अधिदेश के साथ पुनर्गठित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय सेवा संस्थान ब्यूरो (Financial Services Institutions Bureau - FSIB)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>FSIB का प्राथमिक कार्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सार्वजनिक क्षेत्र के बैंकों, वित्तीय संस्थानों और सार्वजनिक बीमा कंपनियों के पूर्णकालिक निदेशकों और गैर-कार्यकारी अध्यक्षों के चयन हेतु सरकार को सिफारिशें देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों की स्वायत्तता और व्यावसायिकता सुनिश्चित करने हेतु 'ज्ञान संगम' (Gyan Sangam) सम्मेलनों का क्या महत्व रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री, वित्त मंत्री और बैंक प्रमुखों के बीच सीधा संवाद, जहां बैंकों के दैनिक कामकाज में राजनीतिक हस्तक्षेप पूरी तरह समाप्त करने की घोषणा की गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों की परिसंपत्ति गुणवत्ता में 2018 के संकट के बाद क्या ऐतिहासिक सुधार देखा गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सकल एनपीए 14% से घटकर 3% से नीचे आ गया है और लगभग सभी 12 बैंक रिकॉर्ड परिचालन एवं शुद्ध मुनाफा दर्ज कर रहे हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों द्वारा ग्राहकों को दी जाने वाली 'अधिविकर्ष' (Overdraft - OD) सुविधा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">खाताधारक को उसके खाते में उपलब्ध वास्तविक जमा शेष से अधिक एक पूर्व-निर्धारित सीमा तक राशि निकालने की अल्पकालिक ऋण सुविधा (मुख्यतः चालू खातों पर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वाणिज्यिक बैंकों के लिए 'ऋण-जमा अनुपात' (Credit-Deposit Ratio / CD Ratio) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक द्वारा जुटाई गई कुल जमाराशियों में से कितना प्रतिशत भाग ऋण के रूप में वितरित किया गया है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी बैंक का CD अनुपात अत्यधिक ऊंचा (जैसे 80-85% से अधिक) हो जाए, तो बैंक पर क्या विनियामक जोखिम बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तरलता तनाव (Liquidity Crunch) का जोखिम, क्योंकि जमा वृद्धि की तुलना में ऋण वृद्धि बहुत तेज होने से नकदी की कमी हो सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों के आंतरिक नियंत्रण में 'फायरवॉल' (Chinese Wall) की अवधारणा का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक के वाणिज्यिक ऋण विभाग और निवेश/ट्रेडिंग विभाग के बीच सूचनाओं के आदान-प्रदान पर विनियामक रोक, ताकि हितों के टकराव (Conflict of Interest) और भेदिया सौदों को रोका जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों में 'ऋण-मूल्य अनुपात' (Loan-to-Value Ratio - LTV) क्या निर्धारित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गिरवी रखी गई संपत्ति के कुल बाजार मूल्य के सापेक्ष बैंक द्वारा दिया जाने वाला अधिकतम ऋण प्रतिशत (जैसे होम लोन पर 75-80% LTV)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा आवास या वाहन ऋणों पर LTV अनुपात को घटाना किस प्रकार का मौद्रिक उपकरण है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गुणात्मक / चयनात्मक साख नियंत्रण उपकरण (Qualitative Credit Control Instrument)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नैतिक दबाव (Moral Suasion) के तहत RBI बैंकों से क्या अपेक्षा करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिना कोई कानूनी डंडा चलाए अनौपचारिक बैठकों, पत्रों और सलाह के माध्यम से बैंकों को अपनी मौद्रिक प्राथमिकताओं और ब्याज दर कटौती के अनुरूप कार्य करने हेतु प्रेरित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय बैंकिंग प्रणाली की वर्तमान सुदृढ़ता का राष्ट्रीय अर्थव्यवस्था पर क्या व्यापक प्रभाव है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्च पूंजी पर्याप्तता, न्यूनतम एनपीए और मजबूत बैलेंस शीट के साथ भारतीय बैंक देश के बुनियादी ढांचे, विनिर्माण और 7% से अधिक की तीव्र आर्थिक वृद्धि को निर्बाध वित्तपोषित करने की सबसे मजबूत स्थिति में हैं।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

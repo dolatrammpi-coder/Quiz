@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="विनिमय दर Part 2">
+<title>विनिमय दर Part 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / विनिमय दर Part 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>विनिमय दर Part 2</h1>
+    <p class="topic-subtitle">रुपये का ऐतिहासिक अवमूल्यन (1949, 1966, 1991), अवमूल्यन व मूल्यह्रास में अंतर, डॉलर विनिमय दर में परिवर्तन तथा समष्टिगत आर्थिक प्रभाव</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">विनिमय दर Part 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>विनिमय दर परिवर्तन</th><th>प्रमुख कारण/विशेषता</th><th>संभावित प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">1949 का प्रथम अवमूल्यन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ब्रिटिश पाउंड स्टर्लिंग के 30.5% अवमूल्यन के अनुपालन में; भारत-पाक विभाजन से उत्पन्न व्यापारिक असंतुलन और स्टर्लिंग क्षेत्र की सुरक्षा।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अमेरिकी डॉलर के मुकाबले रुपया ₹3.30 से ₹4.76 हुआ; गैर-स्टर्लिंग आयातों में कमी और डॉलर क्षेत्र को निर्यातों में तात्कालिक सुधार।</div></div></td></tr><tr><td><div class="primary-cell">1966 का द्वितीय अवमूल्यन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1962 व 1965 के युद्ध, 1965-66 का भीषण सूखा, विदेशी मुद्रा भंडार का सूखना तथा विश्व बैंक/आईएमएफ (बेल मिशन) की सशर्त सहायता।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">रुपये का 36.5% का भारी अवमूल्यन (₹4.76 से ₹7.50 प्रति डॉलर); आयात बिल में भारी वृद्धि, राजनीतिक विवाद किंतु दीर्घकाल में निर्यात प्रतिस्पर्धा।</div></div></td></tr><tr><td><div class="primary-cell">1991 का तृतीय अवमूल्यन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1990 का खाड़ी युद्ध, तेल कीमतों में उछाल, विदेशी मुद्रा भंडार का $1.1B रह जाना और आईएमएफ से आपात ऋण की पूर्व-शर्त।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दो चरणों (1 व 3 जुलाई) में ~18.5% संचयी अवमूल्यन; पूंजी पलायन पर रोक, LERMS दोहरी दर प्रणाली की शुरुआत और 1993 में बाजार फ्लोट का मार्ग प्रशस्त।</div></div></td></tr><tr><td><div class="primary-cell">अवमूल्यन (Devaluation)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">स्थिर या खूंटीदार विनिमय दर व्यवस्था में सरकार या केंद्रीय बैंक द्वारा प्रशासनिक आदेश से घरेलू मुद्रा के बाह्य मूल्य में जानबूझकर कटौती।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">निर्यात सस्ते और आयात महंगे होते हैं; केंद्रीय बैंक के विदेशी मुद्रा भंडार पर दबाव घटता है; राजनीतिक रूप से अलोकप्रिय कदम।</div></div></td></tr><tr><td><div class="primary-cell">मूल्यह्रास (Depreciation)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">लचीली / फ्लोटिंग विनिमय दर प्रणाली में विदेशी मुद्रा की मांग और आपूर्ति की बाजार शक्तियों द्वारा घरेलू मुद्रा के मूल्य में स्वतः गिरावट।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दैनिक बाजार संतुलन, बाह्य आघातों (जैसे तेल उछाल, फेड दर वृद्धि) का स्वतः अवशोषण; अन-हेज्ड विदेशी ऋणों की अदायगी लागत में वृद्धि।</div></div></td></tr><tr><td><div class="primary-cell">अमेरिकी डॉलर का सुदृढ़ीकरण</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अमेरिकी फेडरल रिजर्व द्वारा ब्याज दरों में आक्रामक वृद्धि, वैश्विक भू-राजनीतिक तनाव और सुरक्षित आश्रय (Safe-Haven) मांग में तेजी।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत सहित उभरते बाजारों से FPI पूंजी का बहिर्वाह; घरेलू मुद्रा पर मूल्यह्रास का भारी दबाव और डॉलर में मूल्यवर्गित आयात महंगे होना।</div></div></td></tr><tr><td><div class="primary-cell">जे-वक्र प्रभाव (J-Curve Effect)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अवमूल्यन/मूल्यह्रास के बाद अल्पावधि में मूल्य प्रभाव (Price Effect) का मात्रा प्रभाव (Volume Effect) पर हावी होना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">शुरुआती 6 से 12 महीनों में व्यापार घाटा पहले और गहराता है, किंतु मध्यम अवधि में निर्यात विस्तार व आयात संकुचन से घाटे में टिकाऊ सुधार आता है।</div></div></td></tr><tr><td><div class="primary-cell">मार्शल-लर्नर शर्त की पूर्ति</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">निर्यात और आयात की मांग की मूल्य लोचों का योग इकाई से अधिक होना (|e_x + e_m| > 1)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अवमूल्यन या मूल्यह्रास देश के व्यापार संतुलन और चालू खाता घाटे (CAD) को सफलतापूर्वक सुधारने में सक्षम होता है।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'मुद्रा का अवमूल्यन' (Currency Devaluation) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थिर या खूंटीदार (Pegged) विनिमय दर प्रणाली के तहत सरकार या केंद्रीय बैंक द्वारा आधिकारिक नीतिगत निर्णय से किसी विदेशी संदर्भ मुद्रा के सापेक्ष घरेलू मुद्रा के मूल्य में जानबूझकर की गई कटौती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्वतंत्र भारत के आर्थिक इतिहास में रुपये का औपचारिक अवमूल्यन (Official Devaluation) कुल कितनी बार किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तीन प्रमुख ऐतिहासिक अवसरों पर: 1. सितंबर 1949, 2. जून 1966, और 3. जुलाई 1991।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सितंबर 1949 में स्वतंत्र भारत का पहला रुपया अवमूल्यन किस ऐतिहासिक पृष्ठभूमि में किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ब्रिटेन द्वारा पाउंड स्टर्लिंग का अमेरिकी डॉलर के मुकाबले 30.5% अवमूल्यन करने के निर्णय के अनुपालन में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1949 के अवमूल्यन के समय भारत के केंद्रीय वित्त मंत्री कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. जॉन मथाई (Dr. John Matthai)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1949 में रुपये का अवमूल्यन किन विदेशी मुद्राओं के सापेक्ष हुआ और किसके सापेक्ष अपरिवर्तित रहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमेरिकी डॉलर के सापेक्ष रुपये का 30.5% अवमूल्यन हुआ (रुपया $1 = ₹3.30 से गिरकर ₹4.76 हुआ), जबकि ब्रिटिश पाउंड के साथ इसकी विनिमय दर (1 शिलिंग 6 पेंस प्रति रुपया) अपरिवर्तित रही।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1949 में भारत सरकार के लिए पाउंड स्टर्लिंग के साथ रुपये का अवमूल्यन करना क्यों अनिवार्य था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भारत 'स्टर्लिंग क्षेत्र' (Sterling Area) का अभिन्न अंग था और भारत का अधिकांश विदेशी व्यापार ब्रिटेन और राष्ट्रमंडल देशों के साथ होता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1949 के अवमूल्यन का भारत-पाकिस्तान व्यापार पर क्या अप्रत्याशित प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पाकिस्तान ने अपनी मुद्रा का अवमूल्यन करने से मना कर दिया, जिससे पाकिस्तानी रुपया भारतीय रुपये से महंगा हो गया और दोनों देशों के बीच जूट व कपास का द्विपक्षीय व्यापार ठप हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जून 1966 में भारत द्वारा किए गए दूसरे बड़े अवमूल्यन के समय प्रधानमंत्री और वित्त मंत्री कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री श्रीमती इंदिरा गांधी तथा वित्त मंत्री शचींद्र चौधरी (Sachindra Chaudhuri) थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>6 जून 1966 को भारतीय रुपये का कितने प्रतिशत का भारी अवमूल्यन घोषित किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">36.5% का आधिकारिक अवमूल्यन (अमेरिकी डॉलर के मुकाबले रुपया ₹4.76 से गिरकर सीधे ₹7.50 प्रति डॉलर हो गया)।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1966 के अवमूल्यन का ब्रिटिश पाउंड के सापेक्ष क्या प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पाउंड के मुकाबले भी रुपये का अवमूल्यन हुआ; 1 पाउंड की कीमत ₹13.33 से बढ़कर ₹21.00 हो गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1966 में भारत सरकार को इतना कठोर अवमूल्यन करने के लिए किन आंतरिक संकटों ने विवश किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1962 का भारत-चीन युद्ध, 1965 का भारत-पाकिस्तान युद्ध, 1965-66 का सदी का सबसे भीषण सूखा और विदेशी मुद्रा भंडार का सूख जाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1966 के अवमूल्यन के पीछे किस अंतरराष्ट्रीय संस्थागत दबाव की निर्णायक भूमिका थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व बैंक और अंतरराष्ट्रीय मुद्रा कोष (IMF) की; विशेष रूप से विश्व बैंक के 'बर्नार्ड बेल मिशन' (Bell Mission) की रिपोर्ट, जिसने विदेशी सहायता हेतु अवमूल्यन की अनिवार्य शर्त रखी थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1966 के अवमूल्यन के साथ आयात-निर्यात व्यवस्था में कौन-से पूरक नीतिगत बदलाव किए गए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निर्यात संवर्धन हेतु दी जाने वाली नकद सब्सिडी को समाप्त किया गया और आयात शुल्कों (Customs Tariffs) को युक्तिसंगत बनाया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1966 के अवमूल्यन को अल्पावधि में आर्थिक और राजनीतिक दृष्टि से असफल क्यों माना गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि 1966-67 में पुनः भीषण सूखा पड़ा, जिससे कृषि निर्यात नहीं बढ़ सके, जबकि आवश्यक आयातों (खाद्यान्न, उर्वरक) का बिल अत्यधिक बढ़ गया और मुद्रास्फीति भड़क गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के ऐतिहासिक भुगतान संतुलन संकट के समय रुपये का अवमूल्यन कब और कितने चरणों में किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जुलाई 1991 में दो चरणों में: पहला चरण 1 जुलाई 1991 को (~9%) तथा दूसरा चरण 3 जुलाई 1991 को (~11%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 1991 के दो-चरणीय अवमूल्यन में रुपये का कुल संचयी अवमूल्यन कितना था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रमुख विदेशी मुद्राओं (USD, GBP, DEM, JPY) के सापेक्ष लगभग 18.5% से 19% का संचयी अवमूल्यन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के अवमूल्यन के समय भारत के प्रधानमंत्री, वित्त मंत्री और RBI गवर्नर कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रधानमंत्री पी. वी. नरसिम्हा राव, वित्त मंत्री डॉ. मनमोहन सिंह और भारतीय रिजर्व बैंक के गवर्नर एस. वेंकिटरमणन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 1991 में अवमूल्यन को एक ही झटके में करने के बजाय दो अलग-अलग दिनों (1 व 3 जुलाई) में क्यों बांटा गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा बाजार की तात्कालिक प्रतिक्रिया को परखने, सट्टेबाजी को विफल करने और बाजार में घबराहट (Panic) को रोकने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 में अवमूल्यन से ठीक पूर्व 1 अमेरिकी डॉलर का आधिकारिक मूल्य क्या था और अवमूल्यन के बाद क्या हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवमूल्यन से पूर्व 1 USD = लगभग ₹21.20 था, जो 3 जुलाई 1991 के बाद बढ़कर लगभग ₹25.95 प्रति डॉलर हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के अवमूल्यन का तात्कालिक समष्टिगत आर्थिक उद्देश्य क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा के त्वरित बाह्य पलायन (Capital Flight) को तुरंत रोकना, हवाला चैनलों पर जा रहे प्रेषणों को आधिकारिक बैंकिंग तंत्र में लौटाना और आईएमएफ से आपातकालीन ऋण सुविधा प्राप्त करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मार्च 1992 के बजट में विनिमय दर सुधार हेतु कौन-सी अंतरिम व्यवस्था लागू की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उदारीकृत विनिमय दर प्रबंधन प्रणाली (LERMS - Liberalised Exchange Rate Management System), जिसे 'दोहरी विनिमय दर प्रणाली' कहा गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>LERMS दोहरी विनिमय दर प्रणाली के तहत विदेशी मुद्रा अर्जनों के रूपांतरण का क्या नियम था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">40:60 का अनुपात; 40% विदेशी मुद्रा आधिकारिक दर पर सरकार को अनिवार्य आयातों (तेल, उर्वरक) हेतु देनी होती थी और 60% बाजार दर पर भुनाई जा सकती थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत ने आधिकारिक प्रशासनिक अवमूल्यन की व्यवस्था को हमेशा के लिए समाप्त कर बाजार-आधारित विनिमय दर कब अपनाई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 मार्च 1993 के केंद्रीय बजट में, जब एकीकृत बाजार-निर्धारित विनिमय दर प्रणाली (Unified Exchange Rate System) लागू की गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1993 के बाद से भारतीय रुपये के मूल्य में होने वाली किसी भी गिरावट को आधिकारिक रूप से क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये का 'मूल्यह्रास' (Depreciation), न कि अवमूल्यन (Devaluation); क्योंकि अब दर बाजार की मांग और आपूर्ति से तय होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के अवमूल्यन और उसके बाद के सुधारों का भारत के विदेशी मुद्रा भंडार पर क्या चमत्कारिक प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जून 1991 के मात्र 1.1 बिलियन डॉलर से उछलकर विदेशी मुद्रा भंडार मार्च 1994 तक 15 बिलियन डॉलर और 2004 तक 100 बिलियन डॉलर पार कर गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'अवमूल्यन' (Devaluation) और 'मूल्यह्रास' (Depreciation) के बीच सबसे मौलिक संस्थागत अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवमूल्यन सरकार या केंद्रीय बैंक द्वारा प्रशासनिक आदेश से किया जाता है, जबकि मूल्यह्रास विदेशी मुद्रा बाजार में मांग और आपूर्ति की शक्तियों द्वारा स्वतः घटित होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन और मूल्यह्रास किस प्रकार की विनिमय दर प्रणालियों से संबंधित हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवमूल्यन स्थिर या खूंटीदार (Fixed/Pegged) विनिमय दर प्रणाली से संबंधित है, जबकि मूल्यह्रास लचीली या फ्लोटिंग (Flexible/Floating) विनिमय दर प्रणाली से संबंधित है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घटना की आवृत्ति (Frequency) के संदर्भ में अवमूल्यन और मूल्यह्रास में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवमूल्यन एक असतत, आकस्मिक और दुर्लभ नीतिगत घटना (Discrete Event) है, जबकि मूल्यह्रास बाजार में प्रत्येक सेकंड होने वाला सतत और गतिशील उतार-चढ़ाव (Continuous Process) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'पुनर्मूल्यांकन / अधिमूल्यन' (Revaluation) और 'मूल्यवृद्धि / सुदृढ़ीकरण' (Appreciation) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">Revaluation स्थिर दर प्रणाली में सरकार द्वारा आधिकारिक रूप से मुद्रा का मूल्य बढ़ाना है, जबकि Appreciation फ्लोटिंग प्रणाली में बाजार शक्तियों द्वारा मुद्रा का स्वतः मजबूत होना है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राजनीतिक उत्तरदायित्व (Political Accountability) के संदर्भ में अवमूल्यन और मूल्यह्रास में क्या अंतर देखा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवमूल्यन की सीधी राजनीतिक जिम्मेदारी सरकार पर आती है और इसे सरकार की विफलता माना जाता है, जबकि मूल्यह्रास को वैश्विक बाजार परिस्थितियों और अमूर्त आर्थिक शक्तियों का परिणाम माना जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या मूल्यह्रास (Depreciation) होने पर केंद्रीय बैंक के किसी औपचारिक कानूनी आदेश या गजट अधिसूचना की आवश्यकता होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं, यह पूरी तरह विदेशी मुद्रा बाजार के अंतर्निहित लेन-देनों से स्वतः परिलक्षित होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या किसी देश का केंद्रीय बैंक फ्लोटिंग प्रणाली में मूल्यह्रास की गति को धीमा करने हेतु हस्तक्षेप कर सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; अपने विदेशी मुद्रा भंडार से डॉलर बेचकर (प्रबंधित फ्लोटिंग के तहत), किंतु यह दर को आधिकारिक रूप से तय नहीं करता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय वित्तीय साख पर अवमूल्यन और मूल्यह्रास का क्या भिन्न प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवमूल्यन संप्रभु ऋण संकट और अंतरराष्ट्रीय स्तर पर घबराहट का स्पष्ट संकेत देता है, जबकि क्रमिक मूल्यह्रास को अर्थव्यवस्था का सामान्य बाजार समायोजन माना जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सट्टेबाजी के हमलों (Speculative Attacks) की संभावना किस प्रणाली में अधिक विनाशकारी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थिर विनिमय दर प्रणाली में (अवमूल्यन से पूर्व); क्योंकि सटोरियों को पता होता है कि केंद्रीय बैंक के पास भंडार सीमित है और एकतरफा लाभ कमाया जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आंतरिक नीतिगत स्वतंत्रता (Policy Autonomy) के संदर्भ में मूल्यह्रास अवमूल्यन से किस प्रकार बेहतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फ्लोटिंग दर (मूल्यह्रास) केंद्रीय बैंक को घरेलू प्राथमिकताओं (मुद्रास्फीति, विकास) के अनुसार स्वतंत्र ब्याज दरें तय करने की छूट देती है, जबकि स्थिर दर में मुद्रा बचाने हेतु ब्याज दरें जबरन बढ़ानी पड़ती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डिफेंस लागत (Cost of Defense) के संदर्भ में अवमूल्यन और मूल्यह्रास में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थिर दर को बचाने में केंद्रीय बैंक का विदेशी मुद्रा भंडार पूरी तरह समाप्त हो सकता है, जबकि फ्लोटिंग दर में मुद्रा स्वतः टूटकर नए संतुलन पर पहुंच जाती है और भंडार सुरक्षित रहता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब समाचारों में आता है कि 'रुपया डॉलर के मुकाबले 20 पैसे टूटकर ₹83.40 पर बंद हुआ', तो यह किस अवधारणा का उदाहरण है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये के दैनिक बाजार मूल्यह्रास (Depreciation) का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब 1966 में सरकार ने घोषणा की कि 'अब 1 डॉलर का मूल्य ₹4.76 के बजाय ₹7.50 होगा', तो वह किसका उदाहरण था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आधिकारिक प्रशासनिक अवमूल्यन (Devaluation) का।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या अवमूल्यन और मूल्यह्रास दोनों के अंतिम व्यापारिक प्रभाव (निर्यात सस्ता, आयात महंगा) समान होते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ; आर्थिक परिणाम समान होते हैं, केवल दर परिवर्तन के पीछे का तंत्र, समय-सीमा और विनियामक परिवेश भिन्न होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापारिक हेजिंग (Hedging) की आवश्यकता किस व्यवस्था में सर्वाधिक महसूस की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फ्लोटिंग दर व्यवस्था (मूल्यह्रास के जोखिम) में; क्योंकि दैनिक उतार-चढ़ाव आयातकों और निर्यातकों के लाभ मार्जिन को अप्रत्याशित बना देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'अमेरिकी डॉलर' (USD) को विश्व की प्राथमिक वैश्विक आरक्षित मुद्रा (Global Reserve Currency) क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि वैश्विक व्यापार चालान का ~85% से अधिक और वैश्विक केंद्रीय बैंकों के विदेशी मुद्रा भंडार का ~58% हिस्सा अमेरिकी डॉलर में रखा जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'डॉलर इंडेक्स' (US Dollar Index - DXY) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व की 6 प्रमुख विकसित मुद्राओं (यूरो, जापानी येन, ब्रिटिश पाउंड, कनाडाई डॉलर, स्वीडिश क्रोना, स्विस फ्रैंक) के बास्केट के सापेक्ष अमेरिकी डॉलर के मूल्य को मापने वाला वैश्विक सूचकांक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डॉलर इंडेक्स (DXY) में किस मुद्रा का भारांक (Weightage) सबसे अधिक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यूरो (EUR) का; कुल बास्केट का लगभग 57.6% हिस्सा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब वैश्विक स्तर पर डॉलर इंडेक्स (DXY) 100 से बढ़कर 106 हो जाता है, तो भारतीय रुपये पर क्या स्वाभाविक दबाव बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमेरिकी डॉलर के वैश्विक स्तर पर मजबूत होने से भारतीय रुपये में अमेरिकी डॉलर के सापेक्ष स्वतः मूल्यह्रास का भारी दबाव बनता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अमेरिकी फेडरल रिजर्व द्वारा ब्याज दरों में आक्रामक वृद्धि (Fed Rate Hikes) का भारतीय रुपये पर क्या सीधा प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत और अमेरिका के बीच ब्याज दर अंतर (Interest Rate Differential) घट जाता है, जिससे विदेशी पोर्टफोलियो निवेशक (FPI) भारत से डॉलर निकालकर अमेरिकी बॉन्ड में लगाते हैं और रुपया टूटता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कच्चे तेल (Crude Oil) की अंतरराष्ट्रीय कीमतों में भारी उछाल भारतीय रुपये को कैसे कमजोर करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भारत अपनी तेल जरूरतों का 85% आयात करता है; तेल महंगा होने पर भारतीय आयातकों को डॉलर की भारी मांग करनी पड़ती है, जिससे डॉलर महंगा और रुपया कमजोर होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का चालू खाता घाटा (CAD) बढ़ने पर डॉलर-रुपया विनिमय दर पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश से बाहर जाने वाली विदेशी मुद्रा की मात्रा देश में आने वाली विदेशी मुद्रा से अधिक हो जाती है, जिससे डॉलर की शुद्ध मांग बढ़कर रुपये का मूल्यह्रास कराती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब भारतीय शेयर बाजारों में विदेशी संस्थागत निवेशक (FII/FPI) भारी शुद्ध बिकवाली (Net Outflows) करते हैं, तो क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे अपने भारतीय शेयर बेचकर रुपये को डॉलर में बदलते हैं और बाहर ले जाते हैं, जिससे बाजार में डॉलर की तीव्र कमी होकर रुपया गिरता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वैश्विक वित्तीय बाजारों में 'जोखिम से बचाव' (Risk-Off Sentiment / Flight to Safety) की स्थिति में डॉलर का व्यवहार कैसा होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भू-राजनीतिक तनाव या युद्ध के समय वैश्विक निवेशक उभरते बाजारों से पूंजी निकालकर सबसे सुरक्षित परिसंपत्ति (अमेरिकी ट्रेजरी बॉन्ड और डॉलर) में शरण लेते हैं, जिससे डॉलर अप्रत्याशित मजबूत होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब भारतीय रिजर्व बैंक (RBI) रुपये की गिरावट को रोकने हेतु विदेशी मुद्रा बाजार में हस्तक्षेप करता है, तो वह क्या बेचता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">RBI अपने विदेशी मुद्रा भंडार से अमेरिकी डॉलर खुले बाजार में बेचता है और बाजार से रुपये की तरलता को सोख लेता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>RBI द्वारा डॉलर बेचे जाने से देश के विदेशी मुद्रा भंडार पर क्या तात्कालिक असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा भंडार में गिरावट आती है (जैसे 2022 में यूक्रेन युद्ध के बाद भंडार $642 बिलियन से गिरकर $524 बिलियन तक आ गया था)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय कंपनियों द्वारा ली जाने वाली 'गैर-हेज्ड विदेशी वाणिज्यिक उधारी' (Unhedged ECB Exposure) डॉलर मजबूत होने पर क्यों खतरनाक बन जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि कंपनियों की कमाई रुपये में होती है किंतु उन्हें कर्ज डॉलर में चुकाना होता है; डॉलर महंगा होते ही उनकी ऋण अदायगी लागत अचानक बढ़ जाती है और दिवालियापन का जोखिम बढ़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डॉलर के मजबूत होने का भारत में विदेशों में पढ़ रहे छात्रों और भारतीय पर्यटकों पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी शिक्षा की ट्यूशन फीस, रहने का खर्च और अंतरराष्ट्रीय हवाई यात्रा का खर्च रुपये के संदर्भ में अत्यधिक महंगा हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डॉलर के मजबूत होने का अनिवासी भारतीयों (NRIs) द्वारा भारत भेजे जाने वाले प्रेषणों (Remittances) पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रवासियों को प्रत्येक डॉलर के बदले अधिक रुपये मिलते हैं, जिससे वे भारत में अधिक धन भेजने और सावधि जमा (FCNR/NRE) करने हेतु प्रोत्साहित होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2013 के 'टेपर टैंट्रम' (Taper Tantrum) संकट के दौरान डॉलर के मुकाबले रुपये में कितनी तीव्र गिरावट आई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मई 2013 से अगस्त 2013 के बीच रुपया लगभग ₹54 प्रति डॉलर से टूटकर ₹68.80 प्रति डॉलर के तत्कालीन ऐतिहासिक निचले स्तर पर पहुंच गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2013 के टेपर टैंट्रम संकट से रुपये को उबारने हेतु RBI गवर्नर डॉ. रघुराम राजन ने कौन-सी सफल योजना चलाई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FCNR(B) विशेष रियायती डॉलर स्वैप विंडो; जिसके जरिए भारतीय बैंकों ने विदेशी बाजारों से $34 बिलियन की ताजा विदेशी मुद्रा जुटाई थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रूस-यूक्रेन युद्ध (2022) के उपरांत अमेरिकी डॉलर के मुकाबले भारतीय रुपये की क्या यात्रा रही?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कच्चे तेल के $130 प्रति बैरल पार जाने और अमेरिकी फेड द्वारा 500 आधार अंक ब्याज दर बढ़ाने से रुपया ₹74 से टूटकर ₹82-₹83 प्रति डॉलर के स्तर पर आ गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या डॉलर के मुकाबले रुपये का टूटना हमेशा भारतीय अर्थव्यवस्था की आंतरिक कमजोरी का प्रतीक होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; प्रायः यह अमेरिकी डॉलर की वैश्विक मजबूती (DXY में उछाल) का परिणाम होता है; वास्तव में कई बार रुपया अन्य वैश्विक मुद्राओं (यूरो, येन, पाउंड) के मुकाबले मजबूत हो रहा होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई की विनिमय दर नीति में 'क्रमिक मूल्यह्रास' (Orderly Depreciation) का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये को बाजार वास्तविकताओं के अनुरूप धीरे-धीरे समायोजित होने देना, किंतु सटोरियों को किसी एक दिन भारी उतार-चढ़ाव या पैनिक फैलाने की अनुमति न देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डॉलर-रुपया विनिमय दर में स्थिरता सुनिश्चित करने हेतु RBI द्वारा 'एनडीएफ बाजार' (Non-Deliverable Forward - NDF Market) में क्या हस्तक्षेप किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गिफ्ट सिटी (GIFT IFSC) स्थित भारतीय बैंकों को अपतटीय (Offshore) NDF बाजार में भाग लेने की अनुमति देना, ताकि विदेशी सट्टेबाजी को नियंत्रित किया जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसी देश द्वारा अपनी मुद्रा के आधिकारिक अवमूल्यन का सबसे प्राथमिक और घोषित उद्देश्य क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गंभीर भुगतान संतुलन (BoP) घाटे को समाप्त करना और आधिकारिक विदेशी मुद्रा भंडार के तेजी से हो रहे क्षरण को रोकना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन किस आर्थिक तंत्र के माध्यम से निर्यातों को बढ़ावा देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी खरीदारों के लिए घरेलू वस्तुओं की विदेशी मुद्रा में कीमत घटाकर उन्हें अंतरराष्ट्रीय बाजार में मूल्य-प्रतिस्पर्धी (Price Competitive) बनाकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन आयातों को किस प्रकार हतोत्साहित (Import Compression) करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी वस्तुओं की घरेलू मुद्रा में कीमत बढ़ाकर उन्हें देश के भीतर अत्यधिक महंगा बना देना, जिससे उपभोक्ता घरेलू विकल्पों की ओर मुड़ते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन अनौपचारिक या समानांतर विदेशी मुद्रा बाजार (हवाला बाजार) पर कैसे अंकुश लगाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आधिकारिक विनिमय दर को अवास्तविक रूप से मजबूत रखने के बजाय बाजार की वास्तविक दर के करीब लाकर आधिकारिक और हवाला दर के प्रीमियम को समाप्त कर देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन देश में 'पूंजी की वापसी' (Capital Repatriation) को कैसे प्रोत्साहित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी निवेशकों और प्रवासियों को यह भरोसा दिलाकर कि मुद्रा का यथार्थवादी सुधार हो चुका है और अब आगे अचानक अवमूल्यन का जोखिम नहीं है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन और व्यापार संतुलन के संबंध में 'जे-वक्र प्रभाव' (J-Curve Effect) की संकल्पना क्या दर्शाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवमूल्यन के तुरंत बाद अल्पावधि में व्यापार घाटा पहले और अधिक गहराता है (J का निचला मोड़), किंतु मध्यम से दीर्घावधि में मात्रात्मक समायोजन होने पर व्यापार संतुलन में मजबूत सुधार आता है (J का ऊपरी उभार)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जे-वक्र प्रभाव में अल्पावधि में व्यापार घाटा सुधरने के बजाय और अधिक क्यों बिगड़ जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'मूल्य प्रभाव' (Price Effect) के कारण; क्योंकि पहले से किए गए आयात अनुबंधों का भुगतान तुरंत बढ़ी हुई विनिमय दर पर करना पड़ता है, जबकि निर्यात मात्रा तुरंत नहीं बढ़ पाती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जे-वक्र प्रभाव के दूसरे चरण में व्यापार संतुलन में सुधार क्यों आता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'मात्रा प्रभाव' (Volume Effect) के हावी होने के कारण; जब विदेशी खरीदार सस्ते घरेलू सामानों के नए ऑर्डर देते हैं और घरेलू खरीदार महंगे आयातों को घटा देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अल्पावधि से दीर्घावधि में आने वाले इस समायोजन अंतराल (Time Lag) के मुख्य कारण क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपभोक्ताओं की पुरानी उपभोग आदतें, मौजूदा व्यावसायिक अनुबंध, कारखानों की उत्पादन क्षमता बढ़ाने में लगने वाला समय और नए अंतरराष्ट्रीय बाजारों की खोज में लगने वाला समय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मार्शल-लर्नर शर्त' (Marshall-Lerner Condition) क्या प्रतिपादित करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा अवमूल्यन व्यापार घाटे को केवल तभी सुधारेगा जब देश के निर्यातों की मांग की मूल्य लोच और आयातों की मांग की मूल्य लोच का कुल योग 1 से अधिक हो (|e_x + e_m| > 1)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश में मार्शल-लर्नर शर्त पूरी न हो (|e_x + e_m| < 1), तो अवमूल्यन का व्यापार घाटे पर क्या परिणाम होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापार घाटा कम होने के बजाय और अधिक बढ़ जाएगा (Perverse Effect)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विकासशील देशों में अल्पावधि में मार्शल-लर्नर शर्त प्रायः क्यों विफल हो जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि उनके आवश्यक आयात (कच्चा तेल, जीवनरक्षक दवाएं, भारी मशीनरी) अत्यधिक बेलोचदार (Inelastic) होते हैं, जिनकी मांग कीमतें बढ़ने पर भी कम नहीं की जा सकती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सिडनी अलेक्जेंडर (Sidney Alexander) का 'अवशोषण उपागम' (Absorption Approach) अवमूल्यन के प्रभाव का विश्लेषण कैसे करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापार संतुलन = कुल राष्ट्रीय आय (Y) - कुल घरेलू अवशोषण (A = C + I + G); अवमूल्यन व्यापार संतुलन को केवल तभी सुधार सकता है जब वह देश के कुल उत्पादन को बढ़ाए अथवा घरेलू उपभोग/अवशोषण को घटाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि कोई अर्थव्यवस्था पहले से ही पूर्ण रोजगार (Full Employment) के स्तर पर कार्य कर रही हो, तो अवमूल्यन का क्या परिणाम होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्पादन तुरंत नहीं बढ़ सकेगा; अतिरिक्त निर्यात मांग केवल घरेलू बाजार में भीषण मुद्रास्फीति को जन्म देगी, जिससे अवमूल्यन का वास्तविक लाभ शून्य हो जाएगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन का सबसे खतरनाक और नकारात्मक दुष्प्रभाव क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'लागत-प्रेरित मुद्रास्फीति' (Cost-Push / Imported Inflation); क्योंकि आयातित कच्चा माल, ऊर्जा और उपकरण महंगे होने से संपूर्ण घरेलू उत्पादन लागत बढ़ जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन का सरकारी बजट और राजकोषीय घाटे पर क्या प्रतिकूल प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकार का विदेशी ऋण सेवा दायित्व (ब्याज व मूलधन भुगतान) रुपये में बढ़ जाता है और आयातित उर्वरक व पेट्रोलियम पर दी जाने वाली सब्सिडी का बिल भारी हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'संकुचनकारी अवमूल्यन' (Contractionary Devaluation) की अवधारणा क्या है जिसे पॉल क्रुगमैन और लांस टेलर ने प्रतिपादित किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसी स्थिति जब अवमूल्यन अर्थव्यवस्था का विस्तार करने के बजाय वास्तविक राष्ट्रीय आय, उपभोग और आर्थिक विकास दर को संकुचित (घटा) कर देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संकुचनकारी अवमूल्यन विकासशील देशों में किन कारणों से घटित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रास्फीति द्वारा वास्तविक मजदूरी घटने से घरेलू मांग का गिरना, कॉर्पोरेट बैलेंस शीट पर विदेशी ऋण का भारी बोझ बढ़ना और बेलोचदार आयात बिल के कारण घरेलू क्रय शक्ति का विदेशों में हस्तांतरण होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन का देश की 'व्यापार की शर्तों' (Terms of Trade - ToT) पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापार की शर्तें प्रतिकूल (Deteriorate) हो जाती हैं; क्योंकि आयातों के सापेक्ष निर्यात सस्ते हो जाते हैं, जिससे समान मात्रा के आयात खरीदने हेतु अधिक मात्रा में निर्यात करना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन के सफल होने हेतु सरकार को कौन-सी पूरक राजकोषीय व मौद्रिक नीतियां अपनानी अनिवार्य होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कठोर मौद्रिक नीति (ब्याज दरें बढ़ाना) और राजकोषीय अनुशासन (बजट घाटा घटाना), ताकि अवमूल्यन से उत्पन्न मुद्रास्फीतिकारी दबावों को दबाया जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'प्रतिस्पर्धी अवमूल्यन' या 'मुद्रा युद्ध' (Currency War / Beggar-Thy-Neighbour Policy) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब एक देश द्वारा अवमूल्यन किए जाने पर उसके प्रतिस्पर्धी व्यापारिक साझेदार देश भी अपने निर्यातों को बचाने हेतु अपनी-अपनी मुद्राओं का जानबूझकर अवमूल्यन करना शुरू कर देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1930 की महामंदी के दौरान प्रतिस्पर्धी अवमूल्यन का वैश्विक व्यापार पर क्या विनाशकारी परिणाम हुआ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैश्विक व्यापार पूरी तरह ध्वस्त हो गया था, संरक्षणवाद चरम पर पहुंच गया था और सभी देशों को भारी आर्थिक नुकसान उठाना पड़ा था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आईएमएफ (IMF) के अनुच्छेदों के तहत प्रतिस्पर्धी अवमूल्यन पर क्या कानूनी पाबंदी लगाई गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सदस्य देशों को अनुचित व्यापारिक लाभ प्राप्त करने या अपने BoP समायोजन को टालने हेतु जानबूझकर मुद्रा में हेरफेर करने की सख्त मनाही है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चीन पर 2000 के दशक में अमेरिका और पश्चिमी देशों द्वारा क्या मुख्य विनिमय दर आरोप लगाया जाता रहा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह कि चीन अपने विशाल विनिर्माण निर्यातों को कृत्रिम रूप से सस्ता बनाए रखने हेतु अपनी मुद्रा 'युआन' (रेनमिनबी) का जानबूझकर अवमूल्यन करके रखता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन का घरेलू पर्यटन उद्योग (Domestic Tourism) पर क्या सकारात्मक प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी पर्यटकों के लिए भारत में यात्रा करना अत्यधिक सस्ता और आकर्षक हो जाता है, जिससे इनबाउंड पर्यटन और विदेशी मुद्रा अर्जन में भारी उछाल आता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन का देश के सूचना प्रौद्योगिकी (IT) और बिजनेस प्रोसेस आउटसोर्सिंग (BPO) क्षेत्र पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक लाभदायक; क्योंकि उनकी कमाई डॉलर में होती है जबकि अधिकांश परिचालन लागत (इंजीनियरों का वेतन) रुपये में होती है, जिससे उनका परिचालन लाभ मार्जिन (Operating Margin) बढ़ जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन का विमानन (Aviation) उद्योग पर क्या नकारात्मक प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विमानन कंपनियां गहरे संकट में आ जाती हैं; क्योंकि उनका सबसे बड़ा खर्च—विमानन टर्बाइन ईंधन (ATF) और विमानों की लीज का किराया—डॉलर में बंधा होता है, जिससे परिचालन लागत अचानक बढ़ जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन का घरेलू शेयर बाजार (Stock Market) पर तात्कालिक मनोवैज्ञानिक प्रभाव क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पावधि में घबराहट और बिकवाली देखी जाती है; क्योंकि विदेशी निवेशकों को डॉलर के संदर्भ में अपने पोर्टफोलियो का मूल्य घटने का डर होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा अवमूल्यन और 'आयात प्रतिस्थापन' (Import Substitution) में क्या संबंध है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी सामान अत्यधिक महंगे होने से घरेलू विनिर्माताओं को आयातित वस्तुओं के स्वदेशी विकल्प तैयार करने का मजबूत आर्थिक प्रोत्साहन मिलता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन का देश की 'क्रेडिट रेटिंग' (Sovereign Credit Rating) पर क्या असर पड़ सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यदि अवमूल्यन किसी गहरे संरचनात्मक संकट के कारण हो, तो मूडीज या एसएंडपी जैसी अंतरराष्ट्रीय एजेंसियां देश की साख रेटिंग को घटा सकती हैं, जिससे भविष्य की उधारी महंगी हो जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा अवमूल्यन का समाज के विभिन्न वर्गों पर आय पुनर्वितरण (Income Redistribution) प्रभाव कैसा होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निर्यातकों, विदेशी मुद्रा प्राप्तकर्ताओं और बड़े उद्योगपतियों को लाभ होता है, जबकि स्थिर वेतनभोगी मध्यम वर्ग और गरीबों को आयातित मुद्रास्फीति के कारण नुकसान उठाना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या केवल मुद्रा का अवमूल्यन कर देने से किसी देश के निर्यातों में स्थायी और टिकाऊ उछाल लाया जा सकता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; अवमूल्यन केवल एक अस्थायी मूल्य लाभ देता है; दीर्घकालिक निर्यात सफलता उत्पाद की वैश्विक गुणवत्ता, बुनियादी ढांचे की दक्षता, नवाचार और लॉजिस्टिक्स लागत पर निर्भर करती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के बाद भारत ने अवमूल्यन के स्थान पर किन स्थायी संरचनात्मक सुधारों को प्राथमिकता दी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्पादन लिंक्ड प्रोत्साहन (PLI), व्यापार सुगमता (Ease of Doing Business), आधुनिक बंदरगाह व लॉजिस्टिक्स (पीएम गतिशक्ति) और कौशल विकास।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा विदेशी मुद्रा बाजार में अत्यधिक अस्थिरता को रोकने हेतु प्रयुक्त 'अप्रत्यक्ष हस्तक्षेप' (Indirect Intervention) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नीतिगत रेपो दर में वृद्धि करना, बैंकों हेतु अनिवासी जमा (FCNR) पर ब्याज सीमा में छूट देना, और सरकारी प्रतिभूतियों में विदेशी निवेश की सीमा बढ़ाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'अग्रिम प्रीमियम' (Forward Premium) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह प्रतिशत दर जिस पर वायदा विनिमय दर हाजिर विनिमय दर से अधिक होती है; जो मुख्य रूप से दोनों देशों के बीच ब्याज दर के अंतर को दर्शाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब रुपया टूटता है, तो भारत के फार्मास्यूटिकल क्षेत्र पर इसका दोहरा प्रभाव क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जेनेरिक दवाओं के निर्यात से डॉलर में भारी लाभ होता है, किंतु चीन से आयात होने वाले कच्चे माल (सक्रिय फार्मास्यूटिकल सामग्री - API) का आयात बिल बढ़ जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विनिमय दर के संदर्भ में 'मूल्य लोच की निराशावादिता' (Elasticity Pessimism) की ऐतिहासिक अवधारणा क्या थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1940 और 50 के दशक के अर्थशास्त्रियों का यह संशय कि विकासशील देशों के निर्यातों और आयातों की मूल्य लोच इतनी कम होती है कि अवमूल्यन से व्यापार घाटा सुधर ही नहीं सकता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आधुनिक अर्थशास्त्र में 'मूल्य लोच निराशावादिता' को गलत क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि दीर्घावधि में आयातों और निर्यातों दोनों की मांग अत्यधिक लोचदार (Elastic) पाई गई है, और समय के साथ मात्रात्मक समायोजन अवश्य होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा समय-समय पर डॉलर बेचने के बावजूद भारतीय रुपया दीर्घकाल में डॉलर के मुकाबले क्यों टूटता रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत और अमेरिका के बीच संरचनात्मक मुद्रास्फीति अंतर (Structural Inflation Differential) के कारण; भारत में औसत मुद्रास्फीति अमेरिका की तुलना में 3-4% अधिक रही है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सापेक्ष क्रय शक्ति समता (Relative PPP) के अनुसार भारत में उच्च मुद्रास्फीति का विनिमय दर पर क्या अपरिहार्य परिणाम होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये का डॉलर के मुकाबले प्रतिवर्ष औसतन 2% से 3% का क्रमिक नाममात्र मूल्यह्रास होना आर्थिक दृष्टि से स्वाभाविक और अपरिहार्य है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि RBI रुपये को कृत्रिम रूप से बहुत मजबूत रखने का प्रयास करे और मूल्यह्रास न होने दे, तो क्या होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">रुपये का वास्तविक अधिमूल्यन (Real Overvaluation) हो जाएगा, भारतीय निर्यात वैश्विक बाजार से बाहर हो जाएंगे, सस्ता चीनी आयात घरेलू उद्योगों को तबाह कर देगा और विदेशी मुद्रा भंडार खाली हो जाएगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रुपये का एक यथार्थवादी और बाजार-आधारित स्तर बनाए रखना भारतीय विनिर्माण (Make in India) के लिए क्यों जीवन-मरण का प्रश्न है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि एक अधिमूल्यित मुद्रा विदेशी आयातों को कृत्रिम रूप से सस्ता बनाकर घरेलू विनिर्माण को नष्ट कर देती है, जबकि एक प्रतिस्पर्धी विनिमय दर घरेलू उद्योगों को सुरक्षा कवच देती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रुपये के अंतरराष्ट्रीयकरण (Internationalisation of Rupee) से विनिमय दर जोखिम कैसे समाप्त होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब भारतीय आयातक और निर्यातक विदेशी व्यापार का बिल और भुगतान सीधे भारतीय रुपये में करते हैं, तो उन्हें डॉलर की मांग करने या विनिमय दर में उतार-चढ़ाव का कोई जोखिम नहीं उठाना पड़ता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रुपये में सीमा-पार व्यापार निपटान हेतु आरबीआई द्वारा अधिकृत 'एसआरवीए' (SRVA) खाते किस प्रकार कार्य करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी बैंक भारतीय बैंकों में विशेष रुपया वोस्ट्रो खाता खोलते हैं; भारतीय आयातक रुपये में भुगतान करते हैं और विदेशी निर्यातक उसी रुपये से भारत से माल खरीदते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रूस से रियायती कच्चे तेल के आयात में रुपये और गैर-डॉलर मुद्राओं के उपयोग ने भारतीय अर्थव्यवस्था को क्या लाभ पहुंचाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अरबों डॉलर के विदेशी मुद्रा भंडार की बचत हुई और पश्चिमी प्रतिबंधों के बावजूद व्यापारिक आपूर्ति श्रृंखला निर्बाध बनी रही।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत और संयुक्त अरब अमीरात (UAE) के बीच जुलाई 2023 में हस्ताक्षरित 'स्थानीय मुद्रा निपटान प्रणाली' (LCSS) का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">द्विपक्षीय व्यापार का निपटान सीधे भारतीय रुपये (INR) और यूएई दिरहम (AED) में करना, जिससे डॉलर मध्यस्थता की लागत पूरी तरह समाप्त हो गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा बाजार में 'अति-प्रतिक्रिया' (Overshooting) की स्थिति में केंद्रीय बैंक की क्या भूमिका होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अस्थायी तरलता प्रदान कर विनिमय दर को घबराहट में अनियंत्रित गिरने से रोकना और बाजार को उसके वास्तविक आर्थिक बुनियादी स्तर (Fundamentals) पर स्थिर करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का वर्तमान विशाल विदेशी मुद्रा भंडार (लगभग $650-$700 बिलियन) रुपये को किस प्रकार की सुरक्षा प्रदान करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह लगभग 10 से 12 महीने के आयातों को कवर करता है और किसी भी अचानक बाह्य वित्तीय झटके या पूंजी बहिर्वाह के समय रुपये का बचाव करने की अभेद्य ढाल देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा परिवर्तनीयता पर गठित तारापोर समिति (1997 एवं 2006) ने पूर्ण पूंजी खाता परिवर्तनीयता से पूर्व विनिमय दर के संबंध में क्या शर्त रखी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विनिमय दर पूरी तरह बाजार-आधारित होनी चाहिए और चालू खाता घाटा (CAD) जीडीपी के 2.5% से 3% के संधारणीय स्तर पर होना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या भारत वर्तमान में पूर्ण पूंजी खाता परिवर्तनीयता (Full Capital Account Convertibility) को अपनाने के लिए तैयार है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई के अनुसार यह एक दीर्घकालिक क्रमिक प्रक्रिया है; जब तक राजकोषीय घाटा, मुद्रास्फीति और वित्तीय क्षेत्र पूरी तरह सुदृढ़ न हों, पूर्ण परिवर्तनीयता अचानक पूंजी पलायन का जोखिम पैदा कर सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा 1993 से अपनाई गई प्रबंधित फ्लोटिंग विनिमय दर नीति का सबसे बड़ा ऐतिहासिक प्रमाण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1997 का एशियाई वित्तीय संकट, 2008 का वैश्विक वित्तीय संकट और 2013 का टेपर टैंट्रम—भारत इन सभी संकटों से बिना किसी मुद्रा विनाश के सुरक्षित बाहर निकला।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा अवमूल्यन, मूल्यह्रास और विनिमय दर प्रबंधन के संपूर्ण विश्लेषण का अंतिम और स्थायी आर्थिक निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विनिमय दर केवल एक वित्तीय संख्या नहीं, बल्कि देश के संपूर्ण आर्थिक स्वास्थ्य और उत्पादकता का बैरोमीटर है; 1991 के बाद भारत ने यह सिद्ध किया है कि कृत्रिम प्रशासनिक अवमूल्यन के बजाय बाजार-आधारित प्रबंधित फ्लोट, विवेकपूर्ण विदेशी मुद्रा भंडार और मजबूत आर्थिक बुनियादी सिद्धांत ही राष्ट्रीय मुद्रा को टिकाऊ संप्रभु मजबूती प्रदान करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

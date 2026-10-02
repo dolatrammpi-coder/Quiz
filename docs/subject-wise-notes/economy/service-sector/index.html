@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="सेवा क्षेत्र Part 1">
+<title>सेवा क्षेत्र Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / सेवा क्षेत्र Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>सेवा क्षेत्र Part 1</h1>
+    <p class="topic-subtitle">सेवा क्षेत्र की अवधारणा, भारतीय अर्थव्यवस्था में संरचनात्मक भूमिका, बैंकिंग व वित्तीय सेवाएँ (BFSI), तथा IT एवं ITES का संपूर्ण विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">सेवा क्षेत्र Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>सेवा क्षेत्र</th><th>प्रमुख विशेषता</th><th>अर्थव्यवस्था में योगदान</th></tr></thead><tbody><tr><td><div class="primary-cell">तृतीयक / सेवा क्षेत्र (Tertiary Sector)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अमूर्त (Intangible), गैर-भंडारणीय (Non-storable), और उत्पादन व उपभोग का एक साथ (Simultaneous) होना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत के कुल सकल मूल्य संवर्धन (GVA) में 53-55% से अधिक का योगदान तथा आर्थिक संवृद्धि का सबसे बड़ा चालक।</div></div></td></tr><tr><td><div class="primary-cell">बैंकिंग सेवाएँ (Commercial Banking)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जनता से मांग व सावधि जमा स्वीकार करना और उत्पादक निवेशों हेतु ऋण विस्तार (Credit Creation)।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">घरेलू बचतों का पूंजी निर्माण में अंतरण, प्राथमिकता प्राप्त क्षेत्रक ऋण (PSL) द्वारा समावेशी विकास को गति।</div></div></td></tr><tr><td><div class="primary-cell">वित्तीय प्रौद्योगिकी (FinTech / DPI)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">UPI, AEPS, डिजिटल ऋण तथा खाता एग्रीगेटर (Account Aggregator) आर्किटेक्चर का तीव्र प्रसार।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वित्तीय समावेशन की लागत में भारी कमी, अंतिम छोर तक बैंकिंग पहुंच तथा लेन-देन दक्षता में ऐतिहासिक उछाल।</div></div></td></tr><tr><td><div class="primary-cell">सूचना प्रौद्योगिकी (IT Services)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कस्टम सॉफ्टवेयर विकास, सिस्टम इंटीग्रेशन, क्लाउड सेवाएं तथा वैश्विक प्रौद्योगिकी परामर्श।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत को 'विश्व का बैक-ऑफिस' बनाना, 54 लाख से अधिक प्रत्यक्ष औपचारिक रोजगार और $250 बिलियन+ का उद्योग आकार।</div></div></td></tr><tr><td><div class="primary-cell">सॉफ्टवेयर निर्यात (IT Exports)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उच्च मूल्य-संवर्धित ज्ञान सेवाओं का वैश्विक निर्यात; शीर्ष गंतव्य अमेरिका (60%+) और यूरोपीय संघ।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विशाल विदेशी मुद्रा अर्जन ($190B+), चालू खाता घाटे (CAD) और व्यापारिक व्यापार घाटे की भरपाई में केंद्रीय भूमिका।</div></div></td></tr><tr><td><div class="primary-cell">आईटी-सक्षम सेवाएँ (ITES / BPO / KPO)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैक-ऑफिस डेटा प्रोसेसिंग, बिजनेस प्रोसेस मैनेजमेंट (BPM), कानूनी प्रक्रिया आउटसोर्सिंग और एनालिटिक्स।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">टियर-2 और टियर-3 शहरों में रोजगार सृजन, महिला श्रम बल भागीदारी में वृद्धि तथा कॉर्पोरेट उत्पादकता विस्तार।</div></div></td></tr><tr><td><div class="primary-cell">ग्लोबल कैपेबिलिटी सेंटर्स (GCCs)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वैश्विक बहुराष्ट्रीय कंपनियों (MNCs) के इन-हाउस रणनीतिक प्रौद्योगिकी, नवाचार और अनुसंधान एवं विकास केंद्र।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उच्च वेतन वाले तकनीकी रोजगार, उन्नत AI/क्लाउड अनुसंधान और भारत को वैश्विक नवाचार केंद्र (Innovation Hub) में बदलना।</div></div></td></tr><tr><td><div class="primary-cell">बीमा एवं पेंशन सेवाएँ (BFSI Component)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जोखिम पूलिंग, जीवन व गैर-जीवन बीमा सुरक्षा, तथा लंबी अवधि के बचत साधनों (NPS/APY) का प्रबंधन।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अर्थव्यवस्था में दीर्घकालिक जोखिम पूंजी (Long-term Capital) की आपूर्ति तथा अवसंरचना वित्तपोषण में आधार।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>समष्टि अर्थशास्त्र में 'सेवा क्षेत्र' (Service Sector) को राष्ट्रीय आय वर्गीकरण में किस प्रमुख क्षेत्र के रूप में जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तृतीयक क्षेत्र (Tertiary Sector) के रूप में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सेवाओं (Services) और भौतिक वस्तुओं (Goods) के बीच सबसे बुनियादी अंतर क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सेवाएं अमूर्त (Intangible), अविभाज्य (Inseparable), गैर-भंडारणीय (Perishable/Non-storable) और विविध (Heterogeneous) होती हैं, जिनका उत्पादन और उपभोग एक साथ होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में सेवा क्षेत्र की प्राथमिक आर्थिक भूमिका क्या मानी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राथमिक (कृषि) और द्वितीयक (उद्योग) क्षेत्रों के सुचारू संचालन हेतु आवश्यक ढांचागत, लॉजिस्टिक्स, वित्तीय और तकनीकी सहयोग सेवाएं प्रदान करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राष्ट्रीय सांख्यिकी कार्यालय (NSO) के वर्गीकरण के अनुसार सेवा क्षेत्र के अंतर्गत कौन-से प्रमुख उप-क्षेत्र आते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. व्यापार, होटल एवं रेस्तरां, 2. परिवहन, भंडारण एवं संचार, 3. वित्तीय, रियल एस्टेट एवं व्यावसायिक सेवाएं, तथा 4. लोक प्रशासन, रक्षा एवं अन्य सामाजिक सेवाएं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय अर्थव्यवस्था के कुल सकल मूल्य संवर्धन (GVA) में सेवा क्षेत्र की सामान्य हिस्सेदारी वर्तमान में कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 53% से 55% के बीच (अर्थव्यवस्था का सबसे बड़ा एकल क्षेत्र)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के कुल रोजगार (Labour Force) में सेवा क्षेत्र की अनुमानित हिस्सेदारी कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 30% से 32% (जो जीडीपी में इसकी 54% हिस्सेदारी की तुलना में काफी कम है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय आर्थिक विकास के मॉडल को वैश्विक इतिहास में 'सेवा-प्रेरित संवृद्धि' (Service-led Growth Model) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भारत पारंपरिक औद्योगिक विनिर्माण क्रांति के विशाल विस्तार के बिना ही सीधे कृषि से सेवा-आधारित अर्थव्यवस्था में रूपांतरित हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉलिन क्लार्क और एलन फिशर के संरचनात्मक परिवर्तन मॉडल से भारतीय विकास का पथ किस प्रकार विचलित हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पारंपरिक मॉडल में विकास कृषि → उद्योग → सेवा के क्रम में होता है, जबकि भारत में द्वितीयक (विनिर्माण) क्षेत्र जीडीपी के 28-30% पर ठहरा रहा और सेवा क्षेत्र 54% से ऊपर छलांग लगा गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में सेवा क्षेत्र के तीव्र विस्तार की प्रक्रिया को ऐतिहासिक रूप से किस दशक में सबसे बड़ा नीतिगत प्रोत्साहन मिला?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1990 के दशक में, 1991 के आर्थिक उदारीकरण, निजीकरण और दूरसंचार सुधारों (NTP 1994 व 1999) के बाद।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के चालू खाता शेष (Current Account Balance) में सेवा क्षेत्र की क्या निर्णायक भूमिका होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सेवाओं का विशाल शुद्ध अधिशेष (Net Services Surplus / $150B+) वस्तुओं के व्यापार घाटे (Merchandise Trade Deficit) को काफी हद तक पाटने का कार्य करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व व्यापार संगठन (WTO) के आंकड़ों के अनुसार वैश्विक वाणिज्यिक सेवा निर्यात (Commercial Services Exports) में भारत की हिस्सेदारी कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 4.4% से अधिक (भारत विश्व का सातवां सबसे बड़ा सेवा निर्यातक देश है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में आने वाले कुल प्रत्यक्ष विदेशी निवेश (FDI Equity Inflow) में किस क्षेत्र की हिस्सेदारी सर्वाधिक रही है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सेवा क्षेत्र (विशेष रूप से वित्तीय सेवाएं, बैंकिंग, बीमा, गैर-वित्तीय व्यावसायिक सेवाएं और कंप्यूटर सॉफ्टवेयर/हार्डवेयर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में सेवाओं के तीव्र विस्तार से जुड़े 'बॉमोल के लागत रोग' (Baumol's Cost Disease) का क्या सिद्धांत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सेवाओं में विनिर्माण की तुलना में श्रम उत्पादकता धीमी गति से बढ़ती है, किंतु विनिर्माण के समान मजदूरी बढ़ने से सेवाओं की लागत और कीमतें समय के साथ लगातार बढ़ती जाती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय सेवा क्षेत्र के भीतर 'द्वैधता' (Dualism in Services) से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ओर अत्यधिक कुशल, आधुनिक, वैश्विक स्तर पर प्रतिस्पर्धी और उच्च वेतन वाले क्षेत्र (IT, बैंकिंग, परामर्श), तो दूसरी ओर कम उत्पादकता वाले असंगठित पारंपरिक रोजगार (ढाबे, सुरक्षा गार्ड, खुदरा फेरीवाले)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सेवा क्षेत्र में 'मध्यम-कुशल नौकरियों' (Middle-skill Jobs) की कमी का कार्यबल पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह रोजगार बाजार में ध्रुवीकरण (Job Polarization) पैदा करता है; उच्च शिक्षित युवाओं को अत्यधिक लाभ मिलता है जबकि कम पढ़े-लिखे श्रमिक कम वेतन वाले अनौपचारिक कार्यों में फंस जाते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>BFSI क्षेत्र का पूरा नाम क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग, वित्तीय सेवाएं और बीमा (Banking, Financial Services, and Insurance)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग प्रणाली का सबसे बुनियादी समष्टिगत कार्य क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय मध्यस्थता (Financial Intermediation); समाज की बिखरी हुई घरेलू बचतों को जुटाकर उत्पादक निवेशों और व्यवसायों को ऋण के रूप में उपलब्ध कराना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वाणिज्यिक बैंकिंग प्रणाली का विनियामक और पर्यवेक्षी प्राधिकारी कौन है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक (RBI - Reserve Bank of India)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में अनुसूचित वाणिज्यिक बैंकों (Scheduled Commercial Banks - SCBs) को किस अनुसूची के तहत परिभाषित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक अधिनियम, 1934 की दूसरी अनुसूची (Second Schedule) के तहत।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनुसूचित वाणिज्यिक बैंकों के चार प्रमुख संस्थागत वर्ग कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. सार्वजनिक क्षेत्र के बैंक (PSBs), 2. निजी क्षेत्र के बैंक, 3. विदेशी बैंक, और 4. क्षेत्रीय ग्रामीण बैंक (RRBs)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों द्वारा 'साख सृजन' (Credit Creation) की प्रक्रिया किस पर निर्भर करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राथमिक जमाओं और विनियामक नकद आरक्षित अनुपात (CRR) पर आधारित मुद्रा गुणक (Money Multiplier) पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में बैंकिंग सुधारों की दिशा तय करने वाली सबसे ऐतिहासिक समिति कौन-सी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एम. नरसिम्हम समिति (Narasimham Committee - I: 1991 तथा II: 1998)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति (1991) की प्रमुख सिफारिशें क्या थीं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">SLR और CRR में चरणबद्ध कटौती, ब्याज दरों का अविनियमन, विवेकपूर्ण परिसंपत्ति वर्गीकरण (NPA नियम) और निजी क्षेत्र के बैंकों को लाइसेंस देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नरसिम्हम समिति (1998) की सिफारिश पर बैंकों की वित्तीय सुदृढ़ता हेतु कौन-से वैश्विक मानक अपनाए गए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बासेल पूंजी पर्याप्तता मानदंड (Basel Capital Adequacy Norms - CRAR)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूंजी पर्याप्तता अनुपात (CRAR / CAR) का मानक सूत्र क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल पूंजी (Tier-1 + Tier-2) / जोखिम-भारित परिसंपत्तियां (Risk-Weighted Assets) * 100।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई के दिशानिर्देशों के अनुसार भारतीय वाणिज्यिक बैंकों हेतु न्यूनतम CRAR आवश्यकता कितनी निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">9% (सार्वजनिक क्षेत्र के बैंकों हेतु 12% तक का व्यावहारिक मानक, जबकि बासेल-III का वैश्विक मानक 8% है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों में 'गैर-निष्पादित परिसंपत्ति' (NPA) किसे माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह ऋण या अग्रिम जिस पर मूलधन या ब्याज की किस्त 90 दिनों से अधिक समय तक अतिदेय (Overdue) बनी रहे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एनपीए (NPA) को किन तीन श्रेणियों में वर्गीकृत किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. अवमानक परिसंपत्तियां (Sub-standard: 12 माह तक NPA), 2. संदिग्ध परिसंपत्तियां (Doubtful: 12 माह से अधिक NPA), और 3. हानि परिसंपत्तियां (Loss Assets: जो वसूली योग्य न हों)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय बैंकिंग में 'ट्विन बैलेंस शीट समस्या' (Twin Balance Sheet Problem) क्या थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ओर बुनियादी ढांचा और कॉर्पोरेट कंपनियों की भारी कर्जग्रस्तता तथा दूसरी ओर सार्वजनिक क्षेत्र के बैंकों की बैलेंस शीट पर भारी एनपीए का जमा होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ट्विन बैलेंस शीट समस्या को हल करने हेतु 2016 में कौन-सा ऐतिहासिक कानून लागू किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दिवाला और शोधन अक्षमता संहिता, 2016 (Insolvency and Bankruptcy Code - IBC 2016)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सार्वजनिक क्षेत्र के बैंकों के फंसे कर्जों को खरीदने और उनका समाधान करने हेतु स्थापित 'बैड बैंक' (Bad Bank) कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राष्ट्रीय परिसंपत्ति पुनर्निर्माण कंपनी लिमिटेड (NARCL - National Asset Reconstruction Company Ltd.)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग क्षेत्र में 'प्राथमिकता प्राप्त क्षेत्रक ऋण' (PSL) के तहत घरेलू अनुसूचित वाणिज्यिक बैंकों हेतु क्या लक्ष्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अपने कुल समायोजित निवल बैंक ऋण (ANBC) का न्यूनतम 40% हिस्सा कृषि, एमएसएमई, शिक्षा, आवास और कमजोर वर्गों को देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्षेत्रीय ग्रामीण बैंकों (RRBs) और लघु वित्त बैंकों (SFBs) हेतु PSL का क्या अनिवार्य लक्ष्य निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल ऋण (ANBC) का 75% हिस्सा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डॉ. नचिकेत मोर समिति (2014) की सिफारिश पर किन दो नए विभेदित बैंकों (Differentiated Banks) को लाइसेंस दिया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. लघु वित्त बैंक (Small Finance Banks - SFBs), तथा 2. भुगतान बैंक (Payments Banks)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान बैंक (Payments Banks) की मुख्य सीमा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे प्रति ग्राहक ₹2 लाख तक मांग जमा स्वीकार कर सकते हैं किंतु वे किसी भी प्रकार का ऋण (Loans) या क्रेडिट कार्ड जारी नहीं कर सकते।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लघु वित्त बैंक (SFBs) की सबसे प्रमुख ऋण अनिवार्यता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उनके कुल ऋण का कम से कम 50% हिस्सा ₹25 लाख तक के छोटे ऋणों का होना अनिवार्य है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का पहला कार्यात्मक भुगतान बैंक कौन-सा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एयरटेल पेमेंट्स बैंक (Airtel Payments Bank - जनवरी 2017)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डाक विभाग के विशाल नेटवर्क का उपयोग कर स्थापित सरकारी भुगतान बैंक कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंडिया पोस्ट पेमेंट्स बैंक (IPPB - सितंबर 2018)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में गैर-बैंकिंग वित्तीय कंपनियों (NBFCs) का विनियामक कौन है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रिजर्व बैंक (RBI)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों और NBFCs में सबसे प्रमुख विधिक अंतर क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NBFCs मांग जमा (बचत व चालू खाता) स्वीकार नहीं कर सकतीं, वे चेक जारी नहीं कर सकतीं और उनके जमाकर्ताओं को DICGC बीमा सुरक्षा प्राप्त नहीं होती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय प्रतिभूति और विनिमय बोर्ड (SEBI) की स्थापना किस वर्ष हुई थी और इसे वैधानिक दर्जा कब मिला?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थापना: 12 अप्रैल 1988 को; वैधानिक दर्जा: सेबी अधिनियम, 1992 के तहत 30 जनवरी 1992 को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बीमा क्षेत्र का नियमन और संवर्धन करने वाली शीर्ष वैधानिक संस्था कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय बीमा विनियामक और विकास प्राधिकरण (IRDAI - 1999 के अधिनियम द्वारा स्थापित / मुख्यालय: हैदराबाद)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बीमा क्षेत्र में प्रत्यक्ष विदेशी निवेश (FDI) की अधिकतम सीमा को 49% से बढ़ाकर कितना कर दिया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वचालित मार्ग से 74% तक (2021 के संशोधन द्वारा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पेंशन फंडों का विनियामक और विकास प्राधिकरण कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पीएफआरडीए (PFRDA - Pension Fund Regulatory and Development Authority / 2003 में स्थापित, 2013 में वैधानिक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वित्तीय क्षेत्र की सभी नियामक संस्थाओं (RBI, SEBI, IRDAI, PFRDA) के बीच समन्वय स्थापित करने वाली शीर्ष संस्था कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय स्थिरता और विकास परिषद (FSDC - Financial Stability and Development Council / 2010 में गठित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>FSDC की अध्यक्षता किसके द्वारा की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय वित्त मंत्री (Union Finance Minister) द्वारा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय खुदरा भुगतान प्रणाली का संचालन करने वाला शीर्ष संगठन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय राष्ट्रीय भुगतान निगम (NPCI - National Payments Corporation of India / 2008 में स्थापित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यूनिफाइड पेमेंट्स इंटरफेस (UPI) को NPCI द्वारा किस वर्ष औपचारिक रूप से लॉन्च किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अप्रैल 2016 में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>UPI की सफलता ने भारत के डिजिटल भुगतान परिदृश्य को कैसे बदला?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रति माह 14-15 अरब से अधिक त्वरित लेन-देन, नकद लेन-देन में भारी कमी, सूक्ष्म-भुगतानों का लोकतंत्रीकरण और भारत का विश्व का सबसे बड़ा रियल-टाइम पेमेंट बाजार बनना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आधार-सक्षम भुगतान प्रणाली (AEPS) वित्तीय समावेशन में क्या सुविधा देती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिना किसी डेबिट कार्ड के केवल बायोमेट्रिक प्रमाणीकरण द्वारा माइक्रो-एटीएम पर नकद जमा व निकासी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई द्वारा विनियमित 'अकाउंट एग्रीगेटर' (Account Aggregator - AA) नेटवर्क क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नागरिकों की सहमति से उनके वित्तीय डेटा को बैंकों और वित्तीय संस्थानों के बीच सुरक्षित साझा कर बिना भौतिक संपत्ति गिरवी रखे कैश-फ्लो आधारित त्वरित ऋण दिलाने की व्यवस्था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केंद्रीय बैंक डिजिटल मुद्रा (CBDC / e₹) का भारतीय वित्तीय सेवाओं में क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आरबीआई द्वारा जारी संप्रभु डिजिटल मुद्रा जो नकद छपाई की लागत घटाती है, सीमा-पार प्रेषण सस्ता करती है और ऑफलाइन डिजिटल लेन-देन को संभव बनाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के पहले अंतरराष्ट्रीय वित्तीय सेवा केंद्र (IFSC) की स्थापना कहाँ की गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गिफ्ट सिटी (GIFT City - गांधीनगर, गुजरात) में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गिफ्ट सिटी में वित्तीय सेवाओं के नियमन हेतु स्थापित एकीकृत एकल नियामक कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतरराष्ट्रीय वित्तीय सेवा केंद्र प्राधिकरण (IFSCA - 2020 में स्थापित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IT और ITES का पूरा विस्तृत रूप क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सूचना प्रौद्योगिकी (Information Technology) तथा सूचना प्रौद्योगिकी-सक्षम सेवाएं (Information Technology-Enabled Services)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के आईटी और बीपीएम (BPM) उद्योग का शीर्ष राष्ट्रीय व्यापारिक संगठन कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नैसकॉम (NASSCOM - National Association of Software and Service Companies / 1988 में स्थापित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नैसकॉम के अनुसार भारतीय आईटी-बीपीएम उद्योग का कुल राजस्व (FY24) लगभग कितना पहुंच चुका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">250 बिलियन अमेरिकी डॉलर ($250 Billion+) से अधिक।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय आईटी उद्योग में प्रत्यक्ष औपचारिक रोजगार (Direct Employment) की संख्या कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 54 लाख (5.4 मिलियन) से अधिक उच्च-कुशल पेशेवर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय आईटी क्षेत्र में महिला कार्यबल की हिस्सेदारी लगभग कितनी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 36% (भारत के किसी भी अन्य संगठित कॉर्पोरेट क्षेत्र की तुलना में सर्वाधिक महिला रोजगार हिस्सेदारी)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का कुल आईटी और सॉफ्टवेयर सेवा निर्यात (IT Exports) वार्षिक रूप से कितना है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 190 से 200 बिलियन अमेरिकी डॉलर ($190B-$200B)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय आईटी सेवाओं के निर्यात का सबसे बड़ा भौगोलिक गंतव्य कौन-सा देश है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संयुक्त राज्य अमेरिका (कुल आईटी निर्यात का लगभग 60% से 62% हिस्सा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय आईटी निर्यात का दूसरा सबसे बड़ा बाजार कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यूनाइटेड किंगडम और यूरोपीय संघ (लगभग 25% से 28% हिस्सा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में 'सॉफ्टवेयर टेक्नोलॉजी पार्क्स ऑफ इंडिया' (STPI) की स्थापना किस वर्ष और किस उद्देश्य से हुई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1991 में (इलेक्ट्रॉनिक्स और आईटी मंत्रालय के तहत); सॉफ्टवेयर निर्यातकों को सिंगल-विंडो क्लीयरेंस, डेटा संचार और अवसंरचना देने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990 के दशक के अंत में भारतीय आईटी कंपनियों को वैश्विक स्तर पर स्थापित करने वाली ऐतिहासिक घटना कौन-सी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'Y2K बग संकट' (Year 2000 Problem); जिसमें भारतीय सॉफ्टवेयर इंजीनियरों ने अमेरिकी व यूरोपीय बैंकिंग व एयरलाइन प्रणालियों को सफलतापूर्वक अपग्रेड किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत की शीर्ष आईटी सेवा कंपनियों ('Big Five') में किन्हें गिना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. टाटा कंसल्टेंसी सर्विसेज (TCS), 2. इंफोसिस (Infosys), 3. एचसीएल टेक्नोलॉजीज (HCLTech), 4. विप्रो (Wipro), और 5. टेक महिंद्रा (Tech Mahindra)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आईटी-सक्षम सेवाएं (ITES / IT-Enabled Services) क्या होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे व्यावसायिक सेवाएं जो सूचना प्रौद्योगिकी और दूरसंचार नेटवर्क का उपयोग करके दूरस्थ रूप से निष्पादित की जाती हैं (जैसे कॉल सेंटर, डेटा एंट्री, पेरोल प्रबंधन)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बिजनेस प्रोसेस आउटसोर्सिंग (BPO) और नॉलेज प्रोसेस आउटसोर्सिंग (KPO) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">BPO में सामान्य नियम-आधारित बैक-ऑफिस कार्य (कॉल सेंटर, बिलिंग, डेटा एंट्री) होते हैं, जबकि KPO में उच्च-स्तरीय विशेषज्ञता, बौद्धिक निर्णय, वित्तीय मॉडलिंग, डेटा एनालिटिक्स और कानूनी शोध (LPO) शामिल होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में 'ग्लोबल कैपेबिलिटी सेंटर्स' (GCCs / वैश्विक क्षमता केंद्र) क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैश्विक बहुराष्ट्रीय कंपनियों (जैसे जेपी मॉर्गन, गूगल, वॉलमार्ट, माइक्रोसॉफ्ट) के इन-हाउस रणनीतिक प्रौद्योगिकी, नवाचार और अनुसंधान केंद्र जो भारत में स्थित हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में वर्तमान में कितने से अधिक ग्लोबल कैपेबिलिटी सेंटर्स (GCCs) कार्यरत हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1,600 से अधिक GCCs (जिनमें 16 लाख से अधिक उच्च-कुशल पेशेवर कार्यरत हैं)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>GCCs का पारंपरिक BPO से किस प्रकार का गुणात्मक बदलाव हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सस्ते श्रम आधारित बैक-ऑफिस काम से हटकर अब भारत में वैश्विक उत्पादों की कोर कोडिंग, आर्टिफिशियल इंटेलिजेंस (AI), क्लाउड आर्किटेक्चर और साइबर सुरक्षा का विकास हो रहा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत को विश्व में किस शहर के कारण 'सिलिकॉन वैली ऑफ इंडिया' कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बेंगलुरु (कर्नाटक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के प्रमुख शीर्ष आईटी और सॉफ्टवेयर क्लस्टर कौन-से शहर हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बेंगलुरु, हैदराबाद, पुणे, चेन्नई, दिल्ली-एनसीआर (नोएडा/गुरुग्राम), मुंबई और कोलकाता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में 'टियर-2 और टियर-3' शहरों में आईटी उद्योग के प्रसार को क्या नाम दिया जा रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'नेक्स्ट-वेव टेक्नोलॉजी सिटीज' (जैसे कोयंबटूर, इंदौर, भुवनेश्वर, जयपुर, कोच्चि, चंडीगढ़, विशाखापट्टनम)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>टियर-2 शहरों में आईटी कंपनियों के विस्तार का सबसे बड़ा आर्थिक लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">महानगरों पर बुनियादी ढांचे का दबाव कम होना, रियल एस्टेट व परिचालन लागत में 25-30% की कमी तथा स्थानीय प्रतिभाओं को गृह नगर में रोजगार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय आईटी उद्योग के समक्ष वर्तमान में कौन-सी सबसे बड़ी तकनीकी चुनौती और अवसर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'जेनरेटिव एआई' (Generative AI) और ऑटोमेशन का उदय; जिससे पारंपरिक कोडिंग और कॉल सेंटर नौकरियों पर खतरा है किंतु नए एआई समाधानों में अपार संभावनाएं हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नैसकॉम द्वारा भारतीय आईटी कार्यबल को नई तकनीकों में प्रशिक्षित करने हेतु संचालित सरकारी समर्थित मंच कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फ्यूचरस्किल्स प्राइम (FutureSkills Prime / MeitY और NASSCOM का संयुक्त प्लेटफॉर्म)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>फ्यूचरस्किल्स प्राइम के तहत किन 10 उभरती प्रौद्योगिकियों में री-स्किलिंग पर ध्यान दिया जा रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एआई, बिग डेटा एनालिटिक्स, क्लाउड कंप्यूटिंग, साइबर सुरक्षा, इंटरनेट ऑफ थिंग्स (IoT), ब्लॉकचेन, रोबोटिक प्रोसेस ऑटोमेशन, एआर/वीआर, 3डी प्रिंटिंग और वेब 3.0।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अमेरिकी वीजा नियमों (जैसे H-1B वीजा प्रतिबंध) का भारतीय आईटी कंपनियों के बिजनेस मॉडल पर क्या प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय कंपनियों ने साइट पर (Onsite) इंजीनियर भेजने के स्थान पर भारत से ही दूरस्थ डिलीवरी (Offshore Delivery Model) और अमेरिका में स्थानीय भर्ती को तेज किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्टार्टअप्स के क्षेत्र में भारत विश्व में किस स्थान पर आता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व का तीसरा सबसे बड़ा स्टार्टअप इकोसिस्टम (100 से अधिक यूनिकॉर्न कंपनियों के साथ)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सॉफ्टवेयर-एज-ए-सर्विस (SaaS) क्षेत्र में भारत का वैश्विक स्थान क्या बन रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत वैश्विक SaaS कंपनियों (जैसे फ्रेशवर्क्स, जोहो, पोस्टमैन) का तेजी से उभरता पावरहाउस बन चुका है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत सरकार द्वारा डिजिटल संप्रभुता और शासन सुधार हेतु विकसित एकीकृत डिजिटल अवसंरचना क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डिजिटल पब्लिक इंफ्रास्ट्रक्चर (DPI) अथवा 'इंडिया स्टैक' (India Stack)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>इंडिया स्टैक (India Stack) की चार बुनियादी परतें (Four Layers) कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. पहचान परत (बायोमेट्रिक प्रमाणीकरण), 2. भुगतान परत (UPI), 3. पेपरलेस परत (डिजिलॉकर, ई-हस्ताक्षर), और 4. सहमति परत (अकाउंट एग्रीगेटर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डिजिटल व्यक्तिगत डेटा संरक्षण अधिनियम, 2023 (DPDP Act 2023) का आईटी और सेवा क्षेत्र पर क्या प्रभाव पड़ेगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपभोक्ताओं के व्यक्तिगत डेटा की सुरक्षा सुनिश्चित होगी, डेटा उल्लंघनों पर ₹250 करोड़ तक का जुर्माना लगेगा तथा भारत में भरोसेमंद वैश्विक डेटा हब बनने का आधार तैयार होगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में ई-कॉमर्स क्षेत्र के लोकतंत्रीकरण हेतु सरकार द्वारा समर्थित खुला नेटवर्क कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओपन नेटवर्क फॉर डिजिटल कॉमर्स (ONDC - Open Network for Digital Commerce)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ONDC किस प्रकार ई-कॉमर्स बाजार में निष्पक्ष प्रतिस्पर्धा ला रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमेजन या फ्लिपकार्ट जैसे प्लेटफॉर्मों के बंद इकोसिस्टम को तोड़कर किसी भी छोटे विक्रेता को किसी भी खरीदार ऐप से सीधे व्यापार करने की सुविधा देकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>टेलीमेडिसिन के क्षेत्र में स्वास्थ्य मंत्रालय द्वारा संचालित राष्ट्रीय मंच कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ई-संजीवनी (eSanjeevani / विश्व का सबसे बड़ा राष्ट्रीय टेलीमेडिसिन नेटवर्क)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शिक्षा सेवा क्षेत्र में केंद्र सरकार द्वारा संचालित ऑनलाइन उच्च शिक्षा पाठ्यक्रम प्लेटफॉर्म कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वयं (SWAYAM - Study Webs of Active-Learning for Young Aspiring Minds)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पर्यटन और आतिथ्य सेवा क्षेत्र (Tourism & Hospitality) का भारतीय जीडीपी और रोजगार में क्या योगदान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल जीडीपी में लगभग 6-7% का योगदान तथा लगभग 8% से अधिक कुल रोजगार (उच्च रोजगार गुणक प्रभाव)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चिकित्सा पर्यटन (Medical Value Tourism) में भारत की क्या वैश्विक स्थिति है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व के शीर्ष चिकित्सा पर्यटन गंतव्यों में शामिल; जहां अमेरिका व यूरोप की तुलना में 60-80% सस्ती लागत पर विश्वस्तरीय प्रत्यारोपण, कार्डियक और ऑन्कोलॉजी सेवाएं मिलती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चिकित्सा पर्यटन को बढ़ावा देने हेतु भारत सरकार द्वारा कौन-सा राष्ट्रीय पोर्टल और पहल शुरू की गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'हील इन इंडिया' (Heal in India) पहल तथा मेडिकल वीजा (Ayush/Medical Visa) का सरलीकरण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में कानूनी सेवाओं (Legal Services) और मध्यस्थता (Arbitration) को वैश्विक हब बनाने हेतु क्या पहल की गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नई दिल्ली अंतरराष्ट्रीय मध्यस्थता केंद्र (NDIAC) तथा गिफ्ट सिटी में अंतरराष्ट्रीय मध्यस्थता केंद्र की स्थापना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>लॉजिस्टिक्स सेवा क्षेत्र का भारत की आर्थिक दक्षता में क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">माल ढुलाई, वेयरहाउसिंग और आपूर्ति श्रृंखला का प्रबंधन करना; पीएम गतिशक्ति और राष्ट्रीय लॉजिस्टिक्स नीति द्वारा इसे जीडीपी के 8% पर लाने का प्रयास।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सेवा क्षेत्र में 'गिग और प्लेटफॉर्म श्रमिक' (Gig Workers) किन्हें कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे स्वतंत्र कामगार जो जोमैटो, स्विगी, ओला, अर्बन कंपनी जैसे डिजिटल ऐप-आधारित प्लेटफॉर्मों के जरिए ऑन-डिमांड अल्पकालिक सेवाएं देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गिग श्रमिकों को सामाजिक सुरक्षा प्रदान करने हेतु किस कानूनी संहिता में पहली बार विशेष प्रावधान किए गए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सामाजिक सुरक्षा संहिता, 2020 (Code on Social Security, 2020)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गिग श्रमिकों के कल्याण हेतु देश का पहला विशिष्ट कानून किस राज्य सरकार द्वारा पारित किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राजस्थान प्लेटफॉर्म आधारित गिग कर्मकार (पंजीकरण और कल्याण) अधिनियम, 2023।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व व्यापार संगठन (WTO) के तहत 'सेवाओं में व्यापार पर सामान्य समझौता' (GATS) किस वर्ष लागू हुआ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1 जनवरी 1995 को (उरुग्वे दौर की वार्ताओं के बाद)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>GATS के तहत अंतरराष्ट्रीय सेवाओं के व्यापार को किन चार आपूर्ति माध्यमों (Four Modes of Supply) में वर्गीकृत किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. मोड 1: सीमा-पार आपूर्ति (Cross-Border Supply / जैसे BPO, सॉफ्टवेयर), 2. मोड 2: विदेशों में उपभोग (Consumption Abroad / जैसे पर्यटन, चिकित्सा), 3. मोड 3: वाणिज्यिक उपस्थिति (Commercial Presence / जैसे बैंक शाखाएं), और 4. मोड 4: प्राकृतिक व्यक्तियों की आवाजाही (Movement of Natural Persons / सॉफ्टवेयर इंजीनियरों की यात्रा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>GATS वार्ताओं में भारत का मुख्य आक्रामक हित (Offensive Interest) किस मोड में रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मोड 1 (सॉफ्टवेयर व आईटीईएस सेवाएं) तथा मोड 4 (भारतीय पेशेवरों और इंजीनियरों की विदेशों में अल्पकालिक आवाजाही व कार्य वीजा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सेवा क्षेत्र में भारत को 'विकसित भारत @2047' बनाने हेतु क्या रणनीतिक लक्ष्य निर्धारित किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सेवा निर्यात को $1 ट्रिलियन तक ले जाना, पारंपरिक बैक-ऑफिस के स्थान पर उच्च-मूल्य बौद्धिक संपदा और वैश्विक नवाचार का केंद्र बनना, तथा डिजिटल पब्लिक इंफ्रास्ट्रक्चर का वैश्विक निर्यात करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सेवा क्षेत्र Part 1 के संपूर्ण अध्ययन का अंतिम और सारगर्भित समष्टिगत निष्कर्ष क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सेवा क्षेत्र भारतीय अर्थव्यवस्था का निर्विवाद संवृद्धि इंजन और वैश्विक आर्थिक पहचान है; जहाँ बैंकिंग और वित्तीय सेवाओं ने वित्तीय समावेशन और पूंजी निर्माण को गति दी है, वहीं IT और ITES ने भारत को ज्ञान-आधारित वैश्विक महाशक्ति के रूप में स्थापित किया है; अब चुनौती डिजिटल पब्लिक इंफ्रास्ट्रक्चर, AI नवाचार और उच्च-मूल्य सेवाओं के तालमेल से करोड़ों युवाओं हेतु गुणवत्तापूर्ण औपचारिक रोजगार सुनिश्चित करने की है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

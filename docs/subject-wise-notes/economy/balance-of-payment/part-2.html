@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="भुगतान संतुलन Part 2">
+<title>भुगतान संतुलन Part 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / भुगतान संतुलन Part 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>भुगतान संतुलन Part 2</h1>
+    <p class="topic-subtitle">भुगतान संतुलन संकट की मूल अवधारणा, 1991 का ऐतिहासिक संकट, संकट की गंभीरता तथा चालू खाता घाटे (CAD) का समष्टिगत विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">भुगतान संतुलन Part 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>संकट/घटक</th><th>प्रमुख कारण या स्थिति</th><th>आर्थिक प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">भुगतान संतुलन (BoP) संकट</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विदेशी मुद्रा देनदारियों को चुकाने हेतु आधिकारिक विदेशी मुद्रा भंडार का समाप्तप्राय होना और बाह्य ऋण न मिलना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">राष्ट्रीय मुद्रा का तीव्र अवमूल्यन, अंतरराष्ट्रीय व्यापारिक साख की क्षति, संप्रभु चूक (Default) का आसन्न खतरा।</div></div></td></tr><tr><td><div class="primary-cell">1990 का खाड़ी युद्ध आघात (Gulf War Shock)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कच्चे तेल की अंतरराष्ट्रीय कीमतों में भारी उछाल ($15 से $35+ प्रति बैरल) और खाड़ी देशों से प्रेषण का अचानक रुकना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत के पीओएल (POL) आयात बिल में अप्रत्याशित वृद्धि, चालू खाते के अदृश्य अधिशेष का संकुचन और विदेशी मुद्रा का तीव्र क्षरण।</div></div></td></tr><tr><td><div class="primary-cell">ट्विन डेफिसिट (राजकोषीय व चालू खाता असंतुलन)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1980 के दशक की विस्तारवादी राजकोषीय नीति, उच्च गैर-विकासात्मक व्यय और बजटीय घाटे का बेलगाम मुद्रीकरण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">1990-91 में राजकोषीय घाटा जीडीपी के 7.8% और चालू खाता घाटा (CAD) 3.1% पर पहुंचना, जिसने घरेलू मांग बढ़ाकर आयातों को खींचा।</div></div></td></tr><tr><td><div class="primary-cell">विदेशी मुद्रा भंडार का न्यूनतम स्तर</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जून 1991 के अंतिम सप्ताह में विदेशी मुद्रा आस्तियां गिरकर मात्र 1.1 बिलियन अमेरिकी डॉलर (~₹2,500 करोड़) रह जाना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आयात कवर घटकर मात्र 2 से 3 सप्ताह (13-15 दिन) का बचा; नियमित आवश्यक आयातों (पेट्रोलियम, खाद्य) के रुकने की नौबत आई।</div></div></td></tr><tr><td><div class="primary-cell">संप्रभु क्रेडिट रेटिंग में भारी गिरावट (Downgrade)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मूडीज और स्टैंडर्ड एंड पुअर्स द्वारा भारत की क्रेडिट रेटिंग को गैर-निवेश / सट्टेबाजी श्रेणी (Junk Status) में डालना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">वैश्विक वाणिज्यिक वित्तीय बाजारों से उधारी के दरवाजे पूरी तरह बंद होना और विदेशी बैंकों द्वारा भारतीय LCs स्वीकारने से इंकार।</div></div></td></tr><tr><td><div class="primary-cell">अनिवासी पूंजी का त्वरित पलायन (Capital Flight)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">भारत के दिवालिया होने की आशंका के चलते NRI निवेशकों द्वारा FCNR व NRE खातों से बड़े पैमाने पर डॉलर निकासी।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पूंजी खाते में $1 बिलियन से अधिक का अचानक शुद्ध बहिर्वाह; अल्पकालिक तरलता बेमेल (Maturity Mismatch) का संकट।</div></div></td></tr><tr><td><div class="primary-cell">स्वर्ण का संपार्श्विक हस्तांतरण (Pledging of Gold)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अंतरराष्ट्रीय ऋण चूक से बचने हेतु SBI द्वारा 20 टन सोने की बिक्री तथा RBI द्वारा 46.91 टन सोना बैंक ऑफ इंग्लैंड/जापान में गिरवी।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">लगभग $605 मिलियन की आपातकालीन तरलता प्राप्त हुई; राष्ट्रीय स्वाभिमान को आघात किंतु संप्रभु डिफॉल्ट टालने में सफलता।</div></div></td></tr><tr><td><div class="primary-cell">संरचनात्मक समायोजन व अवमूल्यन</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जुलाई 1991 में रुपये का दो चरणों में ~18.5% अवमूल्यन, आयात संकुचन मार्जिन और IMF से विस्तारित निधि सुविधा (EFF) ऋण।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">निर्यात प्रतिस्पर्धा में दीर्घकालिक सुधार, LERMS दोहरी विनिमय दर व्यवस्था की शुरुआत और 1991 के ऐतिहासिक LPG सुधारों का मार्ग प्रशस्त।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>अर्थशास्त्र में 'भुगतान संतुलन संकट' (Balance of Payments Crisis) की मानक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसी स्थिति जब कोई देश अपने अंतरराष्ट्रीय आयातों और विदेशी ऋणों की अनिवार्य देनदारियों को चुकाने में असमर्थ हो जाता है, क्योंकि उसका विदेशी मुद्रा भंडार समाप्तप्राय हो जाता है और उसे नए विदेशी ऋण नहीं मिल पाते।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भुगतान संतुलन संकट को वित्तीय अर्थशास्त्र में अन्य किस नाम से जाना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा संकट (Currency Crisis) अथवा बाह्य तरलता संकट (External Liquidity Crisis)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'पूंजी प्रवाह का अचानक ठहराव' (Sudden Stop of Capital Inflows) की अवधारणा किस अर्थशास्त्री द्वारा प्रतिपादित की गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गुइलेर्मो कैल्वो (Guillermo Calvo) द्वारा, जो BoP संकट का एक प्रमुख चालक बनता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पॉल क्रुगमैन (Paul Krugman) का 'प्रथम पीढ़ी का मुद्रा संकट मॉडल' (First-Generation Crisis Model) BoP संकट का मूल कारण किसे मानता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विस्तारवादी राजकोषीय व मौद्रिक नीतियों तथा स्थिर विनिमय दर व्यवस्था के बीच असंगति को, जहां सरकार घाटे को नोट छापकर पूरा करती है और विदेशी मुद्रा भंडार खत्म हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मॉरिस ऑब्स्टफेल्ड (Maurice Obstfeld) का 'द्वितीय पीढ़ी का संकट मॉडल' (Second-Generation Model) किस पर केंद्रित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सट्टेबाजी के हमलों (Speculative Attacks) और स्व-पूर्ति अपेक्षाओं (Self-Fulfilling Expectations) पर, जहां बाजार की आशंकाएं ही मुद्रा को गिरा देती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>एशियाई वित्तीय संकट (1997) के बाद विकसित 'तृतीय पीढ़ी का संकट मॉडल' (Third-Generation Model) BoP संकट को किससे जोड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकिंग प्रणाली की कमजोरी, कंपनियों के गैर-हेज्ड विदेशी ऋणों और बैलेंस-शीट बेमेल (Balance-Sheet Mismatch) से।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'तरलता संकट' (Liquidity Crisis) और 'शोधन संकट' (Solvency Crisis) में क्या मूलभूत अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तरलता संकट अल्पकालिक नकदी/विदेशी मुद्रा की तात्कालिक अनुपलब्धता है, जबकि शोधन संकट देश की कुल बाह्य संपत्तियों की तुलना में कुल देनदारियों के स्थायी रूप से अधिक होने की स्थिति है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सट्टेबाजी का हमला (Speculative Attack) किसी देश की मुद्रा पर कब होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब सटोरियों को विश्वास हो जाता है कि देश का केंद्रीय बैंक निश्चित विनिमय दर को बनाए रखने में असमर्थ है, तो वे घरेलू मुद्रा बेचकर विदेशी मुद्रा की भारी मांग खड़ी कर देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>BoP संकट के समय केंद्रीय बैंक द्वारा अपनी मुद्रा को बचाने हेतु उठाया जाने वाला पारंपरिक मौद्रिक कदम क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ब्याज दरों में भारी वृद्धि करना, ताकि पूंजी के बाह्य पलायन को रोका जा सके और घरेलू परिसंपत्तियों को आकर्षक बनाया जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब विदेशी मुद्रा भंडार पूरी तरह समाप्त हो जाता है, तो केंद्रीय बैंक को अंततः क्या विवशता स्वीकारनी पड़ती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू मुद्रा का भारी अवमूल्यन (Devaluation) करना अथवा निश्चित विनिमय दर त्यागकर फ्लोटिंग दर अपनाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>BoP संकट को टालने हेतु अंतिम उपाय के रूप में अंतरराष्ट्रीय स्तर पर कौन-सी संस्था ऋणदाता (Lender of Last Resort) की भूमिका निभाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतरराष्ट्रीय मुद्रा कोष (International Monetary Fund - IMF)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आईएमएफ की 'शर्तबद्धता' (IMF Conditionality) से क्या आशय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आपातकालीन वित्तीय सहायता देने के बदले प्राप्तकर्ता देश पर राजकोषीय घाटा घटाने, मुद्रा अवमूल्यन, व्यापार उदारीकरण और सब्सिडी कटौती की शर्तें थोपना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>समष्टिगत स्थिरीकरण (Macroeconomic Stabilization) का तात्कालिक लक्ष्य क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकाल में मुद्रास्फीति को नियंत्रित करना, बजट घाटे को सीमित करना और विदेशी मुद्रा भंडार की सुरक्षा करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संरचनात्मक समायोजन (Structural Adjustment) स्थिरीकरण से किस रूप में भिन्न है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह मध्यम से दीर्घकालिक आर्थिक सुधार है, जिसका उद्देश्य अर्थव्यवस्था की आपूर्ति-पक्ष क्षमता, उत्पादकता, व्यापार नीतियों और संस्थागत ढांचे को बदलना होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'ऋण संकट' (Debt Crisis) और BoP संकट में क्या संबंध है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">BoP संकट प्रायः बाह्य ऋण संकट में रूपांतरित हो जाता है, जब देश अपने विदेशी ऋणों के मूलधन और ब्याज की किस्तों पर संप्रभु डिफॉल्ट कर देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संप्रभु डिफॉल्ट (Sovereign Default) का किसी देश की अर्थव्यवस्था पर क्या दीर्घकालिक असर पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश वैश्विक पूंजी बाजारों से कई वर्षों के लिए बहिष्कृत हो जाता है, व्यापार साख समाप्त हो जाती है और भावी उधारी की लागत अत्यधिक महंगी हो जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक का लैटिन अमेरिकी ऋण संकट (जैसे मैक्सिको, ब्राजील) किस कारण उत्पन्न हुआ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अमेरिकी फेडरल रिजर्व द्वारा ब्याज दरों में अचानक भारी वृद्धि (Volcker Shock) और प्राथमिक जिंसों के वैश्विक मूल्यों में गिरावट के कारण।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1997 के पूर्वी एशियाई वित्तीय संकट ने किस प्रमुख BoP भेद्यता को उजागर किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यधिक अल्पकालिक विदेशी वाणिज्यिक ऋणों पर निर्भरता और खूंटीदार (Pegged) विनिमय दर व्यवस्था की संवेदनशीलता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा भंडार के संदर्भ में 'ग्रीनस्पैन-गुइडोटी नियम' (Greenspan-Guidotti Rule) क्या अनुशंसा करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी देश का विदेशी मुद्रा भंडार कम से कम उसके अगले 12 महीनों में देय कुल अल्पकालिक बाह्य ऋण के 100% के बराबर होना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश का अल्पकालिक बाह्य ऋण उसके कुल विदेशी मुद्रा भंडार से अधिक हो जाए, तो क्या स्थिति बनती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">देश गंभीर तरलता और रोल-ओवर जोखिम (Rollover Risk) में फंस जाता है, जो अचानक BoP संकट को जन्म दे सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'पूंजी उड़ान' या 'पूंजी पलायन' (Capital Flight) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू और विदेशी निवेशकों द्वारा देश के आर्थिक/राजनीतिक संकट से घबराकर अपनी चल पूंजी को तेजी से विदेशी सुरक्षित परिसंपत्तियों में स्थानांतरित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूंजी पलायन का घरेलू बैंकिंग प्रणाली पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों की जमा राशि तेजी से घट जाती है (Bank Run), तरलता समाप्त हो जाती है और ऋण वितरण पूरी तरह ठप हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के पूर्व भारत द्वारा 1966 में सामना किए गए BoP संकट का मुख्य कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1962 और 1965 के युद्ध, 1965-66 का भीषण देशव्यापी सूखा, और भारी खाद्यान्न आयातों के कारण विदेशी मुद्रा भंडार का सूखना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1966 के BoP संकट के समय भारत सरकार ने रुपए का कितने प्रतिशत अवमूल्यन किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जून 1966 में 36.5% का भारी अवमूल्यन किया गया था (रुपया ₹4.76 से गिरकर ₹7.50 प्रति डॉलर हो गया)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1981 में भारत ने BoP दबावों से निपटने हेतु IMF से कितने का ऐतिहासिक ऋण लिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 5 बिलियन SDR (लगभग $5.8 बिलियन) का विस्तारित निधि सुविधा (EFF) ऋण, जो उस समय IMF के इतिहास का सबसे बड़ा ऋण पैकेज था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक के मध्य में भारत ने 1981 के IMF ऋण की बची हुई किस्तों को लेने से क्यों मना कर दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि बॉम्बे हाई में घरेलू कच्चे तेल का उत्पादन तेजी से बढ़ा था, जिससे तेल आयात बिल में उल्लेखनीय अस्थायी राहत मिल गई थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के संकट से ठीक पूर्व भारत का आयात-कवर अनुपात (Import Cover Ratio) गिरकर कितने दिनों का रह गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मात्र 13 से 15 दिनों (लगभग 2 से 3 सप्ताह) के आवश्यक आयातों के बराबर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सामान्य अंतरराष्ट्रीय आर्थिक मानकों के अनुसार किसी देश का न्यूनतम सुरक्षित आयात-कवर कितना होना चाहिए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम से कम 3 महीने (12 सप्ताह) के आयात व्यय के बराबर विदेशी मुद्रा भंडार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय वित्तीय संकटों में 'छूत का प्रभाव' (Contagion Effect) क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक देश के मुद्रा या वित्तीय संकट का सीमा पार कर समान आर्थिक विशेषताओं वाले पड़ोसी या उभरते बाजार देशों में फैल जाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वास्तविक प्रभावी विनिमय दर (REER) का अत्यधिक अधिमूल्यन (Overvaluation) BoP संकट का पूर्व-संकेतक क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि अधिमूल्यित REER घरेलू निर्यातों की प्रतिस्पर्धात्मकता को नष्ट कर देती है और आयातों को कृत्रिम रूप से सस्ता बनाकर व्यापार घाटा बढ़ाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापार ऋण (Trade Credit / Supplier's Credit) का BoP संकट के समय क्या व्यवहार देखा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी बैंक और आपूर्तिकर्ता संकटग्रस्त देश को अल्पकालिक साख देने से इंकार कर देते हैं, जिससे नकद अग्रिम भुगतान की मजबूरी से तरलता संकट चरम पर पहुंच जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पैरिस क्लब (Paris Club) और लंदन क्लब (London Club) अंतरराष्ट्रीय ऋण संकट में क्या भूमिका निभाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पैरिस क्लब द्विपक्षीय सरकारी ऋणों के पुनर्गठन का मंच है, जबकि लंदन क्लब वाणिज्यिक बैंकों के निजी ऋणों के पुनर्गठन का कार्य करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के भारतीय आर्थिक संकट का मूल और गहरा संरचनात्मक कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1980 के पूरे दशक में अनियंत्रित और गैर-संधारणीय राजकोषीय घाटा, जिसने घरेलू उपभोग बढ़ाकर चालू खाता घाटे (CAD) को खतरनाक स्तर पर पहुंचा दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक में भारत सरकार ने अपने भारी बजट घाटे की भरपाई मुख्य रूप से किस हानिकारक साधन से की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तदर्थ ट्रेजरी बिलों (91-day Ad-hoc Treasury Bills) के माध्यम से घाटे का स्वचालित मुद्रीकरण (Monetization / नोट छपाई)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घाटे के अत्यधिक मुद्रीकरण का 1990-91 में भारत की मूल्य स्थिरता पर क्या विनाशकारी असर हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा आपूर्ति (M3) में भारी वृद्धि हुई और थोक मूल्य सूचकांक आधारित मुद्रास्फीति 13.8% से 14% (दोहरे अंकों) पर पहुंच गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 के दौरान भारत का सकल राजकोषीय घाटा (Gross Fiscal Deficit) जीडीपी का कितना प्रतिशत था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्र सरकार का राजकोषीय घाटा जीडीपी का 7.8% (तथा राज्यों सहित समेकित घाटा लगभग 9.4% से 10% था)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 1990-91 में भारत का राजस्व घाटा (Revenue Deficit) जीडीपी के किस स्तर पर पहुंच गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीडीपी का लगभग 3.3% से 3.5%, जो यह दर्शाता था कि सरकार अपने वेतन, पेंशन व सब्सिडी जैसे नियमित खर्चों के लिए भी भारी कर्ज ले रही थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक में भारत की औसत जीडीपी वृद्धि दर (लगभग 5.6%) को अर्थशास्त्री 'उधार की संवृद्धि' (Borrowed Growth) क्यों कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि यह वृद्धि उत्पादकता सुधार से नहीं, बल्कि भारी आंतरिक व बाह्य वाणिज्यिक ऋणों और राजकोषीय अतिव्यय के बल पर हासिल की गई थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक के उत्तरार्ध में रियायती विदेशी सहायता (Concessional Aid) घटने पर भारत सरकार ने किस जोखिमपूर्ण विकल्प को चुना?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कठोर बाजार शर्तों वाले अल्पकालिक बाह्य वाणिज्यिक ऋणों (ECBs) और अनिवासी भारतीयों (NRI) की उच्च-ब्याज जमाराशियों पर अत्यधिक निर्भरता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगस्त 1990 में इराक द्वारा कुवैत पर आक्रमण (खाड़ी युद्ध) ने भारतीय BoP को किस प्रकार पहला तात्कालिक आघात पहुंचाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतरराष्ट्रीय कच्चे तेल की कीमतें अचानक $15-18 प्रति बैरल से उछलकर $35-40 प्रति बैरल पार कर गईं, जिससे भारत का तेल आयात बिल रातों-रात दोगुना हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>खाड़ी संकट ने भारत के अदृश्य खाते (Invisibles) को किस प्रकार पंगु बना दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुवैत और इराक से आने वाले भारतीय प्रवासियों के निजी प्रेषण (Remittances) पूरी तरह बंद हो गए और वहां फंसे 1.5 लाख से अधिक भारतीयों को एयरलिफ्ट करने पर भारी विदेशी मुद्रा खर्च हुई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 में सोवियत संघ (USSR) का राजनीतिक और आर्थिक विघटन भारत के लिए बाह्य व्यापारिक आघात क्यों साबित हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दशकों पुरानी 'रुपये-रूबल द्विपक्षीय व्यापार व्यवस्था' ढह गई, जिससे भारतीय निर्यातकों का एक बहुत बड़ा, संरक्षित और गैर-डॉलर निर्यात बाजार अचानक छिन गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1989 से 1991 के बीच भारत की राजनीतिक अस्थिरता ने संकट को कैसे गहराया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम समय में तीन प्रधानमंत्रियों (राजीव गांधी, वी. पी. सिंह, चंद्रशेखर) और गठबंधन सरकारों के पतन के कारण समय पर कड़ा बजट और सुधारात्मक निर्णय नहीं लिए जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मई 1991 में पूर्व प्रधानमंत्री राजीव गांधी की चुनावी सभा में हत्या का अंतरराष्ट्रीय वित्तीय बाजारों पर क्या तात्कालिक असर हुआ?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी निवेशकों और अनिवासी भारतीयों में घबराहट (Panic) चरम पर पहुंच गई, और पूंजी का बहिर्वाह अभूतपूर्व गति से तेज हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 में अंतरराष्ट्रीय क्रेडिट रेटिंग एजेंसियों (Moody's एवं S&P) ने भारत की संप्रभु साख के साथ क्या किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत की संप्रभु रेटिंग को निवेश श्रेणी (Investment Grade) से घटाकर सट्टेबाजी/जंक श्रेणी (Sub-investment / Junk Grade) में डाल दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्रेडिट रेटिंग के जंक दर्जे में चले जाने का भारतीय वाणिज्यिक बैंकों और उपक्रमों पर क्या सीधा प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अंतरराष्ट्रीय मुद्रा बाजारों से अल्पकालिक ऋण मिलना बंद हो गया, और वैश्विक बैंकों ने भारतीय बैंकों द्वारा जारी साख-पत्रों (Letters of Credit - LCs) की गारंटी लेने से मना कर दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 में विदेशी मुद्रा अनिवासी (FCNR) खातों से कितनी पूंजी बाहर निकली?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनिवासी भारतीयों द्वारा लगभग 1.3 बिलियन अमेरिकी डॉलर की शुद्ध निकासी (Capital Flight) की गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 में भारत का बाह्य ऋण सेवा अनुपात (Debt Service Ratio) किस खतरनाक स्तर पर पहुंच गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 35.3%; अर्थात् देश की कुल चालू विदेशी मुद्रा प्राप्तियों का एक-तिहाई से अधिक हिस्सा केवल पुराने विदेशी ऋणों के ब्याज और किस्तों को चुकाने में स्वाहा हो रहा था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मार्च 1991 के अंत तक भारत का कुल बाह्य ऋण (External Debt) कितना हो चुका था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 83.8 बिलियन अमेरिकी डॉलर (जीडीपी का लगभग 30% से अधिक), जिससे भारत विकासशील देशों में तीसरा सबसे बड़ा ऋणी देश बन गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 में भारत के कुल बाह्य ऋण में अल्पकालिक ऋणों (Short-term Debt) की क्या स्थिति थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक ऋण कुल ऋण का 10.2% थे, किंतु वे भारत के तत्कालीन कुल विदेशी मुद्रा भंडार की तुलना में 140% से भी अधिक थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के संकट के समय विदेशी मुद्रा बचाने हेतु भारतीय रिजर्व बैंक (RBI) द्वारा लागू 'आयात संकुचन' (Import Compression) क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गैर-आवश्यक आयातों पर 200% तक का नकद मार्जिन (Cash Margin Requirement) अनिवार्य करना और पूंजीगत वस्तुओं के आयात पर कड़े प्रशासनिक प्रतिबंध लगाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयात संकुचन के इन कठोर आपातकालीन उपायों का घरेलू अर्थव्यवस्था पर क्या नकारात्मक असर पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कच्चे माल और स्पेयर पार्ट्स की भारी कमी से औद्योगिक उत्पादन सूचकांक (IIP) की वृद्धि दर 1991-92 में गिरकर -0.6% (ऋणात्मक) हो गई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक में भारत के गैर-योजनागत राजस्व व्यय में किन तीन मदों की सबसे बड़ी हिस्सेदारी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. पुराने ऋणों पर ब्याज भुगतान, 2. रक्षा व्यय, और 3. खाद्य व उर्वरक सब्सिडी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक के अंतिम वर्षों में भारत की आंतरिक सार्वजनिक देनदारियों (Internal Debt) की क्या स्थिति थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आंतरिक ऋण जीडीपी के 50% से अधिक पहुंच गया था, जिससे सरकार आंतरिक ऋण जाल (Internal Debt Trap) के कगार पर आ गई थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के BoP संकट के दौरान भारत के विदेशी मुद्रा भंडार की वास्तविक स्थिति जून 1991 में क्या थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा भंडार गिरकर मात्र 1.1 बिलियन अमेरिकी डॉलर (~₹2,500 करोड़) पर आ गया था, जो संप्रभु चूक (Default) के कगार पर था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत को संप्रभु डिफ़ॉल्ट से बचाने हेतु चंद्रशेखर सरकार के समय मई 1991 में कौन-सा गोपनीय वित्तीय कदम उठाया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय स्टेट बैंक (SBI) द्वारा यूनियन बैंक ऑफ स्विट्जरलैंड (UBS) को 20 टन सोना बेचकर लगभग $200 मिलियन जुटाए गए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 1991 में नवगठित नरसिम्हा राव सरकार द्वारा RBI के माध्यम से स्वर्ण हस्तांतरण का दूसरा बड़ा कदम क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">46.91 टन सोना हवाई जहाज से लंदन और टोक्यो भेजकर बैंक ऑफ इंग्लैंड और बैंक ऑफ जापान के पास गिरवी रखा गया, जिससे $405 मिलियन का आपातकालीन ऋण मिला।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मई और जुलाई 1991 के दौरान भारत द्वारा कुल कितना सोना विदेशी बैंकों को भेजा गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल लगभग 67 मीट्रिक टन सोना (20 टन SBI द्वारा + 47 टन RBI द्वारा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सोना गिरवी रखने की घटना का भारतीय राजनीति और समाज पर क्या प्रभाव पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसे राष्ट्रीय स्वाभिमान पर गहरा आघात माना गया, जिसने नीति-निर्माताओं और आम जनता को यह स्पष्ट संदेश दिया कि अर्थव्यवस्था के बुनियादी ढांचे में आमूलचूल सुधार अपरिहार्य हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या भारत ने बाद में गिरवी रखे गए 67 टन सोने को विदेशी बैंकों से वापस छुड़ा लिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हाँ, दिसंबर 1991 तक विदेशी मुद्रा स्थिति में सुधार होने पर भारत ने संपूर्ण ऋण ब्याज सहित चुकाकर अपना पूरा 67 टन सोना सकुशल वापस प्राप्त कर लिया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के BoP संकट के चरम दौर में भारतीय रिजर्व बैंक (RBI) के गवर्नर कौन थे जिन्होंने इस पूरे संकट का प्रबंधन किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एस. वेंकिटरमणन (S. Venkitaramanan)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के संकट के समय भारत सरकार के वित्त सचिव कौन थे?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एस. पी. शुक्ला (और बाद में के. पी. गीताकृष्णन)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के संकट से निपटने हेतु नवगठित पी. वी. नरसिम्हा राव सरकार ने वित्त मंत्रालय की कमान किसे सौंपी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रख्यात अर्थशास्त्री और पूर्व RBI गवर्नर डॉ. मनमोहन सिंह को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 1991 में भारतीय रुपये का दो चरणों में अवमूल्यन (Rupee Devaluation) कब और कितना किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पहला चरण 1 जुलाई 1991 को (~9%) और दूसरा चरण 3 जुलाई 1991 को (~11%); कुल संचयी अवमूल्यन लगभग 18.5% से 19% था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रुपये का अवमूल्यन एक ही झटके में करने के बजाय दो चरणों में (1 और 3 जुलाई) क्यों किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा बाजार की तात्कालिक प्रतिक्रिया को परखने, सट्टेबाजी को विफल करने और बाजार में घबराहट (Panic) को रोकने हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 1991 में रुपये के अवमूल्यन का प्राथमिक उद्देश्य क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा के बाह्य पलायन को तुरंत रोकना, भारतीय निर्यातों को अंतरराष्ट्रीय बाजार में प्रतिस्पर्धी बनाना और हवाला चैनलों पर जा रहे प्रेषणों को आधिकारिक बैंकिंग तंत्र में लौटाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के BoP संकट से निकलने हेतु भारत ने IMF से किस वित्तीय सुविधा के अंतर्गत आपातकालीन ऋण लिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रतिकारी और आकस्मिक वित्तपोषण सुविधा (CCFF) तथा बाद में 2.2 बिलियन SDR का स्टैंड-बाय / विस्तारित निधि सुविधा (EFF) कार्यक्रम।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>IMF और विश्व बैंक ने भारत को वित्तीय पैकेज देने के बदले किन प्रमुख शर्तों पर सहमति ली?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">औद्योगिक लाइसेंसिंग की समाप्ति, आयात शुल्कों में भारी कटौती, रुपये का अवमूल्यन, वित्तीय क्षेत्र का विनियमन और राजकोषीय घाटे को GDP के 6.5% पर लाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जुलाई 1991 में व्यापार क्षेत्र में आयात लाइसेंसिंग की कठोरता घटाने हेतु कौन-सी नई अंतरिम प्रणाली शुरू हुई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक्सिम स्क्रिप्स (Exim Scrips) प्रणाली, जिसके तहत निर्यातकों को उनके निर्यात मूल्य के 30% के बराबर व्यापार-योग्य आयात अधिकार दिए गए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मार्च 1992 के बजट में भारत ने विनिमय दर सुधार हेतु कौन-सी व्यवस्था लागू की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उदारीकृत विनिमय दर प्रबंधन प्रणाली (LERMS - Liberalised Exchange Rate Management System), जिसे 'दोहरी विनिमय दर प्रणाली' कहा गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>LERMS दोहरी विनिमय दर प्रणाली के तहत विदेशी मुद्रा अर्जनों के रूपांतरण का अनुपात क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">40:60 का अनुपात; 40% विदेशी मुद्रा आधिकारिक दर पर सरकार को आवश्यक आयातों (तेल, उर्वरक) हेतु देनी होती थी और 60% बाजार दर पर भुनाई जा सकती थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत ने दोहरी विनिमय दर प्रणाली (LERMS) को समाप्त कर एकीकृत बाजार-निर्धारित विनिमय दर प्रणाली (Unified Exchange Rate System) कब अपनाई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मार्च 1993 के बजट में, जब रुपये की विनिमय दर को पूर्णतः विदेशी मुद्रा बाजार की मांग और आपूर्ति पर छोड़ दिया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत ने किस वर्ष अंतरराष्ट्रीय मुद्रा कोष (IMF) के अनुच्छेद VIII के तहत चालू खाते पर रुपये की पूर्ण परिवर्तनीयता स्वीकार की?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">19 अगस्त 1994 को।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के BoP संकट के समय भारत में शीर्ष सीमा शुल्क (Peak Customs Tariff) की दर कितनी ऊंची थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">300% से अधिक (औसत टैरिफ दरें 125% से ऊपर थीं), जिसे डॉ. राजा चेलैया समिति की सिफारिशों पर चरणबद्ध तरीके से घटाया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के संकट के निवारण हेतु अनिवासी भारतीयों (NRIs) से विदेशी मुद्रा जुटाने के लिए सरकार ने कौन-से बॉन्ड जारी किए?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंडिया डेवलपमेंट बॉन्ड्स (India Development Bonds - IDBs), जिन्होंने विदेशी मुद्रा भंडार में $1.6 बिलियन से अधिक का योगदान दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सुधारों के क्रियान्वयन के मात्र दो वर्ष बाद (मार्च 1993 तक) भारत का विदेशी मुद्रा भंडार किस संतोषजनक स्थिति में पहुंच गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बढ़कर 6.4 बिलियन अमेरिकी डॉलर से अधिक हो गया, और 1994 तक $15 बिलियन पार कर गया, जिससे संकट पूरी तरह समाप्त हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के संकट के दौरान निर्यात संवर्धन हेतु दी जाने वाली किस वित्तीय सब्सिडी को तत्काल वापस लिया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नकद प्रतिपूरक समर्थन (Cash Compensatory Support - CCS), जिससे सरकारी बजट पर भारी बोझ कम हुआ।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के संकट के समय भारत सरकार के मुख्य आर्थिक सलाहकार कौन थे जिन्होंने आर्थिक सर्वेक्षण 1990-91 तैयार किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">डॉ. दीपक नय्यर (Deepak Nayyar)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाता घाटा (Current Account Deficit - CAD) की मानक समष्टिगत परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी देश द्वारा वस्तुओं, सेवाओं, प्राथमिक साधन आय और एकपक्षीय अंतरणों के आयात पर किया गया कुल विदेशी मुद्रा व्यय उसके कुल निर्यातों और विदेशी प्राप्तियों से अधिक हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 1990-91 में भारत का चालू खाता घाटा (CAD) सकल घरेलू उत्पाद (GDP) का कितना प्रतिशत पहुंच गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीडीपी का 3.1% (लगभग 9.7 बिलियन अमेरिकी डॉलर), जो उस समय के नगण्य विदेशी मुद्रा भंडार के संदर्भ में पूरी तरह विनाशकारी था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>छठी पंचवर्षीय योजना (1980-85) के दौरान भारत का औसत वार्षिक चालू खाता घाटा कितना था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीडीपी का मात्र लगभग 1.3%, जो सातवीं योजना (1985-90) में बढ़कर औसतन 2.2% और 1990-91 में 3.1% हो गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सिडनी अलेक्जेंडर (Sidney Alexander) का 'अवशोषण उपागम' (Absorption Approach) चालू खाता घाटे को किस रूप में परिभाषित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CAD = कुल राष्ट्रीय उत्पादन (Y) - समग्र घरेलू अवशोषण (A = C + I + G); अर्थात् जब देश अपने कुल उत्पादन से अधिक उपभोग और निवेश करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>राष्ट्रीय आय लेखांकन के बचत-निवेश समीकरण (Saving-Investment Gap) के रूप में CAD का क्या संबंध है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CAD = (I - S) + (G - T); जहाँ (I - S) निजी क्षेत्र का बचत-निवेश अंतराल है और (G - T) सरकार का राजकोषीय घाटा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'ट्विन डेफिसिट परिकल्पना' (Twin Deficit Hypothesis) 1991 के संकट के संदर्भ में क्या सिद्ध करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकार के अनियंत्रित राजकोषीय घाटे (G - T) ने घरेलू समग्र मांग को बढ़ाकर सीधे चालू खाता घाटे (CAD) को विस्फोटक बना दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 में भारत के चालू खाता घाटे को बढ़ाने में वस्तु व्यापार घाटे (Trade Deficit) का कितना योगदान था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 9,449 करोड़ रुपये (लगभग 5.9 बिलियन डॉलर का व्यापार घाटा), जो कुल CAD का लगभग 60% से अधिक हिस्सा था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1990-91 में भारत का निर्यात-आयात कवरेज अनुपात (Export-to-Import Coverage) किस स्तर पर था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मात्र 60% से 66% के बीच; अर्थात् भारत की निर्यात आय उसके आयात बिल के दो-तिहाई हिस्से को भी चुकाने में असमर्थ थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाता घाटे (CAD) की वित्तीय भरपाई (Financing) के दो मुख्य तरीके कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. पूंजी खाते में शुद्ध विदेशी पूंजी अंतर्प्रवाह (FDI, FPI, बाह्य ऋण) द्वारा, अथवा 2. केंद्रीय बैंक के विदेशी मुद्रा भंडार से आहरण करके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण-सृजक पूंजी प्रवाह (Debt-creating Flows) और गैर-ऋण पूंजी प्रवाह (Non-debt Flows) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋण प्रवाहों (ECB, विदेशी ऋण) में ब्याज और मूलधन लौटाने की कानूनी बाध्यता होती है, जबकि गैर-ऋण प्रवाहों (FDI, FPI) में कोई निश्चित ऋण-सेवा दायित्व नहीं होता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1980 के दशक में भारत ने अपने CAD की भरपाई हेतु किस प्रकार के पूंजी प्रवाह पर भारी दांव लगाया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋण-सृजक पूंजी प्रवाहों (अल्पकालिक वाणिज्यिक बैंक ऋण और उच्च-ब्याज NRI जमाओं) पर, जो संकट के समय सबसे पहले बाहर भागे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डॉ. सी. रंगराजन समिति (1993) ने भारत के लिए चालू खाता घाटे (CAD) की संधारणीय सुरक्षित सीमा क्या निर्धारित की थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सकल घरेलू उत्पाद (GDP) का 2.0% से 2.5% तक (अधिकतम 3%)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश का चालू खाता घाटा (CAD) जीडीपी के 3% से ऊपर चला जाए, तो वित्तीय बाजारों में क्या संकट पैदा होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा के अवमूल्यन का भारी दबाव बनता है, विदेशी पोर्टफोलियो निवेशक पूंजी निकालने लगते हैं और विदेशी मुद्रा भंडार पर दबाव आता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्ष 2012-13 में भारत का चालू खाता घाटा (CAD) किस ऐतिहासिक उच्चतम स्तर पर पहुंच गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीडीपी का 4.8% (लगभग $88 बिलियन), जिसका कारण कच्चे तेल और सोने के भारी आयात थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2013 के 'टेपर टैंट्रम' (Taper Tantrum) संकट के दौरान उच्च CAD के कारण भारतीय अर्थव्यवस्था पर क्या प्रभाव पड़ा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय रुपया अमेरिकी डॉलर के मुकाबले ऐतिहासिक रूप से टूट गया और भारत को अंतरराष्ट्रीय स्तर पर 'फ्रेजाइल फाइव' (Fragile Five) अर्थव्यवस्थाओं में गिना गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2013 के टेपर टैंट्रम संकट से भारतीय रुपये को स्थिरता देने हेतु तत्कालीन RBI गवर्नर डॉ. रघुराम राजन ने कौन-सी सफल योजना चलाई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FCNR(B) विशेष स्वैप विंडो (Special Concessional Swap Window), जिसके जरिए बैंकों ने देश में $34 बिलियन की ताजा विदेशी मुद्रा जुटाई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हाल के दशकों में भारत ने किस वित्तीय वर्ष में असाधारण रूप से चालू खाता अधिशेष (Current Account Surplus) दर्ज किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्तीय वर्ष 2020-21 (COVID-19 वर्ष) में जीडीपी का 0.9% अधिशेष दर्ज हुआ था, जिसका मुख्य कारण राष्ट्रव्यापी लॉकडाउन के चलते आयातों का पूरी तरह ध्वस्त हो जाना था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय कच्चे तेल की कीमतों में प्रत्येक $10 प्रति बैरल की वृद्धि भारत के चालू खाता घाटे (CAD) को कितना बढ़ा देती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 13 से 15 बिलियन अमेरिकी डॉलर (जीडीपी के लगभग 0.4% से 0.5% के बराबर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के चालू खाता घाटे में 'सोने के आयात' (Gold Imports) की क्या भूमिका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सोना कच्चे तेल के बाद दूसरा सबसे बड़ा आयात व्यय है, जो लगभग $35-45 बिलियन वार्षिक विदेशी मुद्रा सोखकर CAD को गहरा करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सोने के भौतिक आयात को हतोत्साहित कर CAD पर दबाव घटाने हेतु सरकार ने 2015 में कौन-सी दो योजनाएं प्रारंभ की थीं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. सॉवरेन गोल्ड बॉन्ड (SGB) योजना और 2. स्वर्ण मुद्रीकरण योजना (Gold Monetisation Scheme - GMS)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत का 'अदृश्य खाता अधिशेष' (Invisibles Surplus) चालू खाता घाटे को संतुलित रखने में कैसे ढाल बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सॉफ्टवेयर सेवा निर्यातों (Net IT Exports) और अनिवासी भारतीयों के विशाल प्रेषणों ($100B+) से भारी अधिशेष उत्पन्न कर यह वस्तु व्यापार घाटे के 60-70% हिस्से को सोख लेता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व में प्रवासियों से धन प्रेषण (Remittance Inflow) प्राप्त करने में भारत का वैश्विक स्थान क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विश्व में प्रथम स्थान (वर्ष 2023 से 2026 के दौरान निरंतर $110-$125 बिलियन से अधिक वार्षिक अंतर्प्रवाह)।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते के प्राथमिक आय खाते में 'शुद्ध साधन आय' (Net Primary Income) भारत के लिए लगातार ऋणात्मक क्यों रहती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भारत में विदेशी निवेशकों द्वारा संचित निवेश (FDI/FPI) और विदेशी ऋण बहुत अधिक हैं, जिसका लाभांश, लाभ और ब्याज विदेश भेजा जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अवमूल्यन और व्यापार संतुलन के संदर्भ में 'जे-वक्र प्रभाव' (J-Curve Effect) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा अवमूल्यन के बाद अल्पावधि में व्यापार घाटा पहले और गहराता है (क्योंकि मौजूदा आयात अनुबंध महंगे हो जाते हैं), किंतु मध्यम अवधि में मात्रा समायोजन के बाद घाटे में टिकाऊ सुधार आता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मार्शल-लर्नर शर्त' (Marshall-Lerner Condition) के अनुसार विनिमय दर में गिरावट CAD को कब सुधार सकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केवल तब जब निर्यातों और आयातों की मांग की मूल्य लोच का कुल योग 1 से अधिक हो (|e_x + e_m| > 1)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी देश में मार्शल-लर्नर शर्त पूरी न हो (|e_x + e_m| < 1), तो मुद्रा अवमूल्यन का व्यापार घाटे पर क्या असर होगा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापार घाटा और चालू खाता घाटा घटने के बजाय और अधिक बढ़ जाएगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब चालू खाता घाटा (CAD) पूंजी खाते के शुद्ध अंतर्प्रवाह से अधिक हो जाता है, तो समग्र भुगतान संतुलन (Overall BoP) पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समग्र BoP घाटे में चला जाता है और केंद्रीय बैंक को विदेशी मुद्रा भंडार से डॉलर बेचकर अंतर को पाटना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब पूंजी खाते का अधिशेष चालू खाता घाटे (CAD) से अधिक होता है, तो विदेशी मुद्रा भंडार की स्थिति क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी मुद्रा भंडार में शुद्ध संचय (Accretion) होता है और समग्र भुगतान संतुलन अधिशेष में रहता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाता घाटे को संधारणीय बनाने हेतु विदेशी प्रत्यक्ष निवेश (FDI) को विदेशी पोर्टफोलियो निवेश (FPI) से बेहतर क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FDI दीर्घकालिक परिसंपत्तियों, कारखानों और बुनियादी ढांचे में लगाया जाता है जिसे अचानक वापस नहीं खींचा जा सकता, जबकि FPI 'तप्त मुद्रा' (Hot Money) है जो संकट में तुरंत पलायन कर जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आयात प्रतिस्थापन औद्योगीकरण (ISI) नीति ने 1991 से पूर्व भारत के CAD को कैसे अप्रत्यक्ष रूप से बढ़ाया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू उद्योगों को अत्यधिक संरक्षण देकर अक्षम बना दिया, जिससे निर्यात पिछड़ गए और उद्योगों को चलाने हेतु मध्यवर्ती व पूंजीगत आयातों की आवश्यकता लगातार बढ़ती रही।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत सरकार द्वारा 2020 में प्रारंभ की गई उत्पादन लिंक्ड प्रोत्साहन (PLI) योजना का CAD पर क्या रणनीतिक प्रभाव लक्षित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इलेक्ट्रॉनिक्स, फार्मास्यूटिकल्स, सौर पैनल और टेलीकॉम उपकरणों का घरेलू विनिर्माण बढ़ाकर आयातों में भारी कटौती करना और निर्यातों को गति देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वैश्विक व्यापार में 'व्यापार वित्त पोषण' (Trade Credit / Supplier's Credit) का BoP संकट के समय क्या व्यवहार होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी आपूर्तिकर्ता और बैंक संकटग्रस्त देश के आयातकों को 90-180 दिनों का क्रेडिट देने से इंकार कर देते हैं, जिससे नकद अग्रिम भुगतान की मांग बढ़ जाती है और तरलता संकट चरम पर पहुंच जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के BoP संकट ने भारत की किस व्यापक आर्थिक विचारधारा को हमेशा के लिए समाप्त कर दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राज्य-नियंत्रित बंद समाजवादी अर्थव्यवस्था और लाइसेंस-परमिट राज के मॉडल को, और खुली बाजार अर्थव्यवस्था का मार्ग प्रशस्त किया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान समय में भारत का विशाल विदेशी मुद्रा भंडार (लगभग $650-$700 बिलियन) देश को किस प्रकार की सुरक्षा प्रदान करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह लगभग 10 से 12 महीने के आयातों को कवर करता है और किसी भी आकस्मिक भू-राजनीतिक या तेल मूल्य आघात के विरुद्ध एक अभेद्य सुरक्षा कवच (War Chest) प्रदान करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अंतरराष्ट्रीय वित्तीय त्रिविध दुविधा या 'असंभव त्रिमूर्ति' (Impossible Trinity / Trilemma) सिद्धांत क्या कहता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोई भी देश एक साथ 1. निश्चित विनिमय दर, 2. स्वतंत्र मौद्रिक नीति, और 3. मुक्त पूंजी प्रवाह—इन तीनों को एक साथ हासिल नहीं कर सकता; उसे किसी एक का त्याग करना ही होगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के सुधारों के बाद भारत ने 'असंभव त्रिमूर्ति' (Trilemma) में किन दो लक्ष्यों को प्राथमिकता दी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वतंत्र मौद्रिक नीति और प्रबंधित पूंजी प्रवाह को चुना, जबकि विनिमय दर को बाजार-आधारित (Managed Float) बनने दिया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्या चालू खाता घाटा (CAD) हमेशा अर्थव्यवस्था की कमजोरी का प्रतीक होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नहीं; यदि CAD देश में उच्च उत्पादक निवेश, पूंजीगत मशीनरी के आयात और बुनियादी ढांचे के विस्तार के कारण हो, तो यह भविष्य की मजबूत आर्थिक संवृद्धि का संकेत होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>CAD कब अर्थव्यवस्था के लिए विनाशकारी खतरे की घंटी बन जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब यह अनुत्पादक उपभोग, विलासिता सामानों के आयात और भारी राजकोषीय घाटे से प्रेरित हो और इसकी भरपाई अल्पकालिक विदेशी ऋणों से की जा रही हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत के व्यापार और चालू खाते में 'वर्चुअल डेफिसिट' को कम करने हेतु हरित हाइड्रोजन और नवीकरणीय ऊर्जा का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीवाश्म ईंधन (कच्चा तेल और गैस) पर भारत की 85% आयात निर्भरता को घटाकर यह भारत के व्यापार घाटे और CAD की संरचनात्मक समस्या का स्थायी समाधान कर सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>रुपये में अंतरराष्ट्रीय व्यापार निपटान (International Trade Settlement in Indian Rupee - INR) तंत्र का प्राथमिक BoP लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापारिक आयातों हेतु अमेरिकी डॉलर पर निर्भरता कम होना और विदेशी मुद्रा भंडार के क्षरण से सुरक्षा मिलना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिज़र्व बैंक द्वारा जुलाई 2022 में रुपये में सीमा-पार व्यापार निपटान हेतु कौन-से विशेष खाते खोलने की अनुमति दी गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशेष रुपया वोस्ट्रो खाते (Special Rupee Vostro Accounts - SRVA)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चक्रीय चालू खाता घाटे (Cyclical CAD) और संरचनात्मक चालू खाता घाटे (Structural CAD) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चक्रीय CAD वैश्विक मंदी या कच्चे तेल के अल्पकालिक उछाल से होता है, जबकि संरचनात्मक CAD घरेलू बचत की कमी और विनिर्माण प्रतिस्पर्धा के अभाव से स्थायी रूप से बना रहता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में ऊर्जा आयात पर निर्भरता घटाने हेतु सरकार द्वारा पेट्रोल में एथेनॉल संमिश्रण (Ethanol Blending) का क्या लक्ष्य रखा गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">20% एथेनॉल संमिश्रण (E-20 लक्ष्य), जिससे प्रतिवर्ष अरबों डॉलर की विदेशी मुद्रा की बचत होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्लोबल कैपेबिलिटी सेंटर्स (GCCs) का भारत के चालू खाते पर क्या सकारात्मक प्रभाव पड़ रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वैश्विक बहुराष्ट्रीय कंपनियों के उच्च-मूल्य अनुसंधान, वित्त और आईटी केंद्रों द्वारा भारत के सेवा निर्यात अधिशेष में भारी वृद्धि हो रही है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते में 'व्यापार की शर्तें' (Terms of Trade - ToT) से क्या आशय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी देश के निर्यात मूल्य सूचकांक और आयात मूल्य सूचकांक का अनुपात (Px / Pm × 100)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब भारत के व्यापार की शर्तें (Terms of Trade) प्रतिकूल (Deteriorate) होती हैं, तो CAD पर क्या असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयातों के सापेक्ष निर्यात सस्ते हो जाते हैं, जिससे समान मात्रा के आयातों के भुगतान हेतु अधिक मात्रा में निर्यात करना पड़ता है और CAD बढ़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विदेशी मुद्रा अनिवासी जमा योजनाओं में विनिमय दर जोखिम (Exchange Rate Risk) कौन वहन करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">FCNR(B) खातों में विनिमय दर जोखिम वाणिज्यिक बैंक वहन करते हैं, जबकि 1991 के पूर्व FCNR(A) में यह जोखिम RBI/सरकार वहन करती थी जिसने भारी राजकोषीय घाटा बढ़ाया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूंजी खाता परिवर्तनीयता पर गठित तारापोर समिति (1997 एवं 2006) ने CAD के संबंध में क्या पूर्व-शर्त रखी थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चालू खाता घाटा (CAD) सकल घरेलू उत्पाद (GDP) के 3% से कम संधारणीय स्तर पर बना रहना चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते के असंतुलन को दूर करने हेतु मौद्रिक दृष्टिकोण (Monetary Approach to BoP) क्या सुझाव देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू ऋण सृजन (Domestic Credit Creation) को नियंत्रित करना, क्योंकि अतिरिक्त मुद्रा आपूर्ति ही व्यापार घाटे और विदेशी मुद्रा बहिर्वाह का मूल कारण बनती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते के घाटे को कम करने हेतु राष्ट्रीय बचत दर (Domestic Savings Rate) में वृद्धि क्यों आवश्यक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि बचत-निवेश अंतराल (I - S) कम होने पर विदेशी बचत (विदेशी पूंजी) पर निर्भरता स्वतः घट जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1991 के भुगतान संतुलन संकट का भारत के लिए सबसे अमूल्य और स्थायी नीतिगत सबक क्या रहा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">राजकोषीय अनुशासन बनाए रखना, पर्याप्त विदेशी मुद्रा भंडार संचित रखना, अल्पकालिक विदेशी वाणिज्यिक ऋणों पर अत्यधिक निर्भरता से बचना और निर्यात प्रतिस्पर्धा को निरंतर मजबूत करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

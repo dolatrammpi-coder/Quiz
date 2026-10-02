@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ocean Currents 2">
+<title>Ocean Currents 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Geography / भूगोल / Ocean Currents 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Geography — भूगोल</div>
+    <h1>Ocean Currents 2</h1>
+    <p class="topic-subtitle">प्रशांत व हिंद महासागर की धाराएं (क्यूरोशियो, ओयाशियो, अगुलहास, सोमाली) तथा स्थानीय जलवायु व मत्स्यन पर प्रभाव</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Ocean Currents 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>धारा</th><th>महासागर/क्षेत्र</th><th>प्रमुख प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">क्यूरोशियो धारा (Kuroshio Current)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्तरी प्रशांत महासागर (फिलीपींस, ताइवान से जापान के पूर्वी तट तक); गर्म जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जापान के तटीय तापमान को बढ़ाना, शीत ऋतु को मृदुल बनाना; अटलांटिक की गल्फ स्ट्रीम के समतुल्य तीव्र व नीले रंग की धारा ('काली धारा')</div></div></td></tr><tr><td><div class="primary-cell">ओयाशियो / क्युराइल धारा (Oyashio Current)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्तरी प्रशांत महासागर (बेरिंग जलडमरूमध्य व ओखोटस्क सागर से जापान तट तक); ठंडी जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">होक्काइडो तट पर तापमान में भारी गिरावट; क्यूरोशियो से मिलकर सघन कोहरा (Advection Fog) तथा विश्व प्रसिद्ध मत्स्यन बैंक का निर्माण</div></div></td></tr><tr><td><div class="primary-cell">कैलिफोर्निया धारा (California Current)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पूर्वी उत्तरी प्रशांत महासागर (संयुक्त राज्य अमेरिका व मैक्सिको का पश्चिमी तट); ठंडी जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">तटीय अपवेलिंग (Upwelling) द्वारा तापमान में गिरावट; तटीय शुष्कता उत्पन्न कर दक्षिण-पश्चिम USA व मोजावे/सोनोरन मरुस्थल के निर्माण में सहायक</div></div></td></tr><tr><td><div class="primary-cell">पेरू / हम्बोल्ट धारा (Humboldt Current)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दक्षिण-पूर्वी प्रशांत महासागर (चिली व पेरू का पश्चिमी तट); ठंडी जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">गहन तटीय अपवेलिंग द्वारा पोषक तत्वों की प्रचुरता; विश्व का सबसे बड़ा एन्कोवी (मछली) उद्योग; अटाकामा मरुस्थल की चरम शुष्कता हेतु उत्तरदायी</div></div></td></tr><tr><td><div class="primary-cell">पूर्वी ऑस्ट्रेलियाई धारा (EAC)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दक्षिण-पश्चिमी प्रशांत महासागर (ऑस्ट्रेलिया का पूर्वी तट); गर्म जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पूर्वी ऑस्ट्रेलियाई तट (सिडनी, ब्रिस्बेन) पर तापमान व आर्द्रता में वृद्धि; तटीय वर्षा को सुगम बनाना; ग्रेट बैरियर रीफ प्रवाल पारिस्थितिकी को समर्थन</div></div></td></tr><tr><td><div class="primary-cell">अगुलहास धारा (Agulhas Current)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दक्षिण-पश्चिमी हिंद महासागर (मोजाम्बिक व दक्षिण अफ्रीका का दक्षिण-पूर्वी तट); गर्म जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मोजाम्बिक धारा व मेडागास्कर धारा का संयुक्त रूप; दक्षिण अफ्रीका के दक्षिण-पूर्वी तट पर वर्षा व तापीय संतुलन; तीव्र रोग तरंगें (Rogue Waves) उत्पन्न करना</div></div></td></tr><tr><td><div class="primary-cell">सोमाली धारा (Somali Current)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्तर-पश्चिमी हिंद महासागर (हॉर्न ऑफ अफ्रीका / सोमालिया व ओमान तट); मौसम-परिवर्तनीय धारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">ग्रीष्मकाल में दक्षिण-पश्चिम मानसून के साथ उत्तर की ओर तीव्र ठंडी अपवेलिंग धारा; शीतकाल में उत्तर-पूर्व मानसून के साथ दक्षिणगामी मंद गर्म धारा</div></div></td></tr><tr><td><div class="primary-cell">पश्चिमी ऑस्ट्रेलियाई धारा</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">दक्षिण-पूर्वी हिंद महासागर (ऑस्ट्रेलिया का पश्चिमी तट); ठंडी जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पश्चिमी ऑस्ट्रेलियाई तट पर तापमान घटाना, वाष्पीकरण को दबाना; पश्चिमी ऑस्ट्रेलियाई मरुस्थल (ग्रेट सैंडी, गिब्सन, विक्टोरिया) की शुष्कता का कारण</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">Ocean Currents 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>धारा</th><th>महासागर/क्षेत्र</th><th>प्रमुख प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">अल नीनो (El Niño)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्य व पूर्वी भूमध्यरेखीय प्रशांत महासागर (पेरू तट); आवधिक गर्म जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">हम्बोल्ट ठंडी धारा का प्रतिस्थापन; पेरू तट पर प्लवक विनाश व मत्स्यन का पतन; भारतीय मानसून का कमजोर होना व सूखा जोखिम</div></div></td></tr><tr><td><div class="primary-cell">ला नीना (La Niña)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मध्य व पूर्वी भूमध्यरेखीय प्रशांत महासागर; अत्यधिक शीतलन परिघटना</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पूर्वी प्रशांत में गहन अपवेलिंग; पेरू तट पर अत्यधिक मत्स्यन; भारतीय मानसून में प्रचुर वर्षा तथा ऑस्ट्रेलियाई बाढ़ की अनुकूलता</div></div></td></tr><tr><td><div class="primary-cell">सुशीमा धारा (Tsushima Current)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्रशांत महासागर (क्यूरोशियो की पश्चिमी शाखा; जापान सागर में प्रवेश); गर्म जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">जापान के पश्चिमी तट के बंदरगाहों को शीतकाल में जमने से बचाना; पश्चिमी जापान में शीतकालीन भारी बर्फबारी हेतु आर्द्रता प्रदान करना</div></div></td></tr><tr><td><div class="primary-cell">मोजाम्बिक धारा (Mozambique Current)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पश्चिमी हिंद महासागर (मेडागास्कर द्वीप व मोजाम्बिक तट के मध्य चैनल); गर्म जलधारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अफ्रीकी पूर्वी तट पर उच्च तापमान व वर्षण बनाए रखना; आगे चलकर मेडागास्कर धारा से मिलकर अगुलहास धारा का निर्माण करना</div></div></td></tr><tr><td><div class="primary-cell">उत्तर-पूर्वी मानसूनी प्रवाह</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्तरी हिंद महासागर (अरब सागर व बंगाल की खाड़ी); शीतकालीन मौसमी धारा</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उत्तर-पूर्व मानसूनी पवनों के प्रभाव से पूर्व से पश्चिम की ओर दक्षिणावर्त/वामावर्त संचलन; कोरोमंडल तट पर शीतकालीन वर्षा में सहायक</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>प्रशांत महासागर की आकृति किस प्रकार की मानी जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">त्रिभुजाकार (शीर्ष उत्तर में बेरिंग जलडमरूमध्य पर तथा आधार दक्षिण में अंटार्कटिका पर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी प्रशांत महासागर में भूमध्य रेखा के उत्तर में पूर्व से पश्चिम की ओर बहने वाली प्रमुख धारा कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तरी विषुवतीय जलधारा (North Equatorial Current - गर्म धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी विषुवतीय जलधारा फिलीपींस तट से टकराकर उत्तर की ओर मुड़ने पर किस प्रसिद्ध गर्म धारा में परिवर्तित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्यूरोशियो धारा (Kuroshio Current / जापान धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापानी भाषा में 'क्यूरोशियो' (Kuroshio) का शाब्दिक अर्थ क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'काली धारा' या 'गहरा नीला प्रवाह' (Black/Dark Blue Current - उच्च लवणता व सूक्ष्मजीवों की कमी से गहरा नीला रंग)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अटलांटिक महासागर की किस प्रसिद्ध गर्म धारा से क्यूरोशियो धारा की तुलना की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गल्फ स्ट्रीम (Gulf Stream) से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्यूरोशियो धारा की वह पश्चिमी उप-शाखा जो कोरिया जलडमरूमध्य से होकर जापान सागर में प्रवेश करती है, क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सुशीमा धारा (Tsushima Current - गर्म धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सुशीमा धारा का जापान के पश्चिमी तट पर क्या अनुकूल प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह जापान के पश्चिमी तटीय बंदरगाहों को शीतकाल में जमने से बचाती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्यूरोशियो धारा जापान के होंशू द्वीप से आगे पछुआ पवनों के प्रभाव से पूर्व की ओर मुड़कर क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तरी प्रशांत प्रवाह (North Pacific Drift - गर्म धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी प्रशांत प्रवाह जब उत्तरी अमेरिका के तट के पास पहुँचता है, तो किन दो शाखाओं में विभाजित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अलास्का धारा (उत्तर की ओर) तथा कैलिफोर्निया धारा (दक्षिण की ओर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अलास्का के तट और कनाडा के ब्रिटिश कोलंबिया तट के सहारे उत्तर की ओर बहने वाली गर्म धारा कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अलास्का धारा (Alaska Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अलास्का धारा के गर्म प्रभाव के कारण उच्च अक्षांशों पर स्थित किस खाड़ी के पत्तन शीतकाल में भी खुले रहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अलास्का की खाड़ी के बंदरगाह</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संयुक्त राज्य अमेरिका के कैलिफोर्निया तट के सहारे उत्तर से दक्षिण की ओर प्रवाहित होने वाली ठंडी धारा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कैलिफोर्निया धारा (California Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कैलिफोर्निया ठंडी धारा और तटीय अपवेलिंग के कारण संयुक्त राज्य अमेरिका के दक्षिण-पश्चिम में किन मरुस्थलों का निर्माण हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सोनोरन और मोजावे मरुस्थल (Sonoran and Mojave Deserts)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सैन फ्रांसिस्को (कैलिफोर्निया) में ग्रीष्म ऋतु में घने अभिवहनीय कोहरे (Advection Fog) का मुख्य कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कैलिफोर्निया की ठंडी धारा के ऊपर से गुजरने वाली गर्म समुद्री पवनों का संघनन</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बेरिंग जलडमरूमध्य और ओखोटस्क सागर से दक्षिण की ओर जापान तट की ओर आने वाली अत्यधिक ठंडी धारा कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओयाशियो धारा (Oyashio Current / क्युराइल धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापानी भाषा में 'ओयाशियो' का शाब्दिक अर्थ क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'माता धारा' या पोषक धारा (Parent Current - पोषक तत्वों से भरपूर होने के कारण)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ओखोटस्क सागर से निकलकर सखालिन द्वीप के पूर्वी तट के सहारे बहने वाली ओयाशियो की शाखा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओखोटस्क धारा या कामचटका धारा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान के होंशू और होक्काइडो द्वीप के पूर्वी तट पर किन दो विपरीत स्वभाव की धाराओं का ऐतिहासिक मिलन होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गर्म क्यूरोशियो धारा और ठंडी ओयाशियो धारा का</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्यूरोशियो और ओयाशियो धाराओं के मिलन स्थल पर विश्व प्रसिद्ध कौन-सी भौगोलिक घटना घटित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यंत सघन अंधा कोहरा बनता है और विश्व का सबसे समृद्ध मत्स्यन बैंक विकसित होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान विश्व के अग्रणी मत्स्य उत्पादक देशों में क्यों गिना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्यूरोशियो और ओयाशियो के मिलन से उत्पन्न प्रचुर पादप प्लवक (Phytoplankton) और उथले महाद्वीपीय मग्नतट के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिणी प्रशांत महासागर में पूर्व से पश्चिम की ओर बहने वाली विशाल गर्म जलधारा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्षिणी विषुवतीय जलधारा (South Equatorial Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऑस्ट्रेलिया के पूर्वी तट के सहारे उत्तर से दक्षिण दिशा में बहने वाली तीव्र गर्म जलधारा कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूर्वी ऑस्ट्रेलियाई धारा (East Australian Current - EAC)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पूर्वी ऑस्ट्रेलियाई धारा ऑस्ट्रेलिया के पूर्वी तटीय नगरों (सिडनी, ब्रिस्बेन) की जलवायु पर क्या प्रभाव डालती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तटीय जलवायु को नम व गर्म बनाती है तथा भारी संवहनीय वर्षा में योगदान देती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व की सबसे बड़ी प्रवाल भित्ति 'ग्रेट बैरियर रीफ' (Great Barrier Reef) के विकास में किस धारा की तापीय भूमिका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूर्वी ऑस्ट्रेलियाई गर्म धारा की</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिणी प्रशांत महासागर में 40° से 60° दक्षिण अक्षांश के मध्य पश्चिम से पूर्व की ओर बहने वाला विशाल ठंडा प्रवाह क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्षिण प्रशांत प्रवाह या अंटार्कटिक परिध्रुवीय प्रवाह (West Wind Drift)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिण अमेरिका के दक्षिणी सिरे (केप हॉर्न) से मुड़कर चिली और पेरू के पश्चिमी तट के सहारे उत्तर की ओर बहने वाली प्रसिद्ध ठंडी धारा कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पेरू धारा या हम्बोल्ट धारा (Peru / Humboldt Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पेरू धारा की सर्वप्रथम वैज्ञानिक खोज और मापन किस महान जर्मन भूगोलवेत्ता ने 1802 में किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अलेक्जेंडर वॉन हम्बोल्ट (Alexander von Humboldt) ने</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पेरू (हम्बोल्ट) धारा के किनारे विश्व का सबसे सघन मत्स्यन क्षेत्र बनने का मुख्य कारण क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गहन तटीय अपवेलिंग (Coastal Upwelling) द्वारा नीचे से नाइट्रेट व फॉस्फेट युक्त ठंडे पोषक जल का ऊपर आना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पेरू तट पर हम्बोल्ट धारा के सहारे व्यावसायिक रूप से पकड़ी जाने वाली सबसे प्रमुख छोटी मछली कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एन्कोवी या एन्कोवेटा (Anchovy / Anchoveta)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मछलियों को खाकर पेरू के तटीय द्वीपों पर समुद्री पक्षियों द्वारा जमा किया गया विश्व का सबसे समृद्ध नाइट्रोजन उर्वरक क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गुआनो खाद (Guano Fertilizer)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पेरू की ठंडी धारा के सुखाने वाले प्रभाव से दक्षिण अमेरिका के प्रशांत तट पर किस विश्व के सबसे शुष्क मरुस्थल का निर्माण हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अटाकामा मरुस्थल (Atacama Desert - चिली व पेरू)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रशांत महासागर में दोनों विषुवतीय धाराओं के मध्य पश्चिम से पूर्व दिशा में लौटने वाली धारा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रशांत विषुवतीय प्रति-धारा (Equatorial Counter Current - गर्म धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भूमध्य रेखा के ठीक नीचे प्रशांत महासागर में 100 से 200 मीटर गहराई पर पूर्व की ओर बहने वाला गुप्त अधोप्रवाह क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्रॉमवेल अधोप्रवाह (Cromwell Subsurface Current - टाउनसेंड क्रॉमवेल द्वारा 1952 में खोजा गया)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पेरू के तट पर सामान्यतः 3 से 7 वर्षों के अंतराल पर क्रिसमस के समय प्रकट होने वाली असामान्य गर्म जलधारा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल नीनो (El Niño - स्पेनिश अर्थ: 'छोटा बच्चा' या 'ईसा मसीह का शिशु')</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अल नीनो के आगमन पर पेरू तट की सामान्य ठंडी हम्बोल्ट धारा पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हम्बोल्ट धारा और तटीय अपवेलिंग पूरी तरह दब जाती है तथा समुद्र का तापमान 5° से 8°C बढ़ जाता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अल नीनो का पेरू की अर्थव्यवस्था और समुद्री जीवन पर क्या विनाशकारी प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्लवक समाप्त हो जाते हैं, लाखों मछलियां व समुद्री पक्षी मर जाते हैं तथा एन्कोवी उद्योग तबाह हो जाता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अल नीनो का भारतीय ग्रीष्मकालीन दक्षिण-पश्चिम मानसून पर सामान्यतः क्या प्रतिकूल प्रभाव देखा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय मानसून कमजोर पड़ जाता है और देश में गंभीर सूखे (Drought) की स्थिति उत्पन्न होती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अल नीनो के विपरीत जब पूर्वी प्रशांत महासागर (पेरू तट) का जल सामान्य से अत्यधिक ठंडा हो जाता है, तो उसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ला नीना (La Niña - स्पेनिश अर्थ: 'छोटी बच्ची')</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ला नीना परिघटना का भारतीय मानसून पर क्या अनुकूल प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारतीय मानसून अत्यधिक सशक्त हो जाता है और देश भर में सामान्य से अधिक भारी वर्षा होती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रशांत महासागर के उष्णकटिबंधीय वायुमंडलीय दाब के दोलन और अल नीनो के युग्मन को सामूहिक रूप से क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एनसो (ENSO - El Niño Southern Oscillation)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिंद महासागर की सबसे अनूठी और विशिष्ट भौगोलिक विशेषता क्या है जो इसे अटलांटिक और प्रशांत से अलग करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह उत्तर में पूरी तरह स्थल-रुद्ध (Landlocked / अर्ध-महासागर) है, जिसके कारण उत्तरी भाग में धाराएं मानसूनी पवनों के साथ दिशा बदलती हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी हिंद महासागर में महासागरीय धाराओं की दिशा वर्ष में कितनी बार 180 डिग्री उलट जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष में दो बार (ग्रीष्मकालीन और शीतकालीन मानसून के उत्क्रमण के साथ)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रीष्म ऋतु (मई से सितंबर) में दक्षिण-पश्चिम मानसून के प्रभाव से उत्तरी हिंद महासागर में धाराओं का प्रवाह किस दिशा में होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पश्चिम से पूर्व दिशा में (घड़ी की सुई के अनुकूल / Clockwise - दक्षिण-पश्चिम मानसूनी प्रवाह)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शीत ऋतु (नवंबर से मार्च) में उत्तर-पूर्वी मानसून के प्रभाव से धाराओं का संचलन किस दिशा में होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूर्व से पश्चिम दिशा में (घड़ी की सुई के विपरीत / Anticlockwise - उत्तर-पूर्वी मानसूनी प्रवाह)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हॉर्न ऑफ अफ्रीका (सोमालिया) के तट के सहारे बहने वाली प्रसिद्ध मौसमी महासागरीय धारा कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सोमाली धारा (Somali Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रीष्मकालीन दक्षिण-पश्चिम मानसून के समय सोमाली धारा की दिशा और प्रकृति कैसी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्षिण से उत्तर की ओर तीव्र गति से बहने वाली ठंडी अपवेलिंग धारा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रीष्मकाल में सोमाली धारा के कारण सोमालिया और ओमान तट पर क्या मौसमी दशा बनती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तीव्र अपवेलिंग से तटीय शीतलन होता है और मरुस्थलीय शुष्कता बढ़ती है किंतु मत्स्यन अनुकूल होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शीतकालीन उत्तर-पूर्व मानसून के समय सोमाली धारा का स्वरूप कैसा हो जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तर से दक्षिण की ओर बहने वाली एक मंद और गर्म जलधारा</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिणी हिंद महासागर में ऑस्ट्रेलिया के पश्चिमी तट से मेडागास्कर की ओर बहने वाली स्थायी पूर्व-पश्चिम धारा कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्षिणी विषुवतीय हिंद महासागरीय धारा (South Equatorial Current - गर्म धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मेडागास्कर द्वीप से टकराकर दक्षिणी विषुवतीय धारा किन दो शाखाओं में बंट जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मोजाम्बिक धारा (चैनल से होकर) तथा मेडागास्कर धारा (द्वीप के पूर्व से होकर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मेडागास्कर द्वीप और अफ्रीकी मुख्य भूमि (मोजाम्बिक) के मध्य संकीर्ण चैनल से दक्षिण की ओर बहने वाली गर्म धारा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मोजाम्बिक धारा (Mozambique Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मोजाम्बिक धारा और मेडागास्कर धारा के 20° दक्षिण अक्षांश के पास मिलने से किस शक्तिशाली गर्म धारा का जन्म होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अगुलहास धारा (Agulhas Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगुलहास धारा दक्षिण अफ्रीका के किस प्रसिद्ध अंतरीप तक दक्षिण की ओर प्रवाहित होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केप अगुलहास (Cape Agulhas - अफ्रीका का दक्षिणतम बिंदु) तक</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगुलहास धारा किस महासागर की सबसे शक्तिशाली और तीव्र पश्चिमी सीमांत धारा (Western Boundary Current) है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हिंद महासागर की</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगुलहास धारा दक्षिण अफ्रीका के पूर्वी तट (डरबन) की जलवायु पर क्या अनुकूल प्रभाव डालती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तटीय तापमान को बढ़ाती है और वर्ष भर आर्द्र मानसूनी वर्षा प्रदान करती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगुलहास धारा जब 40° दक्षिण अक्षांश पर ठंडे अंटार्कटिक प्रवाह से टकराती है, तो इसका अधिकांश भाग पूर्व की ओर मुड़ जाता है, इसे क्या कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अगुलहास रेट्रोफ्लेक्शन (Agulhas Retroflection)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगुलहास रेट्रोफ्लेक्शन के दौरान विशाल गर्म वलयाकार भंवर टूटकर अटलांटिक महासागर में प्रवेश करते हैं, इन्हें क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अगुलहास रिंग्स या भंवर (Agulhas Rings - हिंद महासागर से अटलांटिक में लवणता व ऊष्मा का रिसाव)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>केप अगुलहास के पास तीव्र अगुलहास धारा और अंटार्कटिक तूफानी तरंगों के आमने-सामने टकराने से जहाजों के लिए कौन-सा खतरा बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशाल एकाकी रोग तरंगें (Rogue Waves / Freak Waves - 30 मीटर तक ऊंची विनाशकारी लहरें)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिणी हिंद महासागर में 40° से 60° दक्षिण अक्षांश के मध्य पछुआ पवनों द्वारा संचालित विशाल ठंडी जलराशि क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पश्चिम पवन प्रवाह (West Wind Drift)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पश्चिम पवन प्रवाह की वह शाखा जो ऑस्ट्रेलिया के पश्चिमी तट के सहारे उत्तर की ओर मुड़ जाती है, क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पश्चिमी ऑस्ट्रेलियाई धारा (West Australian Current - ठंडी धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पश्चिमी ऑस्ट्रेलियाई ठंडी धारा के प्रभाव से पश्चिमी ऑस्ट्रेलिया में किस भौगोलिक परिदृश्य का विकास हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशाल मरुस्थलों का (ग्रेट सैंडी, गिब्सन और ग्रेट विक्टोरिया मरुस्थल)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व के अधिकांश उष्णकटिबंधीय गर्म मरुस्थल महाद्वीपों के पश्चिमी किनारों पर ही क्यों स्थित हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अपतटीय व्यापारिक पवनों तथा पश्चिमी तटों पर बहने वाली ठंडी धाराओं (अपवेलिंग) द्वारा वाष्पीकरण रुकने के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महाद्वीपों के पश्चिमी तटों पर स्थित मरुस्थलों और उनसे संबंधित ठंडी धाराओं का सही मिलान क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सहारा (कनारी धारा), अटाकामा (हम्बोल्ट धारा), नामिब (बेंगुएला धारा), पश्चिमी ऑस्ट्रेलिया (प. ऑस्ट्रेलियाई धारा), कैलिफोर्निया (कैलिफोर्निया धारा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महाद्वीपों के पूर्वी तटों पर 20° से 40° अक्षांशों के मध्य बहने वाली गर्म धाराओं का तटीय जलवायु पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तापमान व आर्द्रता में वृद्धि कर मानसूनी व चक्रवाती वर्षा कराती हैं (जैसे गल्फ स्ट्रीम, क्यूरोशियो, ब्राजील, अगुलहास)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागरीय धाराएं ध्रुवीय क्षेत्रों और उच्च अक्षांशों के बंदरगाहों पर क्या प्रभाव डालती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गर्म धाराएं बंदरगाहों को शीतकाल में भी खुला (हिम-मुक्त) रखती हैं, जबकि ठंडी धाराएं बंदरगाहों को जमा देती हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कनाडा का हैलिफ़ैक्स बंदरगाह शीतकाल में खुला क्यों रहता है जबकि उसी अक्षांश पर स्थित सेंट जॉन्स बंदरगाह जम जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">हैलिफ़ैक्स गल्फ स्ट्रीम के प्रभाव में रहता है जबकि सेंट जॉन्स ठंडी लेब्राडोर धारा से जम जाता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विश्व के सबसे बड़े और समृद्ध मत्स्यन क्षेत्र (Fishing Grounds) हमेशा कहाँ पाए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जहाँ गर्म और ठंडी महासागरीय जलधाराएं आपस में मिलती हैं अथवा जहाँ तीव्र अपवेलिंग होती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गर्म और ठंडी धाराओं के मिलन स्थल पर मछलियों की भारी प्रचुरता का क्या जैविक कारण है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उचित तापमान और पोषक तत्वों के ऊर्ध्वाधर मिश्रण से मछलियों के मुख्य आहार 'प्लवक' (Plankton) का प्रचुर पनपना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी-पश्चिमी प्रशांत महासागर में विश्व का सबसे बड़ा मत्स्यन क्षेत्र किन दो धाराओं के मिलने से बनता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गर्म क्यूरोशियो और ठंडी ओयाशियो धारा के मिलने से (जापान, कुरील व सखालिन तट)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी-पश्चिमी अटलांटिक महासागर में प्रसिद्ध 'ग्रैंड बैंक्स' मत्स्य क्षेत्र किन दो धाराओं के संगम पर स्थित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गर्म गल्फ स्ट्रीम और ठंडी लेब्राडोर धारा के संगम पर (न्यूफाउंडलैंड, कनाडा)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तर-पूर्वी अटलांटिक महासागर में स्थित प्रसिद्ध 'डॉगर बैंक' (Dogger Bank) किस सागर में स्थित समृद्ध मत्स्य क्षेत्र है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तरी सागर (North Sea) में (गर्म उत्तरी अटलांटिक प्रवाह के प्रभाव में)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>गर्म और ठंडी धाराओं के मिलन स्थलों का अंतरराष्ट्रीय समुद्री नौवहन (Navigation) पर क्या गंभीर नकारात्मक प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अत्यंत सघन और अंधा कोहरा (Dense Fog) उत्पन्न होता है जिससे जलयानों की विजिबिलिटी शून्य हो जाती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>14-15 अप्रैल 1912 को अटलांटिक महासागर में ब्रिटिश यात्री जहाज 'टाइटैनिक' किस धारा द्वारा लाए गए हिमशैल से टकराकर डूबा था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ठंडी लेब्राडोर धारा द्वारा न्यूफाउंडलैंड के पास लाए गए हिमशैल (Iceberg) से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागरीय जलधाराएं वायुमंडलीय परिसंचरण में ऊष्मा के पुनर्वितरण में लगभग कितना योगदान देती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल अक्षांशीय ऊष्मा स्थानांतरण का लगभग एक-चौथाई (25%) भाग</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिंद महासागरीय द्विध्रुव (IOD - Indian Ocean Dipole) की धनात्मक अवस्था (Positive IOD) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पश्चिमी हिंद महासागर (अरब सागर) का पूर्वी हिंद महासागर (इंडोनेशिया) की तुलना में असामान्य रूप से अधिक गर्म होना</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>धनात्मक IOD (Positive IOD) का भारतीय मानसून पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह भारतीय मानसून को सुदृढ़ करता है और अधिक मानसूनी वर्षा कराने में सहायक होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋणात्मक IOD (Negative IOD) की स्थिति में क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इंडोनेशिया के पास जल असामान्य रूप से गर्म तथा अरब सागर ठंडा हो जाता है, जिससे भारतीय मानसून कमजोर होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब प्रशांत महासागर में अल नीनो सक्रिय हो किंतु हिंद महासागर में धनात्मक IOD हो, तो भारतीय मानसून पर क्या असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धनात्मक IOD अल नीनो के सूखे के प्रभाव को काफी हद तक संतुलित और निष्प्रभावी कर देता है (जैसे 1997 व 2019 में)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागरीय धाराओं के परिसंचरण से समुद्री मलबे और प्लास्टिक कचरे के विशाल जमाव वाले भंवर क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्रेट पैसिफिक गार्बेज पैच (Great Pacific Garbage Patch / प्रशांत कचरा भंवर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागरीय धाराओं की गतिज ऊर्जा का उपयोग करके प्रदूषण-मुक्त विद्युत उत्पादन करने की तकनीक क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">महासागरीय धारा ऊर्जा (Ocean Current Energy - जैसे गल्फ स्ट्रीम में पानी के भीतर टर्बाइन लगाना)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागर की गर्म सतही परत और ठंडी गहरी परत के तापमान अंतर (न्यूनतम 20°C) से बिजली बनाने की प्रणाली क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ओटेक (OTEC - Ocean Thermal Energy Conversion / महासागरीय तापीय ऊर्जा रूपांतरण)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में लक्षद्वीप के कवारत्ती द्वीप पर राष्ट्रीय महासागर प्रौद्योगिकी संस्थान (NIOT) द्वारा किस तकनीक से अलवणीकरण संयंत्र स्थापित किया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निम्न तापमान ताप वाष्पीकरण तकनीक (LTTD - Low Temperature Thermal Desalination)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भूमध्य रेखा के बिल्कुल समीप महासागरीय जलधाराओं की गति अपेक्षाकृत सीधी और पूर्व-पश्चिम क्यों होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि भूमध्य रेखा पर कोरिओलिस बल का मान शून्य होता है, जिससे जल का विक्षेपण नहीं होता</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मध्य अक्षांशों (40°-60°) में महासागरीय धाराएं पूर्व की ओर तेजी से क्यों मुड़ जाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रचंड पछुआ पवनों के घर्षण तथा उच्च कोरिओलिस बल के विक्षेपक प्रभाव के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागरीय धाराओं के परिसंचरण चक्र (Gyres) के केंद्र में स्थित शांत जल क्षेत्र किस विशिष्ट दशा को दर्शाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्च लवणता, उच्च तापमान, अल्प जैविक उत्पादकता तथा धाराओं का पूर्ण अभाव</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रशांत महासागर का सबसे विशाल गायर (चक्रिल) कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तरी प्रशांत उपोष्णकटिबंधीय गायर (North Pacific Subtropical Gyre)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दक्षिण अटलांटिक और दक्षिण प्रशांत महासागर में जलधाराओं के चक्र किस दिशा में घूमते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वामावर्त दिशा में (Anticlockwise - दक्षिणी गोलार्ध के कोरिओलिस बल के कारण)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी अटलांटिक और उत्तरी प्रशांत महासागर में जलधाराओं के चक्र किस दिशा में घूमते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्षिणावर्त दिशा में (Clockwise - उत्तरी गोलार्ध के कोरिओलिस बल के कारण)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागरीय धाराओं की गति मापने के लिए समुद्र विज्ञान में प्रयुक्त उपग्रह-ट्रैक किए जाने वाले तैरते यंत्र क्या कहलाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्गो फ्लोट्स (Argo Floats) और ड्रिफ्टर्स (Drifters)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वैश्विक महासागरीय धाराओं का निरंतर प्रवाह पृथ्वी के पारिस्थितिक तंत्र के लिए क्यों जीवनदायी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह ऑक्सीजन को गहरे सागर तक पहुँचाता है, पोषक तत्वों का पुनर्चक्रण करता है और चरम मौसम को संतुलित रखता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>क्यूरोशियो विस्तार (Kuroshio Extension) क्षेत्र में समुद्री भंवरों (Eddies) की क्या भूमिका होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ये भंवर गहरे पोषक तत्वों को सतह पर लाते हैं जिससे महासागरीय प्राथमिक उत्पादकता कई गुना बढ़ जाती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जापान के पास ओयाशियो धारा के जल का हरा रंग किस कारण दिखाई देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसमें घुले हुए सूक्ष्म पादप प्लवकों (Diatoms और Phytoplankton) की अत्यधिक प्रचुरता के कारण</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पेरू धारा के तटीय क्षेत्र में होने वाली अपवेलिंग को कौन-सी स्थानीय पवन प्रणाली संचालित करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तट के समानांतर और समुद्रोन्मुखी बहने वाली दक्षिण-पूर्वी व्यापारिक पवनें</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अल नीनो के दौरान वाकर परिसंचरण (Walker Circulation) पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सामान्य वाकर सेल कमजोर हो जाती है या उलट जाती है, जिससे पूर्वी प्रशांत में वर्षा और पश्चिमी प्रशांत में सूखा पड़ता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ला नीना के दौरान पूर्वी प्रशांत महासागर में थर्मोक्लाइन (Thermocline) की गहराई पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">थर्मोक्लाइन सतह के अत्यधिक निकट आ जाती है, जिससे ठंडा जल अधिक गहराई से सतह पर पहुँचता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अल नीनो मोदोकी (El Niño Modoki) सामान्य अल नीनो से किस प्रकार भिन्न होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसमें अधिकतम तापन पूर्वी प्रशांत (पेरू तट) के बजाय मध्य भूमध्यरेखीय प्रशांत महासागर में संकेंद्रित होता है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हिंद महासागर में सोमाली धारा की अधिकतम गति ग्रीष्मकाल में कितनी दर्ज की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 7 से 9 समुद्री मील प्रति घंटा (विश्व की सबसे तेज बहने वाली सतही धाराओं में से एक)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शीतकाल में बंगाल की खाड़ी से अरब सागर की ओर बहने वाली सतही धारा को क्या कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्तर-पूर्वी मानसूनी धारा (North-East Monsoon Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ग्रीष्मकाल में अरब सागर से बंगाल की खाड़ी की ओर बहने वाली सतही धारा क्या कहलाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दक्षिण-पश्चिम मानसूनी धारा (South-West Monsoon Current)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अगुलहास धारा के मार्ग में बनने वाले 'अगुलहास साइक्लोनिक एडीज' का स्थानीय समुद्री जीवन पर क्या असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ये पोषक तत्वों को सतह पर लाकर स्थानीय पेलैजिक मछलियों और शार्क प्रजातियों के लिए भोजन उपलब्ध कराते हैं</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>पश्चिमी ऑस्ट्रेलियाई धारा का पर्थ (Perth) और पश्चिमी ऑस्ट्रेलियाई तटीय जलवायु के तापमान पर क्या असर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह ग्रीष्मकाल में तापमान को मध्यम बनाए रखती है और तटीय नमी को आंतरिक भागों में जाने से रोकती है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कैलिफोर्निया धारा के प्रवाह क्षेत्र में स्थित प्रमुख समुद्री पारिस्थितिकी तंत्र कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विशाल कैल्प वन (Giant Kelp Forests - मैक्रोसिस्टिस समुद्री शैवाल के विशाल वन)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रशांत महासागर की विषुवतीय प्रति-धारा (Equatorial Counter Current) किस दिशा में बहती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पश्चिम से पूर्व दिशा में (फिलीपींस और इंडोनेशिया से मध्य अमेरिका के तट की ओर)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उत्तरी हिंद महासागर में विषुवतीय प्रति-धारा केवल किस ऋतु में स्पष्ट रूप से दिखाई देती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शीत ऋतु में (जब उत्तर-पूर्वी मानसूनी प्रवाह सक्रिय होता है और दक्षिण में प्रति-धारा विकसित होती है)</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागरीय धाराओं द्वारा संचालित 'ग्लोबल थर्मोहेलाइन कन्वेयर बेल्ट' को एक पूर्ण चक्र पूरा करने में लगभग कितना समय लगता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 1,000 से 1,500 वर्ष</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कोल्ड कोर रिंग्स (Cold Core Rings) और वार्म कोर रिंग्स (Warm Core Rings) का निर्माण किस प्रक्रिया से होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गल्फ स्ट्रीम और क्यूरोशियो जैसी तीव्र पश्चिमी सीमांत धाराओं के विसर्पण (Meandering) और पिंच-ऑफ होने से</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>महासागरीय धाराओं के अध्ययन का वैश्विक मौसम पूर्वानुमान (Weather Forecasting) में क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह चक्रवातों की तीव्रता, मानसूनी वर्षा के वितरण और वैश्विक एल नीनो-ला नीना की सटीक पूर्व-चेतावनी में सहायक है</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

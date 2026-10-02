@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="बैंकिंग प्रणाली Part 2">
+<title>बैंकिंग प्रणाली Part 2</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / बैंकिंग प्रणाली Part 2</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>बैंकिंग प्रणाली Part 2</h1>
+    <p class="topic-subtitle">बैंक जमा की संरचना, मांग व सावधि जमा की विशेषताएं, आर्थिक महत्व तथा ऋण और अग्रिमों का गहन समष्टिगत विश्लेषण</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">बैंकिंग प्रणाली Part 2</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>बैंकिंग अवधारणा</th><th>प्रमुख विशेषता</th><th>आर्थिक भूमिका</th></tr></thead><tbody><tr><td><div class="primary-cell">मांग जमा (Demand Deposits / CASA)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बिना किसी पूर्व सूचना के ग्राहक की मांग पर तत्काल प्रतिदेय; चेक, डेबिट कार्ड, नेट बैंकिंग और UPI द्वारा आहरण योग्य।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">अर्थव्यवस्था में संकीर्ण मुद्रा (M1) का प्रमुख घटक; विनिमय का प्राथमिक माध्यम तथा बैंकों हेतु सबसे सस्ती कार्यशील पूंजी।</div></div></td></tr><tr><td><div class="primary-cell">सावधि जमा (Time Deposits / Term Deposits)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">एक निश्चित परिपक्वता अवधि (7 दिन से 10 वर्ष) हेतु जमा; समय-पूर्व निकासी पर ब्याज कटौती/दंड; उच्च ब्याज दर।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">घरेलू बचत को जुटाने का मुख्य आधार; बैंकों को दीर्घकालिक ऋण (बुनियादी ढांचा व उद्योग) देने हेतु स्थिर संसाधन प्रदान करना।</div></div></td></tr><tr><td><div class="primary-cell">व्युत्पन्न / सक्रिय जमा (Derivative Deposits)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकों द्वारा ऋण स्वीकृत करने पर उधारकर्ता के नाम खोला गया खाता जिसमें ऋण राशि क्रेडिट की जाती है ('ऋण जमा का सृजन करते हैं')।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">बैंकिंग प्रणाली द्वारा बहु-गुणात्मक साख सृजन (Credit Creation); मुद्रा आपूर्ति (M3) और समग्र आर्थिक मांग का विस्तार।</div></div></td></tr><tr><td><div class="primary-cell">नकद साख (Cash Credit - CC)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कच्चे माल और स्टॉक के दृष्टिबंधक (Hypothecation) पर स्वीकृत कार्यशील पूंजी सीमा; ब्याज केवल दैनिक उपयोग की गई राशि पर देय।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">विनिर्माण और व्यापारिक इकाइयों की दैनिक तरलता जरूरतों को पूरा करना; औद्योगिक चक्र को निर्बाध गतिशीलता देना।</div></div></td></tr><tr><td><div class="primary-cell">अधिविकर्ष (Overdraft - OD)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">खाते में उपलब्ध वास्तविक शेष से अधिक पूर्व-स्वीकृत सीमा तक आहरण की सुविधा; वित्तीय परिसंपत्तियों (FD, शेयर) या व्यक्तिगत साख पर।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">व्यापारियों और सूक्ष्म उद्यमों को अल्पकालिक नकदी प्रवाह बेमेल (Cash Flow Mismatch) से तत्काल सुरक्षा प्रदान करना।</div></div></td></tr><tr><td><div class="primary-cell">सावधि ऋण (Term Loans)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">निश्चित अवधि हेतु एकमुश्त स्वीकृत ऋण जिसका पुनर्भुगतान ईएमआई (EMI) या पूर्व-निर्धारित किस्तों में होता है; लघु, मध्यम व दीर्घकालिक।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सकल स्थायी पूंजी निर्माण (GFCF), अचल संपत्तियों (संयंत्र, मशीनरी, आवास) का सृजन और उत्पादन क्षमता का दीर्घकालिक विस्तार।</div></div></td></tr><tr><td><div class="primary-cell">हुंडी / विपत्र भुनाई (Bills Discounting)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">व्यापारिक माल की आपूर्ति के बदले जारी विनिमय बिलों (Bills of Exchange) को परिपक्वता से पूर्व बैंक द्वारा कमीशन काटकर नकद भुगतान करना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आपूर्तिकर्ताओं को तत्काल कार्यशील पूंजी उपलब्ध कराना; आपूर्ति श्रृंखला में भुगतान चक्र में तेजी और व्यापारिक विश्वास का संवर्धन।</div></div></td></tr><tr><td><div class="primary-cell">बाह्य बेंचमार्क आधारित ऋण दर (EBLR)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आरबीआई के निर्देश पर अक्टूबर 2019 से खुदरा व MSME ऋणों की ब्याज दरों को सीधे रेपो दर या ट्रेजरी बिल प्रतिफल से जोड़ना।</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">मौद्रिक नीति संचरण (Monetary Transmission) में अभूतपूर्व पारदर्शिता; नीतिगत रेपो दर में कटौती का लाभ तुरंत अंतिम ग्राहकों तक पहुंचना।</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>बैंकिंग विनियमन अधिनियम 1949 के अंतर्गत 'बैंक जमा' (Bank Deposit) की कानूनी प्रकृति क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जमाकर्ता और बैंक के बीच 'लेनदार और देनदार' (Creditor and Debtor) का वैधानिक संबंध; जहां बैंक उधारकर्ता (देनदार) होता है और जमाकर्ता बैंक का असुरक्षित/बीमित लेनदार होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब कोई नागरिक बैंक में नकद धनराशि जमा करता है, तो बैंक की बैलेंस शीट पर इसका क्या लेखांकन प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक की नकद परिसंपत्ति (Assets) में वृद्धि होती है और साथ ही जमाकर्ता के प्रति बैंक की देनदारी (Liabilities) में समान वृद्धि होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'प्राथमिक जमा' (Primary / Passive Deposits) से क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जनता द्वारा अपनी वास्तविक बचत से बैंक में नकद, चेक या ड्राफ्ट के रूप में सीधे जमा की गई वास्तविक मुद्रा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'व्युत्पन्न जमा' या 'गौण जमा' (Derivative / Active Deposits) किसे कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों द्वारा ऋण स्वीकृत करते समय उधारकर्ता को नकद देने के बजाय उसके नाम खोले गए बैंक खाते में जमा की जाने वाली साख राशि।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रसिद्ध ब्रिटिश अर्थशास्त्री जे. एम. कीन्स ने प्राथमिक और व्युत्पन्न जमा के संबंध में क्या प्रसिद्ध कथन दिया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'ऋण जमा का सृजन करते हैं' (Loans Create Deposits), अर्थात् बैंकों द्वारा स्वीकृत ऋण ही बैंकिंग प्रणाली में नई जमाओं को जन्म देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमाओं को उनकी आहरण प्रकृति और परिपक्वता के आधार पर किन दो मुख्य श्रेणियों में विभाजित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. मांग जमा (Demand Deposits) और 2. समय/सावधि जमा (Time Deposits)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>शुद्ध मांग और समय देनदारियां (Net Demand and Time Liabilities - NDTL) क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जनता के प्रति बैंक की कुल मांग और समय जमा देनदारियों में से अन्य बैंकों में जमा अंतर-बैंक परिसंपत्तियों को घटाने पर प्राप्त शेष राशि।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>NDTL की गणना भारतीय रिजर्व बैंक द्वारा किन दो प्रमुख विनियामक अनुपातों को लागू करने हेतु की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नकद आरक्षित अनुपात (CRR) और सांविधिक तरलता अनुपात (SLR) के निर्धारण हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों की 'अन्य मांग और समय देनदारियों' (Other Demand and Time Liabilities - ODTL) में क्या शामिल होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अवैतनिक लाभांश, देय ड्राफ्ट, मांग ड्राफ्ट (DD), जमा किए गए बिल, और कर्मचारियों की भविष्य निधि का बैंक के पास शेष।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों के संदर्भ में 'कोर जमा' (Core Deposits) किन्हें कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्थानीय खुदरा ग्राहकों द्वारा खोले गए बचत और चालू खाते तथा छोटी एफडी, जो ब्याज दरों के उतार-चढ़ाव के प्रति कम संवेदनशील और अत्यधिक स्थिर होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'गैर-कोर जमा' या 'अस्थिर जमा' (Volatile / Wholesale Deposits) क्या होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कॉरपोरेट्स और बड़े संस्थानों द्वारा उच्च ब्याज दर के लालच में रखी गई अल्पकालिक थोक जमाराशियां, जो बाजार में थोड़ा भी बेहतर रिटर्न मिलने पर तुरंत पलायन कर जाती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक के नियमों के अनुसार अनुसूचित वाणिज्यिक बैंकों हेतु 'थोक जमा' (Bulk Deposit) की न्यूनतम सीमा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एकल सावधि जमा में ₹3 करोड़ और उससे अधिक की राशि (आरबीआई द्वारा पूर्व के ₹2 करोड़ से संशोधित)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जमा प्रमाणपत्र (Certificate of Deposit - CD) किस प्रकार का बैंकिंग लिखत है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुसूचित वाणिज्यिक बैंकों द्वारा जारी एक परक्राम्य (Negotiable) और हस्तांतरणीय मनी मार्केट वचन-पत्र, जो 7 दिन से 1 वर्ष की परिपक्वता हेतु बट्टे (Discount) पर जारी होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में जमा प्रमाणपत्र (CD) जारी करने की न्यूनतम राशि क्या निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम ₹5 लाख और उसके गुणकों में।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनिवासी भारतीयों (NRIs) हेतु 'विदेशी मुद्रा अनिवासी खाता' [FCNR(B)] किस मुद्रा में संचालित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नामित विदेशी मुद्राओं (जैसे अमेरिकी डॉलर, पाउंड स्टर्लिंग, यूरो, येन) में, जिस पर विनिमय दर जोखिम बैंक स्वयं वहन करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अनिवासी बाह्य खाता (NRE Account) और अनिवासी साधारण खाता (NRO Account) में मुख्य अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">NRE खाता विदेशी स्रोतों से अर्जित विदेशी मुद्रा को भारतीय रुपये में रखने हेतु है (पूर्णतः कर-मुक्त व प्रत्यावर्तनीय), जबकि NRO खाता भारत में अर्जित आय (किराया, लाभांश) रखने हेतु है जिस पर कर लगता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों में 'स्वीप-इन / स्वीप-आउट' (Flexi Deposits) सुविधा क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बचत खाते में एक पूर्व-निर्धारित सीमा से अधिक की राशि का स्वतः सावधि जमा (FD) में बदल जाना और चेक कटने पर बिना पेनाल्टी स्वतः बचत खाते में वापस आ जाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'निष्क्रिय खाता' (Inoperative / Dormant Account) कब घोषित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी चालू या बचत खाते में लगातार 2 वर्षों (24 महीने) तक ग्राहक द्वारा कोई वित्तीय लेन-देन न किया गया हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'दावा न की गई जमा' (Unclaimed Deposits) की तकनीकी परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वे बचत या चालू खाते जो 10 वर्षों तक संचालित न हुए हों, अथवा वे सावधि जमाएं जो परिपक्वता तिथि के 10 वर्ष बाद भी भुनाई न गई हों।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>10 वर्ष से अधिक की दावा न की गई बैंक जमाओं को RBI के किस वैधानिक कोष में स्थानांतरित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जमाकर्ता शिक्षा और जागरूकता निधि (Depositor Education and Awareness Fund - DEAF) में, जिसका उपयोग ग्राहकों के वित्तीय संरक्षण हेतु होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नागरिकों को विभिन्न बैंकों में अपनी लावारिस/दावा न की गई जमाओं को खोजने में सहायता हेतु RBI ने 2023 में कौन-सा केंद्रीकृत वेब पोर्टल शुरू किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उद्गम पोर्टल (UDGAM - Unclaimed Deposits-Gateway to Access inforMation)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों की 'निधियों की लागत' (Cost of Funds - CoF) में क्या शामिल होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जमाकर्ताओं को चुकाया जाने वाला औसत ब्याज दर तथा जमा जुटाने और संचालित करने पर आने वाला परिचालन व्यय।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>उच्च ब्याज दर परिवेश में बैंक सावधि जमाओं के स्थान पर CASA जमा जुटाने पर अधिक बल क्यों देते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि CASA जमाओं पर ब्याज लागत अत्यंत कम होती है, जिससे बैंक का निवल ब्याज मार्जिन (NIM) ऊंचा बना रहता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>विकासशील देशों में बैंक जमाओं को आर्थिक दृष्टि से 'बचत का सुरक्षित आश्रय' क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि वे उच्च तरलता, शून्य डिफ़ॉल्ट जोखिम (DICGC गारंटी के कारण) और निश्चित मौद्रिक प्रतिफल प्रदान करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमाओं में 'पुनरावर्ती जमा' (Recurring Deposit - RD) की मुख्य विशेषता क्या होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नियमित मासिक अंतराल पर एक निश्चित राशि जमा करना, जिससे मध्यम वर्ग में अनुशासित बचत की आदत विकसित होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कर बचत सावधि जमा (Tax-Saving Fixed Deposit) की न्यूनतम लॉक-इन अवधि कितनी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">न्यूनतम 5 वर्ष (धारा 80C के तहत आयकर छूट हेतु पात्र)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मांग जमा' (Demand Deposits) की सबसे मौलिक और परिभाषित विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ग्राहक द्वारा मांगे जाने पर (On Demand) बैंक बिना किसी पूर्व सूचना या बाधा के तुरंत भुगतान करने के लिए कानूनी रूप से बाध्य होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मांग जमा के अंतर्गत आने वाले दो मुख्य प्रकार के खाते कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. चालू खाता (Current Account) और 2. बचत बैंक खाता (Savings Bank Account)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मांग जमाओं को आधुनिक अर्थशास्त्र में 'चेक योग्य जमाएं' (Chequeable Deposits) क्यों कहा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि खाताधारक इन जमाओं के बदले चेक काटकर किसी भी तीसरे पक्ष को सीधे भुगतान कर सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मांग जमाएं मुद्रा आपूर्ति के किस मानक घटक का अभिन्न अंग होती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संकीर्ण मुद्रा (Narrow Money - M1) का; जहां M1 = जनता के पास करेंसी + बैंकों के पास मांग जमा + RBI के पास अन्य जमाएं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>तरलता की दृष्टि से मुद्रा के विभिन्न रूपों में मांग जमा का क्या स्थान है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भौतिक नकदी (Currency) के बाद दूसरी सर्वाधिक तरल वित्तीय परिसंपत्ति (Near-Money)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'चालू खाता' (Current Account) मुख्य रूप से किन ग्राहकों के लिए संचालित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यापारियों, औद्योगिक कंपनियों, साझेदारी फर्मों और वाणिज्यिक संस्थाओं हेतु, जिन्हें प्रतिदिन बड़ी संख्या में लेन-देन करने होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई के सामान्य विनियामक नियमों के अनुसार चालू खाते में जमा राशि पर कितना ब्याज दिया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शून्य ब्याज (Zero Interest); बैंकों को चालू खाते की जमाओं पर ब्याज देने की अनुमति नहीं है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाते में जमा और निकासी की संख्या पर क्या पाबंदी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कोई प्रतिबंध नहीं होता; दिन में असीमित बार जमा और निकासी की जा सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>चालू खाताधारकों को बैंक द्वारा दी जाने वाली सबसे महत्वपूर्ण विशेष वित्तीय सुविधा कौन-सी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिविकर्ष (Overdraft - OD) सुविधा, जिससे खाते में शून्य बैलेंस होने पर भी तय सीमा तक भुगतान किया जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'बचत बैंक खाता' (Savings Bank Account) का प्राथमिक सामाजिक-आर्थिक उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यक्तियों, परिवारों और समाज में अल्पकालिक बचत की आदत को प्रोत्साहित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय रिजर्व बैंक ने बचत बैंक खातों की ब्याज दरों को किस वर्ष पूरी तरह वि-नियंत्रित (Deregulate) किया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अक्टूबर 2011 में, जिसके बाद बैंक बाजार प्रतिस्पर्धा के अनुसार अपनी बचत ब्याज दरें तय करने हेतु स्वतंत्र हुए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वर्तमान में बैंक बचत खातों पर ब्याज की गणना किस आधार पर करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दैनिक उत्पाद आधार (Daily Product Basis / Daily End-of-Day Balance) पर (जो 1 अप्रैल 2010 से अनिवार्य किया गया)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 अप्रैल 2010 से पूर्व बचत बैंक खातों पर ब्याज की गणना किस पुरातन पद्धति से की जाती थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">महीने की 10वीं तारीख से लेकर अंतिम तारीख के बीच उपलब्ध न्यूनतम शेष (Minimum Balance) पर, जिससे खाताधारकों को ब्याज का भारी नुकसान होता था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बचत बैंक खाते में निकासी पर क्या विनियामक सीमाएं हो सकती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक एटीएम और चेक के माध्यम से प्रति माह निःशुल्क आहरणों की संख्या सीमित कर सकते हैं और व्यावसायिक लेन-देन पर रोक लगा सकते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>CASA अनुपात (CASA Ratio) की गणना का सूत्र क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">(चालू खाता जमा + बचत खाता जमा) / कुल बैंक जमा × 100।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसी वाणिज्यिक बैंक के लिए उच्च CASA अनुपात (जैसे 40% से 50%) का क्या रणनीतिक महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह बैंक की निधियों की लागत (Cost of Deposits) को न्यूनतम रखता है, जिससे बैंक कम ब्याज दर पर ऋण देकर भी उच्च निवल ब्याज मार्जिन (NIM) कमा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय समावेशन हेतु खोले जाने वाले 'मूल बचत बैंक जमा खाते' (BSBDA / जन धन खाते) की प्रमुख विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शून्य न्यूनतम शेष (Zero Minimum Balance) की आवश्यकता, कोई न्यूनतम जमा बाध्यता नहीं और निःशुल्क रूपे डेबिट कार्ड।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मांग जमाओं को चेक द्वारा अंतरित करने की सुविधा मुद्रा के किस प्राथमिक कार्य को संपन्न करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">'विनिमय के माध्यम' (Medium of Exchange) के कार्य को, जिससे नकदी नोटों को ढोने का जोखिम और लागत समाप्त हो जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>डिजिटल बैंकिंग और यूपीआई (UPI) के विस्तार ने मांग जमाओं के वेग (Velocity of Circulation) को कैसे प्रभावित किया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मुद्रा के संचलन वेग को अत्यधिक बढ़ा दिया है, क्योंकि धन कुछ ही सेकंडों में एक खाते से दूसरे खाते में अंतरित हो जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक मांग जमाओं का शत-प्रतिशत हिस्सा अपने पास नकद क्यों नहीं रखते?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि बड़ी संख्या के नियम (Law of Large Numbers) के अनुसार सभी जमाकर्ता एक ही दिन अपनी संपूर्ण जमा राशि निकालने नहीं आते।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आंशिक आरक्षित बैंकिंग (Fractional Reserve Banking) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसी बैंकिंग प्रणाली जिसमें बैंक अपनी कुल मांग और समय जमाओं का केवल एक वैधानिक अंश (CRR व SLR) तरल रूप में रखकर शेष राशि को ऋण में दे देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मांग जमाओं में शून्य बैलेंस होने पर चेक अस्वीकृत होने पर कौन-सा दंडात्मक शुल्क लगता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">चेक बाउंस शुल्क (NACH / ECS Dishonour Charge) तथा एनआई एक्ट धारा 138 के तहत कानूनी कार्रवाई।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वरिष्ठ नागरिकों हेतु सावधि जमाओं पर सामान्य ग्राहकों की तुलना में बैंक क्या अतिरिक्त सुविधा देते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सामान्यतः 0.50% (50 आधार अंक) तक अतिरिक्त ब्याज दर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमाएं देश के 'सकल स्थायी पूंजी निर्माण' (Gross Fixed Capital Formation - GFCF) को कैसे गति देती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लाखों छोटे परिवारों की बिखरी हुई निष्क्रिय घरेलू बचतों को एकत्रित कर उन्हें बड़े बुनियादी ढांचा, विनिर्माण और ऊर्जा संयंत्रों हेतु दीर्घकालिक ऋणों में रूपांतरित करके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अर्थव्यवस्था में बैंक जमाओं का 'वित्तीय मध्यस्थता' (Financial Intermediation) कार्य क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिशेष इकाइयों (बचतकर्ताओं) से घाटे वाली इकाइयों (निवेशकों और उद्यमियों) तक वित्तीय संसाधनों का सुरक्षित और कुशल प्रवाह सुनिश्चित करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वित्तीय मध्यस्थ के रूप में बैंक जमाओं का सबसे बड़ा आर्थिक लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लेन-देन लागत (Transaction Costs) और सूचना विषमता (Information Asymmetry) को न्यूनतम करना, जो व्यक्तिगत ऋणदाता स्वयं नहीं कर सकता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>साख गुणक (Credit Multiplier) में बैंक जमाओं की क्या केंद्रीय भूमिका होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक जमाएं साख विस्तार का प्राथमिक आधार बनती हैं; जमाएं जितनी अधिक होंगी, बैंकिंग प्रणाली द्वारा अर्थव्यवस्था में कुल साख सृजन उतना ही अधिक होगा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मौद्रिक नीति संचरण (Monetary Transmission Mechanism) में बैंक जमाओं का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब RBI नीतिगत रेपो दर में बदलाव करता है, तो बैंक सर्वप्रथम अपनी जमा दरों को समायोजित करते हैं, जिससे निधियों की लागत बदलती है और ऋण दरें प्रभावित होती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'वित्तीय गहनता' (Financial Deepening) को मापने हेतु बैंक जमाओं का कौन-सा अनुपात प्रयोग किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक जमा-जीडीपी अनुपात (Bank Deposits to GDP Ratio)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में बैंक जमा-जीडीपी अनुपात स्वतंत्रता के समय के ~15% से बढ़कर वर्तमान में किस स्तर पर पहुंच चुका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 65% से 70% के स्तर पर, जो औपचारिक वित्तीय तंत्र के विस्तार को दर्शाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमाएं अर्थव्यवस्था में 'समानांतर अर्थव्यवस्था' (काला धन) पर कैसे अंकुश लगाती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आर्थिक लेन-देनों को नकद से बैंकिंग तंत्र में लाकर डिजिटल ऑडिट ट्रेल का निर्माण करती हैं और कर अनुपालन में सुधार करती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>जब वास्तविक ब्याज दरें ऋणात्मक (Negative Real Interest Rates) हो जाती हैं, तो बैंक जमाओं पर क्या प्रतिकूल प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जमाकर्ता बैंकों से पैसा निकालकर भौतिक संपत्तियों (सोना, रियल एस्टेट) या सट्टेबाजी में लगाने लगते हैं, जिससे उत्पादक निवेश हेतु बैंक पूंजी घट जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'वित्तीय गैर-मध्यस्थता' (Financial Disintermediation) की स्थिति कब उत्पन्न होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब बचतकर्ता अपनी बचत को बैंक जमाओं से निकालकर सीधे पूंजी बाजार (म्यूचुअल फंड, शेयर, बांड) में निवेश करने लगते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>हाल के वर्षों में भारत में घरेलू बचतों का बैंक जमाओं से म्यूचुअल फंड (SIP) की ओर स्थानांतरण बैंकों के लिए क्या चुनौती खड़ी कर रहा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों की जमा वृद्धि दर (Deposit Growth) उनके ऋण विस्तार (Credit Growth) की तुलना में पिछड़ रही है, जिससे तरलता प्रबंधन कठिन हो रहा है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमाओं पर दी जाने वाली सरकारी DICGC सुरक्षा बैंकिंग प्रणाली में 'बैंक-रन' (Bank Run) को कैसे रोकती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जमाकर्ताओं को पूर्ण भरोसा दिलाकर कि बैंक संकट में भी उनकी ₹5 लाख तक की पूंजी सुरक्षित है, जिससे घबराहट में अचानक जमा निकालने की प्रवृत्ति नहीं पनपती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रधानमंत्री जन धन योजना (PMJDY) ने बैंक जमाओं के माध्यम से सामाजिक सुरक्षा को कैसे बदला?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">50 करोड़ से अधिक बैंक खातों में ₹2 लाख करोड़ से अधिक की वास्तविक जन-बचत जमा हुई और डीबीटी (DBT) के जरिए सरकारी सब्सिडी सीधे लाभार्थियों तक पहुंची।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमाओं का मुद्रास्फीति नियंत्रण से क्या प्रत्यक्ष संबंध है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्च जमा दरें जनता को उपभोग व्यय टालकर बचत करने हेतु आकर्षित करती हैं, जिससे बाजार में समग्र उपभोक्ता मांग घटती है और मुद्रास्फीति थमती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों द्वारा जुटाए गए जमा संसाधनों का कितना अनिवार्य हिस्सा सीधे सरकार की प्रतिभूतियों (SLR) में जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्तमान में NDTL का 18%, जो सरकार के राजकोषीय घाटे और विकास कार्यक्रमों को सुरक्षित घरेलू उधारी उपलब्ध कराता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्राथमिकता प्राप्त क्षेत्र (PSL) के तहत कृषि और कमजोर वर्गों को ऋण देने की बैंकों की क्षमता किस पर निर्भर करती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक द्वारा जुटाई गई कुल शुद्ध जमाओं (NDTL) के परिमाण पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमाएं अंतरराष्ट्रीय रेटिंग एजेंसियों के समक्ष देश की संप्रभु साख (Sovereign Rating) को कैसे मजबूत करती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू वित्तपोषण की स्थिरता को दर्शाकर और विदेशी ऋणों पर निर्भरता को कम करके बाह्य आघातों से सुरक्षा प्रदान करती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकिंग शब्दावली में 'ऋण' (Loan) और 'अग्रिम' (Advance) के बीच क्या सूक्ष्म तकनीकी अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋण एक निश्चित अवधि हेतु दी जाने वाली पूर्व-निर्धारित एकमुश्त राशि है, जबकि अग्रिम एक लचीली साख सीमा (Credit Facility) है जिसमें आवश्यकतानुसार पैसा निकाला और जमा किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक की बैलेंस शीट में दिए गए ऋण और अग्रिम किस वर्ग में दर्ज किए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परिसंपत्ति पक्ष (Assets Side) में, क्योंकि इन पर बैंक को नियमित ब्याज और मूलधन की आय प्राप्त होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>वाणिज्यिक बैंकों द्वारा दिए जाने वाले ऋणों का सबसे बड़ा और प्रमुख रूप कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सावधि ऋण (Term Loans) तथा कार्यशील पूंजी सुविधाएं (Cash Credit/Overdraft)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'नकद साख' (Cash Credit - CC) खाता किस प्रकार कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यवसायियों को उनके चालू स्टॉक और देनदारों के दृष्टिबंधक (Hypothecation) के आधार पर एक आहरण सीमा (Drawing Power) दी जाती है, और ब्याज केवल उपयोग की गई राशि पर दिन-प्रतिदिन के आधार पर लगता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>नकद साख (CC) सीमा में 'आहरण शक्ति' (Drawing Power - DP) की गणना कैसे की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल स्टॉक और प्राप्य खातों के बाजार मूल्य में से बैंक का अनिवार्य मार्जिन (सामान्यतः 25%) घटाकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अधिविकर्ष (Overdraft - OD) और नकद साख (CC) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CC सुविधा केवल व्यावसायिक स्टॉक और प्राप्य संपत्तियों के विरुद्ध दी जाती है, जबकि OD किसी भी वित्तीय परिसंपत्ति (FD, बीमा पॉलिसी, सोना) या व्यक्तिगत साख के विरुद्ध चालू खाते पर दी जा सकती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'सावधि ऋण' (Term Loan) को उनकी परिपक्वता अवधि के आधार पर कैसे वर्गीकृत किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. अल्पकालिक ऋण (1 वर्ष तक), 2. मध्यम अवधि ऋण (1 से 5 वर्ष), और 3. दीर्घकालिक ऋण (5 वर्ष से अधिक, 10-30 वर्ष तक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>दीर्घकालिक सावधि ऋण सामान्यतः किन आर्थिक उद्देश्यों हेतु स्वीकृत किए जाते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बुनियादी ढांचा निर्माण, नए कारखानों की स्थापना, संयंत्र व भारी मशीनरी की खरीद तथा व्यक्तिगत आवास ऋण (Home Loans)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'मांग ऋण' (Demand Loan) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऐसा ऋण जिसकी कोई निश्चित पूर्व-निर्धारित परिपक्वता अवधि नहीं होती और बैंक उधारकर्ता को नोटिस देकर किसी भी समय संपूर्ण ऋण की तत्काल वापसी (Callable on Demand) की मांग कर सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>व्यापारिक विपत्रों की भुनाई (Discounting of Commercial Bills) की प्रक्रिया क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब बैंक किसी विक्रेता के माल आपूर्ति बिल (Usance Bill) को परिपक्वता तिथि से पूर्व ही अपना कमीशन/ब्याज काटकर नकद भुगतान कर देता है और देय तिथि पर सीधे क्रेता से पूरी राशि वसूलता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>संपार्श्विक सुरक्षा (Collateral Security) के आधार पर ऋणों को किन दो श्रेणियों में बांटा जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. सुरक्षित ऋण (Secured Loans) और 2. असुरक्षित ऋण (Unsecured / Clean Loans)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'सुरक्षित ऋण' (Secured Loan) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह ऋण जिसके एवज में उधारकर्ता बैंक के पास कोई मूर्त भौतिक संपत्ति (भूमि, भवन, सोना, शेयर, मशीनरी) कानूनी रूप से गिरवी रखता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'असुरक्षित ऋण' (Unsecured Loan) क्या होता है और इसके प्रमुख उदाहरण क्या हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बिना किसी संपार्श्विक संपत्ति के केवल उधारकर्ता की व्यक्तिगत साख और आय क्षमता पर दिया गया ऋण; जैसे क्रेडिट कार्ड बकाया, व्यक्तिगत ऋण (Personal Loans)।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>असुरक्षित ऋणों पर बैंक सुरक्षित ऋणों की तुलना में काफी अधिक ब्याज दर क्यों वसूलते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि डिफ़ॉल्ट होने की स्थिति में नुकसान की भरपाई हेतु बैंक के पास बेचने के लिए कोई बंधक संपत्ति नहीं होती (उच्च जोखिम प्रीमियम)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण सुरक्षा के संबंध में 'गिरवी' (Pledge) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब गिरवी रखी गई चल संपत्ति का भौतिक कब्जा (Possession) ऋणदाता बैंक को सौंप दिया जाता है (जैसे स्वर्ण ऋण में सोने के आभूषण बैंक की तिजोरी में रखना)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण सुरक्षा के संबंध में 'दृष्टिबंधक' (Hypothecation) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब संपत्ति पर बैंक का कानूनी प्रभार (Charge) तो होता है, किंतु संपत्ति का भौतिक कब्जा और उपयोग उधारकर्ता के पास ही रहता है (जैसे कार लोन में कार का उपयोग या व्यावसायिक स्टॉक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण सुरक्षा के संदर्भ में 'बंधक' (Mortgage) क्या कहलाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अचल संपत्ति (Immovable Property जैसे भूमि, भवन, मकान) में किसी विनिर्दिष्ट हित का अंतरण जो ऋण के भुगतान को सुरक्षित करने हेतु किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>साम्या बंधक (Equitable Mortgage) और पंजीकृत बंधक (Registered Mortgage) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">साम्या बंधक में केवल संपत्ति के मूल दस्तावेज बैंक में जमा किए जाते हैं, जबकि पंजीकृत बंधक में उप-पंजीयक कार्यालय में विधिवत स्टाम्प शुल्क देकर विलेख पंजीकृत कराया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक ऋणों में 'ऋण-मूल्य अनुपात' (Loan to Value - LTV Ratio) का क्या कार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बंधक रखी गई संपत्ति के कुल मूल्यांकित मूल्य के अनुपात में बैंक द्वारा दी जाने वाली अधिकतम ऋण राशि तय करना (जैसे 80% LTV का अर्थ है कि ₹1 करोड़ के मकान पर अधिकतम ₹80 लाख का ऋण मिलेगा)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक ऋणों में 'उधारकर्ता का मार्जिन' (Borrower's Margin / Down Payment) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">परियोजना या संपत्ति की कुल लागत का वह अंश जिसे उधारकर्ता को अपने स्वयं के स्रोतों से वहन करना अनिवार्य होता है (मार्जिन = 100% - LTV)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'खुदरा ऋण' (Retail Lending) के अंतर्गत कौन-से ऋण आते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">व्यक्तिगत उपभोग और संपत्ति सृजन हेतु दिए जाने वाले ऋण; जैसे गृह ऋण (Home Loan), वाहन ऋण, शिक्षा ऋण, और व्यक्तिगत ऋण।</strong></div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारतीय बैंकिंग में पिछले दशक में ऋण वृद्धि के 'थोक से खुदरा' (Wholesale to Retail Shift) की ओर बदलाव का मुख्य कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बड़े कॉरपोरेट क्षेत्र में भारी एनपीए का संकट होना, जबकि खुदरा ऋणों में डिफॉल्ट दर कम, विविधीकरण अधिक और जोखिम बिखरा हुआ होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>कॉर्पोरेट ऋणों में 'कंसोर्टियम ऋण' (Consortium Lending) से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी विशाल परियोजना हेतु एक अकेला बैंक बड़ा जोखिम लेने में असमर्थ होता है, तो कई बैंक मिलकर एक लीड बैंक के नेतृत्व में संयुक्त रूप से ऋण स्वीकृत करते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'ऋण सिंडिकेशन' (Loan Syndication) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक ऐसी व्यवस्था जिसमें एक मर्चेंट/इन्वेस्टमेंट बैंक उधारकर्ता की विशाल ऋण आवश्यकता को विभिन्न अंतरराष्ट्रीय व घरेलू वित्तीय संस्थानों में विभाजित कर सिंडिकेट बनाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण मूल्यांकन (Credit Appraisal) के '5 Cs' मॉडल में कौन-से पांच स्तंभ शामिल हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. चरित्र (Character - साख इतिहास), 2. क्षमता (Capacity - चुकाने की योग्यता), 3. पूंजी (Capital - स्वयं का निवेश), 4. संपार्श्विक (Collateral - सुरक्षा), और 5. परिस्थितियां (Conditions - आर्थिक माहौल)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में क्रेडिट सूचना कंपनियां (Credit Information Companies - CICs) क्या कार्य करती हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उधारकर्ताओं के पुराने ऋणों और क्रेडिट कार्ड भुगतानों का संपूर्ण ट्रैक रिकॉर्ड संकलित कर 300 से 900 के बीच 'क्रेडिट स्कोर' (CIBIL Score आदि) प्रदान करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में कार्यरत चार प्रमुख विनियमित क्रेडिट ब्यूरो कौन-से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. ट्रांसयूनियन सिबिल (TransUnion CIBIL), 2. एक्सपेरियन (Experian), 3. इक्विफैक्स (Equifax), और 4. क्रिफ हाईमार्क (CRIF High Mark)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2010 से पूर्व भारत में बैंक ऋणों की ब्याज दरें किस व्यवस्था के तहत निर्धारित होती थीं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बेंचमार्क प्राइम लेंडिंग रेट (BPLR) प्रणाली, जिसमें पारदर्शिता का भारी अभाव था और बैंक पसंदीदा कॉरपोरेट्स को BPLR से भी कम दर पर ऋण देते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>BPLR की कमियों को दूर करने हेतु जुलाई 2010 में दीपक मोहंती समिति की सिफारिश पर कौन-सी प्रणाली लाई गई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बेस रेट (Base Rate) प्रणाली, जिसके तहत किसी भी बैंक को अपनी बेस रेट से कम ब्याज दर पर ऋण देने पर पूर्ण प्रतिबंध लगा दिया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>अप्रैल 2016 में लागू 'निधियों की सीमांत लागत आधारित ऋण दर' (MCLR) का क्या उद्देश्य था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋण दरों को बैंक की नई/ताजा जमा लागत (Marginal Cost) से जोड़ना, ताकि RBI की रेपो दर कटौती का लाभ ग्राहकों तक तेजी से पहुंचे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>MCLR प्रणाली की सबसे बड़ी विफलता क्या थी जिसके कारण इसे 2019 में बदलना पड़ा?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक रेपो दर घटने पर भी अपनी सावधि जमाओं की पुरानी लागत का हवाला देकर ऋण दरों में कटौती करने में महीनों की देरी करते थे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>1 अक्टूबर 2019 से RBI ने सभी नए व्यक्तिगत, आवास, वाहन और MSME ऋणों हेतु किस नई ब्याज दर प्रणाली को अनिवार्य कर दिया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बाह्य बेंचमार्क आधारित ऋण दर (External Benchmark Lending Rate - EBLR)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>EBLR व्यवस्था के तहत बैंक अपनी ब्याज दरों को किन बाह्य बेंचमार्कों से जोड़ सकते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. RBI की नीतिगत रेपो दर (सर्वाधिक प्रयुक्त), 2. 91-दिवसीय ट्रेजरी बिल प्रतिफल, अथवा 3. 182-दिवसीय ट्रेजरी बिल प्रतिफल।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>EBLR प्रणाली का सबसे बड़ा आर्थिक लाभ क्या हुआ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मौद्रिक नीति संचरण में पूर्ण पारदर्शिता; जैसे ही RBI रेपो दर घटाता या बढ़ाता है, बैंकों के फ्लोटिंग ऋणों की ईएमआई (EMI) स्वतः उसी अनुपात में तुरंत बदल जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक ऋणों में 'फ्लोटिंग ब्याज दर' (Floating Interest Rate) और 'फिक्स्ड ब्याज दर' (Fixed Interest Rate) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फिक्स्ड दर पूरे ऋण काल में अपरिवर्तित रहती है, जबकि फ्लोटिंग दर बाजार बेंचमार्क (रेपो दर) के उतार-चढ़ाव के साथ समय-समय पर स्वतः बदलती रहती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'ऋण-जमा अनुपात' (Credit to Deposit Ratio / CD Ratio) किसी बैंक के बारे में क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंक द्वारा जुटाई गई कुल जमाराशियों का कितना प्रतिशत भाग ऋण के रूप में बाजार में वितरित किया गया है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>यदि किसी बैंक का CD अनुपात 85-90% से अधिक हो जाए, तो इसे विनियामक चिंता का विषय क्यों माना जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि बैंक की जमा वृद्धि की तुलना में ऋण बहुत तेजी से बढ़ रहे होते हैं, जिससे बैंक को आपात तरलता संकट (Liquidity Squeeze) का सामना करना पड़ सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंकों के परिसंपत्ति-देनदारी प्रबंधन (ALM) में 'परिपक्वता बेमेल' (Maturity Mismatch) का क्या जोखिम होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक मांग जमाओं (1 से 3 वर्ष) का उपयोग 15 से 20 वर्ष के दीर्घकालिक बुनियादी ढांचा ऋणों को वित्तपोषित करने में करना, जिससे तरलता का गंभीर संकट उत्पन्न हो सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्राथमिकता प्राप्त क्षेत्र ऋण (PSL) के तहत अनुसूचित वाणिज्यिक बैंकों को अपने कुल ऋण का कितना हिस्सा कृषि क्षेत्र को देना अनिवार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समायोजित निवल बैंक ऋण (ANBC) का 18% (जिसमें से 10% छोटे व सीमांत किसानों हेतु आरक्षित है)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>घरेलू बैंकों के लिए PSL के अंतर्गत कमजोर वर्गों (Weaker Sections) हेतु ऋण लक्ष्य कितना निर्धारित है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल ANBC का 12%।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>भारत में 'ऋण-जीडीपी अनुपात' (Bank Credit to GDP Ratio) विकसित देशों की तुलना में किस स्तर पर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लगभग 50% से 55% (जबकि अमेरिका, चीन और जापान में यह 150% से 200% से अधिक है), जो दर्शाता है कि भारत में भविष्य में ऋण विस्तार की अपार संभावनाएं हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>'को-लेंडिंग मॉडल' (Co-Lending Model / CLM) क्या है जिसे RBI ने बैंकों और NBFCs हेतु प्रारंभ किया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों और गैर-बैंकिंग वित्तीय कंपनियों (NBFCs) द्वारा संयुक्त रूप से प्राथमिकता क्षेत्र को ऋण देना; जिसमें 80% पूंजी बैंक और 20% पूंजी NBFC लगाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>को-लेंडिंग मॉडल का भारतीय अर्थव्यवस्था को क्या दोहरा लाभ मिलता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">बैंकों की कम लागत वाली सस्ती पूंजी और NBFCs की जमीनी दूरदराज तक पहुंच (Last-Mile Reach) का उत्कृष्ट संयोजन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋणों में 'सदाबहार व्यवस्था' (Evergreening of Loans) को रोकने हेतु RBI द्वारा बैंकों के ऑडिट में क्या कड़े नियम बनाए गए हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संकटग्रस्त ऋणों की समय पर पहचान, कठोर IRAC नियम और समाधान न होने पर सीधे दिवाला एवं शोधन अक्षमता संहिता (IBC) में भेजना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक ऋणों की वसूली में तेजी लाने हेतु लोक अदालतों (Lok Adalats) की क्या भूमिका है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">₹20 लाख तक के फंसे और संदिग्ध छोटे ऋणों का बिना अदालती मुकदमों के आपसी सहमति और समझौते से त्वरित व अंतिम निपटारा करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूक्ष्म, लघु एवं मध्यम उद्यमों (MSMEs) के व्यापारिक बिलों की ऑनलाइन भुनाई हेतु RBI द्वारा अधिकृत इलेक्ट्रॉनिक प्लेटफॉर्म कौन-सा है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ट्रेड्स प्लेटफॉर्म (TReDS - Trade Receivables Discounting System)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>TReDS प्लेटफॉर्म MSME क्षेत्र के ऋण चक्र को कैसे सुगम बनाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कॉरपोरेट्स और सरकारी उपक्रमों को आपूर्ति किए गए माल के बिलों पर कई वित्तीय संस्थान ऑनलाइन प्रतिस्पर्धी बोली लगाकर MSME को तत्काल भुगतान कर देते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>किसान क्रेडिट कार्ड (KCC) योजना के तहत किसानों को किस प्रकार की ऋण सुविधा मिलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फसल उत्पादन, बीज-खाद खरीद और कटाई उपरांत खर्चों हेतु एक लचीली रिवॉल्विंग नकद साख सीमा (Revolving Cash Credit)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>KCC ऋणों पर केंद्र सरकार द्वारा समय पर भुगतान करने वाले किसानों को कितनी प्रभावी ब्याज दर उपलब्ध कराई जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मात्र 4% वार्षिक प्रभावी ब्याज दर (7% की सामान्य दर पर 3% का त्वरित पुनर्भुगतान प्रोत्साहन / Interest Subvention देकर)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>प्रधानमंत्री मुद्रा योजना (PMMY) के तहत गैर-कॉर्पोरेट लघु व्यवसायों को दिए जाने वाले ऋणों की तीन श्रेणियां कौन-सी हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1. शिशु (₹50,000 तक), 2. किशोर (₹50,000 से ₹5 लाख तक), और 3. तरुण (₹5 लाख से ₹10 लाख तक, जिसे बढ़ाकर ₹20 लाख तक किया गया)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>मुद्रा (MUDRA) ऋणों की सबसे बड़ी विशिष्टता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ये पूरी तरह संपार्श्विक-मुक्त (Collateral-Free) ऋण होते हैं, जिनकी गारंटी क्रेडिट गारंटी फंड फॉर माइक्रो यूनिट्स (CGFMU) द्वारा दी जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>स्टैंड-अप इंडिया (Stand-Up India) योजना के तहत बैंक शाखाओं को क्या अनिवार्य ऋण लक्ष्य दिया गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्येक बैंक शाखा द्वारा कम से कम एक अनुसूचित जाति/जनजाति और एक महिला उद्यमी को ग्रीनफील्ड उद्यम हेतु ₹10 लाख से ₹1 करोड़ का ऋण देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण वितरण में फिनटेक कंपनियों और बैंकों की डिजिटल लेंडिंग (Digital Lending) का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एल्गोरिदम और वित्तीय डेटा के आधार पर बिना किसी कागजी दस्तावेज के कुछ ही मिनटों में तत्काल व्यक्तिगत और सूक्ष्म व्यावसायिक ऋण स्वीकृत होना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>आरबीआई के 'डिजिटल लेंडिंग दिशा-निर्देश 2022' का सबसे महत्वपूर्ण उपभोक्ता संरक्षण नियम क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ऋण का वितरण और पुनर्भुगतान केवल सीधे उधारकर्ता के बैंक खाते और विनियमित ऋणदाता (बैंक/NBFC) के बीच होना चाहिए, किसी तीसरे पक्ष के पास-थ्रू खाते के माध्यम से नहीं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक ऋणों में 'ऋण स्थगन' (Loan Moratorium) से क्या आशय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्राकृतिक आपदा या महामारी (जैसे COVID-19) के दौरान उधारकर्ता को ऋण की मासिक किस्तें (EMI) चुकाने से दी जाने वाली निश्चित समय की कानूनी मोहलत।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक ऋणों में 'हेयरकट' (Haircut) की संकल्पना क्या दर्शाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">तनावग्रस्त ऋण के समाधान या एकमुश्त समझौते (OTS) में बैंक द्वारा अपनी कुल बकाया राशि में से स्वेच्छा से छोड़ी गई छूट/घाटे का प्रतिशत।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋणों के 'समान मासिक किस्त' (EMI) में मूलधन और ब्याज का आनुपातिक व्यवहार कैसा होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">शुरुआती वर्षों में ईएमआई का अधिकांश हिस्सा ब्याज का होता है और मूलधन कम घटता है, जबकि अंतिम वर्षों में मूलधन का हिस्सा बढ़ता जाता है और ब्याज घटता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>ऋण जोखिम को कम करने हेतु बैंक द्वारा 'क्रेडिट डिफॉल्ट स्वैप' (CDS) का उपयोग कैसे किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक वित्तीय बीमा अनुबंध के रूप में; जिसमें बैंक किसी तीसरे पक्ष को प्रीमियम देकर ऋण डिफॉल्ट के जोखिम को स्थानांतरित कर देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>परिसंपत्ति पुनर्निर्माण (Securitization) प्रक्रिया में बैंक अपने ऋणों का क्या करते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">समान प्रकार के ऋणों (जैसे होम लोन) का एक पूल बनाकर उन्हें प्रतिभूतियों (Pass-Through Certificates) के रूप में पूंजी बाजार के निवेशकों को बेचकर तत्काल नकदी जुटा लेते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>सूक्ष्म ऋण (Microfinance) में 'संयुक्त देयता समूह' (Joint Liability Group - JLG) मॉडल कैसे कार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">4 से 10 व्यक्तियों का अनौपचारिक समूह जो बिना संपार्श्विक के ऋण लेता है, और समूह का प्रत्येक सदस्य अन्य सभी सदस्यों के ऋण पुनर्भुगतान हेतु संयुक्त रूप से जिम्मेदार होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>बैंक जमाओं और ऋणों का कुशल संतुलन अंततः राष्ट्रीय अर्थव्यवस्था को किस प्रकार संबल प्रदान करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">घरेलू बचतों को सुरक्षित रखते हुए देश के उत्पादक विनिर्माण, सेवा, कृषि और बुनियादी ढांचे को पर्याप्त, पारदर्शी व सस्ती साख उपलब्ध कराकर तीव्र आर्थिक संवृद्धि की नींव रखता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>

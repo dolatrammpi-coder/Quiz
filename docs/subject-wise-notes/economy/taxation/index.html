@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="कराधान Part 1">
+<title>कराधान Part 1</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px; display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav">
+        <a href="/Quiz/index.html">Home</a>
+        <a class="active" href="/Quiz/subject-wise-notes/index.html">Notes</a>
+        <a href="/Quiz/test-series/index.html">Test Series</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">Economy / Economy Notes / कराधान Part 1</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker">📚 Economy — Economy Notes</div>
+    <h1>कराधान Part 1</h1>
+    <p class="topic-subtitle">कर की अवधारणा, प्रत्यक्ष एवं अप्रत्यक्ष कर तथा आयकर</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area">
+    <section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>1. कर (Tax) की अनिवार्य वैधानिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर सरकार द्वारा नागरिकों और व्यावसायिक इकाइयों पर बिना किसी प्रत्यक्ष प्रतिफल (Quid Pro Quo) की गारंटी के लगाया जाने वाला एक अनिवार्य वैधानिक भुगतान (Compulsory Payment) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>2. कर (Tax) और शुल्क (Fee) में मूल अंतर क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर में कोई प्रत्यक्ष अनुलाभ (Direct Benefit) नहीं मिलता, जबकि शुल्क किसी विशेष सेवा के बदले चुकाया जाने वाला सेवा-विशिष्ट भुगतान (Quid Pro Quo) होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>3. कर (Tax) और अर्थदंड (Penalty) में क्या मौलिक भेद है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर राजस्व जुटाने का साधन है, जबकि अर्थदंड कानून या नियमों के उल्लंघन की सजा के रूप में लगाया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>4. एडम स्मिथ द्वारा प्रतिपादित कराधान के चार मुख्य सिद्धांत (Canons of Taxation) कौन-कौन से हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एडम स्मिथ के अनुसार चार सिद्धांत हैं: समानता (Equity), निश्चितता (Certainty), सुविधा (Convenience), और मितव्ययिता (Economy) का सिद्धांत।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>5. कराधान में 'समानता का सिद्धांत' (Canon of Equity) क्या स्पष्ट करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसके अनुसार करदाता को अपनी भुगतान क्षमता (Ability to Pay) के अनुपात में कर देना चाहिए, जिससे सामाजिक-आर्थिक न्याय सुनिश्चित हो।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>6. कराधान का 'निश्चितता का सिद्धांत' (Canon of Certainty) क्या सुनिश्चित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">करदाता को कर भुगतान के समय, राशि, भुगतान की रीति और स्थान की स्पष्ट जानकारी होनी चाहिए, ताकि प्रशासनिक मनमानी न रहे।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>7. कराधान में 'सुविधा का सिद्धांत' (Canon of Convenience) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर का संग्रह उस समय और उस तरीके से किया जाना चाहिए जो करदाता के लिए सबसे सुविधाजनक हो (जैसे आय प्राप्ति के समय)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>8. कराधान का 'मितव्ययिता का सिद्धांत' (Canon of Economy) क्या मांग करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर संग्रह में प्रशासनिक लागत न्यूनतम होनी चाहिए, ताकि एकत्र किए गए राजस्व का अधिकांश हिस्सा जनकल्याण में प्रयुक्त हो सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>9. कराधान का 'उत्पादकता का सिद्धांत' (Canon of Productivity) क्या प्रस्तुत करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर प्रणाली ऐसी होनी चाहिए जो सरकार को पर्याप्त राजस्व प्रदान करे और देश में उत्पादन तथा निवेश को नुकसान न पहुँचाए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>10. कराधान में 'लोचशीलता का सिद्धांत' (Canon of Elasticity) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आवश्यकता पड़ने पर (जैसे आपातकाल या मंदी) कर दरों में परिवर्तन करके राजस्व को घटाया या बढ़ाया जा सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>11. कराधान का 'विविधता का सिद्धांत' (Canon of Diversity) क्या सलाह देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर प्रणाली केवल एक या दो करों पर निर्भर न होकर विभिन्न प्रकार के करों का संतुलित मिश्रण होनी चाहिए।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>12. कराधान में 'सरलता का सिद्धांत' (Canon of Simplicity) क्यों आवश्यक है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर कानून इतने सरल और स्पष्ट होने चाहिए कि आम करदाता उन्हें बिना किसी जटिल कानूनी सहायता के समझ सके।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>13. कर का आघात (Impact of Tax) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर का प्रथम भौतिक आघात उस व्यक्ति/संस्था पर होता है जिस पर कानूनन कर आरोपित किया जाता है और जो पहली बार कर जमा करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>14. कर कापात (Incidence of Tax) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर का कापात उस अंतिम व्यक्ति पर होता है जो कर का अंतिम आर्थिक भार वहन करता है और जिसे किसी अन्य पर स्थानांतरित नहीं किया जा सकता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>15. कर का विवर्तन (Shifting of Tax) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब कर का प्राथमिक आघात सहने वाला व्यक्ति कर के वित्तीय बोझ को वस्तु या सेवा के मूल्य में जोड़कर किसी अन्य व्यक्ति पर डाल देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>16. अग्रगामी विवर्तन (Forward Shifting) और पश्चगामी विवर्तन (Backward Shifting) में क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अग्रगामी विवर्तन में कर भार क्रेता/उपभोक्ता पर डाला जाता है, जबकि पश्चगामी विवर्तन में कच्चे माल के आपूर्तिकर्ता या श्रमिकों की मजदूरी घटाकर कर भार पीछे धकेला जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>17. कर आधार (Tax Base) से क्या तात्पर्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह कुल कानूनी या आर्थिक परिसंपत्ति, आय या लेन-देन का दायरा जिस पर कर की दरें लागू की जाती हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>18. कर दर (Tax Rate) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर आधार के प्रति इकाई मूल्य पर लगाया जाने वाला वैधानिक प्रतिशत या मौद्रिक अनुपात।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>19. प्रगतिशील कर (Progressive Tax) की मुख्य विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसमें जैसे-जैसे करदाता का आय स्तर बढ़ता है, कर की दर (Tax Rate) भी बढ़ती जाती है, जिससे उच्च आय वर्ग पर अधिक कर भार पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>20. प्रतिगामी कर (Regressive Tax) प्रणाली का आर्थिक प्रभाव क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसमें आय बढ़ने के साथ कर की प्रभावी दर घटती है, जिससे निम्न आय वर्ग (गरीबों) पर अपेक्षाकृत अधिक आर्थिक बोझ पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>21. आनुपातिक कर (Proportional Tax) व्यवस्था किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह वह व्यवस्था है जिसमें सभी आय स्तरों पर कर की एकसमान दर (Flat Rate) लागू होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>22. अधोगामी कर (Degressive Tax) प्रणाली का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इस प्रणाली में एक निश्चित सीमा तक आय बढ़ने पर कर दर बढ़ती है, लेकिन उसके बाद कर दर स्थिर (आनुपातिक) हो जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>23. लाफर वक्र (Laffer Curve) किन दो घटकों के मध्य संबंध को प्रदर्शित करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">लाफर वक्र कर की दर (Tax Rate) और सरकार द्वारा प्राप्त कुल कर राजस्व (Tax Revenue) के बीच का संबंध दर्शाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>24. लाफर वक्र के अनुसार अत्यधिक उच्च कर दर का राजस्व पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">एक सीमा (Optimal Rate) के बाद कर दर बढ़ाने पर आर्थिक गतिविधियां हतोत्साहित होती हैं और कर चोरी बढ़ती है, जिससे कुल कर राजस्व घटने लगता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>25. कर उत्प्लावकता (Tax Buoyancy) की परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सकल घरेलू उत्पाद (GDP) में वृद्धि के सापेक्ष कुल कर राजस्व में होने वाली स्वचालित और नीतिगत (बदलावों सहित) वृद्धि का अनुपात कर उत्प्लावकता कहलाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>26. कर लोच (Tax Elasticity) और कर उत्प्लावकता में मुख्य अंतर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर लोच केवल बिना किसी नीतिगत/दर परिवर्तन के जीडीपी वृद्धि से प्राप्त स्वचालित राजस्व वृद्धि को मापती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>27. कर-जीडीपी अनुपात (Tax-to-GDP Ratio) क्या दर्शाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह देश के कुल सकल घरेलू उत्पाद के प्रतिशत के रूप में सरकार के कर राजस्व को दर्शाता है, जो राजकोषीय क्षमता और अर्थव्यवस्था के औपचारीकरण का सूचक है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>28. पिगोवियन कर (Pigouvian Tax) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह नकारात्मक बाह्यताओं (Negative Externalities) जैसे प्रदूषण या स्वास्थ्य क्षति को हतोत्साहित करने हेतु हानिकारक गतिविधियों पर लगाया जाने वाला सुधारात्मक कर है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>29. टोबिन टैक्स (Tobin Tax) किस पर लागू किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अल्पकालिक और सट्टा-आधारित अंतरराष्ट्रीय विदेशी मुद्रा लेन-देन (Foreign Exchange Transactions) पर अस्थिरता रोकने हेतु लगाया जाने वाला कर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>30. कार्बन टैक्स (Carbon Tax) का मूल आधार क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जीवाश्म ईंधनों के उपयोग से उत्सर्जित होने वाले ग्रीनहाउस गैसों (विशेषकर CO2) की मात्रा पर लगाया गया कर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>31. विंडफॉल टैक्स (Windfall Tax) कब आरोपित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी उद्योग या कंपनी को अप्रत्याशित बाहरी परिस्थितियों के कारण अचानक अत्यधिक और असामान्य लाभ (Windfall Profit) प्राप्त होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>32. कर अपवंचन (Tax Evasion) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गैर-कानूनी और अवैध तरीकों से आय छिपाकर या झूठे तथ्य दिखाकर कर का भुगतान न करना या कर चोरी करना कर अपवंचन है, जो एक दंडनीय अपराध है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>33. कर परिहार (Tax Avoidance) किसे कहते हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर कानूनों की कमियों (Loopholes) का लाभ उठाकर कानूनी सीमा के भीतर रहते हुए अपनी कर देनदारी को कम करना कर परिहार कहलाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>34. कर नियोजन (Tax Planning) का क्या उद्देश्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">सरकार द्वारा दी गई वैधानिक छूटों, कटौतियों और प्रोत्साहनों का लाभ उठाकर वैध तरीके से कर देनदारी को न्यूनतम करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>35. कर व्यय (Tax Expenditure) की अवधारणा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कर व्यय वह राजस्व हानि (Revenue Forgone) है जो सरकार द्वारा दी गई कर छूटों, कटौतियों और राहतों के कारण होती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>36. अधिभार (Surcharge) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अधिभार मूल देय कर राशि पर एक निश्चित आय सीमा से अधिक होने पर लगाया जाने वाला 'कर पर कर' (Tax on Tax) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>37. उपकर (Cess) की विशिष्ट विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उपकर किसी विशिष्ट उद्देश्य (जैसे प्राथमिक शिक्षा, स्वास्थ्य या स्वच्छ पर्यावरण) के लिए लगाया जाता है और इसका उपयोग केवल उसी कार्य हेतु हो सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>38. भारतीय संविधान का अनुच्छेद 265 कराधान हेतु क्या अनिवार्य करता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 265 के अनुसार, विधि के प्राधिकार के बिना न तो कोई कर लगाया जा सकता है और न ही एकत्र किया जा सकता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>39. अनुच्छेद 270 और 271 में कराधान संग्रह वितरण का क्या अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अनुच्छेद 270 के तहत एकत्र कर संघ और राज्यों में बंटते हैं, जबकि अनुच्छेद 271 के तहत लगाए गए अधिभार/उपकर केवल केंद्र सरकार के पास रहते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>40. विभाज्य पूल (Divisible Pool of Taxes) से क्या अभिप्राय है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय करों का वह कुल राजस्व हिस्सा जो वित्त आयोग की सिफारिशों के आधार पर केंद्र और राज्यों के बीच विभाजित किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>41. प्रत्यक्ष कर (Direct Tax) की मौलिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह कर जिसमें कर का प्राथमिक आघात (Impact) और अंतिम कापात (Incidence) एक ही व्यक्ति या संस्था पर पड़ता है और इसे स्थानांतरित नहीं किया जा सकता।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>42. प्रत्यक्ष करों की प्रमुख सामाजिक-आर्थिक विशेषता क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">ये मुख्य रूप से प्रगतिशील स्वभाव के होते हैं और समाज में आय एवं संपत्ति की विषमता को कम करने में सहायक होते हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>43. भारत में केंद्रीय प्रत्यक्ष कर बोर्ड (CBDT) का क्या कार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">CBDT वित्त मंत्रालय के राजस्व विभाग के तहत सभी प्रत्यक्ष करों के प्रशासन, नीति निर्माण और संग्रह का नियंत्रण करता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>44. CBDT की स्थापना किस अधिनियम के अंतर्गत हुई थी?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसकी स्थापना केंद्रीय राजस्व बोर्ड अधिनियम, 1963 (Central Boards of Revenue Act, 1963) के तहत हुई थी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>45. निगम कर (Corporate Tax) किस पर आरोपित किया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कंपनियों (घरेलू और विदेशी) द्वारा एक वित्तीय वर्ष में अर्जित किए गए शुद्ध लाभ या आय पर निगम कर लगाया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>46. धारा 115BAA के तहत घरेलू कंपनियों के लिए कॉर्पोरेट टैक्स दर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नई रियायती दर व्यवस्था के अंतर्गत बिना किसी छूट के 22% (अधिभार व उपकर मिलाकर 25.17%) है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>47. धारा 115BAB के तहत नई विनिर्माण कंपनियों हेतु कॉर्पोरेट टैक्स दर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">योग्य नई विनिर्माण कंपनियों के लिए 15% की रियायती मूल दर का प्रावधान है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>48. न्यूनतम वैकल्पिक कर (MAT) लागू करने का मुख्य कारण क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उन 'शून्य-कर कंपनियों' (Zero-Tax Companies) को कर दायरे में लाना जो विभिन्न वैधानिक छूटों का लाभ उठाकर अत्यधिक लाभ के बावजूद कोई कर नहीं देती थीं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>49. MAT आयकर अधिनियम की किस धारा के तहत लगाया जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">MAT आयकर अधिनियम, 1961 की धारा 115JB के तहत कंपनियों के 'बुक प्रॉफिट' (Book Profit) पर लगाया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>50. पूंजीगत लाभ कर (Capital Gains Tax) कब देय होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी पूंजीगत संपत्ति (जैसे भूमि, भवन, शेयर, बॉन्ड आदि) को बेचने से पूंजीगत लाभ (Capital Gain) प्राप्त होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>51. अल्पकालिक पूंजीगत लाभ कर (STCG) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निश्चित अवधि (जैसे शेयर हेतु 12 माह या संपत्ति हेतु 24 माह) से कम समय तक धारण परिसंपत्तियों की बिक्री से प्राप्त लाभ पर लगने वाला कर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>52. दीर्घकालिक पूंजीगत लाभ कर (LTCG) क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">निर्धारित होल्डिंग अवधि से अधिक समय तक रखी गई पूंजीगत परिसंपत्ति के विक्रय से अर्जित लाभ पर लागू होने वाला कर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>53. प्रतिभूति लेन-देन कर (STT) कब और किस पर लागू किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">STT को वर्ष 2004 में मान्यता प्राप्त स्टॉक एक्सचेंजों पर इक्विटी और डेरिवेटिव्स के लेन-देन पर लागू किया गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>54. जिंस लेन-देन कर (CTT - Commodity Transaction Tax) किस पर लागू होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मान्यता प्राप्त कमोडिटी एक्सचेंजों पर होने वाले गैर-कृषि वायदा और ऑप्शन लेन-देन पर लगने वाला कर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>55. इक्वालाइजेशन लेवी (Equalisation Levy) या 'गूगल टैक्स' क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह गैर-निवासी डिजिटल कंपनियों द्वारा भारत में दी जाने वाली ऑनलाइन विज्ञापन और बी-टू-बी डिजिटल सेवाओं पर लगाया जाने वाला प्रत्यक्ष कर है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>56. लाभांश वितरण कर (DDT) को कब समाप्त किया गया?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय बजट 2020-21 के माध्यम से कंपनियों पर लगने वाले DDT को समाप्त कर दिया गया और अब लाभांश प्राप्तकर्ता निवेशकों के हाथों कर-योग्य है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>57. भारत में धन कर (Wealth Tax) की वर्तमान स्थिति क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वित्त अधिनियम 2015 द्वारा वर्ष 2015-16 से धन कर (Wealth Tax) को पूर्णतः समाप्त कर दिया गया था।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>58. संपदा शुल्क (Estate Duty) का क्या अर्थ था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह किसी व्यक्ति की मृत्यु के पश्चात उसके उत्तराधिकारियों को हस्तांतरित होने वाली संपत्ति पर लगाया जाने वाला कर था, जिसे 1985 में समाप्त कर दिया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>59. उपहार कर (Gift Tax) की वर्तमान कानूनी व्यवस्था क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">1998 में पृथक उपहार कर अधिनियम समाप्त कर दिया गया; अब 50,000 रुपये से अधिक मूल्य के उपहारों को आयकर अधिनियम की धारा 56(2)(x) के तहत कर योग्य माना जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>60. अनुषंगी लाभ कर (Fringe Benefit Tax - FBT) क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह नियोक्ताओं द्वारा कर्मचारियों को दिए जाने वाले सामूहिक अतिरिक्त लाभों (जैसे क्लब, यात्रा, मनोरंजन) पर लगाया जाने वाला कर था, जिसे 2009 में समाप्त किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>61. बैंकिंग नकद लेन-देन कर (BCTT) क्यों लागू किया गया था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इसे 2005 में बड़ी नकदी निकासी और काले धन के प्रवाह पर नजर रखने के लिए लागू किया गया था (2009 में समाप्त)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>62. प्रत्यक्ष कर कोड (Direct Tax Code - DTC) का मुख्य विचार क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">भारत के समग्र प्रत्यक्ष कर कानूनों को सरल, एकीकृत और आधुनिक बनाने हेतु लाया गया एक प्रस्तावित मसौदा।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>63. फेसलेस आकलन योजना (Faceless Assessment Scheme) का मुख्य लक्ष्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">करदाता और आयकर अधिकारियों के बीच प्रत्यक्ष मानव संपर्क समाप्त कर पारदर्शिता लाना, उत्पीड़न रोकना और दक्षता बढ़ाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>64. प्रत्यक्ष कर 'विवाद से विश्वास' योजना (Vivad se Vishwas Scheme) का मुख्य उद्देश्य क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">प्रत्यक्ष करों से जुड़े बकाया मुकदमों और अदालती विवादों का त्वरित निपटारा करके कर राजस्व एकत्र करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>65. बेनामी संपत्ति लेन-देन निषेध अधिनियम का मूल उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">दूसरों के नाम पर खरीदी गई अघोषित संपत्तियों को जब्त करना और काले धन के निवेश पर प्रभावी अंकुश लगाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>66. अप्रत्यक्ष कर (Indirect Tax) की प्राथमिक परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह कर जिसका प्रारम्भिक आघात (Impact) उत्पादक/विक्रेता पर पड़ता है, किंतु अंतिम कापात (Incidence) अंतिम उपभोक्ता पर स्थानांतरित कर दिया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>67. अप्रत्यक्ष करों की सामान्य प्रकृति (Nature) कैसी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">अप्रत्यक्ष कर सामान्यतः प्रतिगामी (Regressive) स्वभाव के होते हैं, क्योंकि अमीर और गरीब दोनों को वस्तु पर समान कर देना पड़ता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>68. अप्रत्यक्ष करों का सबसे बड़ा राजस्व लाभ क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">इनका कर आधार अत्यंत व्यापक (Broad Base) होता है और समाज का प्रत्येक व्यक्ति उपभोग के माध्यम से इसमें योगदान देता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>69. भारत में अप्रत्यक्ष करों के प्रशासन हेतु कौन सा केंद्रीय निकाय उत्तरदायी है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">केंद्रीय अप्रत्यक्ष कर और सीमा शुल्क बोर्ड (CBIC) जो वित्त मंत्रालय के राजस्व विभाग के अधीन है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>70. कराधान में 'कास्केडिंग प्रभाव' (Cascading Effect of Tax) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब कर के ऊपर कर (Tax on Tax) लगाया जाता है, अर्थात् पूर्व में चुकाए गए कर पर भी पुनः कर वसूल किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>71. इनपुट टैक्स क्रेडिट (ITC) प्रणाली का क्या लाभ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">खरीद पर चुकाए गए कर की वापसी देकर उत्पादन/बिक्री के प्रत्येक चरण में कास्केडिंग प्रभाव को समाप्त करना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>72. सीमा शुल्क (Customs Duty) किस प्रकार का अप्रत्यक्ष कर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह भारत की भौगोलिक सीमा के भीतर वस्तुओं के आयात (Import) तथा निर्यात (Export) पर लगाया जाने वाला कर है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>73. मूलभूत सीमा शुल्क (Basic Customs Duty - BCD) किस मूल्य पर लागू होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह सीमा शुल्क अधिनियम, 1962 के तहत आयातित माल के मूल्यांकन मूल्य (Assessable Value - CIF Value) पर लगाया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>74. काउंटरवेलिंग ड्यूटी (CVD - Countervailing Duty) लगाने का मुख्य उद्देश्य क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विदेशी सरकारों द्वारा अपने निर्यातकों को दी जाने वाली सब्सिडी के प्रभाव को समाप्त कर घरेलू निर्माताओं को समान अवसर (Level Playing Field) देना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>75. एंटी-डंपिंग ड्यूटी (Anti-Dumping Duty) कब आरोपित की जाती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब कोई विदेशी देश अपनी वस्तुओं को अपने घरेलू बाजार मूल्य से भी कम कीमत पर भारत में बेचता (Dumping) है, तो अनुचित व्यापार रोकने हेतु यह शुल्क लगता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>76. सेफगार्ड ड्यूटी (Safeguard Duty) का क्या कार्य है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी वस्तु के अचानक और अत्यधिक आयात से घरेलू उद्योगों को होने वाली गंभीर क्षति से बचाना।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>77. केंद्रीय उत्पाद शुल्क (Central Excise Duty) वर्तमान में किन वस्तुओं पर लागू है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">GST लागू होने के बाद यह मुख्य रूप से पेट्रोलियम क्रूड, पेट्रोल, डीजल, एटीएफ, प्राकृतिक गैस और तंबाकू उत्पादों तक सीमित है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>78. संविधान का अनुच्छेद 268 स्टाम्प शुल्क के संबंध में क्या व्यवस्था देता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">संविधान के अनुच्छेद 268 के तहत संघ सूची के स्टाम्प शुल्क केंद्र द्वारा लगाए जाते हैं, परंतु संग्रह और विनियोजन संबंधित राज्यों द्वारा किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>79. यथामूल्य शुल्क (Ad Valorem Duty) की क्या विशेषता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह कर वस्तु की मात्रा के बजाय उसके मौद्रिक मूल्य के एक निश्चित प्रतिशत के रूप में लगाया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>80. विशिष्ट शुल्क (Specific Duty) किस आधार पर वसूला जाता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह कर वस्तु के मूल्य की परवाह किए बिना उसकी भौतिक इकाई, वजन, आकार या संख्या के आधार पर लगाया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>81. मॉडरैट (MODVAT) और सैनवैट (CENVAT) का ऐतिहासिक योगदान क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उत्पाद शुल्क में इनपुट टैक्स क्रेडिट (ITC) की व्यवस्था शुरू करके कास्केडिंग प्रभाव को दूर करने के शुरुआती प्रयास।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>82. भारत में सेवा कर (Service Tax) की शुरुआत कब और किसकी सिफारिश पर हुई?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 1994-95 में डॉ. राजा चेल्लैया समिति की सिफारिशों पर 3 सेवाओं (बीमा, टेलीफोन, शेयर ब्रोकिंग) पर लागू किया गया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+
+<section class="table-section"><div class="table-title"><div class="table-title-kicker">Quick Reference</div><div class="table-title-main">महत्वपूर्ण तथ्य एवं योगदान</div><div class="table-title-sub">कराधान Part 1</div></div><div class="table-wrap"><div class="table-container"><table class="notes-table"><thead><tr><th>कर का प्रकार</th><th>प्रमुख विशेषता</th><th>राजस्व/आर्थिक प्रभाव</th></tr></thead><tbody><tr><td><div class="primary-cell">प्रत्यक्ष कर (Direct Tax)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कर का आघात व कापात एक ही व्यक्ति पर; भार हस्तांतरित नहीं किया जा सकता (उदा. आयकर, निगम कर)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आय असमानता कम करता है, नागरिक चेतना बढ़ाता है; कर अपवंचन की संभावना अधिक</div></div></td></tr><tr><td><div class="primary-cell">अप्रत्यक्ष कर (Indirect Tax)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">कर का कापात उपभोक्ता पर स्थानांतरित; वस्तु/सेवा के मूल्य में शामिल (उदा. GST, सीमा शुल्क)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">व्यापक कर आधार, उच्च राजस्व संग्रह; प्रतिगामी स्वभाव व मुद्रास्फीतिकारी प्रभाव</div></div></td></tr><tr><td><div class="primary-cell">प्रगतिशील कर (Progressive Tax)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आय स्तर में वृद्धि के साथ कर की दर (Tax Rate) में आनुपातिक से अधिक वृद्धि</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">धन एवं आय का न्यायसंगत पुनर्वितरण; अत्यधिक उच्च दरों पर कार्य प्रोत्साहन पर विपरीत प्रभाव</div></div></td></tr><tr><td><div class="primary-cell">प्रतिगामी कर (Regressive Tax)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">आय बढ़ने के साथ कर की प्रभावी दर में निरंतर कमी आती है</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">निम्न आय वर्ग पर अपेक्षाकृत अधिक आर्थिक बोझ; समाज में असमानता बढ़ने का जोखिम</div></div></td></tr><tr><td><div class="primary-cell">आनुपातिक कर (Proportional Tax)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सभी करदाताओं और आय स्तरों के लिए कर की एकसमान दर (Flat Rate)</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">सरल प्रशासनिक व्यवस्था; आय असमानता को कम करने में कम प्रभावी</div></div></td></tr><tr><td><div class="primary-cell">पिगोवियन कर (Pigouvian Tax)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">पर्यावरणीय क्षति या नकारात्मक बाह्यताओं (Negative Externalities) को रोकने हेतु आरोपित</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">प्रदूषण व सामाजिक नुकसान में कमी; विशिष्ट सुधारात्मक राजस्व की प्राप्ति</div></div></td></tr><tr><td><div class="primary-cell">उपकर एवं अधिभार (Cess &amp; Surcharge)</div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">उपकर विशिष्ट उद्देश्य हेतु (जैसे शिक्षा); अधिभार उच्च आय पर कर-पर-कर</div></div></td><td><div class="table-answer"><div class="table-cover">उत्तर देखें</div><div class="table-answer-text">केंद्र को अतिरिक्त संसाधन प्राप्ति; राज्यों के विभाज्य पूल (Divisible Pool) से बाहर</div></div></td></tr></tbody></table></div></div></section>
+
+<section class="qa-section"><div class="qa-header"><h2>One-Liner Questions</h2></div><div class="qa-list"><div class="qa-row"><div class="qa-q"><span>83. बिक्री कर (Sales Tax) और राज्य वैट (State VAT) में मुख्य सुधार क्या था?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वर्ष 2005 में लागू राज्य वैट ने बिक्री कर के स्थान पर केवल मूल्यवर्धन (Value Addition) पर कर लगाकर कास्केडिंग प्रभाव घटाया।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>84. भारत में व्यक्तिगत आयकर किस कानून के तहत विनियमित होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आयकर अधिनियम, 1961 (Income Tax Act, 1961) के तहत, जो 1 अप्रैल 1962 से पूरे भारत में प्रभावी हुआ।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>85. आयकर अधिनियम में 'गत वर्ष' (Previous Year - Sec 3) की परिभाषा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह वित्तीय वर्ष (1 अप्रैल से 31 मार्च) जिसके दौरान करदाता द्वारा आय अर्जित की जाती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>86. आयकर अधिनियम में 'कर निर्धारण वर्ष' (Assessment Year - Sec 2(9)) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">गत वर्ष के तुरंत बाद आने वाला वित्तीय वर्ष, जिसमें गत वर्ष अर्जित आय का कर निर्धारण और कराधान किया जाता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>87. आयकर अधिनियम की धारा 14 के अनुसार आय के कितने कानूनी शीर्षक (Heads of Income) हैं?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आय की गणना हेतु कुल 5 कानूनी शीर्षक (Heads of Income) निर्धारित किए गए हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>88. आय के शीर्षक 'वेतन से आय' (Salaries) में क्या शामिल होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नियोक्ता और कर्मचारी के संबंध के तहत मिलने वाला मूल वेतन, भत्ते, बोनस, अनुलाभ और ग्रेच्युटी/पेंशन।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>89. मकान संपत्ति से आय (Income from House Property) का आकलन किस आधार पर होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">मकान संपत्ति के वार्षिक मूल्य (Annual Value) में से नगर पालिका कर और मानक कटौती (30%) घटाकर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>90. व्यवसाय या पेशे के लाभ (PGBP) शीर्षक के तहत क्या कर-योग्य होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">किसी व्यापार, व्यवसाय या पेशेवर सेवा के संचालन से अर्जित शुद्ध लाभ एवं व्यावसायिक प्राप्तियां।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>91. पूंजीगत लाभ (Capital Gains) शीर्षक का क्या आधार है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पूंजीगत परिसंपत्तियों के स्थानांतरण या बिक्री से प्राप्त अल्पकालिक एवं दीर्घकालिक शुद्ध पूंजीगत लाभ।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>92. आय के शीर्षक 'अन्य स्रोतों से आय' (Income from Other Sources) में क्या शामिल है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वह सभी कर-योग्य आय जो शेष 4 शीर्षकों में नहीं आती; जैसे बचत/एफडी ब्याज, लाभांश, लॉटरी जीत, और 50,000 रु. से अधिक के उपहार।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>93. करदाता की 'आवासीय स्थिति' (Residential Status) का कराधान पर क्या प्रभाव पड़ता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह तय करता है कि व्यक्ति की केवल भारत में अर्जित आय पर कर लगेगा या उसकी वैश्विक आय (Global Income) भारत में कर-योग्य होगी।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>94. पुरानी कर व्यवस्था और नई कर व्यवस्था (Sec 115BAC) में क्या मौलिक अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पुरानी व्यवस्था में विभिन्न छूट/कटौतियों के साथ उच्च स्लैब दरें हैं, जबकि नई व्यवस्था में कम कर स्लैब दरें हैं किंतु अधिकांश पारंपरिक छूट और कटौतियां समाप्त हैं।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>95. केंद्रीय बजट 2023-24 से नई कर व्यवस्था की क्या स्थिति बनाई गई है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">नई कर व्यवस्था को भारत में डिफ़ॉल्ट कर व्यवस्था (Default Tax Regime) घोषित किया गया है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>96. धारा 80C के अंतर्गत करदाता को अधिकतम कितनी कर कटौती (Deduction) प्राप्त होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">पुरानी कर व्यवस्था के तहत PPF, ELSS, EPF, LIC आदि में निवेश पर अधिकतम 1.5 लाख रुपये की वार्षिक कटौती मिलती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>97. धारा 80D के तहत किस व्यय पर आयकर में छूट/कटौती मिलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">स्वयं, परिवार और वरिष्ठ नागरिक माता-पिता हेतु चुकाए गए स्वास्थ्य बीमा प्रीमियम (Health Insurance Premium) के भुगतान पर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>98. धारा 80E किस प्रकार के ऋण पर ब्याज कटौती की अनुमति देती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">उच्च शिक्षा हेतु लिए गए शिक्षा ऋण (Education Loan) पर चुकाए गए पूरे ब्याज पर (अधिकतम 8 वर्षों तक)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>99. राष्ट्रीय पेंशन प्रणाली (NPS) हेतु धारा 80CCD(1B) के तहत कितनी अतिरिक्त कटौती मिलती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धारा 80C की 1.5 लाख की सीमा के अलावा अतिरिक्त 50,000 रुपये तक की कर कटौती मिलती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>100. धारा 80TTA और 80TTB में क्या मुख्य अंतर है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">धारा 80TTA बचत खाते पर 10,000 रु. तक तथा धारा 80TTB वरिष्ठ नागरिकों को सभी बैंक ब्याज आय पर 50,000 रु. तक की कटौती देती है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>101. मानक कटौती (Standard Deduction) का क्या अर्थ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">वेतनभोगी कर्मचारियों और पेंशनभोगियों को बिना किसी निवेश प्रमाण के मिलने वाली एक निश्चित एकमुश्त कर-योग्य आय कटौती।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>102. स्रोत पर कर कटौती (TDS - Tax Deducted at Source) की मूल अवधारणा क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">आय के उत्पत्ति बिंदु पर ही भुगतानकर्ता द्वारा आय का भुगतान करते समय कर काटकर सरकार को जमा करना (Pay As You Earn)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>103. स्रोत पर कर संग्रह (TCS - Tax Collected at Source) क्या होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">विक्रेता द्वारा कुछ निर्दिष्ट वस्तुओं (जैसे तेंदू पत्ता, स्क्रैप, लक्जरी कारें) की बिक्री पर खरीदार से क्रय मूल्य के अतिरिक्त एकत्र किया गया कर।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>104. स्थायी खाता संख्या (PAN Card) की संरचना कैसी होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह आयकर विभाग द्वारा जारी 10-अंकीय अल्फान्यूमेरिक (Alphanumeric) विशिष्ट पहचान संख्या है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>105. PAN संख्या के चौथे अक्षर (4th Character) का क्या अर्थ होता है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">यह करदाता की कानूनी स्थिति दर्शाता है; जैसे 'P' व्यष्टि (Individual), 'C' कंपनी, 'F' फर्म, और 'H' HUF हेतु।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>106. फॉर्म 16 और वार्षिक सूचना विवरण (AIS) का क्या महत्व है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">फॉर्म 16 नियोक्ता से प्राप्त TDS प्रमाण पत्र है, जबकि AIS में करदाता के सभी वित्तीय लेन-देन का एकीकृत वार्षिक रिकॉर्ड होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>107. भारत में कृषि आय (Agricultural Income) को केंद्रीय आयकर से क्यों मुक्त रखा गया है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">क्योंकि संविधान की 7वीं अनुसूची के तहत कृषि आय पर कर लगाने का अधिकार राज्य सूची (Entry 46) का विषय है (धारा 10(1) के तहत छूट)।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>108. अग्रिम कर (Advance Tax) की देयता कब उत्पन्न होती है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">जब किसी करदाता की एक वित्तीय वर्ष में अनुमानित शुद्ध कर देनदारी 10,000 रुपये या उससे अधिक होती है, तो उसे 4 किश्तों में इसे चुकाना होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>109. आयकर अधिनियम की धारा 87A के तहत 'रिबेट' (Rebate) का क्या लाभ है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कम आय वर्ग वाले छोटे करदाताओं को उनकी देय कुल कर राशि में दी जाने वाली पूर्ण या आंशिक छूट।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div><div class="qa-row"><div class="qa-q"><span>110. वर्तमान में देय आयकर पर 'स्वास्थ्य और शिक्षा उपकर' (Health and Education Cess) की दर क्या है?</span><button class="star-btn" type="button" aria-label="Star" aria-pressed="false">☆</button></div><div class="qa-a"><div class="answer-text">कुल देय आयकर और अधिभार की राशि पर 4 प्रतिशत (4%) की दर से उपकर लागू होता है।</div><div class="cover" tabindex="0">उत्तर देखने के लिए टैप करें</div></div></div></div></section>
+  </div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div style="font-size:16px; font-weight:800;">My Study Portal</div>
+    <p style="font-size:14px; margin:5px 0 15px; color:#c3d4e5;">प्रतियोगी परीक्षाओं के लिए विषयवार Quiz और Notes सामग्री।</p>
+    <nav class="footer-links">
+      <a href="/Quiz/index.html">Home</a>
+      <a href="/Quiz/subject-wise-notes/index.html">Notes</a>
+      <a href="/Quiz/test-series/index.html">Test Series</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAll(){
+  content.querySelectorAll(".qa-section").forEach(shuffleQaSection);
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Q&A sections: add shuffle control above qa-list
+  content.querySelectorAll(".qa-section").forEach(section => {
+    if(section.querySelector(":scope > .shuffle-control")) return;
+    const list = section.querySelector(".qa-list");
+    if(!list) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="One-liner क्रम बदलें" title="One-liner Shuffle">🔀</button>';
+    section.insertBefore(ctrl, list);
+  });
+  // Table sections: add shuffle control into .table-title
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const qa = shuffle.closest(".qa-section");
+    const tb = shuffle.closest(".table-section");
+    if(qa) shuffleQaSection(qa);
+    else if(tb) shuffleTableSection(tb);
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+</body>
+</html>
