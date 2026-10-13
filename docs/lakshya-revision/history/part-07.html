@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="इतिहास के क्रमवार अध्ययन नोट्स, Part 7.">
+<title>इतिहास — Part 7</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px;display:flex;align-items:center;justify-content:space-between;position:relative}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+
+/* Compact study heading: show one Q&A section heading per page */
+#dynamic-content-area > .qa-section ~ .qa-section > .qa-header {
+  display: none !important;
+}
+
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+
+.qa-chapter-label{font-size:12px;font-weight:800;letter-spacing:.3px;color:#bfe8ff;margin-bottom:4px;}
+</style>
+
+    <link rel="canonical" href="https://dolatrammpi-coder.github.io/Quiz/lakshya-revision/history/part-07.html">
+
+<style id="header-font-controls-style">
+.header-font-controls{position:absolute;right:12px;top:8px;display:flex;align-items:center;gap:3px;margin:0;flex:0 0 auto;min-width:0;z-index:3}.header-font-controls button{min-width:30px;height:30px;padding:0 5px;border:1px solid rgba(255,255,255,.55);border-radius:8px;background:rgba(255,255,255,.12);color:#fff;font-size:15px;font-weight:800;cursor:pointer}.header-font-controls button:focus-visible{outline:2px solid #fff;outline-offset:2px}.header-font-controls .font-size-label{font-size:12px;font-weight:700;color:#fff;min-width:30px;text-align:center}@media(max-width:560px){.header-inner{gap:6px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}.header-font-controls{top:6px;right:8px;gap:3px}.header-font-controls button{min-width:28px;height:28px;padding:0 4px}.header-font-controls .font-size-label{font-size:11px;min-width:24px}.brand{white-space:normal}}
+</style>
+
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav"><a href="/Quiz/index.html">Home</a><a href="/Quiz/subject-wise-notes/index.html">Notes</a><a href="/Quiz/about/index.html">About</a><a href="/Quiz/contact/index.html">Contact</a></nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb" id="notesBreadcrumb">Home / Lakshya Revision / इतिहास / Part 7</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker" id="subjectKicker">इतिहास</div>
+    <h1 id="chapterTitle">इतिहास — Part 7</h1>
+    <p class="topic-subtitle" id="chapterSubtitle">Part 7/34 · QA: 135 · Tables: 2</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area" aria-live="polite"></div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer" style="margin-top:42px;background:linear-gradient(145deg,#102f4d,#16486d 52%,#0e3a5d);color:#dbeafe;padding:28px 16px;text-align:center;">
+<div class="footer-links" style="display:flex;gap:17px;flex-wrap:wrap;justify-content:center;font-size:13px;">
+<a href="/Quiz/index.html" style="color:#e2edf7;">Home</a>
+<a href="/Quiz/subject-wise-notes/index.html" style="color:#e2edf7;">Notes</a>
+<a href="/Quiz/about/index.html" style="color:#e2edf7;">About</a>
+<a href="/Quiz/privacy-policy/index.html" style="color:#e2edf7;">Privacy Policy</a>
+<a href="/Quiz/disclaimer/index.html" style="color:#e2edf7;">Disclaimer</a>
+<a href="/Quiz/contact/index.html" style="color:#e2edf7;">Contact</a>
+<a href="/Quiz/terms-and-conditions/index.html" style="color:#e2edf7;">Terms &amp; Conditions</a>
+</div>
+<p class="footer-copy" style="color:#c3d4e5;font-size:12px;margin-top:17px;">© 2026 My Study Portal. All rights reserved.</p>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* GENERIC JSON RENDERER: ordered content[] keeps one_liner/table interleaved.
+   Expected item: {sequence, subject, chapter, section, page, type, content}.
+   One-liner content: {question,answer}, {q,a}, or array/questions[] of those.
+   Table content: {title, columns:[...], rows:[[...], ...]}. */
+const NOTES_DATA = {"subject":"इतिहास","subject_label":"इतिहास","subject_emoji":"📜","chapter_title":"इतिहास — Part 7","subtitle":"Part 7/34 · QA: 135 · Tables: 2","page_title":"इतिहास — Part 7","description":"इतिहास के क्रमवार अध्ययन नोट्स, Part 7.","content":[{"sequence":1,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"table","content":{"title":"ब्रिटिश कालीन प्रमुख समाचार पत्र/पत्रिका, संस्थापक, प्रकाशन वर्ष, संस्थान, भाषा","columns":["पत्र/पत्रिका","संस्थापक","प्रकाशन वर्ष","संस्थान","भाषा"],"rows":[["बंगाल गजट","गंगाधर भट्टाचार्य","1816 ई०","कलकत्ता","अंग्रेजी"],["समाचार दर्पण","मार्शमैन","1818 ई०","कलकत्ता","बंगाली"],["संवाद कौमुदी","राजा राममोहन राय","1821 ई०","कलकत्ता","बंगाली"],["उदन्त मार्तण्ड","युगल किशोर","1826 ई०","कानपुर","हिन्दी का प्रथम"],["बंगदत्त","द्वारिका नाथ, प्रसन्न टैगोर","1830 ई०","कलकत्ता","बंगाली"],["सत्यप्रकाश","करसनदास मूलजी","1852 ई०","अहमदाबाद","गुजराती"],["हिन्दू पैट्रियाट","गिरीश चन्द्र घोष","1853 ई०","कलकत्ता","अंग्रेजी"],["सोम प्रकाश","ईश्वरचन्द्र विद्यासागर","1859 ई०","कलकत्ता","बंगाली"],["इंडियन मिरर","देवेन्द्र नाथ टैगोर व मनमोहन घोष","1861 ई०","कलकत्ता","अंग्रेजी"],["इन्दु प्रकाश","रानाडे","1862 ई०","बम्बई","मराठी"],["अमृत बाजार पत्रिका","मोतीलाल घोष व शिशिर घोष","1868 ई०","कलकत्ता","बंगाली"],["मद्रास मेल","चार्ल्स लॉसन व हेनरी कोर्निश","1868 ई०","मद्रास","अंग्रेजी"],["बंग दर्शन","बंकिम चंद्र चटर्जी","1873 ई०","कलकत्ता","बंगाली"],["द ट्रिब्यून","सर दयाल सिंह मजीठिया","1877 ई०","चण्डीगढ़","अंग्रेजी"],["स्टेट्समैन","राबर्ट नाइट","1878 ई०","कलकत्ता","अंग्रेजी"],["हिन्दू","वी० राघवाचारी","1878 ई०","मद्रास","अंग्रेजी"],["बंगाली","एस० एन० बनर्जी","1879 ई०","कलकत्ता","अंग्रेजी"],["मराठा","आगरकर","1881 ई०","बम्बई","अंग्रेजी"],["केसरी","बाल गंगाधर तिलक","1881 ई०","बम्बई","मराठी"],["इंडिया","दादा भाई नौरोजी","1890 ई०","बम्बई","अंग्रेजी"],["इंडियन रिव्यू","जी० ए० नरेशन","1900 ई०","मद्रास","अंग्रेजी"],["इंडियन ओपिनियन","महात्मा गाँधी","1903 ई०","द० अफ्रीका","अंग्रेजी"],["युगान्तर","भूपेन्द्र दत्त एवं वारीन्द्र घोष","1906 ई०","कलकत्ता","बंगाली"],["वन्दे मातरम्","हरदयाल, श्यामजी कृष्ण वर्मा","1909 ई०","पेरिस","अंग्रेजी"],["प्रताप","गणेश शंकर विद्यार्थी","1910 ई०","कानपुर","हिन्दी"],["अल हिलाल","अबुल कलाम आजाद","1912 ई०","कलकत्ता","उर्दू"],["बाम्बे क्रॉनिकल","फिरोजशाह मेहता","1913 ई०","बम्बई","अंग्रेजी"],["गदर","लाला हरदयाल","1913 ई०","सैन फ्रांसिसको","अंग्रेजी"],["न्यू इंडिया","एनी बेसेंट","1914 ई०","बम्बई","अंग्रेजी"],["इंडिपेंडेंट","मोतीलाल नेहरू","1919 ई०","इलाहाबाद","अंग्रेजी"],["नवजीवन","महात्मा गाँधी","1919 ई०","अहमदाबाद","गुजराती/हिन्दी"],["यंग इंडिया","महात्मा गाँधी","1919 ई०","अहमदाबाद","अंग्रेजी"],["हिन्दुस्तान टाइम्स","के० एम० पणिक्कर","1924 ई०","बम्बई","अंग्रेजी"],["हरिजन","महात्मा गाँधी","1933 ई०","पुणे","हिन्दी"]]},"_source_file":"019.json","_source_sequence":1},{"sequence":2,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"'सहायक सन्धि' के सिद्धांत किससे सम्बन्ध था ? — लॉर्ड वेलेजली से","_source_file":"019.json","_source_sequence":2},{"sequence":3,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"ईस्ट इण्डिया कम्पनी और बंगाल के बीच जब प्लासी का युद्ध हुआ था, उस समय मुगल सम्राट कौन था ? — शाह आलम द्वितीय","_source_file":"019.json","_source_sequence":3},{"sequence":4,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"अंग्रेजों द्वारा बंगाल से निर्यात की जाने वाली प्रमुख वस्तुएँ क्या थी ? — रेशमी-सूती वस्त्र तथा नील","_source_file":"019.json","_source_sequence":4},{"sequence":5,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"'सहायक संधि' को स्वीकार करने वाला पहला भारतीय शासक था ? — हैदराबाद का निजाम","_source_file":"019.json","_source_sequence":5},{"sequence":6,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"सुगौली की संधि (1816 ई.) किनके बीच सम्पन्न हुआ ? — ईस्ट इंडिया कम्पनी और नेपाल","_source_file":"019.json","_source_sequence":6},{"sequence":7,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"रणजीत सिंह किस मिसल से सम्बन्धित थे ? — सुकरचकिया","_source_file":"019.json","_source_sequence":7},{"sequence":8,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"महाराजा रणजीत सिंह के राज्य की राजधानी थी ? — लाहौर","_source_file":"019.json","_source_sequence":8},{"sequence":9,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"रणजीत सिंह ने किस स्थान पर अधिकार करने के बाद 'महाराजा' की उपाधि धारण की ? — लाहौर","_source_file":"019.json","_source_sequence":9},{"sequence":10,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"महाराजा रणजीत सिंह ने सुप्रसिद्ध कोहिनूर हीरा किससे प्राप्त किया था ? — शाह शुजा से","_source_file":"019.json","_source_sequence":10},{"sequence":11,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"महाराजा रणजीत सिंह को किस विजय अभियान के फलस्वरूप जमजमां नामक तोप की प्राप्ति हुई ? — अमृतसर विजय अभियान","_source_file":"019.json","_source_sequence":11},{"sequence":12,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"सवाई राजा जयसिंह द्वारा प्रथम वेधशाला जंतर-मंतर कहाँ स्थापित की गई ? — दिल्ली में","_source_file":"019.json","_source_sequence":12},{"sequence":13,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"किसने मजबूत सत्ता स्थापित कर अंग्रेजों को 19वीं शताब्दी में चुनौती दी ? — रणजीत सिंह","_source_file":"019.json","_source_sequence":13},{"sequence":14,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"49","type":"one_liner","content":"सैनिक संगठन 'खालसा दल' की स्थापना किसने की थी ? — कपूर सिंह","_source_file":"019.json","_source_sequence":14},{"sequence":15,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"भारतीय राष्ट्रीय आंदोलन के 1885-1905 की अवधि को कहा जाता है ? — उदारवादी चरण","_source_file":"020.json","_source_sequence":1},{"sequence":16,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"भारतीय इतिहास में वर्ष 1885 ई. किस कारण प्रसिद्ध है ? — भारतीय राष्ट्रीय कांग्रेस की स्थापना","_source_file":"020.json","_source_sequence":2},{"sequence":17,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"table","content":{"title":"भारतीय राष्ट्रीय कांग्रेस के अधिवेशन स्थान, वर्ष एवं उसके अध्यक्ष","columns":["अधिवेशन स्थान","वर्ष","अध्यक्ष"],"rows":[["बम्बई","1885 ई०","डब्ल्यु सी० बनर्जी"],["कलकत्ता","1886 ई०","दादा भाई नौरोजी"],["मद्रास","1887 ई०","बदरुद्दीन तैयबजी"],["इलाहाबाद","1888 ई०","जार्ज यूले"],["बम्बई","1889 ई०","सर विलियम वेडरबर्न"],["कलकत्ता","1890 ई०","फिरोज शाह मेहता"],["नागपुर","1891 ई०","पी० आनन्द चालू"],["इलाहाबाद","1892 ई०","डब्ल्यु० सी० बनर्जी"],["लाहौर","1893 ई०","दादा भाई नौरोजी"],["मद्रास","1894 ई०","अल्फ्रेड वेब"],["पूना","1895 ई०","सुरेन्द्रनाथ बनर्जी"],["कलकत्ता","1896 ई०","आर० एम० सयानी"],["अमरावती","1897 ई०","सी० शंकरन नायर"],["मद्रास","1898 ई०","आनंद मोहन बोस"],["लखनऊ","1899 ई०","रमेश चंद्र दत्त"],["लाहौर","1900 ई०","एन० जी० चंदावरकर"],["कलकत्ता","1901 ई०","दिनशॉ एडुलजी वाचा"],["अहमदाबाद","1902 ई०","सुरेन्द्र नाथ बनर्जी"],["मद्रास","1903 ई०","लाल मोहन घोष"],["बम्बई","1904 ई०","सर हेनरी कॉटन"],["बनारस","1905 ई०","गोपाल कृष्ण गोखले"],["कलकत्ता","1906 ई०","दादा भाई नौरोजी"],["सूरत","1907 ई०","रास बिहारी घोष"],["मद्रास","1908 ई०","रास बिहारी घोष"],["लाहौर","1909 ई०","मदन मोहन मालवीय"],["इलाहाबाद","1910 ई०","सर विलियम वेडरबर्न"],["कलकत्ता","1911 ई०","पं० विशन नारायण धर"],["बाँकीपुर","1912 ई०","आर० एन० मधोलकर"],["करांची","1913 ई०","सैय्यद मुहम्मद बहादुर"],["मद्रास","1914 ई०","भूपेन्द्र नाथ बसु"],["बम्बई","1915 ई०","सर सत्येन्द्र प्रसाद सिन्हा"],["लखनऊ","1916 ई०","अम्बिका चरण मजुमदार"],["कलकत्ता","1917 ई०","एनी बेसेंट"],["बम्बई","1918 ई०","सैय्यद इमाम हसन"],["दिल्ली","1918 ई०","मदन मोहन मालवीय"],["अमृतसर","1919 ई०","पं० मोती लाल नेहरू"],["नागपुर","1920 ई०","सी० विजयाराधवाचारी"],["कलकत्ता","1920 ई०","लाला लाजपत राय"],["अहमदाबाद","1921 ई०","हकीम अजमल खाँ"],["गया","1922 ई०","देशबंधु चित्तरंजन दास"],["काकीनाडा","1923 ई०","मौलाना मुहम्मद अली"],["दिल्ली","1923 ई०","अबुल कलाम आजाद"],["बेलगाम","1924 ई०","महात्मा गाँधी"],["कानपुर","1925 ई०","श्रीमती सरोजनी नायडू"],["गुवाहाटी","1926 ई०","श्रीनिवास अयंगर"],["मद्रास","1927 ई०","डॉ० एम० ए० अंसारी"],["कलकत्ता","1928 ई०","पं० मोतीलाल नेहरू"],["लाहौर","1929 ई०","पं० जवाहरलाल नेहरू"],["करांची","1931 ई०","सरदार वल्लभ भाई पटेल"],["दिल्ली","1932 ई०","सेन रणछोड़लाल दास अमृत लाल"],["कलकत्ता","1933 ई०","श्रीमती नलिनी सेन गुप्ता"],["बम्बई","1934 ई०","डॉ० राजेन्द्र प्रसाद"],["लखनऊ","1935 ई०","डॉ० राजेन्द्र प्रसाद"],["लखनऊ","1936 ई०","पं० जवाहरलाल नेहरू"],["फैजपुर","1937 ई०","पं० जवाहरलाल नेहरू"],["हरिपुरा","1938 ई०","सुभाषचन्द्र बोस"],["त्रिपुरी","1939 ई०","सुभाषचन्द्र बोस"],["रामगढ़","1940 ई०","अबुल कलाम आजाद"],["मेरठ","1946 ई०","आचार्य जे० बी० कृपलानी"],["दिल्ली","1947 ई०","डॉ० राजेन्द्र प्रसाद"],["जयपुर","1948 ई०","डॉ० पी० सीतारमैया"],["नासिक","1950 ई०","पी० डी० टण्डन"]]},"_source_file":"020.json","_source_sequence":3},{"sequence":18,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"आधुनिक भारतीय इतिहास में गोकुल दास तेजपाल संस्कृत महाविद्यालय क्यों प्रसिद्ध है ? — भारतीय राष्ट्रीय कांग्रेस का प्रथम अधिवेशन के कारण","_source_file":"020.json","_source_sequence":4},{"sequence":19,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"1885-1905 के काल के भारतीय आंदोलन में उदारवादी नेताओं का प्रभुत्व था, उनके आंदोलन का मुख्य ढंग क्या था? — संवैधानिक आंदोलन","_source_file":"020.json","_source_sequence":5},{"sequence":20,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"भारतीय राष्ट्रीय कांग्रेस की पहली बैठक किस शहर में हुई थी ? — बम्बई में","_source_file":"020.json","_source_sequence":6},{"sequence":21,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"किसको 'भारत का महान वृद्ध व्यक्ति' कहा जाता है ? — दादाभाई नौरोजी को","_source_file":"020.json","_source_sequence":7},{"sequence":22,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"ब्रिटिश साम्राज्य के अंतर्गत स्वशासन की मांग सबसे पहले किसने की ? — दादाभाई नौरोजी ने","_source_file":"020.json","_source_sequence":8},{"sequence":23,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"किस गवर्नर जनरल के कार्यकाल के दौरान भारतीय राष्ट्रीय कांग्रेस की स्थापना हुई थी ? — लॉर्ड डफरिन के","_source_file":"020.json","_source_sequence":9},{"sequence":24,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"भारतीय विश्वविद्यालय अधिनियम 1904 किस वायसराय के काल में पारित किया गया था ? — लॉर्ड कर्जन के","_source_file":"020.json","_source_sequence":10},{"sequence":25,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"इंडियन नेशनल कांग्रेस के संस्थापक कौन थे ? — एल० ओक्टोवियन ह्यूम","_source_file":"020.json","_source_sequence":11},{"sequence":26,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"'हरमिट ऑफ शिमला' किसे कहा जाता है ? — ए. ओ ह्यूम को","_source_file":"020.json","_source_sequence":12},{"sequence":27,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"प्रथम भारतीय कौन था, जो ब्रिटिश संसद के लिए निर्वाचित हुआ ? — दादाभाई नौरोजी","_source_file":"020.json","_source_sequence":13},{"sequence":28,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"भारतीय राष्ट्रीय कांग्रेस के तीन बार अध्यक्ष कौन बने ? — दादाभाई नौरोजी","_source_file":"020.json","_source_sequence":14},{"sequence":29,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"मद्रास महाजन सभा की स्थापना कब की गई थी ? — 1884 ई. में","_source_file":"020.json","_source_sequence":15},{"sequence":30,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"'ए नेशन इन द मेकिंग' नामक पुस्तक किसने लिखी ? — सुरेन्द्रनाथ बनर्जी ने","_source_file":"020.json","_source_sequence":16},{"sequence":31,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"किस ब्रिटिश वायसराय ने 1880 के दशक के प्रारंभ में विदेशी शासन के विरुद्ध भारतीय असंतोष को बढ़ाने में महत्वपूर्ण भूमिका निभायी ? — लिटन ने","_source_file":"020.json","_source_sequence":17},{"sequence":32,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"भारतीय नेताओं में किसे ब्रिटिश द्वारा इंडियन सिविल सर्विस से बर्खास्त किया गया था ? — सुरेन्द्रनाथ बनर्जी को","_source_file":"020.json","_source_sequence":18},{"sequence":33,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"'पावर्टी एण्ड अनब्रिटिश रूल इन इंडिया' नामक पुस्तक की रचना किसने की — दादा भाई नौरोजी","_source_file":"020.json","_source_sequence":19},{"sequence":34,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"लिटन द्वारा प्रस्तावित वैधानिक जनपद सेवा, जिसके तहत परीक्षा की आयु 21 वर्ष से घटाकर 19 वर्ष कर दी गयी थी, कब लागू हुआ था ? — 1878 ई. में","_source_file":"020.json","_source_sequence":20},{"sequence":35,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"इलबर्ट बिल विवाद किस वायसराय के कार्यकाल में उभरा था ? — लॉर्ड रिपन के","_source_file":"020.json","_source_sequence":21},{"sequence":36,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"भारतीय राष्ट्रीय आंदोलन","page":"58","type":"one_liner","content":"भारतीय संघ के संस्थापक कौन थे ? — सुरेन्द्रनाथ बनर्जी","_source_file":"020.json","_source_sequence":22},{"sequence":37,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"लॉर्ड डलहौजी के उत्तराधिकार हरण सिद्धांत (Doctrine of Lapse) का सर्वप्रथम रियासत बनी ? — सतारा","_source_file":"032.json","_source_sequence":1},{"sequence":38,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"अफगानिस्तान के सम्बन्ध में अकर्मण्यता (Masterly Inactivity) की नीति किसने अपनायी ? — सर जॉन लॉरेन्स ने","_source_file":"032.json","_source_sequence":2},{"sequence":39,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत में पाश्चात्य शिक्षा 1835 ई. में किसने आरम्भ की ? — लॉर्ड मैकाले ने","_source_file":"032.json","_source_sequence":3},{"sequence":40,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"1 नवम्बर, 1858 को महारानी विक्टोरिया का घोषणापत्र इलाहाबाद में पढ़कर कौन सुनाया था ? — लॉर्ड कैनिंग ने","_source_file":"032.json","_source_sequence":4},{"sequence":41,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"प्रथम इंडियन कौंसिल एक्ट कब और किस वायसराय के कार्यकाल में पारित हुआ ? — 1861 ई. में, लॉर्ड कैनिंग के","_source_file":"032.json","_source_sequence":5},{"sequence":42,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"'आर्म्स एक्ट' किस वायसराय के कार्यकाल में पारित हुआ ? — लॉर्ड-लिटन के","_source_file":"032.json","_source_sequence":6},{"sequence":43,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"लॉर्ड लिटन की प्रतिक्रियावादी नीति का क्या परिणाम हुआ ? — भारतीयों में राष्ट्रीयता की भावना का विकास हुआ","_source_file":"032.json","_source_sequence":7},{"sequence":44,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"राष्ट्रीय आंदोलन के विकास में किस वायसराय ने प्रमुख भूमिका निभाई ? — लॉर्ड लिटन एवं लॉर्ड कर्जन ने","_source_file":"032.json","_source_sequence":8},{"sequence":45,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"किसके काल की इल्बर्ट बिल विवाद घटना है ? — लॉर्ड रिपन के","_source_file":"032.json","_source_sequence":9},{"sequence":46,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"इल्बर्ट बिल विवाद सम्बन्धित था ? — भारतीय न्याय व्यवस्था से","_source_file":"032.json","_source_sequence":10},{"sequence":47,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"अंग्रेजी शासन का प्रभाव किस क्षेत्र में अधिक पड़ा ? — आर्थिक क्षेत्र में","_source_file":"032.json","_source_sequence":11},{"sequence":48,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत में प्रथम रेलवे लाइन किस ब्रिटिश गवर्नर जनरल के समय बिछाई गयी थी ? — लॉर्ड डलहौजी","_source_file":"032.json","_source_sequence":12},{"sequence":49,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत में प्रथम रेल लाइन किसने बिछवाई थी ? — जॉर्ज क्लार्क","_source_file":"032.json","_source_sequence":13},{"sequence":50,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत से ब्रिटेन की ओर संपत्ति के अपवहन (Drain of Wealth) का सिद्धांत किसने प्रतिपादित किया था ? — दादा भाई नौरोजी ने","_source_file":"032.json","_source_sequence":14},{"sequence":51,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"वर्ष 1853 ई. में लॉर्ड डलहौजी ने जो पहली टेलीग्राफ लाइन शुरू की वह किसके बीच थी ? — कलकत्ता और आगरा","_source_file":"032.json","_source_sequence":15},{"sequence":52,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत में ब्रिटिश भूराजस्व प्रणाली का किसने अधिक लाभ प्राप्त किया ? — जमींदारों ने","_source_file":"032.json","_source_sequence":16},{"sequence":53,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत में सबसे पहला सूती वस्त्र मिल किस शहर में स्थापित किया गया था ? — बंबई में","_source_file":"032.json","_source_sequence":17},{"sequence":54,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"ब्रिटिश सरकार ने भारत में स्थायी बंदोबस्त कब लागू किया ? — 22 मई, 1793 ई. में","_source_file":"032.json","_source_sequence":18},{"sequence":55,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"रैयतवाड़ी भूराजस्व बंदोबस्त से कौन संबंधित थे ? — सर टॉमस मुनरो","_source_file":"032.json","_source_sequence":19},{"sequence":56,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"रैयतवाड़ी व्यवस्था कब लागू की गई थी ? — 1820 ई. में","_source_file":"032.json","_source_sequence":20},{"sequence":57,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"पहली बार औपचारिक रूप से महालवाड़ी प्रथा कब लागू की गई थी ? — 1822 ई. में","_source_file":"032.json","_source_sequence":21},{"sequence":58,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"अंग्रेजी शासनकाल में भारत का कौन-सा क्षेत्र अफीम उत्पादन के लिए प्रसिद्ध था ? — बिहार","_source_file":"032.json","_source_sequence":22},{"sequence":59,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"नील कृषकों की दुर्दशा पर लिखी गई पुस्तक 'नील दर्पण' के लेखक कौन थे ? — दीनबन्धु मित्र","_source_file":"032.json","_source_sequence":23},{"sequence":60,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"अंग्रेजों द्वारा सर्वप्रथम कहवा बागान कहाँ लगाये गये थे ? — बायनाड जनपद में","_source_file":"032.json","_source_sequence":24},{"sequence":61,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत में अंग्रेजों के समय में प्रथम जनगणना किसके कार्यकाल में हुई ? — लॉर्ड मियो के","_source_file":"032.json","_source_sequence":25},{"sequence":62,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"उत्तरी भारत में भूमिकर व्यवस्था का प्रवर्तक (The father of land settlement in Northern India) किसे कहा जाता है ? — मार्टिन बर्ड को","_source_file":"032.json","_source_sequence":26},{"sequence":63,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"ब्रिटिश शासन के दौरान भारत में उद्योगों का कोई स्वतंत्र विकास नहीं हुआ, इसका कारण था ? — भारी उद्योगों का अभाव","_source_file":"032.json","_source_sequence":27},{"sequence":64,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"स्थायी बंदोबस्त के तहत जमींदार के लगान/भूराजस्व का कितना प्रतिशत राज्य को देना तय किया गया ? — 89 प्रतिशत","_source_file":"032.json","_source_sequence":28},{"sequence":65,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"अंग्रेजों द्वारा रैयतवाड़ी बंदोबस्त लागू किया गया था ? — मद्रास प्रेसीडेंसी व बम्बई प्रेसीडेंसी","_source_file":"032.json","_source_sequence":29},{"sequence":66,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारतीय बुनकरों की दयनीय हालत पर किस ब्रिटिश गवर्नर ने कहा कि 'इनका दुःख दर्द समूचे इतिहास में अतुलनीय है' ? — विलियम बैंटिक","_source_file":"032.json","_source_sequence":30},{"sequence":67,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"ब्रिटिश ईस्ट इंडिया कंपनी का व्यापारिक अधिकार अंतिम रूप से किस एक्ट के तहत समाप्त किया गया ? — 1833 का चार्टर एक्ट","_source_file":"032.json","_source_sequence":31},{"sequence":68,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"'भारतीय शिक्षा का मैग्नाकार्टा' (महाअधिकार पत्र) कहा जाता है ? — वुड के घोषणा पत्र, (1854 ई.) को","_source_file":"032.json","_source_sequence":32},{"sequence":69,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत में आधुनिक शिक्षा के जन्मदाता किसे कहा जाता है ? — चार्ल्स ग्रांट को","_source_file":"032.json","_source_sequence":33},{"sequence":70,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"भारत में आधुनिक उद्योगों की स्थापना कब आरंभ हुई ? — 1850 ई. में","_source_file":"032.json","_source_sequence":34},{"sequence":71,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"किसने भारत में रेलवे की स्थापना को 'आधुनिक उद्योग का अग्रदूत/जननी' की संज्ञा दी ? — कार्ल-मार्क्स ने","_source_file":"032.json","_source_sequence":35},{"sequence":72,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"पहली आधुनिक पटसन मिल स्थापित हुई ? — रिशरा (बंगाल) में","_source_file":"032.json","_source_sequence":36},{"sequence":73,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"पहले आधुनिक लोहा-इस्पात उद्योग की स्थापना कहाँ हुई ? — कुल्टी, वर्णपुर (पं. बंगाल)","_source_file":"032.json","_source_sequence":37},{"sequence":74,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"किस कंपनी ने सर्वप्रथम भारत में रेल सेवा प्रारंभ की ? — ग्रेट इंडियन पेनिनसुलर रेलवे","_source_file":"032.json","_source_sequence":38},{"sequence":75,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"52","type":"one_liner","content":"'अंग्रेज घुसपैठियों ने भारत के करघे को तोड़ डाला और चरखे को नष्ट कर दिया' यह कथन किसका है ? — कार्ल मार्क्स के","_source_file":"032.json","_source_sequence":39},{"sequence":76,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"पुष्टिमार्ग के दर्शन की स्थापना किसने की ? — वल्लभाचार्य ने","_source_file":"007.json","_source_sequence":1},{"sequence":77,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"वल्लभाचार्य ने किस सम्प्रदाय की स्थापना की ? — रूद्र सम्प्रदाय की","_source_file":"007.json","_source_sequence":2},{"sequence":78,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"वल्लभाचार्य ने अपने मत का प्रचार कहाँ किया ? — गुजरात एवं राजस्थान में","_source_file":"007.json","_source_sequence":3},{"sequence":79,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'महापुरुषीय धर्म' (एक शरण संप्रदाय) के संस्थापक थे — शंकरदेव","_source_file":"007.json","_source_sequence":4},{"sequence":80,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"शिव ज्ञानबोधम् की रचना किसने की ? — मेयकंदार ने","_source_file":"007.json","_source_sequence":5},{"sequence":81,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"किसने पुरन्दरदास आन्दोलन का श्री गणेश किया ? — श्रीपादाचार्य हरिदास ने","_source_file":"007.json","_source_sequence":6},{"sequence":82,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"किसने कर्नाटक संगीत का पिता कहा जाता है ? — पुरन्दरदास को","_source_file":"007.json","_source_sequence":7},{"sequence":83,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"वीरशैव सम्प्रदाय को अन्य किस नाम से जाना जाता है ? — लिंगायत सम्प्रदाय","_source_file":"007.json","_source_sequence":8},{"sequence":84,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"किसने लिंगायत सम्प्रदाय की स्थापना की ? — बासव ने","_source_file":"007.json","_source_sequence":9},{"sequence":85,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"लिंगायतों की प्रमुख विशेषता क्या थी ? — जाति प्रथा का विरोध एवं शिवलिंग धारण करना","_source_file":"007.json","_source_sequence":10},{"sequence":86,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"अल्लम प्रभु एवं अक्कामहादेवी किस सम्प्रदाय के सन्त थे ? — लिंगायत सम्प्रदाय के","_source_file":"007.json","_source_sequence":11},{"sequence":87,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"महाराष्ट्र का भक्ति आन्दोलन केन्द्रित था ? — पंढरपुर के विठोबा पर","_source_file":"007.json","_source_sequence":12},{"sequence":88,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"पशुपत सम्प्रदाय के संस्थापक कौन थे ? — लकुलीश","_source_file":"007.json","_source_sequence":13},{"sequence":89,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"वैष्णव मत का प्रमुख ग्रंथ था ? — भागवत पुराण","_source_file":"007.json","_source_sequence":14},{"sequence":90,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'भावार्थ दीपिका' एवं 'ज्ञानेश्वरी' की रचना किसने की ? — संत ज्ञानेश्वर ने","_source_file":"007.json","_source_sequence":15},{"sequence":91,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"ज्ञानेश्वर आरम्भ में नामपंथी थे परन्तु बाद में किस सम्प्रदाय में शामिल हो गये ? — वरकारी सम्प्रदाय में","_source_file":"007.json","_source_sequence":16},{"sequence":92,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"संत नामदेव किस जाति के थे ? — रंगसाज़ और दर्जी जाति के","_source_file":"007.json","_source_sequence":17},{"sequence":93,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"कौन प्रारम्भ में एक दस्यु और हत्यारा था ? — नामदेव","_source_file":"007.json","_source_sequence":18},{"sequence":94,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"नामदेव के गुरू कौन थे ? — विशोबा खेचर","_source_file":"007.json","_source_sequence":19},{"sequence":95,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"मराठी गीता किसे कहा जाता है ? — ज्ञानेश्वरी को","_source_file":"007.json","_source_sequence":20},{"sequence":96,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"ज्ञानेश्वरी का पहला विश्वस्त संस्करण किसने प्रकाशित किया ? — एक नाथ ने","_source_file":"007.json","_source_sequence":21},{"sequence":97,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'यदि संस्कृत देवभाषा है तो क्या मेरी मातृभाषा (मराठी) दस्युभाषा है' — यह उक्ति किसकी है — एक नाथ की","_source_file":"007.json","_source_sequence":22},{"sequence":98,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"तुकाराम कौन थे ? — मराठी सन्त एवं महानतम कवि","_source_file":"007.json","_source_sequence":23},{"sequence":99,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"भक्त तुकाराम किस मुगल सम्राट के समकालीन थे ? — जहाँगीर","_source_file":"007.json","_source_sequence":24},{"sequence":100,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"रामदास किस सम्प्रदाय के सन्त थे ? — धरकारी सम्प्रदाय के","_source_file":"007.json","_source_sequence":25},{"sequence":101,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'दासबोध' की रचना किसने की थी ? — रामदास ने","_source_file":"007.json","_source_sequence":26},{"sequence":102,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"शिवाजी के आध्यात्मिक गुरू कौन थे ? — समर्थ रामदास","_source_file":"007.json","_source_sequence":27},{"sequence":103,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"बंगाल का भक्ति आन्दोलन किस परम्परा से प्रभावित था ? — वैष्णव परम्परा से","_source_file":"007.json","_source_sequence":28},{"sequence":104,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'गीतगोविन्द' की रचना किसने की थी ? — जयदेव ने","_source_file":"007.json","_source_sequence":29},{"sequence":105,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"जयदेव किसके दरबार में रहते थे ? — लक्ष्मण सेन के","_source_file":"007.json","_source_sequence":30},{"sequence":106,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"प्रथम बंगाली कवि किसे कहा जाता है ? — चण्डीदास को","_source_file":"007.json","_source_sequence":31},{"sequence":107,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"बांग्ला व्याकरण तथा वर्णमाला की रचना किसने की ? — विद्यापति ने","_source_file":"007.json","_source_sequence":32},{"sequence":108,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"चैतन्य का वास्तविक नाम क्या था ? — विश्वम्भर मिश्रा","_source_file":"007.json","_source_sequence":33},{"sequence":109,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"चैतन्य महाप्रभु का जन्म स्थल है — नदिया/नवद्वीप (बंगाल)","_source_file":"007.json","_source_sequence":34},{"sequence":110,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"अचिन्त्य भेदाभेदवाद की स्थापना किसने की ? — चैतन्य ने","_source_file":"007.json","_source_sequence":35},{"sequence":111,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"चैतन्य ने अपने मत को किस माध्यम से व्यक्त किया ? — भजन एवं कीर्तन","_source_file":"007.json","_source_sequence":36},{"sequence":112,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"चैतन्य महाप्रभु किस संप्रदाय से जुड़े थे — गौड़ीय संप्रदाय","_source_file":"007.json","_source_sequence":37},{"sequence":113,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"चैतन्य किस विचारधारा के संत थे ? — सगुण","_source_file":"007.json","_source_sequence":38},{"sequence":114,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"किसे 'गौरांग प्रभु कहा जाता है ? — चैतन्य","_source_file":"007.json","_source_sequence":39},{"sequence":115,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"उत्तरभारत में भक्ति आन्दोलन के प्रारम्भकर्त्ता कौन थे ? — रामानन्द","_source_file":"007.json","_source_sequence":40},{"sequence":116,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"रामानन्द किस सम्प्रदाय से संबंधित थे ? — वैष्णव","_source_file":"007.json","_source_sequence":41},{"sequence":117,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"रामानन्द के आराध्य देव कौन थे ? — राम और सीता","_source_file":"007.json","_source_sequence":42},{"sequence":118,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"रामानन्द ने अपने संदेश के प्रचार के लिए सबसे पहले किस भाषा का प्रयोग किया ? — हिन्दी","_source_file":"007.json","_source_sequence":43},{"sequence":119,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'जाति-पाँति पूछे नहीं कोई, हरि का भजै सो हरि का होयी' ये पंक्ति किसकी है ? — रामानन्द की","_source_file":"007.json","_source_sequence":44},{"sequence":120,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"रामानन्द के प्रमुख शिष्य कौन-कौन थे ? — रैदास (मोची), कबीर (जुलाहा), धन्ना (जाट), सेना (नाई) और पीपा (राजपूत)","_source_file":"007.json","_source_sequence":45},{"sequence":121,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"कबीर का जन्म कहाँ हुआ था ? — वाराणसी (मगहर) में","_source_file":"007.json","_source_sequence":46},{"sequence":122,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"कबीर किस विचारधारा से सम्बन्धित थे ? — निर्गुण","_source_file":"007.json","_source_sequence":47},{"sequence":123,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"सिखों ने कबीर के गीतों को किसमें स्थान दिया ? — आदिग्रन्थ में","_source_file":"007.json","_source_sequence":48},{"sequence":124,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"कबीर के गुरु कौन थे ? — रामानन्द","_source_file":"007.json","_source_sequence":49},{"sequence":125,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"कबीर के शिष्य धरमदास ने छत्तीसगढ़ में कौन-सी सम्प्रदाय की स्थापना की ? — धरमदासी सम्प्रदाय की","_source_file":"007.json","_source_sequence":50},{"sequence":126,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"रैदास किस विचारधारा के कवि थे ? — निर्गुण","_source_file":"007.json","_source_sequence":51},{"sequence":127,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"चित्तौड़ की रानी झाली किसकी शिष्या थी ? — रैदास की","_source_file":"007.json","_source_sequence":52},{"sequence":128,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"रैदास के गीतों को किसमें शामिल किया गया है ? — गुरू ग्रंथ साहिब में","_source_file":"007.json","_source_sequence":53},{"sequence":129,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"दादू दयाल किस विचारधारा से सम्बन्धित थे ? — निर्गुण","_source_file":"007.json","_source_sequence":54},{"sequence":130,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"ब्रह्म सम्प्रदाय की स्थापना किसने की ? — दादू दयाल ने","_source_file":"007.json","_source_sequence":55},{"sequence":131,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"निपख आन्दोलन किसने चलाया ? — दादू दयाल ने","_source_file":"007.json","_source_sequence":56},{"sequence":132,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"सतनामी सम्प्रदाय के संस्थापक कौन थे ? — जगजीवन दास","_source_file":"007.json","_source_sequence":57},{"sequence":133,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'सत्यप्रकाश' एवं 'प्रेम प्रकाश' की रचना किसने की ? — धवनीदास ने","_source_file":"007.json","_source_sequence":58},{"sequence":134,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"बिहार में सतनामी सम्प्रदाय के प्रवर्तक कौन थे ? — दरिया साहिब","_source_file":"007.json","_source_sequence":59},{"sequence":135,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'अजगर करे न चाकरी, पंछी करे न काम' का रचयिता है ? — मलूकदास","_source_file":"007.json","_source_sequence":60},{"sequence":136,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"'असम का चैतन्य' किसे कहा जाता है ? — शंकरदेव को","_source_file":"007.json","_source_sequence":61},{"sequence":137,"subject":"इतिहास","chapter":"मध्यकालीन भारत","section":"","page":"34","type":"one_liner","content":"पंजाब में सतनामी सम्प्रदाय के प्रवर्तक कौन थे ? — गरीबदास","_source_file":"007.json","_source_sequence":62}]};
+function nText(v){ if(v==null)return ""; if(typeof v==="string"||typeof v==="number")return String(v); return ""; }
+function nEl(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined&&txt!==null)e.textContent=nText(txt);return e;}
+function nPairs(item){
+ const c=item&&item.content!==undefined?item.content:item;
+ if(typeof c==="string"){
+  const s=c.trim();
+  const m=s.match(/^(.*?)\s+[—–]\s+(.*)$/s);
+  return m?[{question:nText(m[1]),answer:nText(m[2])}]:[{question:nText(s),answer:""}];
+ }
+ if(Array.isArray(c))return c.flatMap(nPairs);
+ if(c&&Array.isArray(c.questions))return c.questions.flatMap(nPairs);
+ if(c&&typeof c==="object"){
+  const q=c.question??c.q??c.question_text;
+  const a=c.answer??c.a??c.answer_text??c.explanation;
+  return q!==undefined||a!==undefined?[{question:nText(q),answer:nText(a)}]:[];
+ }
+ return [];
+}
+function nOneLiner(item){
+ const sec=nEl("section","qa-section"), head=nEl("div","qa-header");
+ if(item.chapter){const ch=nEl("div","qa-chapter-label",item.chapter);head.appendChild(ch);}
+ head.appendChild(nEl("h2","",item.section||item.title||"One-Liner Questions"));sec.appendChild(head);
+ const list=nEl("div","qa-list");
+ nPairs(item).forEach(p=>{
+  const row=nEl("div","qa-row"),q=nEl("div","qa-q");q.appendChild(nEl("span","",p.question));
+  const star=nEl("button","star-btn","☆");star.type="button";star.setAttribute("aria-label","Star");star.setAttribute("aria-pressed","false");q.appendChild(star);
+  const a=nEl("div","qa-a");a.appendChild(nEl("div","answer-text",p.answer));
+  const cover=nEl("div","cover","उत्तर देखने के लिए टैप करें");cover.tabIndex=0;a.appendChild(cover);
+  row.append(q,a);list.appendChild(row);
+ });sec.appendChild(list);return sec;
+}
+function nTable(item,data){
+ const c=item.content&&typeof item.content==="object"?item.content:{},sec=nEl("section","table-section"),title=nEl("div","table-title");
+ title.appendChild(nEl("div","table-title-kicker",c.kicker||"Quick Reference"));
+ title.appendChild(nEl("div","table-title-main",c.title||item.section||item.title||"महत्वपूर्ण तथ्य"));
+ title.appendChild(nEl("div","table-title-sub",item.chapter||data.chapter||""));sec.appendChild(title);
+ const wrap=nEl("div","table-wrap"),container=nEl("div","table-container"),table=nEl("table","notes-table");
+ const cols=Array.isArray(c.columns)?c.columns:[];
+ if(cols.length){const th=document.createElement("thead"),tr=document.createElement("tr");
+ cols.forEach(col=>tr.appendChild(nEl("th","",typeof col==="object"?(col.label??col.title??col.name??""):col)));
+ th.appendChild(tr);table.appendChild(th);}
+ const body=document.createElement("tbody");
+ (Array.isArray(c.rows)?c.rows:[]).forEach(rd=>{
+  const tr=document.createElement("tr");
+  const cells=Array.isArray(rd)?rd:(rd&&typeof rd==="object"?cols.map((col,i)=>{const k=typeof col==="object"?(col.key??col.name??col.label):col;return rd[k]??rd[String(k)]??rd["cell"+i]??"";}):[rd]);
+  cells.forEach((cell,i)=>{const td=document.createElement("td"),val=typeof cell==="object"?(cell.text??cell.value??""):cell;
+   if(i===0)td.appendChild(nEl("div","primary-cell",val));
+   else{const ans=nEl("div","table-answer"),cover=nEl("div","table-cover","उत्तर देखें"),text=nEl("div","table-answer-text",val);ans.append(cover,text);td.appendChild(ans);}
+   tr.appendChild(td);
+  });body.appendChild(tr);
+ });table.appendChild(body);container.appendChild(table);wrap.appendChild(container);sec.appendChild(wrap);return sec;
+}
+function renderNotesData(data){
+ if(!data||typeof data!=="object")throw Error("Chapter JSON object missing");
+ const subject=data.subject||data.content?.[0]?.subject||"",chapter=data.chapter||data.title||data.slug||"";
+ const subjectLabel=data.subject_label||subject||"Study Notes";
+ document.title=data.page_title||[subjectLabel,chapter].filter(Boolean).join(" — ");
+ document.getElementById("chapterTitle").textContent=data.chapter_title||chapter||"अध्याय";
+ document.getElementById("chapterSubtitle").textContent=data.subtitle||data.description||"";
+ document.getElementById("subjectKicker").textContent=(data.subject_emoji?data.subject_emoji+" ":"")+subjectLabel;
+ document.getElementById("notesBreadcrumb").textContent=[subjectLabel,data.section,data.chapter_title||chapter].filter(Boolean).join(" / ");
+ const host=document.getElementById("dynamic-content-area");host.replaceChildren();
+ const items=Array.isArray(data.content)?data.content.slice():[];
+ items.sort((x,y)=>Number(x.sequence??0)-Number(y.sequence??0));
+ items.forEach(item=>{
+  const type=String(item.type||"").toLowerCase().replace(/[- ]/g,"_");
+  if(["one_liner","oneliner","qa"].includes(type))host.appendChild(nOneLiner(item));
+  else if(type==="table")host.appendChild(nTable(item,data));
+  else console.warn("Skipped unsupported content type:",item.type);
+ });
+ if(!items.length)host.textContent="इस JSON में ordered content[] नहीं मिला।";
+}
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAllQaRows(){
+  const sections = Array.from(content.querySelectorAll(".qa-section"));
+  const lists = sections.map(section => section.querySelector(".qa-list")).filter(Boolean);
+  if(!lists.length) return;
+  const capacities = lists.map(list => list.querySelectorAll(":scope > .qa-row").length);
+  const rows = lists.flatMap(list => Array.from(list.querySelectorAll(":scope > .qa-row")));
+  shuffleArray(rows);
+  let offset = 0;
+  lists.forEach((list, i) => {
+    list.replaceChildren(...rows.slice(offset, offset + capacities[i]));
+    offset += capacities[i];
+  });
+}
+function shuffleAll(){
+  shuffleAllQaRows();
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Exactly one shuffle control for all Q&A sections on this page.
+  const qaSections = content.querySelectorAll(".qa-section");
+  if(qaSections.length && !content.querySelector(":scope > .page-qa-shuffle")){
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control page-qa-shuffle";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="इस पेज के सभी प्रश्नों का क्रम बदलें" title="इस पेज के प्रश्न Shuffle">🔀</button>';
+    content.insertBefore(ctrl, qaSections[0]);
+  }
+  // Keep a separate shuffle control for each table.
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const tb = shuffle.closest(".table-section");
+    if(tb){
+      shuffleTableSection(tb);
+    } else if(shuffle.closest(".page-qa-shuffle")){
+      shuffleAllQaRows();
+      applyCombinedFilters();
+    } else {
+      const qa = shuffle.closest(".qa-section");
+      if(qa) shuffleQaSection(qa);
+    }
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+try { renderNotesData(NOTES_DATA); } catch(err) { console.error("Notes JSON render failed:",err); document.getElementById("dynamic-content-area").textContent="अध्याय सामग्री लोड नहीं हो सकी। JSON schema जाँचें।"; }
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+<script id="header-font-controls-script">
+(function(){
+  function initFontControls(){
+    const header=document.querySelector('.header-inner');
+    const content=document.querySelector('#dynamic-content-area');
+    if(!header||!content||document.querySelector('.header-font-controls')) return;
+    let scale=1;
+    const controls=document.createElement('div');
+    controls.className='header-font-controls';
+    controls.setAttribute('role','group');
+    controls.setAttribute('aria-label','पेज के अक्षरों का आकार');
+    controls.innerHTML='<button type="button" class="font-smaller" aria-label="फ़ॉन्ट छोटा करें" title="फ़ॉन्ट छोटा करें">A−</button><span class="font-size-label" aria-live="polite">100%</span><button type="button" class="font-larger" aria-label="फ़ॉन्ट बड़ा करें" title="फ़ॉन्ट बड़ा करें">A+</button>';
+    header.appendChild(controls);
+    const label=controls.querySelector('.font-size-label');
+    function apply(next){
+      scale=Math.max(0.5,Math.min(1.5,Math.round(next*10)/10));
+      content.querySelectorAll('*').forEach(function(el){
+        if(!el.dataset.fontBaseSize){
+          const size=parseFloat(getComputedStyle(el).fontSize);
+          if(Number.isFinite(size)) el.dataset.fontBaseSize=String(size);
+        }
+        const base=parseFloat(el.dataset.fontBaseSize);
+        if(Number.isFinite(base)) el.style.setProperty('font-size',(base*scale)+'px','important');
+      });
+      label.textContent=Math.round(scale*100)+'%';
+      controls.querySelector('.font-smaller').disabled=scale<=0.5;
+      controls.querySelector('.font-larger').disabled=scale>=1.5;
+      controls.querySelectorAll('button').forEach(function(btn){btn.style.opacity=btn.disabled?'.45':'1';});
+    }
+    controls.querySelector('.font-smaller').addEventListener('click',function(){apply(scale-0.1);});
+    controls.querySelector('.font-larger').addEventListener('click',function(){apply(scale+0.1);});
+    apply(1);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initFontControls); else initFontControls();
+})();
+</script>
+</body>
+</html>

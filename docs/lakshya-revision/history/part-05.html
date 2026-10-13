@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="इतिहास के क्रमवार अध्ययन नोट्स, Part 5.">
+<title>इतिहास — Part 5</title>
+
+<style>
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-body:#e8eef5;
+  --bg-gradient: radial-gradient(circle at 8% 0%, rgba(62,126,190,.08), transparent 30%), linear-gradient(180deg, #edf3f8 0%, #f3f6fa 48%, #e9eff5 100%);
+  --text-main:#172033; --text-muted:#64748b; --bg-card:#ffffff; --border-color:#cbd5e1;
+  --brand-primary:#124b87; --brand-secondary:#eef6ff; --accent:#2d73b9;
+  --highlight-bg:#fff7ed; --highlight-text:#c2410c; --row-odd:#fffdf8; --row-even:#e8f3fc;
+  --search-hit-bg:#fde68a;
+  --qa-question-bg:#cfe3f5; --qa-question-text:#123b63;
+  --qa-answer-bg:#e8f5e9; --qa-answer-text:#166534; --qa-border:#86b89a;
+  --table-title-1:#123b68; --table-title-2:#1b628f; --table-head-bg:#edf5fb; --table-head-text:#164e73;
+  --table-head-border:#a9c9df; --table-row-border:#dbe5ec; --table-hover:#eef7fc; --table-accent:#2d73b9;
+}
+body.dark-mode {
+  --bg-body:#0f172a; --bg-gradient:none; --text-main:#f1f5f9; --text-muted:#94a3b8; --bg-card:#1e293b;
+  --border-color:#334155; --brand-primary:#38bdf8; --brand-secondary:#1e293b; --row-odd:#1e293b; --row-even:#0f172a;
+  --search-hit-bg:#78350f;
+  --qa-question-bg:#214b6d; --qa-question-text:#ffffff; --qa-answer-bg:#123524; --qa-answer-text:#86efac; --qa-border:#3f7655;
+  --table-title-1:#082f49; --table-title-2:#0b4568; --table-head-bg:#172f40; --table-head-text:#9edcff;
+  --table-head-border:#31566d; --table-row-border:#334454; --table-hover:#172f55; --table-accent:#38a5d8;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg-body); background-image:var(--bg-gradient); color:var(--text-main); font-family:Arial,sans-serif; line-height:1.55; transition:.3s;}
+a{text-decoration:none;color:inherit;} button{font-family:inherit;} .container{width:min(1080px,92%);margin:auto;}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header{background:linear-gradient(135deg, #0b4f86, #1769a5); color:#fff; position:sticky; top:0; z-index:20; box-shadow:0 4px 18px rgba(8,48,82,.18);}
+.header-inner{min-height:68px;display:flex;align-items:center;justify-content:space-between;position:relative}
+.brand{font-size:20px; font-weight:800; white-space:nowrap;} .top-nav{display:flex; gap:6px;}
+.top-nav a{padding:9px 12px; border-radius:8px; font-size:14px; font-weight:700;} .top-nav a:hover, .top-nav .active{background:rgba(255,255,255,.12);}
+.theme-toggle{background:transparent; border:0; color:#fff; cursor:pointer;} .theme-toggle svg{width:24px; height:24px; fill:currentColor;}
+
+/* =========================================================
+   BREADCRUMB / QUICK JUMP
+   ========================================================= */
+.breadcrumb{display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:18px 0 0; color:var(--text-muted); font-size:13px;}
+.breadcrumb a{color:var(--accent); font-weight:600;}
+.quick-jump{display:flex; gap:10px; overflow-x:auto; padding:14px 0 6px; scrollbar-width:none;}
+.quick-jump::-webkit-scrollbar{display:none;}
+.quick-jump a{white-space:nowrap; background:var(--bg-card); border:1px solid var(--border-color); padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 2px 5px rgba(0,0,0,.05);}
+
+/* =========================================================
+   HERO & CONTROLS
+   ========================================================= */
+.hero{margin-top:10px; padding:24px 22px; border:1px solid var(--border-color); border-radius:18px; background:var(--bg-card); box-shadow:0 7px 24px rgba(0,0,0,.04);}
+.hero h1{margin:0 0 7px; font-size:clamp(27px,5vw,39px); line-height:1.25;}
+.topic-kicker{display:inline-flex; align-items:center; gap:7px; color:#164f80; font-size:13px; font-weight:800; background:#e4f1fc; border:1px solid #c8dff1; padding:6px 10px; border-radius:999px; margin-bottom:10px;}
+.topic-subtitle{margin:0; color:var(--text-muted); font-size:15px;}
+.controls-wrap{display:flex; flex-wrap:wrap; gap:15px; align-items:center; margin:17px 0 11px;}
+.mode-switch{display:grid; grid-template-columns:1fr 1fr; background:var(--border-color); padding:4px; border-radius:12px; width:100%; max-width:300px;}
+.mode-switch button{border:0; background:transparent; color:var(--text-main); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;}
+.mode-switch button.active{background:var(--brand-primary); color:#fff;}
+.filter-btn{display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); padding:9px 15px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;}
+.filter-btn.active{background:#fef08a; color:#854d0e; border-color:#fde047;}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+.notes-search-wrap{width:100%; max-width:1100px; margin:18px auto 22px;}
+.notes-search-box{display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1.5px solid var(--border-color); border-radius:14px; padding:10px 12px; box-shadow:0 3px 12px rgba(15,23,42,.06);}
+.notes-search-icon{flex:0 0 auto; font-size:20px;}
+#notesSearchInput{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-main); font-size:16px; font-weight:600; padding:7px 2px;}
+#notesSearchInput::placeholder{color:#7b8794; font-weight:500;}
+#notesSearchClear{display:none; flex:0 0 auto; border:0; background:#eef2f7; color:#475569; width:32px; height:32px; border-radius:9px; cursor:pointer; font-size:15px; font-weight:800;}
+.notes-search-status{min-height:20px; margin:7px 4px 0; font-size:13px; font-weight:700; color:var(--text-muted);}
+.notes-search-wrap.search-active .notes-search-box{border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+
+/* =========================================================
+   SECTION HEADERS (Q&A + Table)
+   ========================================================= */
+#dynamic-content-area { counter-reset: study-section; }
+
+.qa-header,
+.table-section > .table-title {
+  counter-increment: study-section;
+  position: relative;
+  margin: 48px 0 18px;
+  padding: 54px 24px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #063b66 0%, #075985 55%, #0877a8 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(3,55,90,.18);
+  border-top: 4px solid #62c8ed;
+}
+.qa-header h2,
+.table-section > .table-title .table-title-main {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+  font-weight: 800;
+  color: #fff;
+}
+.qa-header::before,
+.table-section > .table-title::before {
+  content: counter(study-section, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.qa-header::after,
+.table-section > .table-title::after {
+  content: "अध्ययन खंड";
+  position: absolute;
+  left: 70px;
+  top: 19px;
+  color: rgba(255,255,255,.82);
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.table-section > .table-title .table-title-kicker {
+  color: #9fd8f5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.table-section > .table-title .table-title-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+.table-section > .table-title .table-shuffle-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* =========================================================
+   Q&A STRUCTURE (builder DOM)
+   ========================================================= */
+.qa-section { margin: 0 0 18px; }
+
+/* Compact study heading: show one Q&A section heading per page */
+#dynamic-content-area > .qa-section ~ .qa-section > .qa-header {
+  display: none !important;
+}
+
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qa-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,32%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  background: var(--bg-card);
+}
+.qa-row:nth-child(odd) { background: var(--row-odd); }
+.qa-row:nth-child(even){ background: var(--row-even); }
+
+.qa-q {
+  position: relative;
+  padding: 16px 48px 16px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--qa-question-bg);
+  color: var(--qa-question-text);
+  border-right: 1px solid var(--qa-border);
+}
+.qa-q > span { display: inline; }
+
+.star-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.star-btn:hover { background: rgba(234,179,8,.12); }
+.star-btn.starred, .qa-row.starred .star-btn { color: #eab308; }
+
+.qa-a {
+  padding: 16px 18px;
+  background: var(--qa-answer-bg);
+  color: var(--qa-answer-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--qa-border);
+}
+.qa-a .answer-text {
+  width: 100%;
+  color: var(--qa-answer-text);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+.qa-a .cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Practice mode visibility for Q&A */
+body.practice .qa-a .answer-text { display: none; }
+body.practice .qa-a .cover { display: flex; }
+body.practice .qa-a.revealed .answer-text { display: block; }
+body.practice .qa-a.revealed .cover { display: none; }
+
+/* Search hit + author highlight */
+strong.highlight {
+  background: var(--highlight-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+mark.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--qa-answer-text) !important;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABLE STRUCTURE (builder DOM)
+   ========================================================= */
+.table-section { margin: 0 0 24px; }
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15,45,75,.08);
+  position: relative;
+}
+.table-container { overflow-x: auto; }
+.notes-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.notes-table thead th {
+  padding: 14px 20px;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--table-head-border);
+  border-right: 1px solid var(--table-head-border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.notes-table tbody tr { background: var(--bg-card); transition: .18s; }
+.notes-table tbody tr:nth-child(even){ background: linear-gradient(90deg, var(--row-even), var(--bg-card)); }
+.notes-table tbody tr:nth-child(odd) { background: linear-gradient(90deg, var(--bg-card), var(--row-odd)); }
+.notes-table tbody tr:hover { background: var(--table-hover); }
+.notes-table td {
+  padding: 19px 20px;
+  border-bottom: 1px solid var(--table-row-border);
+  border-right: 1px solid var(--table-row-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.primary-cell {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-left: 4px solid var(--table-accent);
+  padding-left: 15px;
+}
+.table-answer { position: relative; min-height: 28px; }
+.table-answer .table-answer-text {
+  color: var(--qa-answer-text) !important;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table-answer .table-cover {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--brand-secondary);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.practice .table-answer .table-answer-text { visibility: hidden; }
+body.practice .table-answer .table-cover { display: flex; }
+body.practice .table-answer.revealed .table-answer-text { visibility: visible; }
+body.practice .table-answer.revealed .table-cover { display: none; }
+
+/* =========================================================
+   SHUFFLE BUTTON
+   ========================================================= */
+.shuffle-control {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin: 0 0 8px;
+}
+.shuffle-btn {
+  background: var(--bg-card); color: var(--text-muted);
+  border: 1px solid var(--border-color); border-radius: 9px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; font-size: 16px; flex-shrink: 0;
+}
+.shuffle-btn:hover { color: var(--brand-primary); border-color: var(--brand-primary); background: var(--brand-secondary); }
+.shuffle-btn:active { transform: scale(.92); }
+
+/* =========================================================
+   NO RESULTS / FOOTER
+   ========================================================= */
+.no-results { display: none; padding: 30px; text-align: center; color: var(--text-muted); font-weight: 700; }
+
+.site-footer { margin-top: 40px; background: linear-gradient(145deg, #102f4d, #16486d); color: #dbeafe; padding: 28px 0; }
+.footer-inner { width: min(1080px, 92%); margin: auto; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 15px; }
+.footer-links a { color: #e2edf7; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:700px){
+  .header-inner{flex-direction:column; align-items:flex-start; padding:12px 0;}
+  .top-nav{overflow-x:auto;}
+  .qa-row{display:block;}
+  .qa-a{min-height:45px; border-left:0; border-top:1px solid var(--border-color); padding:12px;}
+  .notes-table{min-width:0; width:100%; table-layout:fixed;}
+  .notes-table th, .notes-table td{padding:10px 8px; font-size:13px; overflow-wrap:anywhere; word-break:break-word;}
+  .qa-header, .table-section > .table-title { margin: 40px 0 16px; padding: 50px 16px 18px; border-radius: 14px; }
+  .qa-header h2, .table-section > .table-title .table-title-main { font-size: 1.05rem; }
+  .qa-header::before, .table-section > .table-title::before { left: 16px; top: 12px; }
+  .qa-header::after, .table-section > .table-title::after { left: 65px; top: 19px; }
+}
+
+.qa-chapter-label{font-size:12px;font-weight:800;letter-spacing:.3px;color:#bfe8ff;margin-bottom:4px;}
+</style>
+
+    <link rel="canonical" href="https://dolatrammpi-coder.github.io/Quiz/lakshya-revision/history/part-05.html">
+
+<style id="header-font-controls-style">
+.header-font-controls{position:absolute;right:12px;top:8px;display:flex;align-items:center;gap:3px;margin:0;flex:0 0 auto;min-width:0;z-index:3}.header-font-controls button{min-width:30px;height:30px;padding:0 5px;border:1px solid rgba(255,255,255,.55);border-radius:8px;background:rgba(255,255,255,.12);color:#fff;font-size:15px;font-weight:800;cursor:pointer}.header-font-controls button:focus-visible{outline:2px solid #fff;outline-offset:2px}.header-font-controls .font-size-label{font-size:12px;font-weight:700;color:#fff;min-width:30px;text-align:center}@media(max-width:560px){.header-inner{gap:6px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}.header-font-controls{top:6px;right:8px;gap:3px}.header-font-controls button{min-width:28px;height:28px;padding:0 4px}.header-font-controls .font-size-label{font-size:11px;min-width:24px}.brand{white-space:normal}}
+</style>
+
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/Quiz/index.html">📚 My Study Portal</a>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <nav class="top-nav"><a href="/Quiz/index.html">Home</a><a href="/Quiz/subject-wise-notes/index.html">Notes</a><a href="/Quiz/about/index.html">About</a><a href="/Quiz/contact/index.html">Contact</a></nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb" id="notesBreadcrumb">Home / Lakshya Revision / इतिहास / Part 5</nav>
+
+  <div class="quick-jump" id="quickJump" aria-label="Quick Jump"></div>
+
+  <section class="hero">
+    <div class="topic-kicker" id="subjectKicker">इतिहास</div>
+    <h1 id="chapterTitle">इतिहास — Part 5</h1>
+    <p class="topic-subtitle" id="chapterSubtitle">Part 5/34 · QA: 135 · Tables: 2</p>
+
+    <div class="controls-wrap">
+      <div class="mode-switch">
+        <button class="mode active" id="readingModeBtn" type="button">📖 Reading</button>
+        <button class="mode" id="practiceModeBtn" type="button">🧠 Practice</button>
+      </div>
+      <button class="filter-btn" id="starredOnlyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 17.27 L18.18 21 l-1.64-7.03 L22 9.24 l-7.19-.61 L12 2 9.19 8.63 2 9.24 l5.46 4.73 L5.82 21z"/>
+        </svg>
+        Starred Only
+      </button>
+      <button class="filter-btn" id="shuffleBtn" type="button">🔀 Shuffle All</button>
+    </div>
+  </section>
+
+  <div class="notes-search-wrap" id="notesSearchWrap">
+    <div class="notes-search-box">
+      <span class="notes-search-icon" aria-hidden="true">🔍</span>
+      <input type="search" id="notesSearchInput" placeholder="नोट्स में खोजें…" autocomplete="off" aria-label="नोट्स में खोजें">
+      <button type="button" id="notesSearchClear" aria-label="Search साफ करें">✕</button>
+    </div>
+    <div class="notes-search-status" id="notesSearchStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="dynamic-content-area" aria-live="polite"></div>
+
+  <div id="noResults" class="no-results" role="status" aria-live="polite">कोई matching content नहीं मिला।</div>
+</main>
+
+<footer class="site-footer" style="margin-top:42px;background:linear-gradient(145deg,#102f4d,#16486d 52%,#0e3a5d);color:#dbeafe;padding:28px 16px;text-align:center;">
+<div class="footer-links" style="display:flex;gap:17px;flex-wrap:wrap;justify-content:center;font-size:13px;">
+<a href="/Quiz/index.html" style="color:#e2edf7;">Home</a>
+<a href="/Quiz/subject-wise-notes/index.html" style="color:#e2edf7;">Notes</a>
+<a href="/Quiz/about/index.html" style="color:#e2edf7;">About</a>
+<a href="/Quiz/privacy-policy/index.html" style="color:#e2edf7;">Privacy Policy</a>
+<a href="/Quiz/disclaimer/index.html" style="color:#e2edf7;">Disclaimer</a>
+<a href="/Quiz/contact/index.html" style="color:#e2edf7;">Contact</a>
+<a href="/Quiz/terms-and-conditions/index.html" style="color:#e2edf7;">Terms &amp; Conditions</a>
+</div>
+<p class="footer-copy" style="color:#c3d4e5;font-size:12px;margin-top:17px;">© 2026 My Study Portal. All rights reserved.</p>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* GENERIC JSON RENDERER: ordered content[] keeps one_liner/table interleaved.
+   Expected item: {sequence, subject, chapter, section, page, type, content}.
+   One-liner content: {question,answer}, {q,a}, or array/questions[] of those.
+   Table content: {title, columns:[...], rows:[[...], ...]}. */
+const NOTES_DATA = {"subject":"इतिहास","subject_label":"इतिहास","subject_emoji":"📜","chapter_title":"इतिहास — Part 5","subtitle":"Part 5/34 · QA: 135 · Tables: 2","page_title":"इतिहास — Part 5","description":"इतिहास के क्रमवार अध्ययन नोट्स, Part 5.","content":[{"sequence":1,"subject":"इतिहास","chapter":"दिल्ली सल्तनत","section":"सल्तनतकालीन निर्माण कार्य, निर्माणकर्ता एवं स्थान","page":"21","type":"table","content":{"title":"सल्तनतकालीन निर्माण कार्य, निर्माणकर्ता एवं स्थान","columns":["निर्माण कार्य","निर्माणकर्ता","स्थान"],"rows":[["कुब्बत-उल-इस्लाम मस्जिद","कुतुबुद्दीन ऐबक","दिल्ली"],["अढ़ाई दिन का झोपड़ा","कुतुबुद्दीन ऐबक एवं इल्तुतमिश","अजमेर"],["कुतुबमीनार","कुतुबुद्दीन ऐबक","दिल्ली"],["इल्तुतमिश का मकबरा","इल्तुतमिश","दिल्ली"],["सुल्तानगढ़ी का मकबरा","इल्तुतमिश","दिल्ली"],["लाल महल","ग्यासुद्दीन बलबन","दिल्ली"],["अलाई दरवाजा","अलाउद्दीन खिलजी","दिल्ली"],["अलाई ख़ान मस्जिद","अलाउद्दीन खिलजी","दिल्ली"],["जामा खस्म","अलाउद्दीन खिलजी","दिल्ली"],["ऊखा मस्जिद","मुबारक खिलजी","बयाना"],["ग्यासुद्दीन तुगलक का मकबरा","ग्यासुद्दीन तुगलक","दिल्ली"],["तुगलकाबाद","ग्यासुद्दीन तुगलक","दिल्ली"],["जहाँपनाह नगर","मुहम्मद तुगलक","दिल्ली"],["आदिलबाद का किला","मुहम्मद तुगलक","दिल्ली"],["बाढ़ खम्भा","मुहम्मद तुगलक","दिल्ली"],["कोटला फिरोजशाह","फ़िरोज़शाह तुगलक","दिल्ली"],["कुष्क-ए-शिकार","फ़िरोज़शाह तुगलक","दिल्ली"],["तेलगानी का मकबरा","जूनाशाह खानेजहाँ","दिल्ली"],["खिड़की मस्जिद","जूनाशाह खानेजहाँ","दिल्ली"],["कला मस्जिद","जूनाशाह खानेजहाँ","दिल्ली"],["मुबारक सैयद का मकबरा","मुबारक शाह","दिल्ली"],["बहलोल लोदी का मकबरा","सिकन्दर लोदी","दिल्ली"],["सिकन्दर लोदी का मकबरा","इब्राहिम लोदी","दिल्ली"],["मोठ मस्जिद","मियांबुवा","दिल्ली"]]},"_source_file":"062.json","_source_sequence":13},{"sequence":2,"subject":"इतिहास","chapter":"दिल्ली सल्तनत","section":"","page":"21","type":"one_liner","content":"तैमूर के आक्रमण के बाद भारत में किस वंश का शासन हुआ ? — सैय्यद वंश का[cite: 7]","_source_file":"062.json","_source_sequence":19},{"sequence":3,"subject":"इतिहास","chapter":"दिल्ली सल्तनत","section":"","page":"21","type":"one_liner","content":"अमीरों का महल् अपने चरणोंत्कर्ष पर किस वंश के शासन काल में था ? — लोदी वंश के[cite: 7]","_source_file":"062.json","_source_sequence":20},{"sequence":4,"subject":"इतिहास","chapter":"दिल्ली सल्तनत","section":"","page":"21","type":"one_liner","content":"11वीं सदी के भारत का दर्पण किसे कहा जाता है ? — किताब-उल-हिन्द[cite: 7]","_source_file":"062.json","_source_sequence":21},{"sequence":5,"subject":"इतिहास","chapter":"दिल्ली सल्तनत","section":"","page":"21","type":"one_liner","content":"13वीं सदी में सेना का सर्वोच्च अधिकारी होता था — खान[cite: 7]","_source_file":"062.json","_source_sequence":22},{"sequence":6,"subject":"इतिहास","chapter":"दिल्ली सल्तनत","section":"","page":"21","type":"one_liner","content":"सल्तनतकाल में तौल की सबसे छोटी इकाई थी — रत्ती[cite: 7]","_source_file":"062.json","_source_sequence":23},{"sequence":7,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"सैंधव सभ्यता की कहाँ के लोगों को लोग बसाया था ? — भूमध्यसागरीय लोग","_source_file":"005.json","_source_sequence":1},{"sequence":8,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"सैंधव सभ्यता के लोग कौन-कौन-सी समान का उपयोग आभूषण के निर्माण में करते थे ? — सोना, चाँदी, ताँबा, हाथी दाँत एवं हड्डियाँ","_source_file":"005.json","_source_sequence":2},{"sequence":9,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"सैंधव सभ्यता से सम्बद्ध किन स्थलों से चावलों की खेती के प्रमाण मिले हैं ? — लोथल और रंगपुर से","_source_file":"005.json","_source_sequence":3},{"sequence":10,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"किस फसल के उत्पादन के सम्बन्ध में सैंधव स्थलों से कोई प्रमाण नहीं मिला है ? — दाल","_source_file":"005.json","_source_sequence":4},{"sequence":11,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"सैंधवकालीन नगरों में किन दो नगरों का प्रयोग सम्भवतः राजधानी के रूप में किया गया ? — हड़प्पा और मोहनजोदड़ो","_source_file":"005.json","_source_sequence":5},{"sequence":12,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"सैंधवकालीन मुहरों से जानकारी मिलती है ? — लिपि तथा धर्म की","_source_file":"005.json","_source_sequence":6},{"sequence":13,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"किस सैंधवकालीन पुरातस्थल से हाथी दाँत की बनी वस्तुएँ मिली हैं ? — लोथल से","_source_file":"005.json","_source_sequence":7},{"sequence":14,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"अब तक सैंधव संस्कृति के कितने पुरातस्थलों का उत्खनन हो चुका है ? — 2501","_source_file":"005.json","_source_sequence":8},{"sequence":15,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सैंधव सभ्यता","page":"6","type":"one_liner","content":"सैंधव सभ्यता की ईंटों का अलंकरण किस स्थान से मिला है ? — कालीबंगा","_source_file":"005.json","_source_sequence":9},{"sequence":16,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"प्राक-सैंधव संस्कृति","page":"6","type":"one_liner","content":"प्राक-सैंधव संस्कृति थी — ग्रामीण","_source_file":"005.json","_source_sequence":10},{"sequence":17,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"हड़प्पा","page":"6","type":"one_liner","content":"भारत में खोजा गया सबसे पहला पुराना शहर कौन-सा था ? — हड़प्पा","_source_file":"005.json","_source_sequence":12},{"sequence":18,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"हड़प्पा","page":"6","type":"one_liner","content":"भारत में ईंटों की उपलब्धता के प्राचीनतम साक्ष्य मिलते हैं ? — हड़प्पा","_source_file":"005.json","_source_sequence":13},{"sequence":19,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"कालीबंगा","page":"6","type":"one_liner","content":"कालीबंगा कहाँ स्थित है ? — राजस्थान में","_source_file":"005.json","_source_sequence":14},{"sequence":20,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"शवसावधान","page":"6","type":"one_liner","content":"पुरापाषाण काल में शवसावधान की कौन-सी प्रवृत्तियाँ प्रचलित थीं ? — हड़प्पा संस्कृति में","_source_file":"005.json","_source_sequence":15},{"sequence":21,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"शवसावधान","page":"6","type":"one_liner","content":"मानव के साथ कुत्तों को गाड़ना स्पष्ट रूप से परिलक्षित होते हैं ? — मातुदेवी की पूजा","_source_file":"005.json","_source_sequence":16},{"sequence":22,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"मोहनजोदड़ो","page":"6","type":"one_liner","content":"मोहनजोदड़ो की सर्वाधिक चौड़ी सड़क जिसे 'राजपथ' कहा जाता था, उसकी चौड़ाई कितनी थी ? — 10 मीटर","_source_file":"005.json","_source_sequence":17},{"sequence":23,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"चन्हुदड़ो","page":"6","type":"one_liner","content":"किस हड़प्पाकालीन स्थल से एक ईंट पर बिल्ली का पीछा करते हुए कुत्ते के पंजों के निशान मिले हैं ? — चन्हुदड़ो","_source_file":"005.json","_source_sequence":24},{"sequence":24,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"चन्हुदड़ो","page":"6","type":"one_liner","content":"चन्हुदड़ो की उत्खनन का निर्देशन किया था — जे. एच. मैके","_source_file":"005.json","_source_sequence":25},{"sequence":25,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"बनावली","page":"6","type":"one_liner","content":"पक्की मिट्टी के बने हल का एक प्रतिरूप कहाँ से प्राप्त हुआ है ? — बनावली","_source_file":"005.json","_source_sequence":27},{"sequence":26,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"हड़प्पा","page":"6","type":"one_liner","content":"वैसे स्थान जहाँ से उत्खनन में ताँबे की मुहरें प्राप्त हुई हैं? — हड़प्पा से","_source_file":"005.json","_source_sequence":28},{"sequence":27,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"हड़प्पा","page":"6","type":"one_liner","content":"किस हड़प्पाकालीन स्थल से 'पुजारी का प्रस्तर मूर्ति' प्राप्त हुई है ? — हड़प्पा","_source_file":"005.json","_source_sequence":29},{"sequence":28,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"हड़प्पा","page":"6","type":"one_liner","content":"हड़प्पा के काल का ताँबे का रथ किस स्थान से प्राप्त हुआ है ? — दैमाबाद","_source_file":"005.json","_source_sequence":30},{"sequence":29,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"बनावली","page":"6","type":"one_liner","content":"जौ, तिल व सरसों के सर्वाधिक साक्ष्य प्राप्त हुए हैं ? — बनावली से","_source_file":"005.json","_source_sequence":31},{"sequence":30,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"कालीबंगा","page":"6","type":"one_liner","content":"वैसा स्थान जहाँ 'वृष स्थल' प्राप्त हुआ है — कालीबंगा","_source_file":"005.json","_source_sequence":32},{"sequence":31,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"मोहनजोदड़ो","page":"6","type":"one_liner","content":"नृत्य करती हुई नारी की काँस्य मूर्ति सभ्यता के किस स्थान से प्राप्त हुई है ? — मोहनजोदड़ों से","_source_file":"005.json","_source_sequence":33},{"sequence":32,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"सुरकोटदा","page":"6","type":"one_liner","content":"घोड़े के जीवशेष होने का साक्ष्य कहाँ से प्राप्त हुआ है ? — सुरकोटदा से","_source_file":"005.json","_source_sequence":34},{"sequence":33,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"हड़प्पा सभ्यता","page":"6","type":"one_liner","content":"हड़प्पा सभ्यता के लोग किस जानवर से परिचित नहीं थे ? — घोड़ा एवं गाय से","_source_file":"005.json","_source_sequence":35},{"sequence":34,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"कालीबंगा","page":"6","type":"one_liner","content":"वैसे स्थान जहाँ से, हल चलाने का साक्ष्य प्राप्त हुआ है ? — कालीबंगा","_source_file":"005.json","_source_sequence":36},{"sequence":35,"subject":"इतिहास","chapter":"सिंधु घाटी सभ्यता","section":"मोहनजोदड़ो","page":"6","type":"one_liner","content":"मोहनजोदड़ों की सबसे बड़ी इमारत कौन-सी थी ? — अन्नागार","_source_file":"005.json","_source_sequence":37},{"sequence":36,"subject":"इतिहास","chapter":"पाषाण काल","section":"नवपाषाण काल","page":"6","type":"one_liner","content":"नवपाषाण युग की कौन-सी विशेषता है ? — प्रारम्भिक कृषि संस्कृति","_source_file":"005.json","_source_sequence":11},{"sequence":37,"subject":"इतिहास","chapter":"पाषाण काल","section":"पाषाणकालीन सभ्यता","page":"6","type":"one_liner","content":"भारत में सर्वप्रथम पाषाणकालीन सभ्यता की खोज कब प्रारम्भ की गई ? — 1863 ई.","_source_file":"005.json","_source_sequence":18},{"sequence":38,"subject":"इतिहास","chapter":"पाषाण काल","section":"मध्यपाषाण काल","page":"6","type":"one_liner","content":"भारत में जानवर पालने की शुरुआत कब हुई ? — मध्यपाषाण काल में","_source_file":"005.json","_source_sequence":19},{"sequence":39,"subject":"इतिहास","chapter":"पाषाण काल","section":"नवपाषाण काल","page":"6","type":"one_liner","content":"भारत में नव-पाषाणकाल युग का प्रारम्भ कबसे माना जाता है ? — 7000 ई. पू. के लगभग","_source_file":"005.json","_source_sequence":20},{"sequence":40,"subject":"इतिहास","chapter":"पाषाण काल","section":"पुरापाषाण काल","page":"6","type":"one_liner","content":"सर्वप्रथम पूर्व पाषाणकालीन उपकरण भारत में किस स्थान से खोजा गया ? — दक्षिण भारत की कोर्तैयार नदी घाटी से","_source_file":"005.json","_source_sequence":21},{"sequence":41,"subject":"इतिहास","chapter":"पाषाण काल","section":"पुरापाषाण काल","page":"6","type":"one_liner","content":"सर्वप्रथम पाषाणकालीन उपकरण को खोजने का श्रेय किसे दिया जाता है ? — डी. टेरा को","_source_file":"005.json","_source_sequence":22},{"sequence":42,"subject":"इतिहास","chapter":"पाषाण काल","section":"नवपाषाण काल","page":"6","type":"one_liner","content":"किस नव-पाषाणकालीन स्थल से मालिक के साथ कब्रों में कुत्तों को भी दफनाये जाने का अवशेष प्राप्त हुआ है ? — बुर्जहोम","_source_file":"005.json","_source_sequence":23},{"sequence":43,"subject":"इतिहास","chapter":"पाषाण काल","section":"नवपाषाण काल","page":"6","type":"one_liner","content":"किस नव-पाषाणकालीन पुरातस्थल से नव-पाषाण के साथ-साथ ताम्र तथा लौह संस्कृति के भी अवशेष मिलते हैं ? — कोल्डीहवा","_source_file":"005.json","_source_sequence":26},{"sequence":44,"subject":"इतिहास","chapter":"पाषाण काल","section":"पुरापाषाण काल","page":"6","type":"one_liner","content":"पुरापाषाण काल के लोगों को किस प्रजाति का माना जाता है ? — निग्रिटो","_source_file":"005.json","_source_sequence":38},{"sequence":45,"subject":"इतिहास","chapter":"पाषाण काल","section":"पुरापाषाण काल","page":"6","type":"one_liner","content":"आधुनिक मानव या होमोसेपियन का उदय कब हुआ ? — 40000 ई. पू.","_source_file":"005.json","_source_sequence":39},{"sequence":46,"subject":"इतिहास","chapter":"पाषाण काल","section":"पुरापाषाण काल","page":"6","type":"one_liner","content":"पुरापाषाण काल के औजार किसके बने होते थे ? — पत्थर के","_source_file":"005.json","_source_sequence":40},{"sequence":47,"subject":"इतिहास","chapter":"पाषाण काल","section":"पुरापाषाण काल","page":"6","type":"one_liner","content":"मानव द्वारा बनाए जाने वाला प्रथम औजार था — कुल्हाड़ी","_source_file":"005.json","_source_sequence":41},{"sequence":48,"subject":"इतिहास","chapter":"पाषाण काल","section":"मध्य पुरापाषाण काल","page":"6","type":"one_liner","content":"पुरापाषाण काल को अन्य किस नाम से जाना जाता है ? — मध्य पुरापाषाण काल","_source_file":"005.json","_source_sequence":42},{"sequence":49,"subject":"इतिहास","chapter":"पाषाण काल","section":"मध्य पुरापाषाण काल","page":"6","type":"one_liner","content":"किस काल को फलक संस्कृति के नाम से भी जाना जाता है ? — मध्य पुरापाषाण काल","_source_file":"005.json","_source_sequence":43},{"sequence":50,"subject":"इतिहास","chapter":"पाषाण काल","section":"मध्य पुरापाषाण काल","page":"6","type":"one_liner","content":"निएंडरथल मानव का उद्भव किस काल में हुआ ? — मध्य पुरापाषाण काल में","_source_file":"005.json","_source_sequence":44},{"sequence":51,"subject":"इतिहास","chapter":"पाषाण काल","section":"पुरापाषाण काल","page":"6","type":"one_liner","content":"पुरापाषाण काल में मानव का मुख्य पेशा क्या था ? — आखेट","_source_file":"005.json","_source_sequence":45},{"sequence":52,"subject":"इतिहास","chapter":"पाषाण काल","section":"मध्य पाषाण काल","page":"6","type":"one_liner","content":"पशुपालन का प्रारंभ किस काल से हुआ ? — मध्य पाषाणकाल से","_source_file":"005.json","_source_sequence":46},{"sequence":53,"subject":"इतिहास","chapter":"पाषाण काल","section":"मध्य पाषाण काल","page":"6","type":"one_liner","content":"मध्य पाषाण काल का सबसे प्रमुख लक्षण कौन-सा है ? — लघु औजार","_source_file":"005.json","_source_sequence":47},{"sequence":54,"subject":"इतिहास","chapter":"पाषाण काल","section":"नवपाषाण काल","page":"6","type":"one_liner","content":"कृषि कार्य की शुरुआत किस काल में हुई ? — नवपाषाण काल में","_source_file":"005.json","_source_sequence":48},{"sequence":55,"subject":"इतिहास","chapter":"पाषाण काल","section":"नवपाषाण काल","page":"6","type":"one_liner","content":"चाक या पहिया का आविष्कार किस काल में हुआ ? — नवपाषाण काल में","_source_file":"005.json","_source_sequence":49},{"sequence":56,"subject":"इतिहास","chapter":"पाषाण काल","section":"नवपाषाण काल","page":"6","type":"one_liner","content":"नवपाषाण काल के किस स्थल से युगल शवसावधान का अवशेष प्राप्त हुआ है ? — इनामागाँव (महाराष्ट्र)","_source_file":"005.json","_source_sequence":50},{"sequence":57,"subject":"इतिहास","chapter":"पाषाण काल","section":"नवपाषाण काल","page":"6","type":"one_liner","content":"मातृदेवी की प्रतिमा कहाँ से प्राप्त हुई है ? — इनामगाँव (महाराष्ट्र)","_source_file":"005.json","_source_sequence":51},{"sequence":58,"subject":"इतिहास","chapter":"पाषाण काल","section":"नव पाषाण काल","page":"6","type":"one_liner","content":"भवन निर्माण कला की शुरुआत किस काल में हुई ? — नव पाषाण काल में","_source_file":"005.json","_source_sequence":52},{"sequence":59,"subject":"इतिहास","chapter":"पाषाण काल","section":"चित्रकारी","page":"6","type":"one_liner","content":"पुरापाषाण काल, मध्यपाषाण काल और नवपाषाण काल में चित्रकारी का एकमात्र साक्ष्य कहाँ से प्राप्त हुआ है ? — भीमबेटका से","_source_file":"005.json","_source_sequence":53},{"sequence":60,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"पूर्व वैदिक काल","page":"6","type":"one_liner","content":"पूर्व वैदिक या आयुर्वेदिक काल का समय माना जाता है ? — 1500 ई. पू. से 1000 ई. पू.","_source_file":"005.json","_source_sequence":54},{"sequence":61,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"वैदिक साहित्य","page":"6","type":"one_liner","content":"भारत का सबसे प्राचीन धार्मिक ग्रंथ किसे माना जाता है ? — वेद को","_source_file":"005.json","_source_sequence":55},{"sequence":62,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"वैदिक साहित्य","page":"6","type":"one_liner","content":"वेद के संकलनकर्ता कौन हैं ? — महर्षि द्वैपायन वेदव्यास","_source_file":"005.json","_source_sequence":56},{"sequence":63,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"वैदिक साहित्य","page":"6","type":"one_liner","content":"वेदों की संख्या कितनी है ? — चार","_source_file":"005.json","_source_sequence":57},{"sequence":64,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"वैदिक साहित्य","page":"6","type":"one_liner","content":"वेदों में संयुक्त रूप से 'त्रयी' या 'वेदत्रयी' कहलाते हैं — ऋग्वेद, सामवेद, यजुर्वेद एवं अथर्ववेद","_source_file":"005.json","_source_sequence":58},{"sequence":65,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"वैदिक साहित्य","page":"6","type":"one_liner","content":"वेद का क्रम क्या है ? — ऋग्वेद, सामवेद, यजुर्वेद और अथर्ववेद","_source_file":"005.json","_source_sequence":59},{"sequence":66,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"ऋग्वेद","page":"6","type":"one_liner","content":"सबसे पुराना वेद कौन है ? — ऋग्वेद","_source_file":"005.json","_source_sequence":60},{"sequence":67,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"ऋग्वेद","page":"6","type":"one_liner","content":"ऋग्वेद में मण्डलों की संख्या कितनी है ? — दस","_source_file":"005.json","_source_sequence":61},{"sequence":68,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"ऋग्वेद","page":"6","type":"one_liner","content":"ऋग्वेद में सूक्तों की संख्या कितनी है ? — 1028","_source_file":"005.json","_source_sequence":62},{"sequence":69,"subject":"इतिहास","chapter":"वैदिक संस्कृति एवं सभ्यता","section":"ऋग्वेद","page":"6","type":"one_liner","content":"ऋग्वेद का कौन-सा मंडल सोम देवता को समर्पित है ? — नवाँ मण्डल","_source_file":"005.json","_source_sequence":63},{"sequence":70,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"महाराजा रणजीत सिंह के उत्तराधिकारी थे — खड़क सिंह","_source_file":"006.json","_source_sequence":1},{"sequence":71,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किस राजपूत शासक ने 'जिज मुहम्मद शाही' नामक पहाड़ों का समूह बनाया, जिससे लोग खगोल सम्बन्धित अवलोकन कर सकें ? — राजा सवाई जय सिंह ने","_source_file":"006.json","_source_sequence":2},{"sequence":72,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"'मराठा राज्य का दूसरा प्रवर्तक' किसे कहा जाता था ? — बालाजी विश्वनाथ को","_source_file":"006.json","_source_sequence":3},{"sequence":73,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"टीपू सुल्तान की राजधानी कहाँ थी ? — श्रीरंगम (श्रीरंगपट्टनम)","_source_file":"006.json","_source_sequence":4},{"sequence":74,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किसने भारत में अंग्रेजों का सर्वाधिक विरोध किया ? — मराठों ने","_source_file":"006.json","_source_sequence":5},{"sequence":75,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किसने अंग्रेजों से लड़ते हुए वीरगति को प्राप्त हुआ ? — टीपू सुल्तान","_source_file":"006.json","_source_sequence":6},{"sequence":76,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"टीपू सुल्तान की मृत्यु 1799 ई. में कहाँ हुई थी ? — श्रीरंगपट्टनम में","_source_file":"006.json","_source_sequence":7},{"sequence":77,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"भारतीय शासकों में कौन जिसने विदेशों में आधुनिक पद्धति से दूतावास स्थापित किये थे ? — टीपू सुल्तान","_source_file":"006.json","_source_sequence":8},{"sequence":78,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"ब्रिटिश के साथ बेसीन की सन्धि पेशवाओं में से किसने की थी ? — बाजीराव द्वितीय ने","_source_file":"006.json","_source_sequence":9},{"sequence":79,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"वोडयार कहाँ के शासक थे ? — मैसूर रियासत","_source_file":"006.json","_source_sequence":10},{"sequence":80,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"फ्रेंच ईस्ट इण्डिया कम्पनी का जनक था — कोल्बर्ट","_source_file":"006.json","_source_sequence":11},{"sequence":81,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"वास्को-डि-गामा ने द्वितीय बार भारत की यात्रा कब की ? — 1502 ई. में","_source_file":"006.json","_source_sequence":12},{"sequence":82,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"अंग्रेजों ने डचों को भारत में आखिरी अधिकार क्षेत्र से कब बेदखल कर दिया ? — 1759 ई. में","_source_file":"006.json","_source_sequence":13},{"sequence":83,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"भारत से व्यापार करने के उद्देश्य से अंग्रेजों ने 'इस्ट-इण्डिया कम्पनी' की स्थापना की थी ? — 31 दिसम्बर, 1600 ई. में","_source_file":"006.json","_source_sequence":14},{"sequence":84,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"अंग्रेजों ने किसे परास्त कर 1612 ई. में भारत में सूरत पर अपना अधिकार स्थापित कर लिया ? — पुर्तगालियों को","_source_file":"006.json","_source_sequence":15},{"sequence":85,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"भारत में फ्रांसीसी गतिविधियों का प्रमुख केन्द्र था — पाण्डिचेरी","_source_file":"006.json","_source_sequence":16},{"sequence":86,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"अंग्रेजों ने आत्मरक्षा के विचार से 1700 ई. में 'विलियम फोर्ट' की स्थापना कहाँ की ? — कलकत्ता में","_source_file":"006.json","_source_sequence":17},{"sequence":87,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"बंगाल का नवाब सिराजुद्दौला किसका उत्तराधिकारी था ? — अलीवर्दी खाँ का","_source_file":"006.json","_source_sequence":18},{"sequence":88,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"'पटना हत्याकाण्ड' के समय बंगाल का नवाब था ? — मीर कासिम","_source_file":"006.json","_source_sequence":19},{"sequence":89,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किसने अपनी राजधानी मुर्शिदाबाद से मुंगेर स्थानान्तरित की ? — मीर कासिम ने","_source_file":"006.json","_source_sequence":20},{"sequence":90,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"ईस्ट इण्डिया कम्पनी का शासन भारत में समाप्त किया गया ? — 1858 ई. में","_source_file":"006.json","_source_sequence":21},{"sequence":91,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"बंगाल प्रेसीडेन्सी का अध्यक्ष निर्वाचित होता था ? — कम्पनी के निदेशकों द्वारा","_source_file":"006.json","_source_sequence":22},{"sequence":92,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"भारत में अंग्रेजी राज की प्रारम्भिक अवस्था में अंग्रेजों को पराजित करने वाला राजा था ? — हैदरअली","_source_file":"006.json","_source_sequence":23},{"sequence":93,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किसने घोषणा कर रखी थी कि 'वह अंग्रेजों को पहले से अकाट्य से निकाल बाहर करेगा और अंततः भारत से' ? — हैदर अली","_source_file":"006.json","_source_sequence":24},{"sequence":94,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"ब्रिटिश जनरल जिसने हैदर अली को पोर्टोनोवा युद्ध में हराया — सर आयरकूट","_source_file":"006.json","_source_sequence":25},{"sequence":95,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"भारत के पश्चिमी तट पर किस स्थान पर अंग्रेजी फैक्ट्री थी ? — कन्नूर","_source_file":"006.json","_source_sequence":26},{"sequence":96,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"प्लासी के युद्ध में सिराजुद्दौला का किसने साथ दिया था ? — मोहन लाल और मीरमदान ने","_source_file":"006.json","_source_sequence":27},{"sequence":97,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"'कालकोठरी' की घटना घटित कहाँ हुई थी ? — कलकत्ता में","_source_file":"006.json","_source_sequence":28},{"sequence":98,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किसके शासनकाल में 'ब्लैक होल' (कालकोठरी) दुर्घटना घटित हुई थी ? — सिराजुद्दौला","_source_file":"006.json","_source_sequence":29},{"sequence":99,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"क्लाइव बंगाल का पुनः गवर्नर बनकर कब आया ? — 1765 ई. में","_source_file":"006.json","_source_sequence":30},{"sequence":100,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किस भारतीय को रॉबर्ट क्लाइव ने बिहार का नायब दीवान नियुक्त किया था ? — राजा सिताब राय को","_source_file":"006.json","_source_sequence":31},{"sequence":101,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"प्रथम वर्मा युद्ध के समय भारत का गवर्नर जनरल था ? — लॉर्ड एमहर्स्ट","_source_file":"006.json","_source_sequence":32},{"sequence":102,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"अंग्रेजों और तिब्बतियों के बीच संधि किसके काल में हुई ? — लॉर्ड कर्जन के","_source_file":"006.json","_source_sequence":33},{"sequence":103,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"द्वितीय वर्मा युद्ध के समय भारत का गवर्नर जनरल कौन था ? — लॉर्ड डलहौजी","_source_file":"006.json","_source_sequence":34},{"sequence":104,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"2 अक्टूबर, 1838 ई. को अफगानिस्तान के विरुद्ध युद्ध की घोषणा किसने की ? — लॉर्ड ऑकलैंड ने","_source_file":"006.json","_source_sequence":35},{"sequence":105,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किस एक्ट द्वारा विजय की योजनाएँ तथा साम्राज्य विस्तार की नीति को त्यागने की घोषणा की गई ? — 1858 इण्डियन एक्ट द्वारा","_source_file":"006.json","_source_sequence":36},{"sequence":106,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किस राज्य का विलय डलहौजी ने कुशासन के आरोप में किया ? — अवध का","_source_file":"006.json","_source_sequence":37},{"sequence":107,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"डलहौजी द्वारा दिए गए किस राज्य के विलय को डायरेक्टर्स ने निरस्त कर दिया ? — करौली को","_source_file":"006.json","_source_sequence":38},{"sequence":108,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"दार्जिलिंग को किसने भारत में सम्मिलित किया ? — लॉर्ड डलहौजी ने","_source_file":"006.json","_source_sequence":39},{"sequence":109,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"सिन्थ प्रदेश को जीतकर अंग्रेजी राज्य में किसने मिलाया ? — नेपियर ने","_source_file":"006.json","_source_sequence":40},{"sequence":110,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"सिन्ध का विलय अंग्रेजी राज्य में किस गवर्नर जनरल के समय हुआ ? — (1843) — लॉर्ड एलनबरो","_source_file":"006.json","_source_sequence":41},{"sequence":111,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"देशी राज्यों को अंग्रेजी राज्य में न मिलाने का वचन किसने दिया ? — महारानी विक्टोरिया ने","_source_file":"006.json","_source_sequence":42},{"sequence":112,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"ब्रिटिश सत्ता व देशी राज्यों के मध्य सम्बन्धों पर विचार करने के लिए कौन-सी कमैटी नियुक्त थी ? — बटलर कमैटी","_source_file":"006.json","_source_sequence":43},{"sequence":113,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किस जाट नेता को अपनी योग्यता के कारण 'जाट जाति का प्लेटो' पुकारा गया ? — सूरजमल को","_source_file":"006.json","_source_sequence":44},{"sequence":114,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"राजा रणजीत सिंह ने किससे 'अमृतसर की सन्धि' (25 अप्रैल, 1809) की ? — ईस्ट इण्डिया कम्पनी से","_source_file":"006.json","_source_sequence":45},{"sequence":115,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"विज्ञान और कला के महान् केन्द्र के रूप में किसने 'जयपुर' की स्थापना की ? — सबाई राजा जयसिंह","_source_file":"006.json","_source_sequence":46},{"sequence":116,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"लॉर्ड बेलेजली ने अपने किस उद्देश्य को पूरा करने के लिए 1798 ई. में निजाम के साथ सहायक संधि की ? — मैसूर में टीपू सुल्तान के प्रभाव को समाप्त करने के लिए","_source_file":"006.json","_source_sequence":47},{"sequence":117,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किस क्रांति से प्रभावित होकर टीपू सुल्तान ने श्रीरंगपट्टनम में 'जैकोबिन क्लब' की स्थापना की और उसका सदस्य बना ? — फ्रांसीसी क्रांति","_source_file":"006.json","_source_sequence":48},{"sequence":118,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"प्रथम आंग्ल मैसूर युद्ध (1767-69) में कौन विजयी हुआ ? — हैदर अली","_source_file":"006.json","_source_sequence":49},{"sequence":119,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"हैदर अली की मृत्यु 1782 ई. में किस युद्ध के दौरान हुई थी ? — द्वितीय आंग्ल मैसूर युद्ध","_source_file":"006.json","_source_sequence":50},{"sequence":120,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"द्वितीय आंग्ल मैसूर युद्ध के समय गवर्नर जनरल कौन था ? — वारेन हेस्टिंग्स","_source_file":"006.json","_source_sequence":51},{"sequence":121,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"टीपू द्वारा श्रीरंगपट्टनम में 'स्वतंत्रता का वृक्ष' लगाए जाने का क्या राजनीतिक महत्व था ? — यह फ्रांस और टीपू की मैत्री का प्रतीक था","_source_file":"006.json","_source_sequence":52},{"sequence":122,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"द्वितीय आंग्ल-मैसूर युद्ध (17 मार्च, 1784) में मंगलोर की संधि के बाद समाप्त हुआ। यह संधि किनके बीच सम्पन्न हुआ ? — टीपू सुल्तान और अंग्रेज के","_source_file":"006.json","_source_sequence":53},{"sequence":123,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"'भेड़ की तरह एक लंबी जिंदगी जीने से कहीं बेहतर है शेर की तरह एक दिन जीना' ये किसकी अत्यंत प्रिय उक्ति है ? — टीपू सुल्तान की","_source_file":"006.json","_source_sequence":54},{"sequence":124,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"तीसरे आंग्ल-मैसूर युद्ध रोकने के लिए टीपू सुल्तान ने अंग्रेजों के साथ कौन-सी संधि की ? — श्रीरंगपट्टनम की संधि","_source_file":"006.json","_source_sequence":55},{"sequence":125,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"किसके नेतृत्व में अंग्रेजी सेना ने फरवरी 1792 में श्रीरंगपट्टनम के किले को घेरकर टीपू को सन्धि के लिए मजबूर किया ? — कार्नवालिस के","_source_file":"006.json","_source_sequence":56},{"sequence":126,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"50","type":"one_liner","content":"अंग्रेजों के संरक्षण में बनने वाला प्रथम मुगल बादशाह कौन था ? — अकबर द्वितीय","_source_file":"006.json","_source_sequence":57},{"sequence":127,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"क्रांतिकारी संस्था/संगठन","page":"62","type":"table","content":{"title":"क्रांतिकारी संस्था/संगठन, संस्थापक एवं स्थापना वर्ष","columns":["संस्था/संगठन","संस्थापक","स्थापना वर्ष"],"rows":[["मित्रमेला","सावरकर बन्धु","1901 ई."],["अनुशीलन समिति","बारीन्द्र घोष एवं भूपेन्द्र नाथ दत्त","1907 ई."],["इण्डियन होमरूल सोसायटी","श्यामजी कृष्ण वर्मा","1905 ई."],["अभिनव भारत","वी० डी० सावरकर","1904 ई."],["हिन्दुस्तान एसोसिएशन","रामनाथ पुरी","1907 ई."],["गदर पार्टी","लाला हरदयाल","1913 ई."],["इण्डियन इंडिपेंडेंस कमेटी","वीरेंद्रनाथ चट्टोपाध्याय, भूपेंद्र नाथ दत्त, मंसूर अहमद","1915 ई."],["हिन्दुस्तान रिपब्लिकन एसोसिएशन","शचीन्द्र नाथ सान्याल","1924 ई."],["नौजवान सभा","सरदार भगत सिंह","1926 ई."],["हिन्दुस्तान सोशलिस्ट/रिपब्लिकन एसोसिएशन","चन्द्रशेखर आजाद","1928 ई."],["इंडिपेंडेंस लीग","रास बिहारी बोस","1942 ई."],["आजाद हिन्द फौज","रास बिहारी बोस","1942 ई."],["युवक समिति","शचीन्द्र नाथ सान्याल","1908 ई."]]},"_source_file":"009.json","_source_sequence":1},{"sequence":128,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"जालियाँवाला बाग के नरसंहार के समय भारत का वायसराय कौन था ? — लॉर्ड चेम्सफोर्ड","_source_file":"009.json","_source_sequence":2},{"sequence":129,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"भारत छोड़ो का नारा किसने दिया था ? — युसुफ मेहर अली","_source_file":"009.json","_source_sequence":3},{"sequence":130,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"'डिस्कवरी ऑफ इंडिया' के लेखक कौन हैं ? — जवाहर लाल नेहरू","_source_file":"009.json","_source_sequence":4},{"sequence":131,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"1923 ई. में चितरंजन दास एवं मोतीलाल नेहरू ने कहाँ स्वराज पार्टी की स्थापना की थी ? — इलाहाबाद में","_source_file":"009.json","_source_sequence":5},{"sequence":132,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"चौरी-चौरा कहाँ स्थित है ? — गोरखपुर में","_source_file":"009.json","_source_sequence":6},{"sequence":133,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"किसने कहा, 'मध्य रात्रि के टकोर पर, जब संसार सोता है भारत अपने जीवन का स्वतंत्रता के लिए जाग उठेगा' ? — जवाहर लाल नेहरू ने","_source_file":"009.json","_source_sequence":7},{"sequence":134,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"किसका वक्तव्य था, 'मैं एक समाजवादी और गणतंत्रवादी हूँ और मुझे राजाओं और राजकुमारों में विश्वास नहीं है' ? — जवाहर लाल नेहरू","_source_file":"009.json","_source_sequence":8},{"sequence":135,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"भारत में जब क्रिप्स मिशन आया उस समय भारत का वायसराय था ? — लॉर्ड लिनलिथगो","_source_file":"009.json","_source_sequence":9},{"sequence":136,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"गाँधीजी भारतीय राष्ट्रीय कांग्रेस के अध्यक्ष कितनी बार बने ? — एक बार (बेलगाम)","_source_file":"009.json","_source_sequence":10},{"sequence":137,"subject":"इतिहास","chapter":"आधुनिक भारत","section":"","page":"62","type":"one_liner","content":"'इंकलाब जिंदाबाद' का नारा किसने दिया ? — भगत सिंह ने","_source_file":"009.json","_source_sequence":11}]};
+function nText(v){ if(v==null)return ""; if(typeof v==="string"||typeof v==="number")return String(v); return ""; }
+function nEl(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined&&txt!==null)e.textContent=nText(txt);return e;}
+function nPairs(item){
+ const c=item&&item.content!==undefined?item.content:item;
+ if(typeof c==="string"){
+  const s=c.trim();
+  const m=s.match(/^(.*?)\s+[—–]\s+(.*)$/s);
+  return m?[{question:nText(m[1]),answer:nText(m[2])}]:[{question:nText(s),answer:""}];
+ }
+ if(Array.isArray(c))return c.flatMap(nPairs);
+ if(c&&Array.isArray(c.questions))return c.questions.flatMap(nPairs);
+ if(c&&typeof c==="object"){
+  const q=c.question??c.q??c.question_text;
+  const a=c.answer??c.a??c.answer_text??c.explanation;
+  return q!==undefined||a!==undefined?[{question:nText(q),answer:nText(a)}]:[];
+ }
+ return [];
+}
+function nOneLiner(item){
+ const sec=nEl("section","qa-section"), head=nEl("div","qa-header");
+ if(item.chapter){const ch=nEl("div","qa-chapter-label",item.chapter);head.appendChild(ch);}
+ head.appendChild(nEl("h2","",item.section||item.title||"One-Liner Questions"));sec.appendChild(head);
+ const list=nEl("div","qa-list");
+ nPairs(item).forEach(p=>{
+  const row=nEl("div","qa-row"),q=nEl("div","qa-q");q.appendChild(nEl("span","",p.question));
+  const star=nEl("button","star-btn","☆");star.type="button";star.setAttribute("aria-label","Star");star.setAttribute("aria-pressed","false");q.appendChild(star);
+  const a=nEl("div","qa-a");a.appendChild(nEl("div","answer-text",p.answer));
+  const cover=nEl("div","cover","उत्तर देखने के लिए टैप करें");cover.tabIndex=0;a.appendChild(cover);
+  row.append(q,a);list.appendChild(row);
+ });sec.appendChild(list);return sec;
+}
+function nTable(item,data){
+ const c=item.content&&typeof item.content==="object"?item.content:{},sec=nEl("section","table-section"),title=nEl("div","table-title");
+ title.appendChild(nEl("div","table-title-kicker",c.kicker||"Quick Reference"));
+ title.appendChild(nEl("div","table-title-main",c.title||item.section||item.title||"महत्वपूर्ण तथ्य"));
+ title.appendChild(nEl("div","table-title-sub",item.chapter||data.chapter||""));sec.appendChild(title);
+ const wrap=nEl("div","table-wrap"),container=nEl("div","table-container"),table=nEl("table","notes-table");
+ const cols=Array.isArray(c.columns)?c.columns:[];
+ if(cols.length){const th=document.createElement("thead"),tr=document.createElement("tr");
+ cols.forEach(col=>tr.appendChild(nEl("th","",typeof col==="object"?(col.label??col.title??col.name??""):col)));
+ th.appendChild(tr);table.appendChild(th);}
+ const body=document.createElement("tbody");
+ (Array.isArray(c.rows)?c.rows:[]).forEach(rd=>{
+  const tr=document.createElement("tr");
+  const cells=Array.isArray(rd)?rd:(rd&&typeof rd==="object"?cols.map((col,i)=>{const k=typeof col==="object"?(col.key??col.name??col.label):col;return rd[k]??rd[String(k)]??rd["cell"+i]??"";}):[rd]);
+  cells.forEach((cell,i)=>{const td=document.createElement("td"),val=typeof cell==="object"?(cell.text??cell.value??""):cell;
+   if(i===0)td.appendChild(nEl("div","primary-cell",val));
+   else{const ans=nEl("div","table-answer"),cover=nEl("div","table-cover","उत्तर देखें"),text=nEl("div","table-answer-text",val);ans.append(cover,text);td.appendChild(ans);}
+   tr.appendChild(td);
+  });body.appendChild(tr);
+ });table.appendChild(body);container.appendChild(table);wrap.appendChild(container);sec.appendChild(wrap);return sec;
+}
+function renderNotesData(data){
+ if(!data||typeof data!=="object")throw Error("Chapter JSON object missing");
+ const subject=data.subject||data.content?.[0]?.subject||"",chapter=data.chapter||data.title||data.slug||"";
+ const subjectLabel=data.subject_label||subject||"Study Notes";
+ document.title=data.page_title||[subjectLabel,chapter].filter(Boolean).join(" — ");
+ document.getElementById("chapterTitle").textContent=data.chapter_title||chapter||"अध्याय";
+ document.getElementById("chapterSubtitle").textContent=data.subtitle||data.description||"";
+ document.getElementById("subjectKicker").textContent=(data.subject_emoji?data.subject_emoji+" ":"")+subjectLabel;
+ document.getElementById("notesBreadcrumb").textContent=[subjectLabel,data.section,data.chapter_title||chapter].filter(Boolean).join(" / ");
+ const host=document.getElementById("dynamic-content-area");host.replaceChildren();
+ const items=Array.isArray(data.content)?data.content.slice():[];
+ items.sort((x,y)=>Number(x.sequence??0)-Number(y.sequence??0));
+ items.forEach(item=>{
+  const type=String(item.type||"").toLowerCase().replace(/[- ]/g,"_");
+  if(["one_liner","oneliner","qa"].includes(type))host.appendChild(nOneLiner(item));
+  else if(type==="table")host.appendChild(nTable(item,data));
+  else console.warn("Skipped unsupported content type:",item.type);
+ });
+ if(!items.length)host.textContent="इस JSON में ordered content[] नहीं मिला।";
+}
+
+/* =========================================================
+   CONSTANTS & STATE
+   ========================================================= */
+const STORAGE_KEY = "notes.starred.v1";
+let practiceMode = false;
+let starredOnly   = false;
+let searchTerm    = "";
+let searchDebounceTimer = null;
+
+const content    = document.getElementById("dynamic-content-area");
+const noResults  = document.getElementById("noResults");
+const quickJump  = document.getElementById("quickJump");
+
+const searchInput     = document.getElementById("notesSearchInput");
+const searchClear     = document.getElementById("notesSearchClear");
+const searchStatus    = document.getElementById("notesSearchStatus");
+const searchWrap      = document.getElementById("notesSearchWrap");
+
+const readingBtn      = document.getElementById("readingModeBtn");
+const practiceBtn     = document.getElementById("practiceModeBtn");
+const starredOnlyBtn  = document.getElementById("starredOnlyBtn");
+const shuffleBtn      = document.getElementById("shuffleBtn");
+const themeToggle     = document.getElementById("themeToggle");
+
+/* =========================================================
+   THEME
+   ========================================================= */
+themeToggle.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
+
+/* =========================================================
+   STAR PERSISTENCE (localStorage)
+   ========================================================= */
+function loadStarred(){
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveStarred(set){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let starredSet = loadStarred();
+
+function rowKey(row){
+  const q = row.querySelector(".qa-q");
+  if(!q) return "";
+  const clone = q.cloneNode(true);
+  clone.querySelectorAll(".star-btn").forEach(b => b.remove());
+  return clone.textContent.trim().slice(0, 160);
+}
+
+function restoreStars(){
+  content.querySelectorAll(".qa-row").forEach(row => {
+    const key = rowKey(row);
+    const btn = row.querySelector(".star-btn");
+    if(!btn || !key) return;
+    if(starredSet.has(key)){
+      btn.classList.add("starred");
+      btn.textContent = "★";
+      row.classList.add("starred");
+      btn.setAttribute("aria-pressed","true");
+    } else {
+      btn.classList.remove("starred");
+      btn.textContent = "☆";
+      row.classList.remove("starred");
+      btn.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
+function toggleStar(btn){
+  const row = btn.closest(".qa-row");
+  if(!row) return;
+  const key = rowKey(row);
+  if(!key) return;
+  const isStarred = !btn.classList.contains("starred");
+  btn.classList.toggle("starred", isStarred);
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.setAttribute("aria-pressed", String(isStarred));
+  row.classList.toggle("starred", isStarred);
+  if(isStarred) starredSet.add(key);
+  else starredSet.delete(key);
+  saveStarred(starredSet);
+  if(starredOnly) applyCombinedFilters();
+}
+
+/* =========================================================
+   MODES (Reading / Practice)
+   ========================================================= */
+function setMode(practice){
+  practiceMode = practice;
+  document.body.classList.toggle("practice", practice);
+  readingBtn.classList.toggle("active", !practice);
+  practiceBtn.classList.toggle("active", practice);
+  // reset reveal state on mode change
+  content.querySelectorAll(".qa-a.revealed, .table-answer.revealed").forEach(el => el.classList.remove("revealed"));
+}
+
+readingBtn.addEventListener("click", () => setMode(false));
+practiceBtn.addEventListener("click", () => setMode(true));
+
+/* =========================================================
+   SEARCH TEXT + HIGHLIGHT
+   ========================================================= */
+function getItemText(item){
+  const clone = item.cloneNode(true);
+  clone.querySelectorAll(".star-btn, .cover, .table-cover").forEach(el => el.remove());
+  return clone.textContent.toLowerCase();
+}
+
+function clearHighlights(root){
+  root.querySelectorAll("mark.search-hit").forEach(el => {
+    const p = el.parentNode;
+    if(!p) return;
+    while(el.firstChild) p.insertBefore(el.firstChild, el);
+    p.removeChild(el);
+    p.normalize();
+  });
+}
+
+function highlightMatches(root, term){
+  clearHighlights(root);
+  if(!term) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentNode;
+      if(!p) return NodeFilter.FILTER_REJECT;
+      if(p.closest(".star-btn, .cover, .table-cover, mark.search-hit")) return NodeFilter.FILTER_REJECT;
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    const lower = text.toLowerCase();
+    let idx = lower.indexOf(term);
+    if(idx === -1) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    while(idx !== -1){
+      if(idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      mark.textContent = text.slice(idx, idx + term.length);
+      frag.appendChild(mark);
+      last = idx + term.length;
+      idx = lower.indexOf(term, last);
+    }
+    if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+/* =========================================================
+   COMBINED FILTERS (Search + Starred)
+   ========================================================= */
+function applyCombinedFilters(){
+  const term = searchTerm;
+  let visibleCount = 0;
+
+  /* Q&A rows */
+  content.querySelectorAll(".qa-section").forEach(section => {
+    let visibleRows = 0;
+    section.querySelectorAll(".qa-row").forEach(row => {
+      const matchesSearch = !term || getItemText(row).includes(term);
+      const matchesStar = !starredOnly || row.classList.contains("starred");
+      const visible = matchesSearch && matchesStar;
+      row.style.display = visible ? "" : "none";
+      if(visible){ visibleRows++; visibleCount++; }
+    });
+    section.style.display = visibleRows ? "" : "none";
+    const header = section.previousElementSibling;
+    if(header && header.classList.contains("qa-header")){
+      header.style.display = visibleRows ? "" : "none";
+    }
+  });
+
+  /* Table sections */
+  content.querySelectorAll(".table-section").forEach(section => {
+    if(starredOnly){
+      section.style.display = "none";
+      return;
+    }
+    const rows = section.querySelectorAll("tbody tr");
+    let tableMatches = 0;
+    if(rows.length){
+      rows.forEach(tr => {
+        const isMatch = !term || getItemText(tr).includes(term);
+        tr.style.display = isMatch ? "" : "none";
+        if(isMatch) tableMatches++;
+      });
+    } else {
+      tableMatches = (!term || getItemText(section).includes(term)) ? 1 : 0;
+    }
+    if(term && tableMatches === 0 && getItemText(section).includes(term)){
+      // title matched; show all rows
+      rows.forEach(tr => tr.style.display = "");
+      tableMatches = 1;
+    }
+    section.style.display = tableMatches ? "" : "none";
+    if(tableMatches) visibleCount++;
+  });
+
+  /* Search UI feedback */
+  searchWrap.classList.toggle("search-active", !!term);
+  searchClear.style.display = term ? "block" : "none";
+  if(!term) searchStatus.textContent = "";
+  else if(visibleCount === 0) searchStatus.textContent = "कोई परिणाम नहीं मिला";
+  else searchStatus.textContent = visibleCount + " परिणाम मिले";
+
+  noResults.classList.toggle("visible", visibleCount === 0 && !!term);
+}
+
+/* =========================================================
+   SHUFFLE
+   ========================================================= */
+function shuffleArray(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQaSection(section){
+  const list = section.querySelector(".qa-list");
+  if(!list) return;
+  shuffleArray(Array.from(list.querySelectorAll(":scope > .qa-row"))).forEach(r => list.appendChild(r));
+}
+
+function shuffleTableSection(section){
+  const tbody = section.querySelector("tbody");
+  if(!tbody) return;
+  shuffleArray(Array.from(tbody.querySelectorAll(":scope > tr"))).forEach(r => tbody.appendChild(r));
+}
+
+function shuffleAllQaRows(){
+  const sections = Array.from(content.querySelectorAll(".qa-section"));
+  const lists = sections.map(section => section.querySelector(".qa-list")).filter(Boolean);
+  if(!lists.length) return;
+  const capacities = lists.map(list => list.querySelectorAll(":scope > .qa-row").length);
+  const rows = lists.flatMap(list => Array.from(list.querySelectorAll(":scope > .qa-row")));
+  shuffleArray(rows);
+  let offset = 0;
+  lists.forEach((list, i) => {
+    list.replaceChildren(...rows.slice(offset, offset + capacities[i]));
+    offset += capacities[i];
+  });
+}
+function shuffleAll(){
+  shuffleAllQaRows();
+  content.querySelectorAll(".table-section").forEach(shuffleTableSection);
+  applyCombinedFilters();
+}
+
+shuffleBtn.addEventListener("click", shuffleAll);
+
+/* =========================================================
+   AUTO-INJECT SHUFFLE BUTTONS (per section)
+   ========================================================= */
+function injectShuffleControls(){
+  // Exactly one shuffle control for all Q&A sections on this page.
+  const qaSections = content.querySelectorAll(".qa-section");
+  if(qaSections.length && !content.querySelector(":scope > .page-qa-shuffle")){
+    const ctrl = document.createElement("div");
+    ctrl.className = "shuffle-control page-qa-shuffle";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="इस पेज के सभी प्रश्नों का क्रम बदलें" title="इस पेज के प्रश्न Shuffle">🔀</button>';
+    content.insertBefore(ctrl, qaSections[0]);
+  }
+  // Keep a separate shuffle control for each table.
+  content.querySelectorAll(".table-section").forEach(section => {
+    const title = section.querySelector(":scope > .table-title");
+    if(!title || title.querySelector(".table-shuffle-control")) return;
+    const ctrl = document.createElement("div");
+    ctrl.className = "table-shuffle-control";
+    ctrl.innerHTML = '<button class="shuffle-btn" type="button" aria-label="तालिका क्रम बदलें" title="तालिका Shuffle">🔀</button>';
+    title.appendChild(ctrl);
+  });
+}
+
+/* =========================================================
+   QUICK JUMP BUILDER
+   ========================================================= */
+function buildQuickJump(){
+  if(!quickJump) return;
+  quickJump.innerHTML = "";
+  const sections = content.querySelectorAll(".qa-section, .table-section");
+  sections.forEach((section, i) => {
+    if(!section.id) section.id = "notes-section-" + (i + 1);
+    const title =
+      section.querySelector(".qa-header h2")?.textContent.trim() ||
+      section.querySelector(".table-title-main")?.textContent.trim() ||
+      ("Section " + (i + 1));
+    const a = document.createElement("a");
+    a.href = "#" + section.id;
+    a.textContent = title;
+    quickJump.appendChild(a);
+  });
+}
+
+/* =========================================================
+   EVENT DELEGATION
+   ========================================================= */
+content.addEventListener("click", (e) => {
+  // Shuffle button
+  const shuffle = e.target.closest(".shuffle-btn");
+  if(shuffle){
+    const tb = shuffle.closest(".table-section");
+    if(tb){
+      shuffleTableSection(tb);
+    } else if(shuffle.closest(".page-qa-shuffle")){
+      shuffleAllQaRows();
+      applyCombinedFilters();
+    } else {
+      const qa = shuffle.closest(".qa-section");
+      if(qa) shuffleQaSection(qa);
+    }
+    if(searchTerm) highlightMatches(content, searchTerm);
+    return;
+  }
+  // Star button
+  const star = e.target.closest(".star-btn");
+  if(star){ toggleStar(star); return; }
+  // Q&A answer reveal (practice mode)
+  if(practiceMode){
+    const cover = e.target.closest(".qa-a .cover");
+    if(cover){ cover.closest(".qa-a").classList.add("revealed"); return; }
+    const tcover = e.target.closest(".table-answer .table-cover");
+    if(tcover){ tcover.closest(".table-answer").classList.add("revealed"); return; }
+  }
+});
+
+content.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter" && e.key !== " ") return;
+  if(!practiceMode) return;
+  const cover = e.target.closest(".qa-a .cover, .table-answer .table-cover");
+  if(cover){
+    e.preventDefault();
+    cover.closest(".qa-a, .table-answer").classList.add("revealed");
+  }
+});
+
+/* =========================================================
+   SEARCH INPUT (debounced)
+   ========================================================= */
+searchInput.addEventListener("input", () => {
+  const raw = (searchInput.value || "").trim().toLowerCase();
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchTerm = raw;
+    if(!searchTerm && !starredOnly){
+      clearHighlights(content);
+      noResults.classList.remove("visible");
+      content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+      searchWrap.classList.remove("search-active");
+      searchStatus.textContent = "";
+      searchClear.style.display = "none";
+    } else {
+      applyCombinedFilters();
+      if(searchTerm) highlightMatches(content, searchTerm);
+      else clearHighlights(content);
+    }
+  }, 120);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchInput.dispatchEvent(new Event("input"));
+  searchInput.focus();
+});
+
+/* =========================================================
+   STARRED ONLY TOGGLE
+   ========================================================= */
+starredOnlyBtn.addEventListener("click", () => {
+  starredOnly = !starredOnly;
+  starredOnlyBtn.classList.toggle("active", starredOnly);
+  if(searchTerm || starredOnly){
+    applyCombinedFilters();
+    if(searchTerm) highlightMatches(content, searchTerm);
+  } else {
+    clearHighlights(content);
+    noResults.classList.remove("visible");
+    content.querySelectorAll(".qa-row, .table-section, .qa-section, .qa-header").forEach(el => el.style.display = "");
+    searchStatus.textContent = "";
+  }
+});
+
+/* =========================================================
+   MUTATION OBSERVER — handle injected content
+   ========================================================= */
+const observer = new MutationObserver(() => {
+  restoreStars();
+  buildQuickJump();
+  injectShuffleControls();
+});
+observer.observe(content, { childList: true, subtree: false });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+try { renderNotesData(NOTES_DATA); } catch(err) { console.error("Notes JSON render failed:",err); document.getElementById("dynamic-content-area").textContent="अध्याय सामग्री लोड नहीं हो सकी। JSON schema जाँचें।"; }
+restoreStars();
+buildQuickJump();
+injectShuffleControls();
+setMode(false);
+
+})();
+</script>
+
+<script id="header-font-controls-script">
+(function(){
+  function initFontControls(){
+    const header=document.querySelector('.header-inner');
+    const content=document.querySelector('#dynamic-content-area');
+    if(!header||!content||document.querySelector('.header-font-controls')) return;
+    let scale=1;
+    const controls=document.createElement('div');
+    controls.className='header-font-controls';
+    controls.setAttribute('role','group');
+    controls.setAttribute('aria-label','पेज के अक्षरों का आकार');
+    controls.innerHTML='<button type="button" class="font-smaller" aria-label="फ़ॉन्ट छोटा करें" title="फ़ॉन्ट छोटा करें">A−</button><span class="font-size-label" aria-live="polite">100%</span><button type="button" class="font-larger" aria-label="फ़ॉन्ट बड़ा करें" title="फ़ॉन्ट बड़ा करें">A+</button>';
+    header.appendChild(controls);
+    const label=controls.querySelector('.font-size-label');
+    function apply(next){
+      scale=Math.max(0.5,Math.min(1.5,Math.round(next*10)/10));
+      content.querySelectorAll('*').forEach(function(el){
+        if(!el.dataset.fontBaseSize){
+          const size=parseFloat(getComputedStyle(el).fontSize);
+          if(Number.isFinite(size)) el.dataset.fontBaseSize=String(size);
+        }
+        const base=parseFloat(el.dataset.fontBaseSize);
+        if(Number.isFinite(base)) el.style.setProperty('font-size',(base*scale)+'px','important');
+      });
+      label.textContent=Math.round(scale*100)+'%';
+      controls.querySelector('.font-smaller').disabled=scale<=0.5;
+      controls.querySelector('.font-larger').disabled=scale>=1.5;
+      controls.querySelectorAll('button').forEach(function(btn){btn.style.opacity=btn.disabled?'.45':'1';});
+    }
+    controls.querySelector('.font-smaller').addEventListener('click',function(){apply(scale-0.1);});
+    controls.querySelector('.font-larger').addEventListener('click',function(){apply(scale+0.1);});
+    apply(1);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initFontControls); else initFontControls();
+})();
+</script>
+</body>
+</html>
