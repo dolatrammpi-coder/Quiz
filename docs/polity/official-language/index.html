@@ -1905,5 +1905,44 @@ main > section:first-child p{
     }
 })();
 </script>
+
+<script>
+/* QUIZ_SCORE_PERFORMANCE_V1: score-based result feedback shared by quiz pages */
+(function () {
+  function updatePerformance() {
+    var modal = document.getElementById('result-modal');
+    var title = document.getElementById('result-title');
+    var score = document.getElementById('result-score');
+    var icon = document.getElementById('result-icon');
+    if (!modal || !title || !score || modal.classList.contains('hidden')) return;
+    var match = (score.textContent || '').match(/(-?\d+(?:\.\d+)?)\s*%/);
+    if (!match) return;
+    var percent = Math.max(0, Math.min(100, Number(match[1])));
+    var level;
+    if (percent >= 90) level = { title: 'असाधारण प्रदर्शन!', icon: '🏆', color: 'text-emerald-700' };
+    else if (percent >= 75) level = { title: 'बहुत अच्छा प्रदर्शन!', icon: '🌟', color: 'text-green-700' };
+    else if (percent >= 60) level = { title: 'अच्छा प्रदर्शन!', icon: '👏', color: 'text-blue-700' };
+    else if (percent >= 40) level = { title: 'औसत प्रदर्शन — अभ्यास जारी रखें', icon: '📘', color: 'text-amber-700' };
+    else if (percent >= 20) level = { title: 'सुधार की जरूरत — फिर से प्रयास करें', icon: '💪', color: 'text-orange-700' };
+    else level = { title: 'कम प्रदर्शन — बुनियादी प्रश्नों का दोबारा अभ्यास करें', icon: '📝', color: 'text-red-700' };
+    title.textContent = level.title;
+    if (icon) icon.textContent = level.icon;
+    title.classList.remove('text-gray-800', 'text-emerald-700', 'text-green-700', 'text-blue-700', 'text-amber-700', 'text-orange-700', 'text-red-700');
+    title.classList.add(level.color);
+    modal.setAttribute('data-performance-band', percent >= 90 ? 'excellent' : percent >= 75 ? 'very-good' : percent >= 60 ? 'good' : percent >= 40 ? 'average' : percent >= 20 ? 'needs-improvement' : 'low');
+  }
+  function attach() {
+    var modal = document.getElementById('result-modal');
+    if (!modal || modal.dataset.performanceObserver === '1') return;
+    modal.dataset.performanceObserver = '1';
+    new MutationObserver(updatePerformance).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    updatePerformance();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
+  else attach();
+  document.addEventListener('click', function () { setTimeout(updatePerformance, 0); }, true);
+})();
+</script>
+
 </body>
 </html>
