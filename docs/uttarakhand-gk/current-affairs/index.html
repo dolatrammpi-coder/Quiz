@@ -1100,8 +1100,9 @@ main > section:first-child p{
 <div class="artifact-question-head">
 <span class="artifact-q-label" id="artifact-q-label">प्रश्न 1</span>
 <div class="artifact-question-tools">
-<span aria-hidden="true">♡</span>
-<span aria-hidden="true">⚐</span>
+<button aria-label="Favourite में जोड़ें" id="favorite-btn" title="Favourite में जोड़ें" type="button">♡</button>
+<button aria-label="Review के लिए चिह्नित करें" id="review-btn" title="Review के लिए चिह्नित करें" type="button">☆</button>
+<button aria-label="प्रश्नों का क्रम बदलें" title="प्रश्नों का क्रम बदलें" id="shuffle-btn" onclick="shuffleQuiz()" type="button"><i class="fas fa-random" aria-hidden="true"></i></button>
 </div>
 </div>
 <div id="q-text-container">
@@ -1265,7 +1266,71 @@ main > section:first-child p{
                     get userAnswers(){ return userAnswers; }
                 };
 
-        function initQuiz() {
+
+        /* Per-question Favourite persists on this device; Review is session-only. */
+        const favoriteStorageKey = 'quiz_favorites_v1:' + window.location.pathname;
+        const reviewedQuestions = new Set();
+
+        function getFavoriteQuestions() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(favoriteStorageKey) || '[]');
+                return new Set(Array.isArray(saved) ? saved.map(String) : []);
+            } catch (e) {
+                return new Set();
+            }
+        }
+
+        function saveFavoriteQuestions(set) {
+            try {
+                localStorage.setItem(favoriteStorageKey, JSON.stringify([...set]));
+            } catch (e) {}
+        }
+
+        function updateQuestionTools(q) {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const reviewBtn = document.getElementById('review-btn');
+            if (!favoriteBtn || !reviewBtn || !q) return;
+
+            const qid = String(q.id);
+            const favorites = getFavoriteQuestions();
+            const isFavorite = favorites.has(qid);
+            const isReviewed = reviewedQuestions.has(qid);
+
+            favoriteBtn.textContent = isFavorite ? '♥' : '♡';
+            favoriteBtn.classList.toggle('active-favorite', isFavorite);
+            favoriteBtn.title = isFavorite ? 'Favourite हटाएँ' : 'Favourite में जोड़ें';
+            favoriteBtn.setAttribute('aria-label', favoriteBtn.title);
+
+            reviewBtn.textContent = isReviewed ? '★' : '☆';
+            reviewBtn.classList.toggle('active-review', isReviewed);
+            reviewBtn.title = isReviewed ? 'Review हटाएँ' : 'Review के लिए चिह्नित करें';
+            reviewBtn.setAttribute('aria-label', reviewBtn.title);
+        }
+
+        function toggleFavorite() {
+            const q = questions[currentIndex];
+            if (!q) return;
+            const favorites = getFavoriteQuestions();
+            const qid = String(q.id);
+            if (favorites.has(qid)) favorites.delete(qid);
+            else favorites.add(qid);
+            saveFavoriteQuestions(favorites);
+            updateQuestionTools(q);
+        }
+
+        function toggleReview() {
+            const q = questions[currentIndex];
+            if (!q) return;
+            const qid = String(q.id);
+            if (reviewedQuestions.has(qid)) reviewedQuestions.delete(qid);
+            else reviewedQuestions.add(qid);
+            updateQuestionTools(q);
+        }
+
+        document.getElementById('favorite-btn').onclick = toggleFavorite;
+        document.getElementById('review-btn').onclick = toggleReview;
+
+function initQuiz() {
             if(questions.length === 0) {
                 document.getElementById('question-text').innerText = "कोई प्रश्न नहीं मिला। कृपया JSON चेक करें।";
                 return;
@@ -1279,6 +1344,7 @@ main > section:first-child p{
         function renderQuestion() {
             if(questions.length === 0) return;
             const q = questions[currentIndex];
+            updateQuestionTools(q);
             const qContainer = document.getElementById('q-text-container');
             qContainer.style.opacity = '0';
             

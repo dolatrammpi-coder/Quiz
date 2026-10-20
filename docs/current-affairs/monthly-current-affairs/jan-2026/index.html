@@ -47,7 +47,14 @@
             main { padding-left: 10px !important; padding-right: 10px !important; }
         }
 
-    </style>
+
+/* Favourite / Review controls added consistently to quiz pages */
+.legacy-question-tools{display:flex;justify-content:flex-end;align-items:center;gap:12px;min-height:24px;margin:0 0 6px}
+.legacy-question-tools button{border:0;background:transparent;padding:2px 5px;margin:0;font-size:21px;line-height:1;color:#64748b;cursor:pointer}
+.legacy-question-tools button:hover{color:#2563eb}
+.legacy-question-tools button.active-favorite{color:#ef4444}
+.legacy-question-tools button.active-review{color:#2563eb}
+</style>
 <!-- Self-Aware Database Tag (SEO Friendly) -->
 <script id="quiz-meta" type="application/json">{"title": "जनवरी 2026 करेंट अफेयर्स क्विज", "subject": "Current Affairs", "topic": "Monthly Current Affairs"}</script>
 <link href="/style-common.css" rel="stylesheet"/>
@@ -159,6 +166,11 @@
 <button class="text-gray-600 hover:text-blue-600 font-medium transition text-sm" onclick="shuffleQuiz()"><i class="fas fa-random mr-1"></i> शफल</button>
 </div>
 <div class="animate-fade flex-1 flex flex-col w-full" id="question-content">
+
+<div class="legacy-question-tools" aria-label="प्रश्न के विकल्प">
+<button aria-label="Favourite में जोड़ें" id="favorite-btn" title="Favourite में जोड़ें" type="button">♡</button>
+<button aria-label="Review के लिए चिह्नित करें" id="review-btn" title="Review के लिए चिह्नित करें" type="button">☆</button>
+</div>
 <div class="w-full flex items-center justify-start border-b-2 border-gray-100 pb-2 mb-4 transition-opacity duration-150 overflow-hidden" id="q-text-container" style="min-height: 90px;">
 <h2 class="font-semibold text-gray-800 leading-relaxed w-full m-0" id="question-text" style="font-size: 16px;">लोडिंग...</h2>
 </div>
@@ -294,7 +306,71 @@
         let timerInterval;
         let secondsElapsed = 0;
 
-        function initQuiz() {
+
+        /* Per-question Favourite persists on this device; Review is session-only. */
+        const favoriteStorageKey = 'quiz_favorites_v1:' + window.location.pathname;
+        const reviewedQuestions = new Set();
+
+        function getFavoriteQuestions() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(favoriteStorageKey) || '[]');
+                return new Set(Array.isArray(saved) ? saved.map(String) : []);
+            } catch (e) {
+                return new Set();
+            }
+        }
+
+        function saveFavoriteQuestions(set) {
+            try {
+                localStorage.setItem(favoriteStorageKey, JSON.stringify([...set]));
+            } catch (e) {}
+        }
+
+        function updateQuestionTools(q) {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const reviewBtn = document.getElementById('review-btn');
+            if (!favoriteBtn || !reviewBtn || !q) return;
+
+            const qid = String(q.id);
+            const favorites = getFavoriteQuestions();
+            const isFavorite = favorites.has(qid);
+            const isReviewed = reviewedQuestions.has(qid);
+
+            favoriteBtn.textContent = isFavorite ? '♥' : '♡';
+            favoriteBtn.classList.toggle('active-favorite', isFavorite);
+            favoriteBtn.title = isFavorite ? 'Favourite हटाएँ' : 'Favourite में जोड़ें';
+            favoriteBtn.setAttribute('aria-label', favoriteBtn.title);
+
+            reviewBtn.textContent = isReviewed ? '★' : '☆';
+            reviewBtn.classList.toggle('active-review', isReviewed);
+            reviewBtn.title = isReviewed ? 'Review हटाएँ' : 'Review के लिए चिह्नित करें';
+            reviewBtn.setAttribute('aria-label', reviewBtn.title);
+        }
+
+        function toggleFavorite() {
+            const q = questions[currentIndex];
+            if (!q) return;
+            const favorites = getFavoriteQuestions();
+            const qid = String(q.id);
+            if (favorites.has(qid)) favorites.delete(qid);
+            else favorites.add(qid);
+            saveFavoriteQuestions(favorites);
+            updateQuestionTools(q);
+        }
+
+        function toggleReview() {
+            const q = questions[currentIndex];
+            if (!q) return;
+            const qid = String(q.id);
+            if (reviewedQuestions.has(qid)) reviewedQuestions.delete(qid);
+            else reviewedQuestions.add(qid);
+            updateQuestionTools(q);
+        }
+
+        document.getElementById('favorite-btn').onclick = toggleFavorite;
+        document.getElementById('review-btn').onclick = toggleReview;
+
+function initQuiz() {
             if(questions.length === 0) {
                 document.getElementById('question-text').innerText = "कोई प्रश्न नहीं मिला। कृपया JSON चेक करें।";
                 return;
@@ -307,6 +383,7 @@
         function renderQuestion() {
             if(questions.length === 0) return;
             const q = questions[currentIndex];
+            updateQuestionTools(q);
             const qContainer = document.getElementById('q-text-container');
             qContainer.style.opacity = '0';
 
