@@ -1162,6 +1162,35 @@ main > section:first-child p{
 }
 </style>
 
+<style id="artifact-auto-next-fix">
+/* Auto Next control: readable and visibly checked on mobile. */
+#autoNextToggle{
+  -webkit-appearance:checkbox!important;appearance:auto!important;
+  display:inline-block!important;visibility:visible!important;opacity:1!important;
+  position:static!important;flex:0 0 17px!important;width:17px!important;height:17px!important;
+  min-width:17px!important;min-height:17px!important;margin:0 2px 0 0!important;
+  accent-color:#2563eb!important;cursor:pointer!important;
+}
+label.artifact-inline-auto-next,
+label.artifact-auto-next{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  gap:5px!important;width:auto!important;min-width:max-content!important;max-width:none!important;
+  flex:0 0 auto!important;flex-shrink:0!important;overflow:visible!important;
+  white-space:nowrap!important;color:#334155!important;background:#f1f5f9!important;
+  border:1px solid #dbe3ec!important;border-radius:9px!important;padding:5px 7px!important;
+  font-size:11px!important;line-height:1.2!important;
+}
+label.artifact-inline-auto-next span:last-child,
+label.artifact-auto-next span:last-child{
+  display:inline!important;visibility:visible!important;opacity:1!important;
+  width:auto!important;height:auto!important;overflow:visible!important;color:#334155!important;
+  white-space:nowrap!important;font-size:11px!important;line-height:1.2!important;
+}
+@media(max-width:380px){
+ label.artifact-inline-auto-next,label.artifact-auto-next{gap:3px!important;padding:4px 5px!important;font-size:10px!important}
+ label.artifact-inline-auto-next span:last-child,label.artifact-auto-next span:last-child{font-size:10px!important}
+}
+</style>
 </head>
 <body class="min-h-screen flex flex-col justify-between" onload="initQuiz()">
 <div>
@@ -1547,7 +1576,38 @@ main > section:first-child p{
                     get questions(){ return questions; },
                     get currentIndex(){ return currentIndex; },
                     get userAnswers(){ return userAnswers; }
-                };
+                };function cancelAutoNextAdvance() {
+    if (window.__lagaleAutoNextTimer) {
+        clearTimeout(window.__lagaleAutoNextTimer);
+        window.__lagaleAutoNextTimer = null;
+    }
+}
+
+function scheduleAutoNextAdvance(questionId, questionIndex, delay) {
+    cancelAutoNextAdvance();
+    const toggle = document.getElementById('autoNextToggle');
+    if (!toggle || !toggle.checked || questionIndex >= questions.length - 1) return;
+    const waitMs = Number.isFinite(delay) ? delay : 1800;
+    window.__lagaleAutoNextTimer = setTimeout(() => {
+        window.__lagaleAutoNextTimer = null;
+        const activeToggle = document.getElementById('autoNextToggle');
+        const activeQuestion = questions[currentIndex];
+        if (!activeToggle || !activeToggle.checked) return;
+        if (currentIndex !== questionIndex || !activeQuestion || activeQuestion.id !== questionId) return;
+        if (userAnswers[questionId] === undefined || currentIndex >= questions.length - 1) return;
+        currentIndex++;
+        renderQuestion();
+        renderPalette();
+        if (window.syncArtifactUI) window.syncArtifactUI();
+    }, waitMs);
+}
+
+document.addEventListener('change', function (event) {
+    const toggle = event.target;
+    if (toggle && toggle.id === 'autoNextToggle' && !toggle.checked) cancelAutoNextAdvance();
+});
+
+
 
         function initQuiz() {
             if(questions.length === 0) {
@@ -1561,6 +1621,7 @@ main > section:first-child p{
         }
 
         function renderQuestion() {
+            cancelAutoNextAdvance();
             if(questions.length === 0) return;
             const q = questions[currentIndex];
             updateQuestionTools(q);
@@ -1638,22 +1699,16 @@ main > section:first-child p{
 
         function selectOption(idx) {
             const q = questions[currentIndex];
-            if (userAnswers[q.id] !== undefined) return;
+            if (!q || userAnswers[q.id] !== undefined) return;
+            cancelAutoNextAdvance();
             userAnswers[q.id] = idx;
             renderQuestion();
-            // Auto Next: Only if toggle is ON
-            if (document.getElementById('autoNextToggle').checked && currentIndex < questions.length - 1) {
-                setTimeout(() => {
-                    currentIndex++;
-                    renderQuestion();
-                    renderPalette();
-                }, 2000);
-            }
             renderPalette();
-        
-
+            scheduleAutoNextAdvance(q.id, currentIndex, 1800);
             if (window.syncArtifactUI) window.syncArtifactUI();
         }
+
+
 
         function renderPalette() {
             const palette = document.getElementById('question-palette');
@@ -1693,6 +1748,7 @@ main > section:first-child p{
         function shuffleQuiz() { questions.sort(() => Math.random() - 0.5); currentIndex = 0; userAnswers = {}; renderQuestion(); renderPalette(); }
 
         function checkSubmission() {
+            cancelAutoNextAdvance();
             clearInterval(timerInterval);
             let correctCount = 0, wrongCount = 0, leftCount = 0;
             questions.forEach(q => {
