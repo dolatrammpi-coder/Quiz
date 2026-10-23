@@ -989,12 +989,13 @@ a{
 <select id="cq-chapter" disabled><option value="">पहले विषय चुनें</option></select>
 </div>
 <div id="cq-chapter-count-wrap" class="cq-row" hidden>
-<label for="cq-chapter-count">इस चैप्टर से प्रश्न</label>
+<label for="cq-chapter-count">इस चयन से प्रश्न</label>
 <select id="cq-chapter-count"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option><option>50</option><option>100</option></select>
-<button type="button" id="cq-add-chapter" class="cq-small-btn">＋ चैप्टर जोड़ें</button>
+<button type="button" id="cq-add-chapter" class="cq-small-btn">＋ यह चैप्टर जोड़ें</button>
 </div>
+<button type="button" id="cq-add-subject" class="cq-small-btn">📚 पूरे विषय से प्रश्न जोड़ें</button>
 <div id="cq-selected-list" class="cq-selected-list" aria-live="polite"></div>
-<div id="cq-status" class="cq-status" role="status">विषय चुनें, फिर उपलब्ध क्विज़ चैप्टर चुनें।</div>
+<div id="cq-status" class="cq-status" role="status">पहले कुल प्रश्न चुनें। फिर चैप्टर जोड़ें या पूरे विषय से प्रश्न लें।</div>
 <button type="button" id="cq-generate" class="cq-generate">🎲 Random Quiz बनाएँ</button>
 <div id="cq-test" class="cq-test" hidden></div>
 </div>
@@ -1033,75 +1034,26 @@ a{
 </style>
 <script>
 (function(){
-const subjects=[
-["इतिहास","/history/index.html"],["भूगोल","/geography/index.html"],["पर्यावरण","/environment/index.html"],["कला व संस्कृति","/art-culture/index.html"],["राजव्यवस्था","/polity/index.html"],["करंट अफेयर्स","/current-affairs/index.html"],["विज्ञान","/science/index.html"],["कंप्यूटर","/computer/index.html"],["अर्थव्यवस्था","/economy/index.html"],["हिंदी","/hindi/index.html"],["English","/english/index.html"],["उत्तर प्रदेश GK","/uttar-pradesh-gk/index.html"],["उत्तराखंड GK","/uttarakhand-gk/index.html"],["विविध सामान्य ज्ञान","/miscellaneous-gk/index.html"]
-];
-const $=id=>document.getElementById(id), subject=$("cq-subject"), chapter=$("cq-chapter"), count=$("cq-chapter-count"), countWrap=$("cq-chapter-count-wrap"), status=$("cq-status"), selectedList=$("cq-selected-list"), test=$("cq-test");
-subjects.forEach(([name,url])=>{const o=document.createElement("option");o.value=url;o.textContent=name;subject.appendChild(o)});
-let available=[], selected=[], allQuizCache=new Map(), activeQuestions=[], activeIndex=0, score=0;
-function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function setStatus(s){status.textContent=s}
-function pageTitle(doc,url){const h=doc.querySelector("h1");return (h?.textContent||doc.title||url.split("/").filter(Boolean).pop()).replace(/\s+/g," ").trim()}
-async function fetchText(url){const res=await fetch(url,{credentials:"same-origin"});if(!res.ok)throw new Error("पेज लोड नहीं हुआ");return await res.text()}
-function parseQuiz(html,url,title){
- const match=html.match(/(?:let|const|var)\s+allQuestionsData\s*=\s*(\[[\s\S]*?\])(?:\.map\(\(q,\s*i\)|\s*;)/);
- if(!match)return null;
- try{
-  const data=JSON.parse(match[1]);
-  if(!Array.isArray(data)||!data.length)return null;
-  return {url,title,questions:data.filter(q=>q&&q.q&&Array.isArray(q.options)&&Number.isInteger(q.correct)&&q.options[q.correct]!==undefined).map(q=>({...q,sourceUrl:url}))};
- }catch(e){return null}
-}
-async function loadSubject(url){
- if(allQuizCache.has(url))return allQuizCache.get(url);
- setStatus("इस विषय के उपलब्ध चैप्टर खोजे जा रहे हैं…");
- const html=await fetchText(url), doc=new DOMParser().parseFromString(html,"text/html");
- const links=[...doc.querySelectorAll('a[href]')].map(a=>({url:new URL(a.getAttribute("href"),location.origin).pathname,title:(a.textContent||"").replace(/\s+/g," ").trim()})).filter(x=>x.url.startsWith("/")&&x.url.endsWith(".html")&&!x.url.includes("#")&&x.url!==url);
- const unique=[...new Map(links.map(x=>[x.url,x])).values()];
- const found=[];
- for(let i=0;i<unique.length;i+=8){
-  const batch=await Promise.all(unique.slice(i,i+8).map(async x=>{
-   try{const h=await fetchText(x.url);const q=parseQuiz(h,x.url,x.title);return q?{url:x.url,title:x.title||pageTitle(new DOMParser().parseFromString(h,"text/html"),x.url),questions:q.questions}:null}catch(e){return null}
-  }));
-  found.push(...batch.filter(Boolean));
- }
- const result=[...new Map(found.map(x=>[x.url,x])).values()];
- allQuizCache.set(url,result);return result
-}
-function renderSelected(){
- selectedList.innerHTML="";
- selected.forEach((s,i)=>{const row=document.createElement("div");row.className="cq-selected-item";const label=document.createElement("span");label.textContent=s.title+" · "+s.count+" प्रश्न";const remove=document.createElement("button");remove.className="cq-remove";remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","चैप्टर हटाएँ");remove.onclick=()=>{selected.splice(i,1);renderSelected()};row.append(label,remove);selectedList.appendChild(row)});
-}
-subject.addEventListener("change",async()=>{
- chapter.innerHTML='<option value="">चैप्टर चुनें</option>';chapter.disabled=true;countWrap.hidden=true;available=[];selected=[];renderSelected();test.hidden=true;
- if(!subject.value)return;
- try{available=await loadSubject(subject.value);chapter.innerHTML='<option value="">चैप्टर चुनें</option>';available.forEach((x,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=x.title+" ("+x.questions.length+" प्रश्न)";chapter.appendChild(o)});chapter.disabled=!available.length;setStatus(available.length?"चैप्टर चुनें, फिर उससे प्रश्नों की संख्या तय करके जोड़ें।":"इस विषय के इंडेक्स से क्विज़ वाले चैप्टर नहीं मिले।");}
- catch(e){setStatus("चैप्टर लोड नहीं हो पाए। कृपया इंटरनेट कनेक्शन जाँचकर दोबारा कोशिश करें।")}
-});
-chapter.addEventListener("change",()=>{countWrap.hidden=!chapter.value;if(chapter.value){const q=available[Number(chapter.value)];const opts=[...count.options];opts.forEach(o=>{o.disabled=Number(o.value)>q.questions.length});count.value=String([100,50,25,20,15,10,5].find(n=>n<=q.questions.length)||q.questions.length)}});
-$("cq-add-chapter").addEventListener("click",()=>{
- if(!chapter.value)return;const q=available[Number(chapter.value)], n=Math.min(Number(count.value),q.questions.length);
- if(selected.some(x=>x.url===q.url)){setStatus("यह चैप्टर पहले ही जोड़ा गया है।");return}
- selected.push({url:q.url,title:q.title,count:n,questions:q.questions});renderSelected();setStatus("चैप्टर जोड़ दिया गया। चाहें तो दूसरे विषय से भी चैप्टर जोड़ें।");chapter.value="";countWrap.hidden=true;
-});
-function renderTest(){
- const q=activeQuestions[activeIndex];test.hidden=false;test.innerHTML="";
- if(!q){test.innerHTML="<h3>क्विज़ पूरा हुआ!</h3><p>आपका स्कोर: "+score+" / "+activeQuestions.length+"</p><button class='cq-test-next' id='cq-restart'>फिर से खेलें</button>";$("cq-restart").onclick=()=>{activeQuestions=shuffle(activeQuestions);activeIndex=0;score=0;renderTest()};test.scrollIntoView({behavior:"smooth",block:"start"});return}
- const heading=document.createElement("h3");heading.textContent="प्रश्न "+(activeIndex+1)+" / "+activeQuestions.length;const prompt=document.createElement("strong");prompt.textContent=q.q;test.append(heading,prompt);
- const opts=shuffle(q.options.map((text,index)=>({text,correct:index===q.correct})));
- opts.forEach(o=>{const b=document.createElement("button");b.type="button";b.className="cq-test-option";b.textContent=o.text;b.onclick=()=>{[...test.querySelectorAll(".cq-test-option")].forEach(x=>x.disabled=true);if(o.correct){score++;b.classList.add("correct")}else{b.classList.add("wrong");const right=[...test.querySelectorAll(".cq-test-option")].find(x=>x.textContent===q.options[q.correct]);if(right)right.classList.add("correct")}if(q.explanation){const ex=document.createElement("p");ex.textContent=q.explanation;test.appendChild(ex)}const next=document.createElement("button");next.className="cq-test-next";next.textContent=activeIndex===activeQuestions.length-1?"परिणाम देखें":"अगला प्रश्न →";next.onclick=()=>{activeIndex++;renderTest()};test.appendChild(next)};test.appendChild(b)});
- if(q.sourceUrl){const source=document.createElement("a");source.href=q.sourceUrl;source.textContent="मूल चैप्टर खोलें";source.target="_blank";source.rel="noopener";source.style.fontSize="12px";test.appendChild(source)}
- test.scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-$("cq-generate").addEventListener("click",()=>{
- const total=Number($("cq-total").value);
- if(!selected.length){setStatus("पहले कम-से-कम एक चैप्टर जोड़ें।");return}
- const chosenTotal=selected.reduce((sum,s)=>sum+s.count,0);
- if(chosenTotal!==total){setStatus("चुने हुए चैप्टरों की प्रश्न-संख्या "+chosenTotal+" है, जबकि कुल प्रश्न "+total+" चुने हैं। कुल प्रश्न या चैप्टरों की संख्या मिलाकर बराबर करें।");return}
- const pool=selected.flatMap(s=>shuffle(s.questions).slice(0,s.count));
- if(pool.length!==total){setStatus("कुछ चैप्टरों में उपलब्ध प्रश्नों की संख्या बदल गई है। कृपया चयन दोबारा करें।");return}
- activeQuestions=shuffle(pool).map(q=>({...q,options:[...q.options]}));activeIndex=0;score=0;renderTest();setStatus("आपका रैंडम क्विज़ तैयार है।");
-});
+const subjects=[["इतिहास","/history/index.html"],["भूगोल","/geography/index.html"],["पर्यावरण","/environment/index.html"],["कला व संस्कृति","/art-culture/index.html"],["राजव्यवस्था","/polity/index.html"],["करंट अफेयर्स","/current-affairs/index.html"],["विज्ञान","/science/index.html"],["कंप्यूटर","/computer/index.html"],["अर्थव्यवस्था","/economy/index.html"],["हिंदी","/hindi/index.html"],["English","/english/index.html"],["उत्तर प्रदेश GK","/uttar-pradesh-gk/index.html"],["उत्तराखंड GK","/uttarakhand-gk/index.html"],["विविध सामान्य ज्ञान","/miscellaneous-gk/index.html"]];
+const $=id=>document.getElementById(id),subject=$("cq-subject"),chapter=$("cq-chapter"),count=$("cq-chapter-count"),countWrap=$("cq-chapter-count-wrap"),status=$("cq-status"),selectedList=$("cq-selected-list"),test=$("cq-test");
+subjects.forEach(([n,u])=>{let o=document.createElement("option");o.value=u;o.textContent=n;subject.appendChild(o)});
+let available=[],selected=[],cache=new Map(),activeQuestions=[],activeIndex=0,score=0;
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const total=()=>Number($("cq-total").value),used=()=>selected.reduce((s,x)=>s+x.count,0),remaining=()=>Math.max(0,total()-used()),setStatus=s=>status.textContent=s;
+function setCountOptions(max,preferred){count.innerHTML="";let cap=Math.max(0,Math.min(max,remaining()));[5,10,15,20,25,50,75,100,150,200].filter(n=>n<=cap).forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n+" प्रश्न";count.appendChild(o)});if(cap>0&&![...count.options].some(o=>Number(o.value)===cap)){let o=document.createElement("option");o.value=cap;o.textContent=cap+" प्रश्न (बाकी)";count.appendChild(o)}if(cap>0)count.value=String(preferred&&preferred<=cap?preferred:Math.min(10,cap));else{let o=document.createElement("option");o.value="0";o.textContent="कोई प्रश्न बाकी नहीं";count.appendChild(o);count.value="0"}}
+function renderSelected(){selectedList.innerHTML="";selected.forEach((s,i)=>{let row=document.createElement("div");row.className="cq-selected-item";let label=document.createElement("span");label.textContent=s.title+" · "+s.count+" प्रश्न";let remove=document.createElement("button");remove.className="cq-remove";remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","चयन हटाएँ");remove.onclick=()=>{selected.splice(i,1);renderSelected();setStatus("चयन हटाया। अब "+remaining()+" प्रश्न बाकी हैं।")};row.append(label,remove);selectedList.appendChild(row)});refreshCount()}
+function refreshCount(){setCountOptions(chapter.value&&available[Number(chapter.value)]?available[Number(chapter.value)].questions.length:remaining(),Number(count.value)||10);$("cq-add-chapter").disabled=!chapter.value||remaining()===0;$("cq-add-subject").disabled=!subject.value||remaining()===0;setStatus("कुल "+total()+" में से "+used()+" चुने गए · "+remaining()+" प्रश्न बाकी।")}
+async function fetchText(url){let r=await fetch(url,{credentials:"same-origin"});if(!r.ok)throw Error("लोड नहीं हुआ");return r.text()}
+function parseQuiz(html,url,title){let m=html.match(/(?:let|const|var)\s+allQuestionsData\s*=\s*(\[[\s\S]*?\])(?:\.map\(\(q,\s*i\)|\s*;)/);if(!m)return null;try{let d=JSON.parse(m[1]);return Array.isArray(d)?{url,title,questions:d.filter(q=>q&&q.q&&Array.isArray(q.options)&&Number.isInteger(q.correct)&&q.options[q.correct]!==undefined).map(q=>({...q,sourceUrl:url}))}:null}catch(e){return null}}
+async function loadSubject(url){if(cache.has(url))return cache.get(url);setStatus("इस विषय के चैप्टर और प्रश्न लोड हो रहे हैं…");let html=await fetchText(url),doc=new DOMParser().parseFromString(html,"text/html"),links=[...doc.querySelectorAll("a[href]")].map(a=>({url:new URL(a.getAttribute("href"),location.origin).pathname,title:(a.textContent||"").replace(/\s+/g," ").trim()})).filter(x=>x.url.startsWith("/")&&x.url.endsWith(".html")&&!x.url.includes("#")&&x.url!==url),unique=[...new Map(links.map(x=>[x.url,x])).values()],found=[];for(let i=0;i<unique.length;i+=8){let batch=await Promise.all(unique.slice(i,i+8).map(async x=>{try{let h=await fetchText(x.url),q=parseQuiz(h,x.url,x.title);if(!q||!q.questions.length)return null;return {...q,title:x.title||q.title||x.url}}catch(e){return null}}));found.push(...batch.filter(Boolean))}let result=[...new Map(found.map(x=>[x.url,x])).values()];cache.set(url,result);return result}
+subject.addEventListener("change",async()=>{chapter.innerHTML='<option value="">चैप्टर चुनें</option>';chapter.disabled=true;countWrap.hidden=true;available=[];selected=[];renderSelected();test.hidden=true;if(!subject.value)return;try{available=await loadSubject(subject.value);chapter.innerHTML='<option value="">चैप्टर चुनें</option>';available.forEach((x,i)=>{let o=document.createElement("option");o.value=i;o.textContent=x.title+" ("+x.questions.length+" प्रश्न)";chapter.appendChild(o)});chapter.disabled=!available.length;refreshCount();setStatus(available.length?"अब चैप्टर चुनें या पूरे विषय से प्रश्न जोड़ें।":"इस विषय में क्विज़ चैप्टर नहीं मिले।")}catch(e){setStatus("चैप्टर लोड नहीं हो पाए। दोबारा कोशिश करें।")}});
+chapter.addEventListener("change",()=>{countWrap.hidden=!chapter.value;if(chapter.value){setCountOptions(available[Number(chapter.value)].questions.length,10);setStatus("इस चैप्टर से अधिकतम "+Math.min(available[Number(chapter.value)].questions.length,remaining())+" प्रश्न चुन सकते हैं।")}});
+$("cq-total").addEventListener("change",()=>{if(used()>total()){selected=[];renderSelected();setStatus("कुल प्रश्न बदले गए हैं। चयन फिर से करें।")}else refreshCount()});
+$("cq-add-chapter").addEventListener("click",()=>{if(!chapter.value)return;let q=available[Number(chapter.value)],n=Math.min(Number(count.value),q.questions.length,remaining());if(!n){setStatus("कुल प्रश्नों की सीमा पूरी हो गई है।");return}if(selected.some(x=>x.url===q.url)){setStatus("यह चैप्टर पहले ही जोड़ा गया है।");return}selected.push({url:q.url,title:q.title,count:n,questions:q.questions});chapter.value="";countWrap.hidden=true;renderSelected();setStatus(n+" प्रश्न जोड़े गए। "+remaining()+" प्रश्न बाकी हैं।")});
+$("cq-add-subject").addEventListener("click",()=>{if(!available.length){setStatus("पहले विषय चुनें और चैप्टर लोड होने दें।");return}let pool=available.flatMap(x=>x.questions),n=remaining();if(!n){setStatus("कुल प्रश्नों की सीमा पूरी हो गई है।");return}if(pool.length<n){setStatus("इस विषय में "+pool.length+" प्रश्न हैं। कुल संख्या घटाएँ या दूसरा विषय जोड़ें।");return}let key="subject:"+subject.value;if(selected.some(x=>x.url===key)){setStatus("यह विषय पहले ही जोड़ा गया है।");return}selected.push({url:key,title:subject.options[subject.selectedIndex].text+" (पूरा विषय)",count:n,questions:pool});chapter.value="";countWrap.hidden=true;renderSelected();setStatus("पूरे विषय से "+n+" प्रश्न चुने गए।")});
+function renderTest(){let q=activeQuestions[activeIndex];test.hidden=false;test.innerHTML="";if(!q){test.innerHTML="<h3>क्विज़ पूरा हुआ!</h3><p>आपका स्कोर: "+score+" / "+activeQuestions.length+"</p><button class='cq-test-next' id='cq-restart'>फिर से खेलें</button>";$("cq-restart").onclick=()=>{activeQuestions=shuffle(activeQuestions);activeIndex=0;score=0;renderTest()};test.scrollIntoView({behavior:"smooth",block:"start"});return}let h=document.createElement("h3");h.textContent="प्रश्न "+(activeIndex+1)+" / "+activeQuestions.length;let p=document.createElement("strong");p.textContent=q.q;test.append(h,p);shuffle(q.options.map((text,i)=>({text,correct:i===q.correct}))).forEach(o=>{let b=document.createElement("button");b.type="button";b.className="cq-test-option";b.textContent=o.text;b.onclick=()=>{[...test.querySelectorAll(".cq-test-option")].forEach(x=>x.disabled=true);if(o.correct){score++;b.classList.add("correct")}else{b.classList.add("wrong");[...test.querySelectorAll(".cq-test-option")].find(x=>x.textContent===q.options[q.correct])?.classList.add("correct")}if(q.explanation){let ex=document.createElement("p");ex.textContent=q.explanation;test.appendChild(ex)}let next=document.createElement("button");next.className="cq-test-next";next.textContent=activeIndex===activeQuestions.length-1?"परिणाम देखें":"अगला प्रश्न →";next.onclick=()=>{activeIndex++;renderTest()};test.appendChild(next)};test.appendChild(b)});test.scrollIntoView({behavior:"smooth",block:"nearest"})}
+$("cq-generate").addEventListener("click",()=>{let n=total();if(!selected.length){setStatus("पहले चैप्टर जोड़ें या पूरे विषय से प्रश्न चुनें।");return}if(used()!==n){setStatus("अभी "+used()+" प्रश्न चुने हैं; "+remaining()+" और चुनें।");return}let pool=selected.flatMap(s=>shuffle(s.questions).slice(0,s.count));if(pool.length!==n){setStatus("प्रश्नों की संख्या मेल नहीं खा रही। चयन दोबारा करें।");return}activeQuestions=shuffle(pool);activeIndex=0;score=0;renderTest();setStatus("आपका रैंडम क्विज़ तैयार है।")});
+refreshCount();
 })();
 </script>
 
