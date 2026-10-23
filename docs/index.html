@@ -1046,7 +1046,24 @@ function setCountOptions(max,preferred){count.innerHTML="";let cap=Math.max(0,Ma
 function renderSelected(){selectedList.innerHTML="";selected.forEach((s,i)=>{let row=document.createElement("div");row.className="cq-selected-item";let label=document.createElement("span");label.textContent=s.title+" · "+s.count+" प्रश्न";let remove=document.createElement("button");remove.className="cq-remove";remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","चयन हटाएँ");remove.onclick=()=>{selected.splice(i,1);renderSelected();setStatus("चयन हटाया। अब "+remaining()+" प्रश्न बाकी हैं।")};row.append(label,remove);selectedList.appendChild(row)});refreshCount()}
 function refreshCount(){setCountOptions(chapter.value&&available[Number(chapter.value)]?available[Number(chapter.value)].questions.length:remaining(),Number(count.value)||10);$("cq-add-chapter").disabled=!chapter.value||remaining()===0;$("cq-add-subject").disabled=!subject.value||remaining()===0;setStatus("कुल "+total()+" में से "+used()+" चुने गए · "+remaining()+" प्रश्न बाकी।")}
 async function fetchText(url){let r=await fetch(url,{credentials:"same-origin"});if(!r.ok)throw Error("लोड नहीं हुआ");return r.text()}
-function parseQuiz(html,url,title){const marker=/(?:let|const|var)\s+allQuestionsData\s*=\s*/.exec(html);if(!marker)return null;const begin=marker.index+marker[0].length,finish=html.indexOf("];",begin);if(finish<0)return null;try{const d=JSON.parse(html.slice(begin,finish+1));return Array.isArray(d)?{url,title,questions:d.filter(q=>q&&q.q&&Array.isArray(q.options)&&Number.isInteger(q.correct)&&q.options[q.correct]!==undefined).map(q=>({...q,sourceUrl:url}))}:null}catch(e){return null}}
+function parseQuiz(html,url,title){
+ const marker=/(?:let|const|var)\s+allQuestionsData\s*=\s*/.exec(html);if(!marker)return null;
+ const begin=marker.index+marker[0].length;if(html[begin]!=="[")return null;
+ let depth=0,inString=false,escaped=false,end=-1;
+ for(let i=begin;i<html.length;i++){
+  const ch=html[i];
+  if(inString){if(escaped)escaped=false;else if(ch==="\\\\")escaped=true;else if(ch==='"')inString=false;continue}
+  if(ch==='"'){inString=true;continue}
+  if(ch==="[")depth++;else if(ch==="]"){depth--;if(depth===0){end=i+1;break}}
+ }
+ if(end<0)return null;
+ try{
+  const data=JSON.parse(html.slice(begin,end));
+  if(!Array.isArray(data))return null;
+  const questions=data.filter(q=>q&&q.q&&Array.isArray(q.options)&&Number.isInteger(q.correct)&&q.options[q.correct]!==undefined).map(q=>({...q,sourceUrl:url}));
+  return questions.length?{url,title,questions}:null;
+ }catch(e){return null}
+}
 async function loadSubject(url){if(cache.has(url))return cache.get(url);setStatus("इस विषय के चैप्टर और प्रश्न लोड हो रहे हैं…");let html=await fetchText(url),doc=new DOMParser().parseFromString(html,"text/html"),links=[...doc.querySelectorAll("a[href]")].map(a=>{let p=new URL(a.getAttribute("href"),location.origin).pathname;if(p.endsWith("/"))p+="index.html";return {url:p,title:(a.textContent||"").replace(/\s+/g," ").trim()}}).filter(x=>x.url.startsWith("/")&&x.url.endsWith(".html")&&!x.url.includes("#")&&x.url!==url),unique=[...new Map(links.map(x=>[x.url,x])).values()],found=[];for(let i=0;i<unique.length;i+=8){let batch=await Promise.all(unique.slice(i,i+8).map(async x=>{try{let h=await fetchText(x.url),q=parseQuiz(h,x.url,x.title);if(!q||!q.questions.length)return null;return {...q,title:x.title||q.title||x.url}}catch(e){return null}}));found.push(...batch.filter(Boolean))}let result=[...new Map(found.map(x=>[x.url,x])).values()];
 if(!result.length&&url.includes("/current-affairs/")){
  const known=[
