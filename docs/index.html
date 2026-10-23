@@ -800,130 +800,7 @@ a{
 <div class="stat-label">Online Practice</div>
 </div>
 </div>
-</section><!-- SUBJECTS --><!-- CUSTOM QUIZ BUILDER -->
-<section class="section" id="custom-quiz">
-<div class="section-heading">
-<h2>🎯 अपना Quiz बनाएँ</h2>
-<p>विषय और चैप्टर चुनें, प्रश्नों की संख्या तय करें और अपना रैंडम टेस्ट शुरू करें।</p>
-</div>
-<div class="custom-quiz-card">
-<div class="cq-row">
-<label for="cq-total">कुल प्रश्न</label>
-<select id="cq-total"><option>10</option><option>20</option><option>25</option><option selected>50</option><option>75</option><option>100</option><option>200</option></select>
-</div>
-<div class="cq-row">
-<label for="cq-subject">विषय चुनें</label>
-<select id="cq-subject"><option value="">पहले विषय चुनें</option></select>
-</div>
-<div class="cq-row">
-<label for="cq-chapter">चैप्टर चुनें</label>
-<select id="cq-chapter" disabled><option value="">पहले विषय चुनें</option></select>
-</div>
-<div id="cq-chapter-count-wrap" class="cq-row" hidden>
-<label for="cq-chapter-count">इस चैप्टर से प्रश्न</label>
-<select id="cq-chapter-count"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option><option>50</option><option>100</option></select>
-<button type="button" id="cq-add-chapter" class="cq-small-btn">＋ चैप्टर जोड़ें</button>
-</div>
-<div id="cq-selected-list" class="cq-selected-list" aria-live="polite"></div>
-<div id="cq-status" class="cq-status" role="status">विषय चुनें, फिर उपलब्ध क्विज़ चैप्टर चुनें।</div>
-<button type="button" id="cq-generate" class="cq-generate">🎲 Random Quiz बनाएँ</button>
-<div id="cq-test" class="cq-test" hidden></div>
-</div>
-</section>
-<style>
-.custom-quiz-card{max-width:760px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:clamp(16px,3vw,26px);box-shadow:var(--shadow);display:grid;gap:14px}
-.cq-row{display:grid;grid-template-columns:1fr;gap:7px}
-.cq-row label{font-weight:800;font-size:14px}
-.cq-row select{width:100%;min-height:46px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--bg);color:var(--text);font:inherit}
-.cq-small-btn,.cq-generate{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:800;cursor:pointer}
-.cq-small-btn{background:var(--soft);color:var(--primary);justify-self:start}
-.cq-generate{background:var(--primary);color:white;width:100%;min-height:50px}
-.cq-status{font-size:13px;color:var(--muted);line-height:1.6}
-.cq-selected-list{display:grid;gap:8px}
-.cq-selected-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--soft);border:1px solid var(--border);border-radius:10px;font-size:13px}
-.cq-remove{border:0;background:transparent;color:#dc2626;font-weight:800;font-size:18px;cursor:pointer}
-.cq-test{border-top:1px solid var(--border);padding-top:18px;display:grid;gap:12px}
-.cq-test-option{padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);text-align:left;font:inherit;cursor:pointer}
-.cq-test-option:disabled{cursor:default}
-.cq-test-option.correct{border-color:#16a34a;background:#dcfce7;color:#166534}
-.cq-test-option.wrong{border-color:#dc2626;background:#fee2e2;color:#991b1b}
-.cq-test-next{border:0;border-radius:12px;padding:12px;background:#059669;color:#fff;font:inherit;font-weight:800;cursor:pointer}
-@media(min-width:560px){.cq-row{grid-template-columns:160px minmax(0,1fr);align-items:center}.cq-row #cq-add-chapter{grid-column:2}.cq-row[hidden]{display:none}}
-</style>
-<script>
-(function(){
-const subjects=[
-["इतिहास","/history/index.html"],["भूगोल","/geography/index.html"],["पर्यावरण","/environment/index.html"],["कला व संस्कृति","/art-culture/index.html"],["राजव्यवस्था","/polity/index.html"],["करंट अफेयर्स","/current-affairs/index.html"],["विज्ञान","/science/index.html"],["कंप्यूटर","/computer/index.html"],["अर्थव्यवस्था","/economy/index.html"],["हिंदी","/hindi/index.html"],["English","/english/index.html"],["उत्तर प्रदेश GK","/uttar-pradesh-gk/index.html"],["उत्तराखंड GK","/uttarakhand-gk/index.html"],["विविध सामान्य ज्ञान","/miscellaneous-gk/index.html"]
-];
-const $=id=>document.getElementById(id), subject=$("cq-subject"), chapter=$("cq-chapter"), count=$("cq-chapter-count"), countWrap=$("cq-chapter-count-wrap"), status=$("cq-status"), selectedList=$("cq-selected-list"), test=$("cq-test");
-subjects.forEach(([name,url])=>{const o=document.createElement("option");o.value=url;o.textContent=name;subject.appendChild(o)});
-let available=[], selected=[], allQuizCache=new Map(), activeQuestions=[], activeIndex=0, score=0;
-function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function setStatus(s){status.textContent=s}
-function pageTitle(doc,url){const h=doc.querySelector("h1");return (h?.textContent||doc.title||url.split("/").filter(Boolean).pop()).replace(/\s+/g," ").trim()}
-async function fetchText(url){const res=await fetch(url,{credentials:"same-origin"});if(!res.ok)throw new Error("पेज लोड नहीं हुआ");return await res.text()}
-function parseQuiz(html,url,title){
- const match=html.match(/let\s+allQuestionsData\s*=\s*(\[[\s\S]*?\])\.map\(\(q,\s*i\)/);
- if(!match)return null;
- try{
-  const data=JSON.parse(match[1]);
-  if(!Array.isArray(data)||!data.length)return null;
-  return {url,title,questions:data.filter(q=>q&&q.q&&Array.isArray(q.options)&&Number.isInteger(q.correct)&&q.options[q.correct]!==undefined).map(q=>({...q,sourceUrl:url}))};
- }catch(e){return null}
-}
-async function loadSubject(url){
- if(allQuizCache.has(url))return allQuizCache.get(url);
- setStatus("इस विषय के उपलब्ध चैप्टर खोजे जा रहे हैं…");
- const html=await fetchText(url), doc=new DOMParser().parseFromString(html,"text/html");
- const links=[...doc.querySelectorAll('a[href]')].map(a=>({url:new URL(a.getAttribute("href"),location.origin).pathname,title:(a.textContent||"").replace(/\s+/g," ").trim()})).filter(x=>x.url.startsWith("/")&&x.url.endsWith(".html")&&!x.url.includes("#")&&x.url!==url);
- const unique=[...new Map(links.map(x=>[x.url,x])).values()];
- const found=[];
- for(let i=0;i<unique.length;i+=8){
-  const batch=await Promise.all(unique.slice(i,i+8).map(async x=>{
-   try{const h=await fetchText(x.url);const q=parseQuiz(h,x.url,x.title);return q?{url:x.url,title:x.title||pageTitle(new DOMParser().parseFromString(h,"text/html"),x.url),questions:q.questions}:null}catch(e){return null}
-  }));
-  found.push(...batch.filter(Boolean));
- }
- const result=[...new Map(found.map(x=>[x.url,x])).values()];
- allQuizCache.set(url,result);return result
-}
-function renderSelected(){
- selectedList.innerHTML="";
- selected.forEach((s,i)=>{const row=document.createElement("div");row.className="cq-selected-item";const label=document.createElement("span");label.textContent=s.title+" · "+s.count+" प्रश्न";const remove=document.createElement("button");remove.className="cq-remove";remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","चैप्टर हटाएँ");remove.onclick=()=>{selected.splice(i,1);renderSelected()};row.append(label,remove);selectedList.appendChild(row)});
-}
-subject.addEventListener("change",async()=>{
- chapter.innerHTML='<option value="">चैप्टर चुनें</option>';chapter.disabled=true;countWrap.hidden=true;available=[];selected=[];renderSelected();test.hidden=true;
- if(!subject.value)return;
- try{available=await loadSubject(subject.value);chapter.innerHTML='<option value="">चैप्टर चुनें</option>';available.forEach((x,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=x.title+" ("+x.questions.length+" प्रश्न)";chapter.appendChild(o)});chapter.disabled=!available.length;setStatus(available.length?"चैप्टर चुनें, फिर उससे प्रश्नों की संख्या तय करके जोड़ें।":"इस विषय के इंडेक्स से क्विज़ वाले चैप्टर नहीं मिले।");}
- catch(e){setStatus("चैप्टर लोड नहीं हो पाए। कृपया इंटरनेट कनेक्शन जाँचकर दोबारा कोशिश करें।")}
-});
-chapter.addEventListener("change",()=>{countWrap.hidden=!chapter.value;if(chapter.value){const q=available[Number(chapter.value)];const opts=[...count.options];opts.forEach(o=>{o.disabled=Number(o.value)>q.questions.length});count.value=String([100,50,25,20,15,10,5].find(n=>n<=q.questions.length)||q.questions.length)}});
-$("cq-add-chapter").addEventListener("click",()=>{
- if(!chapter.value)return;const q=available[Number(chapter.value)], n=Math.min(Number(count.value),q.questions.length);
- if(selected.some(x=>x.url===q.url)){setStatus("यह चैप्टर पहले ही जोड़ा गया है।");return}
- selected.push({url:q.url,title:q.title,count:n,questions:q.questions});renderSelected();setStatus("चैप्टर जोड़ दिया गया। चाहें तो दूसरे विषय से भी चैप्टर जोड़ें।");chapter.value="";countWrap.hidden=true;
-});
-function renderTest(){
- const q=activeQuestions[activeIndex];test.hidden=false;test.innerHTML="";
- if(!q){test.innerHTML="<h3>क्विज़ पूरा हुआ!</h3><p>आपका स्कोर: "+score+" / "+activeQuestions.length+"</p><button class='cq-test-next' id='cq-restart'>फिर से खेलें</button>";$("cq-restart").onclick=()=>{activeQuestions=shuffle(activeQuestions);activeIndex=0;score=0;renderTest()};test.scrollIntoView({behavior:"smooth",block:"start"});return}
- const heading=document.createElement("h3");heading.textContent="प्रश्न "+(activeIndex+1)+" / "+activeQuestions.length;const prompt=document.createElement("strong");prompt.textContent=q.q;test.append(heading,prompt);
- const opts=shuffle(q.options.map((text,index)=>({text,correct:index===q.correct})));
- opts.forEach(o=>{const b=document.createElement("button");b.type="button";b.className="cq-test-option";b.textContent=o.text;b.onclick=()=>{[...test.querySelectorAll(".cq-test-option")].forEach(x=>x.disabled=true);if(o.correct){score++;b.classList.add("correct")}else{b.classList.add("wrong");const right=[...test.querySelectorAll(".cq-test-option")].find(x=>x.textContent===q.options[q.correct]);if(right)right.classList.add("correct")}if(q.explanation){const ex=document.createElement("p");ex.textContent=q.explanation;test.appendChild(ex)}const next=document.createElement("button");next.className="cq-test-next";next.textContent=activeIndex===activeQuestions.length-1?"परिणाम देखें":"अगला प्रश्न →";next.onclick=()=>{activeIndex++;renderTest()};test.appendChild(next)};test.appendChild(b)});
- if(q.sourceUrl){const source=document.createElement("a");source.href=q.sourceUrl;source.textContent="मूल चैप्टर खोलें";source.target="_blank";source.rel="noopener";source.style.fontSize="12px";test.appendChild(source)}
- test.scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-$("cq-generate").addEventListener("click",()=>{
- const total=Number($("cq-total").value);
- if(!selected.length){setStatus("पहले कम-से-कम एक चैप्टर जोड़ें।");return}
- const chosenTotal=selected.reduce((sum,s)=>sum+s.count,0);
- if(chosenTotal!==total){setStatus("चुने हुए चैप्टरों की प्रश्न-संख्या "+chosenTotal+" है, जबकि कुल प्रश्न "+total+" चुने हैं। कुल प्रश्न या चैप्टरों की संख्या मिलाकर बराबर करें।");return}
- const pool=selected.flatMap(s=>shuffle(s.questions).slice(0,s.count));
- if(pool.length!==total){setStatus("कुछ चैप्टरों में उपलब्ध प्रश्नों की संख्या बदल गई है। कृपया चयन दोबारा करें।");return}
- activeQuestions=shuffle(pool).map(q=>({...q,options:[...q.options]}));activeIndex=0;score=0;renderTest();setStatus("आपका रैंडम क्विज़ तैयार है।");
-});
-})();
-</script>
-<section class="section" id="subjects"><div class="section-heading">
+</section><!-- SUBJECTS --><section class="section" id="subjects"><div class="section-heading">
 <h2>📚 विषय चुनें</h2>
 <p>
         अपनी परीक्षा की तैयारी के लिए कोई भी विषय चुनें।
@@ -1091,7 +968,132 @@ $("cq-generate").addEventListener("click",()=>{
 <span class="quiz-arrow">→</span>
 </a>
 </div>
-</section><!-- ABOUT --><section class="section" id="about">
+</section>
+<!-- CUSTOM QUIZ BUILDER -->
+<section class="section" id="custom-quiz">
+<div class="section-heading">
+<h2>🎯 अपना Quiz बनाएँ</h2>
+<p>विषय और चैप्टर चुनें, प्रश्नों की संख्या तय करें और अपना रैंडम टेस्ट शुरू करें।</p>
+</div>
+<div class="custom-quiz-card">
+<div class="cq-row">
+<label for="cq-total">कुल प्रश्न</label>
+<select id="cq-total"><option>10</option><option>20</option><option>25</option><option selected>50</option><option>75</option><option>100</option><option>200</option></select>
+</div>
+<div class="cq-row">
+<label for="cq-subject">विषय चुनें</label>
+<select id="cq-subject"><option value="">पहले विषय चुनें</option></select>
+</div>
+<div class="cq-row">
+<label for="cq-chapter">चैप्टर चुनें</label>
+<select id="cq-chapter" disabled><option value="">पहले विषय चुनें</option></select>
+</div>
+<div id="cq-chapter-count-wrap" class="cq-row" hidden>
+<label for="cq-chapter-count">इस चैप्टर से प्रश्न</label>
+<select id="cq-chapter-count"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option><option>50</option><option>100</option></select>
+<button type="button" id="cq-add-chapter" class="cq-small-btn">＋ चैप्टर जोड़ें</button>
+</div>
+<div id="cq-selected-list" class="cq-selected-list" aria-live="polite"></div>
+<div id="cq-status" class="cq-status" role="status">विषय चुनें, फिर उपलब्ध क्विज़ चैप्टर चुनें।</div>
+<button type="button" id="cq-generate" class="cq-generate">🎲 Random Quiz बनाएँ</button>
+<div id="cq-test" class="cq-test" hidden></div>
+</div>
+</section>
+<style>
+.custom-quiz-card{max-width:760px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:clamp(16px,3vw,26px);box-shadow:var(--shadow);display:grid;gap:14px}
+.cq-row{display:grid;grid-template-columns:1fr;gap:7px}
+.cq-row label{font-weight:800;font-size:14px}
+.cq-row select{width:100%;min-height:46px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--bg);color:var(--text);font:inherit}
+.cq-small-btn,.cq-generate{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:800;cursor:pointer}
+.cq-small-btn{background:var(--soft);color:var(--primary);justify-self:start}
+.cq-generate{background:var(--primary);color:white;width:100%;min-height:50px}
+.cq-status{font-size:13px;color:var(--muted);line-height:1.6}
+.cq-selected-list{display:grid;gap:8px}
+.cq-selected-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--soft);border:1px solid var(--border);border-radius:10px;font-size:13px}
+.cq-remove{border:0;background:transparent;color:#dc2626;font-weight:800;font-size:18px;cursor:pointer}
+.cq-test{border-top:1px solid var(--border);padding-top:18px;display:grid;gap:12px}
+.cq-test-option{padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.cq-test-option:disabled{cursor:default}
+.cq-test-option.correct{border-color:#16a34a;background:#dcfce7;color:#166534}
+.cq-test-option.wrong{border-color:#dc2626;background:#fee2e2;color:#991b1b}
+.cq-test-next{border:0;border-radius:12px;padding:12px;background:#059669;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+@media(min-width:560px){.cq-row{grid-template-columns:160px minmax(0,1fr);align-items:center}.cq-row #cq-add-chapter{grid-column:2}.cq-row[hidden]{display:none}}
+</style>
+<script>
+(function(){
+const subjects=[
+["इतिहास","/history/index.html"],["भूगोल","/geography/index.html"],["पर्यावरण","/environment/index.html"],["कला व संस्कृति","/art-culture/index.html"],["राजव्यवस्था","/polity/index.html"],["करंट अफेयर्स","/current-affairs/index.html"],["विज्ञान","/science/index.html"],["कंप्यूटर","/computer/index.html"],["अर्थव्यवस्था","/economy/index.html"],["हिंदी","/hindi/index.html"],["English","/english/index.html"],["उत्तर प्रदेश GK","/uttar-pradesh-gk/index.html"],["उत्तराखंड GK","/uttarakhand-gk/index.html"],["विविध सामान्य ज्ञान","/miscellaneous-gk/index.html"]
+];
+const $=id=>document.getElementById(id), subject=$("cq-subject"), chapter=$("cq-chapter"), count=$("cq-chapter-count"), countWrap=$("cq-chapter-count-wrap"), status=$("cq-status"), selectedList=$("cq-selected-list"), test=$("cq-test");
+subjects.forEach(([name,url])=>{const o=document.createElement("option");o.value=url;o.textContent=name;subject.appendChild(o)});
+let available=[], selected=[], allQuizCache=new Map(), activeQuestions=[], activeIndex=0, score=0;
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function setStatus(s){status.textContent=s}
+function pageTitle(doc,url){const h=doc.querySelector("h1");return (h?.textContent||doc.title||url.split("/").filter(Boolean).pop()).replace(/\s+/g," ").trim()}
+async function fetchText(url){const res=await fetch(url,{credentials:"same-origin"});if(!res.ok)throw new Error("पेज लोड नहीं हुआ");return await res.text()}
+function parseQuiz(html,url,title){
+ const match=html.match(/let\s+allQuestionsData\s*=\s*(\[[\s\S]*?\])\.map\(\(q,\s*i\)/);
+ if(!match)return null;
+ try{
+  const data=JSON.parse(match[1]);
+  if(!Array.isArray(data)||!data.length)return null;
+  return {url,title,questions:data.filter(q=>q&&q.q&&Array.isArray(q.options)&&Number.isInteger(q.correct)&&q.options[q.correct]!==undefined).map(q=>({...q,sourceUrl:url}))};
+ }catch(e){return null}
+}
+async function loadSubject(url){
+ if(allQuizCache.has(url))return allQuizCache.get(url);
+ setStatus("इस विषय के उपलब्ध चैप्टर खोजे जा रहे हैं…");
+ const html=await fetchText(url), doc=new DOMParser().parseFromString(html,"text/html");
+ const links=[...doc.querySelectorAll('a[href]')].map(a=>({url:new URL(a.getAttribute("href"),location.origin).pathname,title:(a.textContent||"").replace(/\s+/g," ").trim()})).filter(x=>x.url.startsWith("/")&&x.url.endsWith(".html")&&!x.url.includes("#")&&x.url!==url);
+ const unique=[...new Map(links.map(x=>[x.url,x])).values()];
+ const found=[];
+ for(let i=0;i<unique.length;i+=8){
+  const batch=await Promise.all(unique.slice(i,i+8).map(async x=>{
+   try{const h=await fetchText(x.url);const q=parseQuiz(h,x.url,x.title);return q?{url:x.url,title:x.title||pageTitle(new DOMParser().parseFromString(h,"text/html"),x.url),questions:q.questions}:null}catch(e){return null}
+  }));
+  found.push(...batch.filter(Boolean));
+ }
+ const result=[...new Map(found.map(x=>[x.url,x])).values()];
+ allQuizCache.set(url,result);return result
+}
+function renderSelected(){
+ selectedList.innerHTML="";
+ selected.forEach((s,i)=>{const row=document.createElement("div");row.className="cq-selected-item";const label=document.createElement("span");label.textContent=s.title+" · "+s.count+" प्रश्न";const remove=document.createElement("button");remove.className="cq-remove";remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","चैप्टर हटाएँ");remove.onclick=()=>{selected.splice(i,1);renderSelected()};row.append(label,remove);selectedList.appendChild(row)});
+}
+subject.addEventListener("change",async()=>{
+ chapter.innerHTML='<option value="">चैप्टर चुनें</option>';chapter.disabled=true;countWrap.hidden=true;available=[];selected=[];renderSelected();test.hidden=true;
+ if(!subject.value)return;
+ try{available=await loadSubject(subject.value);chapter.innerHTML='<option value="">चैप्टर चुनें</option>';available.forEach((x,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=x.title+" ("+x.questions.length+" प्रश्न)";chapter.appendChild(o)});chapter.disabled=!available.length;setStatus(available.length?"चैप्टर चुनें, फिर उससे प्रश्नों की संख्या तय करके जोड़ें।":"इस विषय के इंडेक्स से क्विज़ वाले चैप्टर नहीं मिले।");}
+ catch(e){setStatus("चैप्टर लोड नहीं हो पाए। कृपया इंटरनेट कनेक्शन जाँचकर दोबारा कोशिश करें।")}
+});
+chapter.addEventListener("change",()=>{countWrap.hidden=!chapter.value;if(chapter.value){const q=available[Number(chapter.value)];const opts=[...count.options];opts.forEach(o=>{o.disabled=Number(o.value)>q.questions.length});count.value=String([100,50,25,20,15,10,5].find(n=>n<=q.questions.length)||q.questions.length)}});
+$("cq-add-chapter").addEventListener("click",()=>{
+ if(!chapter.value)return;const q=available[Number(chapter.value)], n=Math.min(Number(count.value),q.questions.length);
+ if(selected.some(x=>x.url===q.url)){setStatus("यह चैप्टर पहले ही जोड़ा गया है।");return}
+ selected.push({url:q.url,title:q.title,count:n,questions:q.questions});renderSelected();setStatus("चैप्टर जोड़ दिया गया। चाहें तो दूसरे विषय से भी चैप्टर जोड़ें।");chapter.value="";countWrap.hidden=true;
+});
+function renderTest(){
+ const q=activeQuestions[activeIndex];test.hidden=false;test.innerHTML="";
+ if(!q){test.innerHTML="<h3>क्विज़ पूरा हुआ!</h3><p>आपका स्कोर: "+score+" / "+activeQuestions.length+"</p><button class='cq-test-next' id='cq-restart'>फिर से खेलें</button>";$("cq-restart").onclick=()=>{activeQuestions=shuffle(activeQuestions);activeIndex=0;score=0;renderTest()};test.scrollIntoView({behavior:"smooth",block:"start"});return}
+ const heading=document.createElement("h3");heading.textContent="प्रश्न "+(activeIndex+1)+" / "+activeQuestions.length;const prompt=document.createElement("strong");prompt.textContent=q.q;test.append(heading,prompt);
+ const opts=shuffle(q.options.map((text,index)=>({text,correct:index===q.correct})));
+ opts.forEach(o=>{const b=document.createElement("button");b.type="button";b.className="cq-test-option";b.textContent=o.text;b.onclick=()=>{[...test.querySelectorAll(".cq-test-option")].forEach(x=>x.disabled=true);if(o.correct){score++;b.classList.add("correct")}else{b.classList.add("wrong");const right=[...test.querySelectorAll(".cq-test-option")].find(x=>x.textContent===q.options[q.correct]);if(right)right.classList.add("correct")}if(q.explanation){const ex=document.createElement("p");ex.textContent=q.explanation;test.appendChild(ex)}const next=document.createElement("button");next.className="cq-test-next";next.textContent=activeIndex===activeQuestions.length-1?"परिणाम देखें":"अगला प्रश्न →";next.onclick=()=>{activeIndex++;renderTest()};test.appendChild(next)};test.appendChild(b)});
+ if(q.sourceUrl){const source=document.createElement("a");source.href=q.sourceUrl;source.textContent="मूल चैप्टर खोलें";source.target="_blank";source.rel="noopener";source.style.fontSize="12px";test.appendChild(source)}
+ test.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+$("cq-generate").addEventListener("click",()=>{
+ const total=Number($("cq-total").value);
+ if(!selected.length){setStatus("पहले कम-से-कम एक चैप्टर जोड़ें।");return}
+ const chosenTotal=selected.reduce((sum,s)=>sum+s.count,0);
+ if(chosenTotal!==total){setStatus("चुने हुए चैप्टरों की प्रश्न-संख्या "+chosenTotal+" है, जबकि कुल प्रश्न "+total+" चुने हैं। कुल प्रश्न या चैप्टरों की संख्या मिलाकर बराबर करें।");return}
+ const pool=selected.flatMap(s=>shuffle(s.questions).slice(0,s.count));
+ if(pool.length!==total){setStatus("कुछ चैप्टरों में उपलब्ध प्रश्नों की संख्या बदल गई है। कृपया चयन दोबारा करें।");return}
+ activeQuestions=shuffle(pool).map(q=>({...q,options:[...q.options]}));activeIndex=0;score=0;renderTest();setStatus("आपका रैंडम क्विज़ तैयार है।");
+});
+})();
+</script>
+
+<!-- ABOUT --><section class="section" id="about">
 <div class="section-heading">
 <h2>🎯 प्रतियोगी परीक्षाओं की संपूर्ण तैयारी: Lagale की कार्यप्रणाली और महत्व</h2>
 <p>सिविल सेवा (UPSC/State PSC), SSC, रेलवे और राज्य स्तरीय परीक्षाओं के लिए व्यवस्थित अध्ययन और आत्म-मूल्यांकन मार्गदर्शिका।</p>
