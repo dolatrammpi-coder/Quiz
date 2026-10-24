@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Mock Test 01 - Physics Practice Set | Quiz Engine</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Palette Button States */
+    .palette-btn {
+      position: relative;
+      transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+    .palette-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Status 1: Not Answered (Default Gray) */
+    .status-not-answered {
+      background-color: #f1f5f9;
+      color: #334155;
+      border: 1.5px solid #e2e8f0;
+    }
+
+    /* Status 2: Answered (Green) */
+    .status-answered {
+      background-color: #16a34a;
+      color: #ffffff;
+      border: 1.5px solid #15803d;
+      box-shadow: 0 2px 6px rgba(22, 163, 74, 0.22);
+    }
+
+    /* Status 3: Marked for Review (Purple) */
+    .status-marked {
+      background-color: #9333ea;
+      color: #ffffff;
+      border: 1.5px solid #7e22ce;
+      box-shadow: 0 2px 6px rgba(147, 51, 234, 0.22);
+    }
+
+    /* Status 4: Answered & Marked for Review (Pink) */
+    .status-answered-marked {
+      background-color: #db2777;
+      color: #ffffff;
+      border: 1.5px solid #be185d;
+      box-shadow: 0 2px 6px rgba(219, 39, 119, 0.25);
+    }
+
+    /* Active Question Ring Indicator */
+    .palette-active-ring {
+      outline: 2.5px solid #1d4ed8;
+      outline-offset: 2px;
+      font-weight: 700;
+    }
+
+    /* Option Card Transitions */
+    .option-row {
+      transition: all 0.15s ease-in-out;
+    }
+    .option-row:hover {
+      border-color: #93c5fd;
+      background-color: #f8fafc;
+    }
+    .option-row.selected {
+      background-color: #eff6ff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb;
+    }
+    .option-row:active {
+      transform: scale(0.995);
+    }
+
+    /* Urgent Timer Pulse */
+    @keyframes pulseUrgent {
+      0%, 100% {
+        background-color: #fef2f2;
+        border-color: #f87171;
+      }
+      50% {
+        background-color: #fee2e2;
+        border-color: #ef4444;
+      }
+    }
+    .timer-urgent {
+      animation: pulseUrgent 1.2s infinite ease-in-out;
+    }
+
+    /* Bottom Drawer Transition for Mobile Palette */
+    .drawer-backdrop {
+      transition: opacity 0.25s ease;
+    }
+    .drawer-sheet {
+      transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+
+  <!-- ========================================================= -->
+  <!-- TOP STICKY APPLICATION HEADER                             -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
+      
+      <!-- Left: Mobile Palette Drawer Toggle + Test Title -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <!-- Mobile Question Palette Trigger Button (Visible below lg) -->
+        <button
+          id="mobilePaletteOpenBtn"
+          type="button"
+          aria-label="Open Question Palette"
+          class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 active:scale-95 transition relative"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"></path>
+          </svg>
+          <!-- Live Attempted Badge on Mobile Menu Icon -->
+          <span
+            id="mobileAttemptBadge"
+            class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-600 text-white text-[10px] font-bold flex items-center justify-center"
+          >0</span>
+        </button>
+
+        <div class="truncate">
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base font-bold text-slate-900 truncate">Mock Test 01</h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-brand-700 border border-blue-200">
+              JEE Main Pattern
+            </span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-slate-500 truncate">Physics Practice Set • +4, -1 Marking</p>
+        </div>
+      </div>
+
+      <!-- Right: Instructions Button & Live Countdown Timer -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <!-- Instructions Info Button -->
+        <button
+          id="openInstructionsBtn"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition"
+          title="View Test Instructions"
+        >
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"></path>
+          </svg>
+          <span class="hidden sm:inline">Instructions</span>
+        </button>
+
+        <!-- Countdown Timer Pill -->
+        <div
+          id="timerBadge"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-red-600 font-semibold text-xs sm:text-sm tabular-nums shadow-xs"
+        >
+          <svg class="w-4 h-4 shrink-0 text-red-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span id="timerDisplay">05:00</span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- VIEW 1: ACTIVE QUIZ ENGINE VIEW                           -->
+  <!-- ========================================================= -->
+  <main id="quizView" class="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-3 sm:py-6 pb-24 lg:pb-8">
+    
+    <!-- Subject Pill & Quick Palette Trigger on Mobile -->
+    <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+      <div class="inline-flex items-center gap-1.5 bg-white p-1 rounded-full border border-slate-200 shadow-2xs">
+        <span class="px-3.5 py-1 rounded-full bg-brand-700 text-white text-xs font-semibold tracking-wide">
+          Physics
+        </span>
+        <span class="px-2.5 py-1 text-xs font-medium text-slate-500">
+          Single Correct MCQ
+        </span>
+      </div>
+
+      <!-- Mobile Question Palette Button (Explicit pill for easy thumb reach) -->
+      <button
+        id="mobilePalettePillBtn"
+        type="button"
+        class="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs active:bg-slate-100"
+      >
+        <span class="w-2 h-2 rounded-full bg-brand-600"></span>
+        <span>Question Palette</span>
+        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Main Responsive Grid: Left Question Section (8 cols) + Right Palette Sidebar (4 cols on desktop) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      
+      <!-- LEFT COLUMN: Question Card & Controls -->
+      <section class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+        
+        <!-- Question Top Bar: Question X of N, Status Badge & Mark Bookmark Icon -->
+        <div class="px-4 sm:px-6 py-3.5 border-b border-slate-100 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span id="questionCounterText" class="text-xs sm:text-sm font-bold text-slate-700">
+              Question 1 of 4
+            </span>
+            <span id="currentQuestionStatusBadge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200/80 text-slate-700">
+              Not Answered
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Marking Scheme Pill -->
+            <div class="inline-flex items-center gap-1 text-[11px] font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1">
+              <span class="text-emerald-600">+4</span>
+              <span class="text-slate-300">|</span>
+              <span class="text-red-500">-1</span>
+            </div>
+
+            <!-- Quick Bookmark / Mark for Review Icon Button -->
+            <button
+              id="topBookmarkBtn"
+              type="button"
+              title="Toggle Mark for Review"
+              aria-label="Toggle Mark for Review"
+              class="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-purple-600 hover:border-purple-200 transition"
+            >
+              <svg id="topBookmarkSvg" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Body & Options Container -->
+        <div class="p-4 sm:p-6 flex-1">
+          <!-- Question Text -->
+          <h2
+            id="questionText"
+            class="text-base sm:text-lg font-bold text-slate-900 leading-relaxed mb-5 select-text"
+          >
+            Loading question...
+          </h2>
+
+          <!-- 4 MCQ Options List -->
+          <div id="optionsContainer" class="space-y-3" role="radiogroup" aria-label="Question Options">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+          <!-- Secondary Control Bar: Clear Response & Mark for Review -->
+          <div class="mt-6 pt-4 border-t border-slate-100 grid grid-cols-2 gap-3">
+            <button
+              id="clearResponseBtn"
+              type="button"
+              class="inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold hover:bg-slate-100 active:scale-[0.99] transition disabled:opacity-45 disabled:pointer-events-none"
+            >
+              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              <span>Clear Response</span>
+            </button>
+
+            <button
+              id="markForReviewBtn"
+              type="button"
+              class="inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-brand-600 bg-white text-brand-700 text-xs sm:text-sm font-semibold hover:bg-blue-50 active:scale-[0.99] transition"
+            >
+              <svg id="markBtnSvg" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+              </svg>
+              <span id="markBtnText">Mark for Review</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Desktop Primary Navigation Bar (Hidden on mobile where sticky bottom bar is used) -->
+        <div class="hidden lg:flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-200 gap-4">
+          <button
+            id="desktopPrevBtn"
+            type="button"
+            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-100 active:scale-98 transition disabled:opacity-40 disabled:pointer-events-none"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            <span>Previous</span>
+          </button>
+
+          <div class="flex items-center gap-3">
+            <button
+              id="desktopSaveNextBtn"
+              type="button"
+              class="inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-sm font-semibold shadow-sm active:scale-98 transition"
+            >
+              <span id="desktopSaveNextText">Save &amp; Next</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: Desktop Question Palette & Status Summary Sidebar -->
+      <aside class="hidden lg:block lg:col-span-4 sticky top-22">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
+          <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-900">Question Palette</h3>
+            <span id="desktopAttemptSummaryText" class="text-xs font-semibold text-brand-700 bg-blue-50 px-2.5 py-0.5 rounded-full">
+              0 / 4 Attempted
+            </span>
+          </div>
+
+          <!-- Status Legend with Live Counts -->
+          <div class="grid grid-cols-2 gap-2.5 mb-5 text-xs">
+            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-sm bg-green-600 inline-block shrink-0"></span>
+                <span class="text-slate-700 font-medium">Answered</span>
+              </div>
+              <span id="desktopCountAnswered" class="font-bold text-slate-900">0</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-sm bg-slate-200 border border-slate-300 inline-block shrink-0"></span>
+                <span class="text-slate-700 font-medium">Not Answered</span>
+              </div>
+              <span id="desktopCountNotAnswered" class="font-bold text-slate-900">4</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-sm bg-purple-600 inline-block shrink-0"></span>
+                <span class="text-slate-700 font-medium">Marked</span>
+              </div>
+              <span id="desktopCountMarked" class="font-bold text-slate-900">0</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-sm bg-pink-600 inline-block shrink-0"></span>
+                <span class="text-slate-700 font-medium">Ans &amp; Marked</span>
+              </div>
+              <span id="desktopCountAnsweredMarked" class="font-bold text-slate-900">0</span>
+            </div>
+          </div>
+
+          <!-- Question Number Buttons Grid -->
+          <div class="mb-6">
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
+              Click a question number to jump
+            </p>
+            <div id="desktopPaletteGrid" class="grid grid-cols-5 gap-2.5">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Submit Test CTA -->
+          <button
+            id="desktopSubmitTestBtn"
+            type="button"
+            class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-xs transition flex items-center justify-center gap-2 active:scale-[0.99]"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>Submit Test</span>
+          </button>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- MOBILE STICKY BOTTOM NAVIGATION BAR                       -->
+  <!-- ========================================================= -->
+  <div
+    id="mobileBottomNav"
+    class="lg:hidden fixed bottom-0 inset-x-0 z-20 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 shadow-lg"
+  >
+    <div class="max-w-xl mx-auto grid grid-cols-12 gap-2 items-center">
+      <!-- Previous Button (4 cols) -->
+      <button
+        id="mobilePrevBtn"
+        type="button"
+        class="col-span-4 py-2.5 px-3 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold text-xs sm:text-sm flex items-center justify-center gap-1 active:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none"
+      >
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        <span>Previous</span>
+      </button>
+
+      <!-- Save & Next Button (5 cols) -->
+      <button
+        id="mobileSaveNextBtn"
+        type="button"
+        class="col-span-5 py-2.5 px-3 rounded-xl bg-brand-700 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-1 shadow-xs active:bg-brand-800"
+      >
+        <span id="mobileSaveNextText">Save &amp; Next</span>
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+
+      <!-- Quick Submit Button (3 cols) -->
+      <button
+        id="mobileSubmitBtn"
+        type="button"
+        class="col-span-3 py-2.5 px-2 rounded-xl bg-emerald-600 text-white font-semibold text-xs sm:text-sm flex items-center justify-center active:bg-emerald-700"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MOBILE QUESTION PALETTE DRAWER (SLIDE-UP SHEET)           -->
+  <!-- ========================================================= -->
+  <div
+    id="mobilePaletteModal"
+    class="fixed inset-0 z-40 hidden"
+    aria-hidden="true"
+  >
+    <!-- Backdrop -->
+    <div
+      id="mobilePaletteBackdrop"
+      class="drawer-backdrop absolute inset-0 bg-slate-900/50 opacity-0"
+    ></div>
+
+    <!-- Bottom Sheet Content -->
+    <div
+      id="mobilePaletteSheet"
+      class="drawer-sheet absolute bottom-0 inset-x-0 bg-white rounded-t-3xl shadow-2xl border-t border-slate-200 p-5 max-h-[85vh] overflow-y-auto translate-y-full"
+    >
+      <!-- Sheet Handle -->
+      <div class="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-3"></div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Question Palette</h3>
+          <p class="text-xs text-slate-500">Tap any question number to jump directly</p>
+        </div>
+        <button
+          id="mobilePaletteCloseBtn"
+          type="button"
+          class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200"
+          aria-label="Close Question Palette"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Status Legend (Matches Reference Screen 4) -->
+      <div class="grid grid-cols-2 gap-2.5 mb-5 text-xs">
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-sm bg-green-600 inline-block"></span>
+            <span class="text-slate-700 font-medium">Answered</span>
+          </div>
+          <span id="mobileCountAnswered" class="font-bold text-slate-900">0</span>
+        </div>
+
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-sm bg-slate-200 border border-slate-300 inline-block"></span>
+            <span class="text-slate-700 font-medium">Not Answered</span>
+          </div>
+          <span id="mobileCountNotAnswered" class="font-bold text-slate-900">4</span>
+        </div>
+
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-sm bg-purple-600 inline-block"></span>
+            <span class="text-slate-700 font-medium">Marked for Review</span>
+          </div>
+          <span id="mobileCountMarked" class="font-bold text-slate-900">0</span>
+        </div>
+
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-sm bg-pink-600 inline-block"></span>
+            <span class="text-slate-700 font-medium">Answered &amp; Marked</span>
+          </div>
+          <span id="mobileCountAnsweredMarked" class="font-bold text-slate-900">0</span>
+        </div>
+      </div>
+
+      <!-- Mobile Palette Question Grid -->
+      <div id="mobilePaletteGrid" class="grid grid-cols-5 gap-3 mb-6">
+        <!-- Populated dynamically via JS -->
+      </div>
+
+      <!-- Action Buttons inside Drawer -->
+      <div class="space-y-2.5">
+        <button
+          id="mobileReturnToCurrentBtn"
+          type="button"
+          class="w-full py-3 rounded-xl bg-brand-700 text-white font-semibold text-sm shadow-xs active:bg-brand-800"
+        >
+          Go to Question 1
+        </button>
+        <button
+          id="mobileDrawerSubmitBtn"
+          type="button"
+          class="w-full py-3 rounded-xl border border-emerald-600 bg-emerald-50 text-emerald-700 font-semibold text-sm active:bg-emerald-100"
+        >
+          Submit Test Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- SUBMIT CONFIRMATION MODAL (Matches Screen 5)              -->
+  <!-- ========================================================= -->
+  <div
+    id="submitConfirmModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-fadeIn">
+      <!-- Exclamation Circle Icon -->
+      <div class="w-16 h-16 rounded-full bg-red-50 border border-red-100 text-red-500 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
+        </svg>
+      </div>
+
+      <h3 class="text-xl font-extrabold text-center text-slate-900">Submit Test?</h3>
+      <p id="submitModalSummarySubtext" class="text-xs sm:text-sm text-center text-slate-500 mt-1 mb-5">
+        You have attempted 0 out of 4 questions.
+      </p>
+
+      <!-- Breakdown List -->
+      <div class="bg-slate-50 rounded-2xl border border-slate-200/80 divide-y divide-slate-200/70 mb-6">
+        <div class="flex items-center justify-between px-4 py-3 text-sm">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-green-600"></span>
+            <span class="text-slate-700 font-medium">Answered</span>
+          </div>
+          <span id="modalCountAnswered" class="font-bold text-slate-900">0</span>
+        </div>
+
+        <div class="flex items-center justify-between px-4 py-3 text-sm">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-slate-300"></span>
+            <span class="text-slate-700 font-medium">Not Answered</span>
+          </div>
+          <span id="modalCountNotAnswered" class="font-bold text-slate-900">4</span>
+        </div>
+
+        <div class="flex items-center justify-between px-4 py-3 text-sm">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-purple-600"></span>
+            <span class="text-slate-700 font-medium">Marked for Review</span>
+          </div>
+          <span id="modalCountMarked" class="font-bold text-slate-900">0</span>
+        </div>
+
+        <div class="flex items-center justify-between px-4 py-3 text-sm">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-pink-600"></span>
+            <span class="text-slate-700 font-medium">Answered &amp; Marked</span>
+          </div>
+          <span id="modalCountAnsweredMarked" class="font-bold text-slate-900">0</span>
+        </div>
+      </div>
+
+      <!-- Modal Action Buttons -->
+      <div class="space-y-2.5">
+        <button
+          id="confirmFinalSubmitBtn"
+          type="button"
+          class="w-full py-3.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm shadow-sm transition active:scale-[0.99]"
+        >
+          Submit Test
+        </button>
+        <button
+          id="cancelSubmitModalBtn"
+          type="button"
+          class="w-full py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- INSTRUCTIONS MODAL (Matches Screen 2 Info)                -->
+  <!-- ========================================================= -->
+  <div
+    id="instructionsModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-brand-700 flex items-center justify-center font-bold">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Mock Test 01 - Instructions</h3>
+            <p class="text-xs text-slate-500">JEE Main Pattern • Physics Practice Set</p>
+          </div>
+        </div>
+        <button
+          id="closeInstructionsModalBtn"
+          type="button"
+          class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="divide-y divide-slate-100 text-xs sm:text-sm mb-4">
+        <div class="py-2.5 flex justify-between">
+          <span class="text-slate-500">Total Questions</span>
+          <span id="instTotalQuestions" class="font-bold text-slate-900">4 MCQs</span>
+        </div>
+        <div class="py-2.5 flex justify-between">
+          <span class="text-slate-500">Maximum Marks</span>
+          <span id="instTotalMarks" class="font-bold text-slate-900">16 Marks</span>
+        </div>
+        <div class="py-2.5 flex justify-between">
+          <span class="text-slate-500">Duration</span>
+          <span class="font-bold text-slate-900">05 Minutes</span>
+        </div>
+        <div class="py-2.5 flex justify-between">
+          <span class="text-slate-500">Marking Scheme</span>
+          <span class="font-bold text-slate-900">+4 for Correct, -1 for Wrong, 0 for Skipped</span>
+        </div>
+      </div>
+
+      <div class="bg-red-50/80 border border-red-100 rounded-2xl p-4 mb-5">
+        <h4 class="text-xs font-bold text-red-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Important Instructions
+        </h4>
+        <ul class="text-xs text-slate-700 space-y-1.5 list-disc pl-4">
+          <li>The test will be <strong>auto-submitted</strong> once the countdown timer reaches 00:00.</li>
+          <li>You can navigate freely between questions using <strong>Previous</strong>, <strong>Save &amp; Next</strong>, or the <strong>Question Palette</strong>.</li>
+          <li>Questions marked as <strong>Answered &amp; Marked for Review</strong> WILL be evaluated for marks upon submission.</li>
+          <li>Use <strong>Clear Response</strong> anytime to unselect your chosen option.</li>
+        </ul>
+      </div>
+
+      <button
+        id="continueTestFromInstBtn"
+        type="button"
+        class="w-full py-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm transition"
+      >
+        Continue Test
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- VIEW 2: RESULT SUMMARY & DETAILED SOLUTIONS SCREEN        -->
+  <!-- ========================================================= -->
+  <section id="resultView" class="hidden flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 py-5 sm:py-8">
+    
+    <!-- Auto-Submit Alert Banner (Only shown if timer ran out) -->
+    <div
+      id="autoSubmitBanner"
+      class="hidden mb-5 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center gap-3 shadow-2xs"
+    >
+      <svg class="w-6 h-6 text-amber-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <div class="text-xs sm:text-sm">
+        <p class="font-bold">Time's Up! Test Auto-Submitted</p>
+        <p class="text-amber-700">Your saved responses up to 00:00 have been evaluated below.</p>
+      </div>
+    </div>
+
+    <!-- Top Result Summary Card (Matches Reference Screens 6 & 7) -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 sm:p-8 mb-6">
+      <div class="text-center max-w-md mx-auto mb-6">
+        <div class="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-emerald-500/20">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Test Submitted Successfully</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Mock Test 01 • Physics Practice Set Evaluation</p>
+      </div>
+
+      <!-- Primary Score & Percentage Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-5">
+        <!-- Total Score -->
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
+          <span class="text-xs font-semibold text-slate-500 block mb-1">Total Score</span>
+          <div class="text-xl sm:text-2xl font-extrabold text-emerald-600">
+            <span id="resScoreObtained">0</span>
+            <span class="text-slate-400 text-base font-bold">/ <span id="resMaxMarks">16</span></span>
+          </div>
+          <span id="resCorrectRawNote" class="text-[11px] text-slate-500 mt-0.5 block">With +4, -1 marking</span>
+        </div>
+
+        <!-- Percentage -->
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
+          <span class="text-xs font-semibold text-slate-500 block mb-1">Percentage</span>
+          <div id="resPercentage" class="text-xl sm:text-2xl font-extrabold text-brand-700">0%</div>
+          <span id="resAccuracyText" class="text-[11px] text-slate-500 mt-0.5 block">Accuracy: 0%</span>
+        </div>
+
+        <!-- Time Taken -->
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
+          <span class="text-xs font-semibold text-slate-500 block mb-1">Time Taken</span>
+          <div id="resTimeTaken" class="text-xl sm:text-2xl font-extrabold text-slate-800">0m 00s</div>
+          <span class="text-[11px] text-slate-500 mt-0.5 block">Out of 05m 00s</span>
+        </div>
+
+        <!-- Attempted Ratio -->
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
+          <span class="text-xs font-semibold text-slate-500 block mb-1">Attempted</span>
+          <div id="resAttemptedRatio" class="text-xl sm:text-2xl font-extrabold text-slate-800">0 / 4</div>
+          <span class="text-[11px] text-slate-500 mt-0.5 block">Questions Answered</span>
+        </div>
+      </div>
+
+      <!-- Correct / Incorrect / Skipped Breakdown & Visual Analysis -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-slate-50/70 rounded-2xl p-4 border border-slate-200/70 mb-6">
+        <!-- 3 Stat Boxes (7 cols) -->
+        <div class="md:col-span-7 grid grid-cols-3 gap-2.5">
+          <div class="bg-white rounded-xl p-3.5 border border-slate-200/80 text-center">
+            <span class="text-xs font-medium text-slate-500 block">Correct</span>
+            <span id="resCorrectCount" class="text-lg sm:text-xl font-extrabold text-emerald-600 mt-0.5 block">0</span>
+            <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mt-1 inline-block">+4 each</span>
+          </div>
+
+          <div class="bg-white rounded-xl p-3.5 border border-slate-200/80 text-center">
+            <span class="text-xs font-medium text-slate-500 block">Incorrect</span>
+            <span id="resIncorrectCount" class="text-lg sm:text-xl font-extrabold text-red-600 mt-0.5 block">0</span>
+            <span class="text-[10px] font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded-full mt-1 inline-block">-1 each</span>
+          </div>
+
+          <div class="bg-white rounded-xl p-3.5 border border-slate-200/80 text-center">
+            <span class="text-xs font-medium text-slate-500 block">Skipped</span>
+            <span id="resSkippedCount" class="text-lg sm:text-xl font-extrabold text-slate-700 mt-0.5 block">0</span>
+            <span class="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full mt-1 inline-block">0 marks</span>
+          </div>
+        </div>
+
+        <!-- Visual Progress Bar & Subject Accuracy (5 cols) -->
+        <div class="md:col-span-5 bg-white rounded-xl p-4 border border-slate-200/80">
+          <div class="flex items-center justify-between text-xs font-semibold mb-2">
+            <span class="text-slate-700">Question Breakdown</span>
+            <span id="resSubjectAccuracyLabel" class="text-brand-700">Physics (4 Qs)</span>
+          </div>
+          <!-- Multi-segment horizontal bar -->
+          <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden flex mb-2.5">
+            <div id="barCorrect" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+            <div id="barIncorrect" class="bg-red-500 h-full transition-all duration-500" style="width: 0%"></div>
+            <div id="barSkipped" class="bg-slate-300 h-full transition-all duration-500" style="width: 100%"></div>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-slate-500">
+            <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></i> Correct</span>
+            <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-red-500 inline-block"></i> Incorrect</span>
+            <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-slate-300 inline-block"></i> Skipped</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons: Scroll to Solutions & Retake Test -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a
+          href="#solutionsSection"
+          class="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm text-center shadow-xs transition"
+        >
+          View Detailed Solutions
+        </a>
+        <button
+          id="retakeTestBtn"
+          type="button"
+          class="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm flex items-center justify-center gap-2 transition active:scale-98"
+        >
+          <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Retake Test</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- SOLUTIONS & QUESTION-BY-QUESTION REVIEW (Screen 8)      -->
+    <!-- ======================================================= -->
+    <div id="solutionsSection" class="scroll-mt-20">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div>
+          <h3 class="text-lg font-extrabold text-slate-900">Detailed Solutions &amp; Answer Review</h3>
+          <p class="text-xs text-slate-500">Review your selected option, correct answer, and step-by-step Physics explanation</p>
+        </div>
+
+        <!-- Filter Pills (All, Correct, Incorrect, Unattempted) -->
+        <div id="solutionFilterBar" class="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <button
+            type="button"
+            data-filter="all"
+            class="sol-filter-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-brand-700 text-white whitespace-nowrap transition"
+          >
+            All Questions (4)
+          </button>
+          <button
+            type="button"
+            data-filter="correct"
+            class="sol-filter-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap transition"
+          >
+            Correct
+          </button>
+          <button
+            type="button"
+            data-filter="incorrect"
+            class="sol-filter-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap transition"
+          >
+            Incorrect
+          </button>
+          <button
+            type="button"
+            data-filter="unattempted"
+            class="sol-filter-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap transition"
+          >
+            Skipped
+          </button>
+        </div>
+      </div>
+
+      <!-- Solutions Cards Container -->
+      <div id="solutionsListContainer" class="space-y-4">
+        <!-- Populated dynamically via JS -->
+      </div>
+
+      <!-- Bottom Retake Test Button -->
+      <div class="mt-8 text-center">
+        <button
+          id="retakeTestBottomBtn"
+          type="button"
+          class="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm shadow-sm transition active:scale-98"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Retake Test Again</span>
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT QUIZ ENGINE                                    -->
+  <!-- ========================================================= -->
+  <script>
+    /**
+     * ========================================================================
+     * 1. EXTENSIBLE QUESTION BANK ARRAY (QUESTIONS_BANK)
+     * Add or import more questions into this array anytime; the entire UI,
+     * palette grid, timer, scoring, and solution review adapt automatically.
+     * ========================================================================
+     */
+    const QUESTIONS_BANK = [
+      {
+        id: 1,
+        subject: "Physics",
+        question: "Which of the following is a vector quantity?",
+        options: [
+          "Speed",
+          "Distance",
+          "Velocity",
+          "Energy"
+        ],
+        correctIndex: 2, // C: Velocity
+        marks: 4,
+        negativeMarks: 1,
+        explanation: "Velocity is a vector quantity because it possesses both magnitude and a specific direction (rate of change of displacement). Speed, distance, and energy only have magnitude and no direction, making them scalar quantities."
+      },
+      {
+        id: 2,
+        subject: "Physics",
+        question: "What is the SI unit of electric power, and which relation correctly defines it?",
+        options: [
+          "Joule (J = V × I)",
+          "Watt (W = V × I)",
+          "Coulomb (C = I / t)",
+          "Ohm (Ω = V × I)"
+        ],
+        correctIndex: 1, // B: Watt (W = V × I)
+        marks: 4,
+        negativeMarks: 1,
+        explanation: "The SI unit of electric power is the Watt (W). Electric power (P) is the rate at which electrical energy is dissipated or consumed in a circuit and is given by P = V × I = I²R = V²/R."
+      },
+      {
+        id: 3,
+        subject: "Physics",
+        question: "A body of mass 5 kg accelerates uniformly from rest at 3 m/s². What is the net force acting on the body?",
+        options: [
+          "8 N",
+          "15 N",
+          "1.67 N",
+          "45 N"
+        ],
+        correctIndex: 1, // B: 15 N
+        marks: 4,
+        negativeMarks: 1,
+        explanation: "According to Newton's Second Law of Motion, Net Force (F) = mass (m) × acceleration (a). Substituting m = 5 kg and a = 3 m/s², we get F = 5 kg × 3 m/s² = 15 N."
+      },
+      {
+        id: 4,
+        subject: "Physics",
+        question: "Total Internal Reflection (TIR) of light occurs when a light ray travels from:",
+        options: [
+          "An optically rarer medium to a denser medium at any angle",
+          "An optically denser medium to a rarer medium with angle of incidence greater than the critical angle",
+          "Vacuum into a glass slab at an angle of 45°",
+          "Air into water normal (90°) to the interface"
+        ],
+        correctIndex: 1, // B
+        marks: 4,
+        negativeMarks: 1,
+        explanation: "Two essential conditions for Total Internal Reflection (TIR) are: (1) Light must travel from an optically denser medium to an optically rarer medium, and (2) The angle of incidence (i) in the denser medium must exceed the critical angle (θc) for that pair of media."
+      }
+    ];
+
+    const OPTION_LABELS = ["A", "B", "C", "D"];
+    const DEFAULT_TEST_DURATION_SECONDS = 5 * 60; // 5 minutes (300 seconds) for 4 questions
+
+    /**
+     * ========================================================================
+     * 2. QUIZ ENGINE STATE
+     * ========================================================================
+     */
+    const state = {
+      currentIndex: 0,
+      // Array storing per-question user state: { selectedOption: number | null, markedForReview: boolean }
+      responses: [],
+      remainingSeconds: DEFAULT_TEST_DURATION_SECONDS,
+      timerIntervalId: null,
+      isSubmitted: false,
+      autoSubmitted: false,
+      solutionFilter: "all"
+    };
+
+    /**
+     * Initialize or reset the quiz state
+     */
+    function initQuizState() {
+      state.currentIndex = 0;
+      state.responses = QUESTIONS_BANK.map(() => ({
+        selectedOption: null,
+        markedForReview: false
+      }));
+      state.remainingSeconds = DEFAULT_TEST_DURATION_SECONDS;
+      state.isSubmitted = false;
+      state.autoSubmitted = false;
+      state.solutionFilter = "all";
+    }
+
+    /**
+     * Determine the exact status of a question at index `idx`
+     * Returns one of: 'answered' | 'not-answered' | 'marked' | 'answered-marked'
+     */
+    function getQuestionStatus(idx) {
+      const resp = state.responses[idx];
+      const hasAnswer = resp.selectedOption !== null;
+      const isMarked = resp.markedForReview;
+
+      if (hasAnswer && isMarked) return "answered-marked";
+      if (hasAnswer && !isMarked) return "answered";
+      if (!hasAnswer && isMarked) return "marked";
+      return "not-answered";
+    }
+
+    /**
+     * Calculate aggregate counts across all questions for the four statuses
+     */
+    function getStatusCounts() {
+      const counts = {
+        answered: 0,
+        notAnswered: 0,
+        marked: 0,
+        answeredMarked: 0,
+        totalAttempted: 0
+      };
+
+      for (let i = 0; i < QUESTIONS_BANK.length; i++) {
+        const st = getQuestionStatus(i);
+        if (st === "answered") {
+          counts.answered++;
+          counts.totalAttempted++;
+        } else if (st === "answered-marked") {
+          counts.answeredMarked++;
+          counts.totalAttempted++;
+        } else if (st === "marked") {
+          counts.marked++;
+        } else {
+          counts.notAnswered++;
+        }
+      }
+      return counts;
+    }
+
+    /**
+     * ========================================================================
+     * 3. DOM ELEMENT REFERENCES
+     * ========================================================================
+     */
+    const els = {
+      // Views
+      quizView: document.getElementById("quizView"),
+      resultView: document.getElementById("resultView"),
+      mobileBottomNav: document.getElementById("mobileBottomNav"),
+
+      // Header & Timer
+      timerBadge: document.getElementById("timerBadge"),
+      timerDisplay: document.getElementById("timerDisplay"),
+      mobileAttemptBadge: document.getElementById("mobileAttemptBadge"),
+
+      // Question Card Elements
+      questionCounterText: document.getElementById("questionCounterText"),
+      currentQuestionStatusBadge: document.getElementById("currentQuestionStatusBadge"),
+      topBookmarkBtn: document.getElementById("topBookmarkBtn"),
+      topBookmarkSvg: document.getElementById("topBookmarkSvg"),
+      questionText: document.getElementById("questionText"),
+      optionsContainer: document.getElementById("optionsContainer"),
+      clearResponseBtn: document.getElementById("clearResponseBtn"),
+      markForReviewBtn: document.getElementById("markForReviewBtn"),
+      markBtnSvg: document.getElementById("markBtnSvg"),
+      markBtnText: document.getElementById("markBtnText"),
+
+      // Navigation Buttons (Desktop & Mobile)
+      desktopPrevBtn: document.getElementById("desktopPrevBtn"),
+      desktopSaveNextBtn: document.getElementById("desktopSaveNextBtn"),
+      desktopSaveNextText: document.getElementById("desktopSaveNextText"),
+      desktopSubmitTestBtn: document.getElementById("desktopSubmitTestBtn"),
+      mobilePrevBtn: document.getElementById("mobilePrevBtn"),
+      mobileSaveNextBtn: document.getElementById("mobileSaveNextBtn"),
+      mobileSaveNextText: document.getElementById("mobileSaveNextText"),
+      mobileSubmitBtn: document.getElementById("mobileSubmitBtn"),
+
+      // Palette Grids & Counters (Desktop & Mobile Drawer)
+      desktopPaletteGrid: document.getElementById("desktopPaletteGrid"),
+      mobilePaletteGrid: document.getElementById("mobilePaletteGrid"),
+      desktopAttemptSummaryText: document.getElementById("desktopAttemptSummaryText"),
+      desktopCountAnswered: document.getElementById("desktopCountAnswered"),
+      desktopCountNotAnswered: document.getElementById("desktopCountNotAnswered"),
+      desktopCountMarked: document.getElementById("desktopCountMarked"),
+      desktopCountAnsweredMarked: document.getElementById("desktopCountAnsweredMarked"),
+      mobileCountAnswered: document.getElementById("mobileCountAnswered"),
+      mobileCountNotAnswered: document.getElementById("mobileCountNotAnswered"),
+      mobileCountMarked: document.getElementById("mobileCountMarked"),
+      mobileCountAnsweredMarked: document.getElementById("mobileCountAnsweredMarked"),
+
+      // Mobile Palette Drawer Elements
+      mobilePaletteOpenBtn: document.getElementById("mobilePaletteOpenBtn"),
+      mobilePalettePillBtn: document.getElementById("mobilePalettePillBtn"),
+      mobilePaletteModal: document.getElementById("mobilePaletteModal"),
+      mobilePaletteBackdrop: document.getElementById("mobilePaletteBackdrop"),
+      mobilePaletteSheet: document.getElementById("mobilePaletteSheet"),
+      mobilePaletteCloseBtn: document.getElementById("mobilePaletteCloseBtn"),
+      mobileReturnToCurrentBtn: document.getElementById("mobileReturnToCurrentBtn"),
+      mobileDrawerSubmitBtn: document.getElementById("mobileDrawerSubmitBtn"),
+
+      // Submit Confirmation Modal
+      submitConfirmModal: document.getElementById("submitConfirmModal"),
+      submitModalSummarySubtext: document.getElementById("submitModalSummarySubtext"),
+      modalCountAnswered: document.getElementById("modalCountAnswered"),
+      modalCountNotAnswered: document.getElementById("modalCountNotAnswered"),
+      modalCountMarked: document.getElementById("modalCountMarked"),
+      modalCountAnsweredMarked: document.getElementById("modalCountAnsweredMarked"),
+      confirmFinalSubmitBtn: document.getElementById("confirmFinalSubmitBtn"),
+      cancelSubmitModalBtn: document.getElementById("cancelSubmitModalBtn"),
+
+      // Instructions Modal
+      openInstructionsBtn: document.getElementById("openInstructionsBtn"),
+      instructionsModal: document.getElementById("instructionsModal"),
+      closeInstructionsModalBtn: document.getElementById("closeInstructionsModalBtn"),
+      continueTestFromInstBtn: document.getElementById("continueTestFromInstBtn"),
+      instTotalQuestions: document.getElementById("instTotalQuestions"),
+      instTotalMarks: document.getElementById("instTotalMarks"),
+
+      // Result View Elements
+      autoSubmitBanner: document.getElementById("autoSubmitBanner"),
+      resScoreObtained: document.getElementById("resScoreObtained"),
+      resMaxMarks: document.getElementById("resMaxMarks"),
+      resCorrectRawNote: document.getElementById("resCorrectRawNote"),
+      resPercentage: document.getElementById("resPercentage"),
+      resAccuracyText: document.getElementById("resAccuracyText"),
+      resTimeTaken: document.getElementById("resTimeTaken"),
+      resAttemptedRatio: document.getElementById("resAttemptedRatio"),
+      resCorrectCount: document.getElementById("resCorrectCount"),
+      resIncorrectCount: document.getElementById("resIncorrectCount"),
+      resSkippedCount: document.getElementById("resSkippedCount"),
+      barCorrect: document.getElementById("barCorrect"),
+      barIncorrect: document.getElementById("barIncorrect"),
+      barSkipped: document.getElementById("barSkipped"),
+      solutionsListContainer: document.getElementById("solutionsListContainer"),
+      solutionFilterBar: document.getElementById("solutionFilterBar"),
+      retakeTestBtn: document.getElementById("retakeTestBtn"),
+      retakeTestBottomBtn: document.getElementById("retakeTestBottomBtn")
+    };
+
+    /**
+     * ========================================================================
+     * 4. RENDERING FUNCTIONS
+     * ========================================================================
+     */
+
+    /**
+     * Render the active question card, options, status pill, and navigation states
+     */
+    function renderActiveQuestion() {
+      const total = QUESTIONS_BANK.length;
+      const idx = state.currentIndex;
+      const qObj = QUESTIONS_BANK[idx];
+      const userResp = state.responses[idx];
+      const qStatus = getQuestionStatus(idx);
+
+      // Update Question Counter
+      els.questionCounterText.textContent = `Question ${idx + 1} of ${total}`;
+
+      // Update Current Question Status Pill
+      const badgeConfig = {
+        "not-answered": {
+          text: "Not Answered",
+          classes: "bg-slate-200/80 text-slate-700"
+        },
+        "answered": {
+          text: "Answered",
+          classes: "bg-green-100 text-green-800 border border-green-200"
+        },
+        "marked": {
+          text: "Marked for Review",
+          classes: "bg-purple-100 text-purple-800 border border-purple-200"
+        },
+        "answered-marked": {
+          text: "Answered & Marked",
+          classes: "bg-pink-100 text-pink-800 border border-pink-200"
+        }
+      }[qStatus];
+
+      els.currentQuestionStatusBadge.className = `inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeConfig.classes}`;
+      els.currentQuestionStatusBadge.textContent = badgeConfig.text;
+
+      // Update Question Text
+      els.questionText.textContent = qObj.question;
+
+      // Render 4 MCQ Options
+      els.optionsContainer.innerHTML = "";
+      qObj.options.forEach((optText, optIdx) => {
+        const isSelected = userResp.selectedOption === optIdx;
+        const letter = OPTION_LABELS[optIdx] || String.fromCharCode(65 + optIdx);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.setAttribute("role", "radio");
+        btn.setAttribute("aria-checked", isSelected ? "true" : "false");
+        btn.className = `option-row w-full text-left p-3.5 sm:p-4 rounded-xl border border-slate-200 flex items-center gap-3.5 cursor-pointer ${
+          isSelected ? "selected" : "bg-white"
+        }`;
+
+        btn.innerHTML = `
+          <span class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0 transition ${
+            isSelected
+              ? "bg-brand-600 text-white shadow-xs"
+              : "bg-slate-100 text-slate-700 border border-slate-200"
+          }">
+            ${letter}
+          </span>
+          <span class="text-sm sm:text-base font-medium ${
+            isSelected ? "text-slate-900 font-semibold" : "text-slate-800"
+          } flex-1 leading-snug">
+            ${escapeHtml(optText)}
+          </span>
+          ${
+            isSelected
+              ? `<span class="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center shrink-0">
+                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                   </svg>
+                 </span>`
+              : ""
+          }
+        `;
+
+        btn.addEventListener("click", () => selectOption(optIdx));
+        els.optionsContainer.appendChild(btn);
+      });
+
+      // Update Clear Response Button State
+      els.clearResponseBtn.disabled = userResp.selectedOption === null;
+
+      // Update Mark for Review Button & Top Bookmark Icon
+      if (userResp.markedForReview) {
+        els.markForReviewBtn.className =
+          "inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-purple-600 bg-purple-50 text-purple-700 text-xs sm:text-sm font-semibold hover:bg-purple-100 active:scale-[0.99] transition";
+        els.markBtnSvg.setAttribute("fill", "currentColor");
+        els.markBtnText.textContent = "Marked for Review";
+
+        els.topBookmarkBtn.className =
+          "p-1.5 rounded-lg border border-purple-300 bg-purple-50 text-purple-600 transition";
+        els.topBookmarkSvg.setAttribute("fill", "currentColor");
+      } else {
+        els.markForReviewBtn.className =
+          "inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-brand-600 bg-white text-brand-700 text-xs sm:text-sm font-semibold hover:bg-blue-50 active:scale-[0.99] transition";
+        els.markBtnSvg.setAttribute("fill", "none");
+        els.markBtnText.textContent = "Mark for Review";
+
+        els.topBookmarkBtn.className =
+          "p-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-purple-600 hover:border-purple-200 transition";
+        els.topBookmarkSvg.setAttribute("fill", "none");
+      }
+
+      // Update Previous / Save & Next Button states
+      const isFirst = idx === 0;
+      const isLast = idx === total - 1;
+
+      els.desktopPrevBtn.disabled = isFirst;
+      els.mobilePrevBtn.disabled = isFirst;
+
+      els.desktopSaveNextText.textContent = isLast ? "Save & Finish" : "Save & Next";
+      els.mobileSaveNextText.textContent = isLast ? "Save & Finish" : "Save & Next";
+
+      // Update Mobile Drawer "Go to Question X" Button
+      els.mobileReturnToCurrentBtn.textContent = `Go to Question ${idx + 1}`;
+
+      // Sync Question Palette Grids & Live Status Counters
+      renderPaletteAndCounters();
+    }
+
+    /**
+     * Render both Desktop and Mobile Question Palette Grids and live status counters
+     */
+    function renderPaletteAndCounters() {
+      const counts = getStatusCounts();
+      const total = QUESTIONS_BANK.length;
+
+      // Update Desktop Counters
+      els.desktopAttemptSummaryText.textContent = `${counts.totalAttempted} / ${total} Attempted`;
+      els.desktopCountAnswered.textContent = counts.answered;
+      els.desktopCountNotAnswered.textContent = counts.notAnswered;
+      els.desktopCountMarked.textContent = counts.marked;
+      els.desktopCountAnsweredMarked.textContent = counts.answeredMarked;
+
+      // Update Mobile Counters & Top Badge
+      els.mobileAttemptBadge.textContent = counts.totalAttempted;
+      els.mobileCountAnswered.textContent = counts.answered;
+      els.mobileCountNotAnswered.textContent = counts.notAnswered;
+      els.mobileCountMarked.textContent = counts.marked;
+      els.mobileCountAnsweredMarked.textContent = counts.answeredMarked;
+
+      // Helper to build palette buttons inside a container
+      const buildGrid = (container, closeDrawerOnClick) => {
+        container.innerHTML = "";
+        QUESTIONS_BANK.forEach((q, i) => {
+          const st = getQuestionStatus(i);
+          const isCurrent = i === state.currentIndex;
+
+          const statusClass = {
+            "not-answered": "status-not-answered",
+            "answered": "status-answered",
+            "marked": "status-marked",
+            "answered-marked": "status-answered-marked"
+          }[st];
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.setAttribute("aria-label", `Jump to Question ${i + 1}`);
+          btn.className = `palette-btn h-11 rounded-xl font-bold text-sm flex flex-col items-center justify-center ${statusClass} ${
+            isCurrent ? "palette-active-ring" : ""
+          }`;
+
+          // Small indicator triangle/dot for marked states like Screen 4 in reference
+          const showSubIndicator = st === "marked" || st === "answered-marked";
+          btn.innerHTML = `
+            <span class="leading-none">${i + 1}</span>
+            ${
+              showSubIndicator
+                ? `<span class="text-[8px] leading-none mt-0.5 opacity-90">▼</span>`
+                : ""
+            }
+          `;
+
+          btn.addEventListener("click", () => {
+            goToQuestion(i);
+            if (closeDrawerOnClick) {
+              closeMobilePaletteDrawer();
+            }
+          });
+
+          container.appendChild(btn);
+        });
+      };
+
+      buildGrid(els.desktopPaletteGrid, false);
+      buildGrid(els.mobilePaletteGrid, true);
+    }
+
+    /**
+     * ========================================================================
+     * 5. QUIZ INTERACTION HANDLERS
+     * ========================================================================
+     */
+
+    /**
+     * Select an option for the current question
+     */
+    function selectOption(optionIdx) {
+      if (state.isSubmitted) return;
+      state.responses[state.currentIndex].selectedOption = optionIdx;
+      renderActiveQuestion();
+    }
+
+    /**
+     * Clear selected option for the current question
+     */
+    function clearCurrentResponse() {
+      if (state.isSubmitted) return;
+      state.responses[state.currentIndex].selectedOption = null;
+      renderActiveQuestion();
+    }
+
+    /**
+     * Toggle "Mark for Review" on the current question
+     */
+    function toggleMarkForReview() {
+      if (state.isSubmitted) return;
+      const currentResp = state.responses[state.currentIndex];
+      currentResp.markedForReview = !currentResp.markedForReview;
+      renderActiveQuestion();
+    }
+
+    /**
+     * Navigate directly to question index `targetIdx`
+     */
+    function goToQuestion(targetIdx) {
+      if (targetIdx < 0 || targetIdx >= QUESTIONS_BANK.length) return;
+      state.currentIndex = targetIdx;
+      renderActiveQuestion();
+    }
+
+    /**
+     * Handle "Previous" button click
+     */
+    function handlePrevious() {
+      if (state.currentIndex > 0) {
+        goToQuestion(state.currentIndex - 1);
+      }
+    }
+
+    /**
+     * Handle "Save & Next" button click
+     * Moves to the next question, or opens Submit Confirmation modal on the last question
+     */
+    function handleSaveAndNext() {
+      if (state.currentIndex < QUESTIONS_BANK.length - 1) {
+        goToQuestion(state.currentIndex + 1);
+      } else {
+        openSubmitConfirmModal();
+      }
+    }
+
+    /**
+     * ========================================================================
+     * 6. COUNTDOWN TIMER & AUTO-SUBMIT LOGIC
+     * ========================================================================
+     */
+    function formatTime(totalSeconds) {
+      const secs = Math.max(0, totalSeconds);
+      const minutes = Math.floor(secs / 60);
+      const remSeconds = secs % 60;
+      const mm = String(minutes).padStart(2, "0");
+      const ss = String(remSeconds).padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function updateTimerUI() {
+      els.timerDisplay.textContent = formatTime(state.remainingSeconds);
+
+      // Highlight urgent red pulse when under 60 seconds
+      if (state.remainingSeconds <= 60 && !state.isSubmitted) {
+        els.timerBadge.classList.add("timer-urgent");
+      } else {
+        els.timerBadge.classList.remove("timer-urgent");
+      }
+    }
+
+    function startCountdownTimer() {
+      stopCountdownTimer();
+      updateTimerUI();
+
+      state.timerIntervalId = setInterval(() => {
+        if (state.isSubmitted) {
+          stopCountdownTimer();
+          return;
+        }
+
+        state.remainingSeconds--;
+        updateTimerUI();
+
+        if (state.remainingSeconds <= 0) {
+          stopCountdownTimer();
+          handleAutoSubmitWhenTimeExpires();
+        }
+      }, 1000);
+    }
+
+    function stopCountdownTimer() {
+      if (state.timerIntervalId) {
+        clearInterval(state.timerIntervalId);
+        state.timerIntervalId = null;
+      }
+    }
+
+    function handleAutoSubmitWhenTimeExpires() {
+      state.autoSubmitted = true;
+      closeMobilePaletteDrawer();
+      closeSubmitConfirmModal();
+      closeInstructionsModal();
+      finalizeAndShowResults();
+    }
+
+    /**
+     * ========================================================================
+     * 7. MOBILE DRAWER & MODAL CONTROLS
+     * ========================================================================
+     */
+    function openMobilePaletteDrawer() {
+      renderPaletteAndCounters();
+      els.mobilePaletteModal.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        els.mobilePaletteBackdrop.classList.remove("opacity-0");
+        els.mobilePaletteBackdrop.classList.add("opacity-100");
+        els.mobilePaletteSheet.classList.remove("translate-y-full");
+        els.mobilePaletteSheet.classList.add("translate-y-0");
+      });
+    }
+
+    function closeMobilePaletteDrawer() {
+      els.mobilePaletteBackdrop.classList.remove("opacity-100");
+      els.mobilePaletteBackdrop.classList.add("opacity-0");
+      els.mobilePaletteSheet.classList.remove("translate-y-0");
+      els.mobilePaletteSheet.classList.add("translate-y-full");
+      setTimeout(() => {
+        els.mobilePaletteModal.classList.add("hidden");
+      }, 260);
+    }
+
+    function openSubmitConfirmModal() {
+      const counts = getStatusCounts();
+      const total = QUESTIONS_BANK.length;
+
+      els.submitModalSummarySubtext.textContent = `You have attempted ${counts.totalAttempted} out of ${total} questions.`;
+      els.modalCountAnswered.textContent = counts.answered;
+      els.modalCountNotAnswered.textContent = counts.notAnswered;
+      els.modalCountMarked.textContent = counts.marked;
+      els.modalCountAnsweredMarked.textContent = counts.answeredMarked;
+
+      els.submitConfirmModal.classList.remove("hidden");
+      els.submitConfirmModal.classList.add("flex");
+    }
+
+    function closeSubmitConfirmModal() {
+      els.submitConfirmModal.classList.add("hidden");
+      els.submitConfirmModal.classList.remove("flex");
+    }
+
+    function openInstructionsModal() {
+      const totalQ = QUESTIONS_BANK.length;
+      const totalMarks = QUESTIONS_BANK.reduce((acc, q) => acc + (q.marks || 4), 0);
+      els.instTotalQuestions.textContent = `${totalQ} MCQs`;
+      els.instTotalMarks.textContent = `${totalMarks} Marks`;
+
+      els.instructionsModal.classList.remove("hidden");
+      els.instructionsModal.classList.add("flex");
+    }
+
+    function closeInstructionsModal() {
+      els.instructionsModal.classList.add("hidden");
+      els.instructionsModal.classList.remove("flex");
+    }
+
+    /**
+     * ========================================================================
+     * 8. RESULT CALCULATION, SCORE SUMMARY & DETAILED SOLUTIONS
+     * ========================================================================
+     */
+    function finalizeAndShowResults() {
+      if (state.isSubmitted) return;
+      state.isSubmitted = true;
+      stopCountdownTimer();
+      closeSubmitConfirmModal();
+      closeMobilePaletteDrawer();
+
+      // Calculate Scores & Breakdown
+      let totalScore = 0;
+      let maxMarks = 0;
+      let correctCount = 0;
+      let incorrectCount = 0;
+      let skippedCount = 0;
+
+      QUESTIONS_BANK.forEach((q, idx) => {
+        const qMarks = q.marks ?? 4;
+        const qNeg = q.negativeMarks ?? 1;
+        maxMarks += qMarks;
+
+        const userChoice = state.responses[idx].selectedOption;
+        if (userChoice === null) {
+          skippedCount++;
+        } else if (userChoice === q.correctIndex) {
+          correctCount++;
+          totalScore += qMarks;
+        } else {
+          incorrectCount++;
+          totalScore -= qNeg;
+        }
+      });
+
+      const totalQuestions = QUESTIONS_BANK.length;
+      const attemptedCount = correctCount + incorrectCount;
+
+      // Percentage based on Max Marks (clamped >= 0% for display clarity)
+      const rawPercentage = maxMarks > 0 ? Math.max(0, (totalScore / maxMarks) * 100) : 0;
+      const accuracyPercentage = attemptedCount > 0 ? (correctCount / attemptedCount) * 100 : 0;
+
+      // Time Taken calculation
+      const elapsedSeconds = Math.max(0, DEFAULT_TEST_DURATION_SECONDS - state.remainingSeconds);
+      const elapsedMins = Math.floor(elapsedSeconds / 60);
+      const elapsedRemSecs = elapsedSeconds % 60;
+
+      // Populate Result Summary DOM
+      els.resScoreObtained.textContent = totalScore;
+      els.resMaxMarks.textContent = maxMarks;
+      els.resCorrectRawNote.textContent = `${correctCount} Correct out of ${totalQuestions} Qs`;
+      els.resPercentage.textContent = `${rawPercentage.toFixed(1).replace(/\.0$/, "")}%`;
+      els.resAccuracyText.textContent = `Accuracy: ${accuracyPercentage.toFixed(0)}%`;
+      els.resTimeTaken.textContent = `${elapsedMins}m ${String(elapsedRemSecs).padStart(2, "0")}s`;
+      els.resAttemptedRatio.textContent = `${attemptedCount} / ${totalQuestions}`;
+
+      els.resCorrectCount.textContent = correctCount;
+      els.resIncorrectCount.textContent = incorrectCount;
+      els.resSkippedCount.textContent = skippedCount;
+
+      // Update Horizontal Breakdown Bar widths
+      els.barCorrect.style.width = `${(correctCount / totalQuestions) * 100}%`;
+      els.barIncorrect.style.width = `${(incorrectCount / totalQuestions) * 100}%`;
+      els.barSkipped.style.width = `${(skippedCount / totalQuestions) * 100}%`;
+
+      // Show or Hide Auto-Submit Banner
+      if (state.autoSubmitted) {
+        els.autoSubmitBanner.classList.remove("hidden");
+      } else {
+        els.autoSubmitBanner.classList.add("hidden");
+      }
+
+      // Update Filter Tab Labels with Live Counts
+      const filterButtons = els.solutionFilterBar.querySelectorAll(".sol-filter-btn");
+      filterButtons.forEach((btn) => {
+        const filterType = btn.getAttribute("data-filter");
+        if (filterType === "all") btn.textContent = `All Questions (${totalQuestions})`;
+        if (filterType === "correct") btn.textContent = `Correct (${correctCount})`;
+        if (filterType === "incorrect") btn.textContent = `Incorrect (${incorrectCount})`;
+        if (filterType === "unattempted") btn.textContent = `Skipped (${skippedCount})`;
+      });
+
+      // Reset solution filter to 'all' and render solution cards
+      setSolutionFilter("all");
+
+      // Switch Views: Hide Quiz View & Mobile Bottom Bar, Show Result View
+      els.quizView.classList.add("hidden");
+      els.mobileBottomNav.classList.add("hidden");
+      els.resultView.classList.remove("hidden");
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    /**
+     * Filter and render the Detailed Solutions cards
+     */
+    function setSolutionFilter(filterType) {
+      state.solutionFilter = filterType;
+
+      // Update active button styling
+      const filterButtons = els.solutionFilterBar.querySelectorAll(".sol-filter-btn");
+      filterButtons.forEach((btn) => {
+        const isMatch = btn.getAttribute("data-filter") === filterType;
+        btn.className = isMatch
+          ? "sol-filter-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-brand-700 text-white whitespace-nowrap transition shadow-2xs"
+          : "sol-filter-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap transition";
+      });
+
+      renderSolutionsList();
+    }
+
+    function renderSolutionsList() {
+      els.solutionsListContainer.innerHTML = "";
+
+      const filteredQuestions = QUESTIONS_BANK.map((q, index) => ({ q, index })).filter(({ q, index }) => {
+        const userChoice = state.responses[index].selectedOption;
+        if (state.solutionFilter === "correct") return userChoice === q.correctIndex;
+        if (state.solutionFilter === "incorrect") return userChoice !== null && userChoice !== q.correctIndex;
+        if (state.solutionFilter === "unattempted") return userChoice === null;
+        return true;
+      });
+
+      if (filteredQuestions.length === 0) {
+        els.solutionsListContainer.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 text-sm">
+            No questions found in this filter category.
+          </div>
+        `;
+        return;
+      }
+
+      filteredQuestions.forEach(({ q, index }) => {
+        const userResp = state.responses[index];
+        const userChoice = userResp.selectedOption;
+        const isSkipped = userChoice === null;
+        const isCorrect = userChoice === q.correctIndex;
+
+        // Status badge config
+        let badgeHtml = "";
+        if (isSkipped) {
+          badgeHtml = `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">Skipped (0)</span>`;
+        } else if (isCorrect) {
+          badgeHtml = `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Correct (+${q.marks ?? 4})</span>`;
+        } else {
+          badgeHtml = `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">Incorrect (-${q.negativeMarks ?? 1})</span>`;
+        }
+
+        // Build options list HTML
+        const optionsHtml = q.options
+          .map((optText, optIdx) => {
+            const letter = OPTION_LABELS[optIdx] || String.fromCharCode(65 + optIdx);
+            const isThisCorrect = optIdx === q.correctIndex;
+            const isThisUserSelected = optIdx === userChoice;
+
+            let rowClasses = "border-slate-200 bg-white text-slate-700";
+            let badgeClasses = "bg-slate-100 text-slate-700 border border-slate-200";
+            let rightTag = "";
+
+            if (isThisCorrect) {
+              rowClasses = "border-emerald-500 bg-emerald-50/70 text-emerald-950 font-semibold";
+              badgeClasses = "bg-emerald-600 text-white";
+              rightTag = `<span class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md shrink-0">Correct Answer</span>`;
+            } else if (isThisUserSelected && !isThisCorrect) {
+              rowClasses = "border-red-400 bg-red-50/70 text-red-950 font-semibold";
+              badgeClasses = "bg-red-600 text-white";
+              rightTag = `<span class="text-[11px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-md shrink-0">Your Choice</span>`;
+            }
+
+            return `
+              <div class="p-3 rounded-xl border ${rowClasses} flex items-center justify-between gap-3 text-xs sm:text-sm">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${badgeClasses}">
+                    ${letter}
+                  </span>
+                  <span class="leading-snug break-words">${escapeHtml(optText)}</span>
+                </div>
+                ${rightTag}
+              </div>
+            `;
+          })
+          .join("");
+
+        const userChoiceLabel = isSkipped
+          ? "Not Attempted (Skipped)"
+          : `Option ${OPTION_LABELS[userChoice]} (${q.options[userChoice]})`;
+        const correctChoiceLabel = `Option ${OPTION_LABELS[q.correctIndex]} (${q.options[q.correctIndex]})`;
+
+        const card = document.createElement("article");
+        card.className = "bg-white rounded-2xl border border-slate-200 shadow-2xs p-4 sm:p-6";
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 pb-3 mb-3.5 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-extrabold text-slate-900">Q${index + 1}</span>
+              ${badgeHtml}
+              ${
+                userResp.markedForReview
+                  ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">Marked for Review</span>`
+                  : ""
+              }
+            </div>
+            <span class="text-xs font-medium text-slate-400">${escapeHtml(q.subject || "Physics")}</span>
+          </div>
+
+          <h4 class="text-sm sm:text-base font-bold text-slate-900 mb-4 leading-relaxed">
+            ${escapeHtml(q.question)}
+          </h4>
+
+          <div class="space-y-2.5 mb-4">
+            ${optionsHtml}
+          </div>
+
+          <!-- Your Answer vs Correct Answer Summary Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs mb-3.5">
+            <div>
+              <span class="text-slate-500 font-medium">Your Answer: </span>
+              <span class="font-bold ${
+                isSkipped ? "text-slate-600" : isCorrect ? "text-emerald-700" : "text-red-600"
+              }">${escapeHtml(userChoiceLabel)}</span>
+            </div>
+            <div>
+              <span class="text-slate-500 font-medium">Correct Answer: </span>
+              <span class="font-bold text-emerald-700">${escapeHtml(correctChoiceLabel)}</span>
+            </div>
+          </div>
+
+          <!-- Explanation Box -->
+          <div class="p-4 rounded-xl bg-blue-50/60 border border-blue-200/70">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-brand-800 uppercase tracking-wider mb-1">
+              <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"></path>
+              </svg>
+              <span>Solution &amp; Explanation</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+              ${escapeHtml(q.explanation)}
+            </p>
+          </div>
+        `;
+
+        els.solutionsListContainer.appendChild(card);
+      });
+    }
+
+    /**
+     * ========================================================================
+     * 9. RETAKE TEST (RESET ENGINE)
+     * ========================================================================
+     */
+    function retakeTest() {
+      stopCountdownTimer();
+      initQuizState();
+
+      // Switch back to Quiz View
+      els.resultView.classList.add("hidden");
+      els.quizView.classList.remove("hidden");
+      els.mobileBottomNav.classList.remove("hidden");
+
+      renderActiveQuestion();
+      startCountdownTimer();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    /**
+     * Utility: Safe HTML escaping
+     */
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /**
+     * ========================================================================
+     * 10. EVENT LISTENERS & INITIALIZATION
+     * ========================================================================
+     */
+    function bindEvents() {
+      // Secondary Question Controls
+      els.clearResponseBtn.addEventListener("click", clearCurrentResponse);
+      els.markForReviewBtn.addEventListener("click", toggleMarkForReview);
+      els.topBookmarkBtn.addEventListener("click", toggleMarkForReview);
+
+      // Primary Navigation Controls (Desktop & Mobile)
+      els.desktopPrevBtn.addEventListener("click", handlePrevious);
+      els.mobilePrevBtn.addEventListener("click", handlePrevious);
+      els.desktopSaveNextBtn.addEventListener("click", handleSaveAndNext);
+      els.mobileSaveNextBtn.addEventListener("click", handleSaveAndNext);
+
+      // Submit Test Triggers
+      els.desktopSubmitTestBtn.addEventListener("click", openSubmitConfirmModal);
+      els.mobileSubmitBtn.addEventListener("click", openSubmitConfirmModal);
+      els.mobileDrawerSubmitBtn.addEventListener("click", () => {
+        closeMobilePaletteDrawer();
+        openSubmitConfirmModal();
+      });
+
+      // Submit Confirmation Modal Buttons
+      els.confirmFinalSubmitBtn.addEventListener("click", finalizeAndShowResults);
+      els.cancelSubmitModalBtn.addEventListener("click", closeSubmitConfirmModal);
+      els.submitConfirmModal.addEventListener("click", (e) => {
+        if (e.target === els.submitConfirmModal) closeSubmitConfirmModal();
+      });
+
+      // Mobile Question Palette Drawer Triggers
+      els.mobilePaletteOpenBtn.addEventListener("click", openMobilePaletteDrawer);
+      els.mobilePalettePillBtn.addEventListener("click", openMobilePaletteDrawer);
+      els.mobilePaletteCloseBtn.addEventListener("click", closeMobilePaletteDrawer);
+      els.mobilePaletteBackdrop.addEventListener("click", closeMobilePaletteDrawer);
+      els.mobileReturnToCurrentBtn.addEventListener("click", closeMobilePaletteDrawer);
+
+      // Instructions Modal Triggers
+      els.openInstructionsBtn.addEventListener("click", openInstructionsModal);
+      els.closeInstructionsModalBtn.addEventListener("click", closeInstructionsModal);
+      els.continueTestFromInstBtn.addEventListener("click", closeInstructionsModal);
+      els.instructionsModal.addEventListener("click", (e) => {
+        if (e.target === els.instructionsModal) closeInstructionsModal();
+      });
+
+      // Solution Filter Buttons
+      els.solutionFilterBar.querySelectorAll(".sol-filter-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const filter = btn.getAttribute("data-filter");
+          setSolutionFilter(filter);
+        });
+      });
+
+      // Retake Test Buttons
+      els.retakeTestBtn.addEventListener("click", retakeTest);
+      els.retakeTestBottomBtn.addEventListener("click", retakeTest);
+
+      // Keyboard navigation support (Left/Right arrows for Prev/Next, 1-4 for options)
+      window.addEventListener("keydown", (e) => {
+        if (state.isSubmitted) return;
+        const anyModalOpen =
+          !els.submitConfirmModal.classList.contains("hidden") ||
+          !els.instructionsModal.classList.contains("hidden") ||
+          !els.mobilePaletteModal.classList.contains("hidden");
+        if (anyModalOpen) return;
+
+        if (e.key === "ArrowRight") {
+          handleSaveAndNext();
+        } else if (e.key === "ArrowLeft") {
+          handlePrevious();
+        } else if (["1", "2", "3", "4"].includes(e.key)) {
+          const idx = parseInt(e.key, 10) - 1;
+          if (idx < QUESTIONS_BANK[state.currentIndex].options.length) {
+            selectOption(idx);
+          }
+        }
+      });
+    }
+
+    // Boot the Quiz Engine on DOM load
+    window.addEventListener("DOMContentLoaded", () => {
+      initQuizState();
+      bindEvents();
+      renderActiveQuestion();
+      startCountdownTimer();
+    });
+  </script>
+</body>
+</html>
