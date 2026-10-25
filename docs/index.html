@@ -923,7 +923,7 @@ a{
             <span>लक्ष्य रिवीजन · Part-wise Notes</span>
 </div>
 </a>
-<a class="subject-tile" href="https://lagale.in/test-series/" aria-label="Open Test Series">
+<a class="subject-tile" href="/test-series/">
 <div class="subject-icon">📝</div>
 <div class="subject-name">
             Test Series
@@ -1043,67 +1043,71 @@ a{
 </style>
 <script>
 (function(){
-"use strict";
 const subjects=[["इतिहास","/history/index.html"],["भूगोल","/geography/index.html"],["पर्यावरण","/environment/index.html"],["कला व संस्कृति","/art-culture/index.html"],["राजव्यवस्था","/polity/index.html"],["करंट अफेयर्स","/current-affairs/index.html"],["विज्ञान","/science/index.html"],["कंप्यूटर","/computer/index.html"],["अर्थव्यवस्था","/economy/index.html"],["हिंदी","/hindi/index.html"],["English","/english/index.html"],["उत्तर प्रदेश GK","/uttar-pradesh-gk/index.html"],["उत्तराखंड GK","/uttarakhand-gk/index.html"],["विविध सामान्य ज्ञान","/miscellaneous-gk/index.html"]];
-const $=id=>document.getElementById(id),subject=$("cq-subject"),chapter=$("cq-chapter"),count=$("cq-chapter-count"),countWrap=$("cq-chapter-count-wrap"),status=$("cq-status"),selectedList=$("cq-selected-list"),test=$("cq-test"),totalInput=$("cq-total");
-subjects.forEach(([n,u])=>{const o=document.createElement("option");o.value=u;o.textContent=n;subject.appendChild(o)});
-let available=[],selected=[],cache=new Map(),activeQuestions=[],activeIndex=0,score=0,loadToken=0;
+const $=id=>document.getElementById(id),subject=$("cq-subject"),chapter=$("cq-chapter"),count=$("cq-chapter-count"),countWrap=$("cq-chapter-count-wrap"),status=$("cq-status"),selectedList=$("cq-selected-list"),test=$("cq-test");
+subjects.forEach(([n,u])=>{let o=document.createElement("option");o.value=u;o.textContent=n;subject.appendChild(o)});
+let available=[],selected=[],cache=new Map(),activeQuestions=[],activeIndex=0,score=0;
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const total=()=>Number(totalInput.value),used=()=>selected.reduce((s,x)=>s+x.count,0),remaining=()=>Math.max(0,total()-used()),setStatus=s=>status.textContent=s;
-function setCountOptions(max,preferred){count.replaceChildren();const cap=Math.max(0,Math.min(Number(max)||0,remaining()));[1,2,3,4,5,10,15,20,25,50,75,100,150,200].filter(n=>n<=cap).forEach(n=>count.add(new Option(n+" प्रश्न",String(n))));if(cap>0&&![...count.options].some(o=>Number(o.value)===cap))count.add(new Option(cap+" प्रश्न (बाकी)",String(cap)));if(cap>0)count.value=String(preferred&&preferred<=cap?preferred:Math.min(10,cap));else{count.add(new Option("कोई प्रश्न बाकी नहीं","0"));count.value="0"}}
-function renderSelected(){selectedList.replaceChildren();selected.forEach((s,i)=>{const row=document.createElement("div");row.className="cq-selected-item";const label=document.createElement("span");label.textContent=s.title+" · "+s.count+" प्रश्न";const remove=document.createElement("button");remove.className="cq-remove";remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","चयन हटाएँ");remove.onclick=()=>{selected.splice(i,1);renderSelected();setStatus("चयन हटाया। अब "+remaining()+" प्रश्न बाकी हैं।")};row.append(label,remove);selectedList.appendChild(row)});refreshCount()}
-function refreshCount(){const q=chapter.value&&available[Number(chapter.value)];setCountOptions(q?q.questions.length:remaining(),Number(count.value)||10);$("cq-add-chapter").disabled=!q||remaining()===0;$("cq-add-subject").disabled=!subject.value||remaining()===0;setStatus("कुल "+total()+" में से "+used()+" चुने गए · "+remaining()+" प्रश्न बाकी।")}
-async function fetchText(url){const r=await fetch(url,{credentials:"same-origin"});if(!r.ok)throw Error("लोड नहीं हुआ: "+url);return r.text()}
+const total=()=>Number($("cq-total").value),used=()=>selected.reduce((s,x)=>s+x.count,0),remaining=()=>Math.max(0,total()-used()),setStatus=s=>status.textContent=s;
+function setCountOptions(max,preferred){count.innerHTML="";let cap=Math.max(0,Math.min(max,remaining()));[1,2,3,4,5,10,15,20,25,50,75,100,150,200].filter(n=>n<=cap).forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n+" प्रश्न";count.appendChild(o)});if(cap>0&&![...count.options].some(o=>Number(o.value)===cap)){let o=document.createElement("option");o.value=cap;o.textContent=cap+" प्रश्न (बाकी)";count.appendChild(o)}if(cap>0)count.value=String(preferred&&preferred<=cap?preferred:Math.min(10,cap));else{let o=document.createElement("option");o.value="0";o.textContent="कोई प्रश्न बाकी नहीं";count.appendChild(o);count.value="0"}}
+function renderSelected(){selectedList.innerHTML="";selected.forEach((s,i)=>{let row=document.createElement("div");row.className="cq-selected-item";let label=document.createElement("span");label.textContent=s.title+" · "+s.count+" प्रश्न";let remove=document.createElement("button");remove.className="cq-remove";remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","चयन हटाएँ");remove.onclick=()=>{selected.splice(i,1);renderSelected();setStatus("चयन हटाया। अब "+remaining()+" प्रश्न बाकी हैं।")};row.append(label,remove);selectedList.appendChild(row)});refreshCount()}
+function refreshCount(){setCountOptions(chapter.value&&available[Number(chapter.value)]?available[Number(chapter.value)].questions.length:remaining(),Number(count.value)||10);$("cq-add-chapter").disabled=!chapter.value||remaining()===0;$("cq-add-subject").disabled=!subject.value||remaining()===0;setStatus("कुल "+total()+" में से "+used()+" चुने गए · "+remaining()+" प्रश्न बाकी।")}
+async function fetchText(url){let r=await fetch(url,{credentials:"same-origin"});if(!r.ok)throw Error("लोड नहीं हुआ");return r.text()}
 function parseQuiz(html,url,title){
  const marker=/(?:let|const|var)\s+allQuestionsData\s*=\s*/.exec(html);if(!marker)return null;
  const begin=marker.index+marker[0].length;if(html[begin]!=="[")return null;
  let depth=0,inString=false,escaped=false,end=-1;
- for(let i=begin;i<html.length;i++){const ch=html[i];if(inString){if(escaped)escaped=false;else if(ch==="\\\\")escaped=true;else if(ch==='"')inString=false;continue}if(ch==='"'){inString=true;continue}if(ch==="[")depth++;else if(ch==="]"){depth--;if(depth===0){end=i+1;break}}}
+ for(let i=begin;i<html.length;i++){
+  const ch=html[i];
+  if(inString){if(escaped)escaped=false;else if(ch==="\\\\")escaped=true;else if(ch==='"')inString=false;continue}
+  if(ch==='"'){inString=true;continue}
+  if(ch==="[")depth++;else if(ch==="]"){depth--;if(depth===0){end=i+1;break}}
+ }
  if(end<0)return null;
- try{const data=JSON.parse(html.slice(begin,end));if(!Array.isArray(data))return null;
-  const questions=data.filter(q=>q&&typeof q.q==="string"&&q.q.trim()&&Array.isArray(q.options)&&q.options.length>=2&&Number.isInteger(q.correct)&&q.correct>=0&&q.correct<q.options.length).map(q=>({...q,sourceUrl:url}));
+ try{
+  const data=JSON.parse(html.slice(begin,end));
+  if(!Array.isArray(data))return null;
+  const questions=data.filter(q=>q&&q.q&&Array.isArray(q.options)&&Number.isInteger(q.correct)&&q.options[q.correct]!==undefined).map(q=>({...q,sourceUrl:url}));
   return questions.length?{url,title,questions}:null;
  }catch(e){return null}
 }
-function collectChapterLinks(doc,baseUrl){
- const seen=new Map(),basePath=new URL(baseUrl,location.origin).pathname;
- for(const a of doc.querySelectorAll("a[href]")){
-  let u;try{u=new URL(a.getAttribute("href"),new URL(baseUrl,location.origin))}catch(e){continue}
-  if(u.origin!==location.origin)continue;
-  let p=u.pathname;if(p.endsWith("/"))p+="index.html";
-  if(!p.endsWith(".html")||p===basePath||p==="/index.html")continue;
-  const title=(a.textContent||"").replace(/\s+/g," ").trim();
-  if(!seen.has(p))seen.set(p,{url:p,title});
- }
- return [...seen.values()];
-}
-async function loadSubject(url,token){
+async function loadSubject(url){
  if(cache.has(url))return cache.get(url);
  setStatus("इस विषय के चैप्टर और प्रश्न लोड हो रहे हैं…");
- const html=await fetchText(url),doc=new DOMParser().parseFromString(html,"text/html"),links=collectChapterLinks(doc,url),found=[];
- for(let i=0;i<links.length;i+=8){
-  if(token!==loadToken)throw Error("लोड रद्द हुआ");
-  const batch=await Promise.all(links.slice(i,i+8).map(async x=>{try{const h=await fetchText(x.url),q=parseQuiz(h,x.url,x.title);return q?{...q,title:x.title||q.title||x.url}:null}catch(e){return null}}));
-  found.push(...batch.filter(Boolean));
- }
+ const html=await fetchText(url),doc=new DOMParser().parseFromString(html,"text/html");
+ const links=[...doc.querySelectorAll("a[href]")].map(a=>{let p=new URL(a.getAttribute("href"),location.origin).pathname;if(p.endsWith("/"))p+="index.html";return {url:p,title:(a.textContent||"").replace(/\\s+/g," ").trim()}}).filter(x=>x.url.startsWith("/")&&x.url.endsWith(".html")&&!x.url.includes("#")&&x.url!==url);
+ const unique=[...new Map(links.map(x=>[x.url,x])).values()],found=[];
+ for(let i=0;i<unique.length;i+=8){const batch=await Promise.all(unique.slice(i,i+8).map(async x=>{try{const h=await fetchText(x.url),q=parseQuiz(h,x.url,x.title);return q&&q.questions.length?{...q,title:x.title||q.title||x.url}:null}catch(e){return null}}));found.push(...batch.filter(Boolean))}
  let result=[...new Map(found.map(x=>[x.url,x])).values()];
  if(url.includes("/current-affairs/")&&!url.includes("/monthly-current-affairs/")){
-  const monthly=[["/current-affairs/monthly-current-affairs/oct-2026/index.html","अक्टूबर 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/sep-2026/index.html","सितंबर 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/aug-2026/index.html","अगस्त 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/jul-2026/index.html","जुलाई 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/jun-2026/index.html","जून 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/may-2026/index.html","मई 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/apr-2026/index.html","अप्रैल 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/mar-2026/index.html","मार्च 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/feb-2026/index.html","फरवरी 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/jan-2026/index.html","जनवरी 2026 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/dec-2025/index.html","दिसंबर 2025 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/nov-2025/index.html","नवंबर 2025 करेंट अफेयर्स"],["/current-affairs/monthly-current-affairs/speedy-monthly-combined-mcq/index.html","Combined Monthly Current Affairs MCQ"]];
-  const monthResults=await Promise.all(monthly.map(async([p,t])=>{try{const q=parseQuiz(await fetchText(p),p,t);return q?{...q,title:t}:null}catch(e){return null}}));
+  const monthly=[
+   ["/current-affairs/monthly-current-affairs/oct-2026/index.html","अक्टूबर 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/sep-2026/index.html","सितंबर 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/aug-2026/index.html","अगस्त 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/jul-2026/index.html","जुलाई 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/jun-2026/index.html","जून 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/may-2026/index.html","मई 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/apr-2026/index.html","अप्रैल 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/mar-2026/index.html","मार्च 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/feb-2026/index.html","फरवरी 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/jan-2026/index.html","जनवरी 2026 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/dec-2025/index.html","दिसंबर 2025 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/nov-2025/index.html","नवंबर 2025 करेंट अफेयर्स"],
+   ["/current-affairs/monthly-current-affairs/speedy-monthly-combined-mcq/index.html","Combined Monthly Current Affairs MCQ"]
+  ];
+  const monthResults=await Promise.all(monthly.map(async ([p,t])=>{try{const h=await fetchText(p),q=parseQuiz(h,p,t);return q&&q.questions.length?{...q,title:t}:null}catch(e){return null}}));
   result=[...new Map([...result,...monthResults.filter(Boolean)].map(x=>[x.url,x])).values()];
  }
+ if(!result.length&&url.includes("/current-affairs/")){setStatus("Current Affairs के पेज मिले, लेकिन प्रश्नों का डेटा पढ़ा नहीं जा सका।");}
  cache.set(url,result);return result
 }
-subject.addEventListener("change",async()=>{const token=++loadToken;chapter.replaceChildren(new Option("चैप्टर लोड हो रहे हैं…",""));chapter.disabled=true;countWrap.hidden=true;available=[];selected=[];renderSelected();test.hidden=true;test.replaceChildren();if(!subject.value){chapter.replaceChildren(new Option("पहले विषय चुनें",""));refreshCount();return}try{available=await loadSubject(subject.value,token);if(token!==loadToken)return;chapter.replaceChildren(new Option("चैप्टर चुनें",""));available.forEach((x,i)=>chapter.add(new Option(x.title+" ("+x.questions.length+" प्रश्न)",String(i))));chapter.disabled=!available.length;refreshCount();setStatus(available.length?"अब चैप्टर चुनें या पूरे विषय से प्रश्न जोड़ें।":"इस विषय में क्विज़ चैप्टर नहीं मिले।")}catch(e){if(token===loadToken){chapter.replaceChildren(new Option("चैप्टर लोड नहीं हुए",""));setStatus("चैप्टर लोड नहीं हो पाए। दोबारा कोशिश करें।")}}});
-chapter.addEventListener("change",()=>{countWrap.hidden=!chapter.value;const q=chapter.value?available[Number(chapter.value)]:null;if(q){setCountOptions(q.questions.length,10);setStatus("इस चैप्टर में "+q.questions.length+" प्रश्न हैं; कुल क्विज़ में "+remaining()+" प्रश्न बाकी हैं।")}else refreshCount()});
-totalInput.addEventListener("input",()=>{const value=Number(totalInput.value);if(!totalInput.value||!Number.isInteger(value)||value<1||value>500){setStatus("कुल प्रश्नों की संख्या 1 से 500 के बीच पूर्णांक रखें।");$("cq-add-chapter").disabled=true;$("cq-add-subject").disabled=true;return}if(used()>value){setStatus("आपने कुल "+value+" प्रश्न लिखे हैं, लेकिन "+used()+" चुने जा चुके हैं। कुल प्रश्न बढ़ाएँ या कुछ चयन हटाएँ।");$("cq-add-chapter").disabled=true;$("cq-add-subject").disabled=true;return}refreshCount()});
-$("cq-add-chapter").addEventListener("click",()=>{if(!chapter.value)return;const q=available[Number(chapter.value)],requested=Number(count.value),left=remaining();if(!q){setStatus("पहले वैध चैप्टर चुनें।");return}if(!Number.isInteger(requested)||requested<1){setStatus("प्रश्नों की संख्या चुनें।");return}if(requested>left){setStatus("इस चैप्टर से "+requested+" नहीं ले सकते। कुल क्विज़ में सिर्फ "+left+" प्रश्न बाकी हैं।");return}if(requested>q.questions.length){setStatus("इस चैप्टर में केवल "+q.questions.length+" प्रश्न उपलब्ध हैं।");return}if(selected.some(x=>x.url===q.url)){setStatus("यह चैप्टर पहले ही जोड़ा गया है।");return}selected.push({url:q.url,title:q.title,count:requested,questions:shuffle(q.questions).slice(0,requested)});chapter.value="";countWrap.hidden=true;renderSelected();setStatus(requested+" प्रश्न जोड़े गए। "+remaining()+" प्रश्न बाकी हैं।")});
-$("cq-add-subject").addEventListener("click",()=>{if(!available.length){setStatus("पहले विषय चुनें और चैप्टर लोड होने दें।");return}const usedKeys=new Set(selected.flatMap(s=>s.questions.map(q=>q.sourceUrl+"|"+q.id+"|"+q.q))),pool=available.flatMap(x=>x.questions).filter(q=>!usedKeys.has(q.sourceUrl+"|"+q.id+"|"+q.q)),n=remaining();if(!n){setStatus("कुल प्रश्नों की सीमा पूरी हो गई है।");return}if(pool.length<n){setStatus("इस विषय में केवल "+pool.length+" अतिरिक्त प्रश्न उपलब्ध हैं। कुल संख्या घटाएँ या दूसरा विषय जोड़ें।");return}const key="subject:"+subject.value;if(selected.some(x=>x.url===key)){setStatus("यह विषय पहले ही जोड़ा गया है।");return}selected.push({url:key,title:subject.options[subject.selectedIndex].text+" (पूरा विषय)",count:n,questions:shuffle(pool).slice(0,n)});chapter.value="";countWrap.hidden=true;renderSelected();setStatus("पूरे विषय से "+n+" प्रश्न चुने गए।")});
-function renderTest(){const q=activeQuestions[activeIndex];test.hidden=false;test.replaceChildren();if(!q){const h=document.createElement("h3");h.textContent="क्विज़ पूरा हुआ!";const p=document.createElement("p");p.textContent="आपका स्कोर: "+score+" / "+activeQuestions.length;const restart=document.createElement("button");restart.className="cq-test-next";restart.textContent="फिर से खेलें";restart.onclick=()=>{activeQuestions=shuffle(activeQuestions);activeIndex=0;score=0;renderTest()};test.append(h,p,restart);test.scrollIntoView({behavior:"smooth",block:"start"});return}
- const h=document.createElement("h3");h.textContent="प्रश्न "+(activeIndex+1)+" / "+activeQuestions.length;const p=document.createElement("strong");p.textContent=q.q;test.append(h,p);
- shuffle(q.options.map((text,i)=>({text,correct:i===q.correct}))).forEach(o=>{const b=document.createElement("button");b.type="button";b.className="cq-test-option";b.textContent=o.text;b.onclick=()=>{[...test.querySelectorAll(".cq-test-option")].forEach(x=>x.disabled=true);if(o.correct){score++;b.classList.add("correct")}else{b.classList.add("wrong");const answer=[...test.querySelectorAll(".cq-test-option")].find(x=>x.textContent===q.options[q.correct]);if(answer)answer.classList.add("correct")}if(q.explanation){const ex=document.createElement("p");ex.textContent=q.explanation;test.appendChild(ex)}const next=document.createElement("button");next.className="cq-test-next";next.textContent=activeIndex===activeQuestions.length-1?"परिणाम देखें":"अगला प्रश्न →";next.onclick=()=>{activeIndex++;renderTest()};test.appendChild(next)};test.appendChild(b)});
- test.scrollIntoView({behavior:"smooth",block:"nearest")}
-$("cq-generate").addEventListener("click",()=>{const n=total();if(!Number.isInteger(n)||n<1||n>500){setStatus("कुल प्रश्नों की संख्या 1 से 500 के बीच पूर्णांक रखें।");return}if(!selected.length){setStatus("पहले चैप्टर जोड़ें या पूरे विषय से प्रश्न चुनें।");return}if(used()!==n){setStatus("अभी "+used()+" प्रश्न चुने हैं; "+remaining()+" और चुनें।");return}const pool=selected.flatMap(s=>s.questions.slice(0,s.count));const unique=[...new Map(pool.map(q=>[q.sourceUrl+"|"+q.id+"|"+q.q,q])).values()];if(unique.length!==n){setStatus("चयन में डुप्लीकेट प्रश्न हैं। चैप्टर हटाकर दोबारा चुनें।");return}activeQuestions=shuffle(pool);activeIndex=0;score=0;renderTest();setStatus("आपका रैंडम क्विज़ तैयार है।")});
+subject.addEventListener("change",async()=>{chapter.innerHTML='<option value="">चैप्टर चुनें</option>';chapter.disabled=true;countWrap.hidden=true;available=[];selected=[];renderSelected();test.hidden=true;if(!subject.value)return;try{available=await loadSubject(subject.value);chapter.innerHTML='<option value="">चैप्टर चुनें</option>';available.forEach((x,i)=>{let o=document.createElement("option");o.value=i;o.textContent=x.title+" ("+x.questions.length+" प्रश्न)";chapter.appendChild(o)});chapter.disabled=!available.length;refreshCount();setStatus(available.length?"अब चैप्टर चुनें या पूरे विषय से प्रश्न जोड़ें।":"इस विषय में क्विज़ चैप्टर नहीं मिले।")}catch(e){setStatus("चैप्टर लोड नहीं हो पाए। दोबारा कोशिश करें।")}});
+chapter.addEventListener("change",()=>{countWrap.hidden=!chapter.value;if(chapter.value){setCountOptions(available[Number(chapter.value)].questions.length,10);setStatus("इस चैप्टर से अधिकतम "+Math.min(available[Number(chapter.value)].questions.length,remaining())+" प्रश्न चुन सकते हैं।")}});
+$("cq-total").addEventListener("input",()=>{const el=$("cq-total");if(!el.value||Number(el.value)<1){setStatus("कुल प्रश्नों की संख्या 1 या उससे अधिक लिखें।");return}if(used()>total()){setStatus("आपने कुल "+total()+" प्रश्न लिखे हैं, लेकिन चैप्टरों से "+used()+" चुने जा चुके हैं। कृपया कुल प्रश्न बढ़ाएँ या कुछ चैप्टर हटाएँ/कम करें।");$("cq-add-chapter").disabled=true;$("cq-add-subject").disabled=true;return}refreshCount()});
+$("cq-add-chapter").addEventListener("click",()=>{if(!chapter.value)return;let q=available[Number(chapter.value)],requested=Number(count.value),left=remaining();if(requested>left){setStatus("इस चैप्टर से "+requested+" नहीं ले सकते। कुल क्विज़ में सिर्फ "+left+" प्रश्न बाकी हैं—कृपया संख्या कम करें।");return}if(requested>q.questions.length){setStatus("इस चैप्टर में केवल "+q.questions.length+" प्रश्न उपलब्ध हैं। कृपया संख्या कम करें।");return}let n=requested;if(!n){setStatus("प्रश्नों की संख्या चुनें।");return}if(selected.some(x=>x.url===q.url)){setStatus("यह चैप्टर पहले ही जोड़ा गया है।");return}selected.push({url:q.url,title:q.title,count:n,questions:shuffle(q.questions).slice(0,n)});chapter.value="";countWrap.hidden=true;renderSelected();setStatus(n+" प्रश्न जोड़े गए। "+remaining()+" प्रश्न बाकी हैं।")});
+$("cq-add-subject").addEventListener("click",()=>{if(!available.length){setStatus("पहले विषय चुनें और चैप्टर लोड होने दें।");return}let usedKeys=new Set(selected.flatMap(s=>s.questions.map(q=>q.sourceUrl+"|"+q.id+"|"+q.q))),pool=available.flatMap(x=>x.questions).filter(q=>!usedKeys.has(q.sourceUrl+"|"+q.id+"|"+q.q)),n=remaining();if(!n){setStatus("कुल प्रश्नों की सीमा पूरी हो गई है।");return}if(pool.length<n){setStatus("इस विषय में "+pool.length+" प्रश्न हैं। कुल संख्या घटाएँ या दूसरा विषय जोड़ें।");return}let key="subject:"+subject.value;if(selected.some(x=>x.url===key)){setStatus("यह विषय पहले ही जोड़ा गया है।");return}selected.push({url:key,title:subject.options[subject.selectedIndex].text+" (पूरा विषय)",count:n,questions:shuffle(pool).slice(0,n)});chapter.value="";countWrap.hidden=true;renderSelected();setStatus("पूरे विषय से "+n+" प्रश्न चुने गए।")});
+function renderTest(){let q=activeQuestions[activeIndex];test.hidden=false;test.innerHTML="";if(!q){test.innerHTML="<h3>क्विज़ पूरा हुआ!</h3><p>आपका स्कोर: "+score+" / "+activeQuestions.length+"</p><button class='cq-test-next' id='cq-restart'>फिर से खेलें</button>";$("cq-restart").onclick=()=>{activeQuestions=shuffle(activeQuestions);activeIndex=0;score=0;renderTest()};test.scrollIntoView({behavior:"smooth",block:"start"});return}let h=document.createElement("h3");h.textContent="प्रश्न "+(activeIndex+1)+" / "+activeQuestions.length;let p=document.createElement("strong");p.textContent=q.q;test.append(h,p);shuffle(q.options.map((text,i)=>({text,correct:i===q.correct}))).forEach(o=>{let b=document.createElement("button");b.type="button";b.className="cq-test-option";b.textContent=o.text;b.onclick=()=>{[...test.querySelectorAll(".cq-test-option")].forEach(x=>x.disabled=true);if(o.correct){score++;b.classList.add("correct")}else{b.classList.add("wrong");[...test.querySelectorAll(".cq-test-option")].find(x=>x.textContent===q.options[q.correct])?.classList.add("correct")}if(q.explanation){let ex=document.createElement("p");ex.textContent=q.explanation;test.appendChild(ex)}let next=document.createElement("button");next.className="cq-test-next";next.textContent=activeIndex===activeQuestions.length-1?"परिणाम देखें":"अगला प्रश्न →";next.onclick=()=>{activeIndex++;renderTest()};test.appendChild(next)};test.appendChild(b)});test.scrollIntoView({behavior:"smooth",block:"nearest"})}
+$("cq-generate").addEventListener("click",()=>{let n=total();if(!selected.length){setStatus("पहले चैप्टर जोड़ें या पूरे विषय से प्रश्न चुनें।");return}if(used()!==n){setStatus("अभी "+used()+" प्रश्न चुने हैं; "+remaining()+" और चुनें।");return}let pool=selected.flatMap(s=>s.questions.slice(0,s.count));if(pool.length!==n){setStatus("प्रश्नों की संख्या मेल नहीं खा रही। चयन दोबारा करें।");return}activeQuestions=shuffle(pool);activeIndex=0;score=0;renderTest();setStatus("आपका रैंडम क्विज़ तैयार है।")});
 refreshCount();
 })();
 </script>
