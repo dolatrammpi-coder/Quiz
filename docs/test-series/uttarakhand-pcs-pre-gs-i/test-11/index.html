@@ -186,25 +186,9 @@
 @media(max-width:420px){.lagale-global-header-inner{width:94%}.lagale-global-logo-mark{width:34px;height:34px;flex-basis:34px}.lagale-global-logo-name{font-size:20px}.lagale-global-logo-copy small{font-size:9px}}
 </style>
 
-<style id="lagale-bottom-nav-footer-fix">
-/* Keep the fixed quiz controls clear of the site's footer on mobile. */
-@media (max-width: 767px) {
-  body { padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important; }
-  .lagale-global-footer { position: relative; z-index: 1; margin-bottom: 0 !important; }
-  #mobileBottomNav { z-index: 60 !important; padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important; }
-}
-@media (min-width: 768px) {
-  body { padding-bottom: 24px; }
-}
-</style>
-<style id="lagale-mobile-retake-layout-fix">@media(max-width:767px){body{padding-bottom:calc(88px + env(safe-area-inset-bottom))!important}#questionCardNavigation{display:none!important}#mobileBottomNav{display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:60!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;background:rgba(248,250,252,.97)!important;border-top:1px solid #e2e8f0!important;box-shadow:0 -5px 18px rgba(15,23,42,.07)!important;backdrop-filter:blur(10px)}#mobileBottomNav>div{max-width:560px}.lagale-global-footer{position:relative;z-index:1;margin-bottom:0!important}}@media(min-width:768px){#mobileBottomNav{display:none!important}}</style>
-<style id="lagale-mobile-nav-visibility-fix">@media(max-width:767px){#mobileBottomNav:not(.hidden){display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:60!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;background:rgba(248,250,252,.97)!important;border-top:1px solid #e2e8f0!important;box-shadow:0 -5px 18px rgba(15,23,42,.07)!important;backdrop-filter:blur(10px)}#mobileBottomNav.hidden{display:none!important}}@media(min-width:768px){#mobileBottomNav{display:none!important}}</style>
-<style id="lagale-quiz-footer-visibility-fix">
-/* Keep the site footer out of the active quiz viewport so it cannot sit behind fixed controls. */
-@media(max-width:767px){
-  body:has(#quizView:not(.hidden)) .lagale-global-footer{display:none!important}
-  body:has(#resultView:not(.hidden)) .lagale-global-footer{display:block!important}
-}
+<style id="lagale-inline-quiz-controls-fix">
+@media(max-width:767px){#questionCardNavigation{display:grid!important}#mobileBottomNav{display:none!important}body{padding-bottom:0!important}.lagale-global-footer{display:block!important}}
+@media(min-width:768px){#mobileBottomNav{display:none!important}}
 </style>
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
@@ -4379,6 +4363,49 @@
     /**
      * Utility: Safe HTML escaping
      */
+    function formatRichQuestionText(rawStr) {
+      const lines = String(rawStr || "").split("\n");
+      let out = [];
+      let inTable = false;
+      let tableRows = [];
+
+      function flushTable() {
+        if (!tableRows.length) return;
+        let tHtml = '<div class="my-3 overflow-x-auto rounded-xl border border-slate-200"><table class="w-full text-left border-collapse text-xs sm:text-sm">';
+        tableRows.forEach((r, idx) => {
+          const cells = r.split("|").slice(1, -1).map(c => c.trim());
+          if (cells.every(c => /^:?-+:?$/.test(c))) return;
+          if (idx === 0) {
+            tHtml += '<thead class="bg-slate-100 text-slate-800 border-b border-slate-200"><tr>' +
+              cells.map(c => `<th class="py-2 px-3 font-bold">${escapeHtml(c)}</th>`).join("") +
+              '</tr></thead><tbody class="divide-y divide-slate-200 bg-white">';
+          } else {
+            tHtml += '<tr>' +
+              cells.map(c => `<td class="py-2 px-3 text-slate-700 align-top">${escapeHtml(c)}</td>`).join("") +
+              '</tr>';
+          }
+        });
+        tHtml += '</tbody></table></div>';
+        out.push(tHtml);
+        tableRows = [];
+        inTable = false;
+      }
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+          inTable = true;
+          tableRows.push(trimmed);
+        } else {
+          if (inTable) flushTable();
+          out.push(`<span class="block ${out.length > 0 ? 'mt-1.5' : ''}">${escapeHtml(line)}</span>`);
+        }
+      }
+      if (inTable) flushTable();
+      return out.join("");
+    }
+
+
     function escapeHtml(str) {
       return String(str)
         .replace(/&/g, "&amp;")
