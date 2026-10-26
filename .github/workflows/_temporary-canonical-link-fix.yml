@@ -1,0 +1,36 @@
+name: Temporary Canonical Internal Link Fix
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  normalize-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Normalize only sitemap-confirmed internal href aliases
+        run: python .github/scripts/fix_canonical_internal_links.py
+
+      - name: Commit fix and remove temporary tooling
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add docs
+          git rm .github/scripts/fix_canonical_internal_links.py .github/workflows/_temporary-canonical-link-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Normalize internal links to canonical URLs"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
