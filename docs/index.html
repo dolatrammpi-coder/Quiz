@@ -733,6 +733,38 @@ a{
     }
 
 }
+
+/* FULL SITE SEARCH */
+.site-search-section{position:relative;z-index:10;margin:12px auto 0;max-width:900px}
+.site-search-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:none}
+.site-search-title{margin:0 0 5px;font-size:17px;font-weight:800}
+.site-search-help{display:none}
+.site-search-form{display:flex;gap:7px;align-items:center}
+.site-search-input-wrap{position:relative;flex:1;min-width:0}
+.site-search-input{width:100%;height:44px;border:1px solid var(--border);border-radius:12px;padding:0 14px 0 44px;background:var(--bg);color:var(--text);font:inherit;font-size:15px;outline:none}
+.site-search-input:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.site-search-magnify{position:absolute;left:14px;top:13px;font-size:19px}
+.site-search-button{height:44px;padding:0 18px;border:0;border-radius:12px;background:var(--primary);color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.site-search-results{display:grid;gap:6px;margin-top:8px}
+.site-search-result{display:block;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text)}
+.site-search-result:hover{border-color:#60a5fa;text-decoration:none}
+.site-search-result-title{display:block;font-weight:750;line-height:1.35;margin-bottom:2px;font-size:14px}
+.site-search-result-url{display:block;color:var(--primary);font-size:11px;margin-bottom:2px;overflow-wrap:anywhere}
+.site-search-snippet{display:block;color:var(--muted);font-size:12px;line-height:1.45}
+.site-search-snippet mark{background:#fef08a;color:#713f12;border-radius:3px;padding:0 2px}
+.site-search-status{font-size:12px;color:var(--muted);line-height:1.4;margin:7px 0 0}
+@media(max-width:560px){.site-search-card{padding:14px}.site-search-form{align-items:stretch}.site-search-button{padding:0 13px}.site-search-title{font-size:18px}.site-search-result{padding:12px}}
+
+
+/* Full-text results share the existing subject search field. */
+.site-search-status{font-size:12px;color:var(--muted);margin:8px 0;line-height:1.4}
+.site-search-results{display:grid;gap:7px;margin:8px 0 14px}
+.site-search-result{display:block;padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);text-decoration:none}
+.site-search-result-title{display:block;font-size:14px;font-weight:750;line-height:1.35;margin-bottom:2px}
+.site-search-result-url{display:block;font-size:11px;color:var(--primary);overflow-wrap:anywhere;margin-bottom:3px}
+.site-search-snippet{display:block;font-size:12px;color:var(--muted);line-height:1.45}
+.site-search-snippet mark{background:#fef08a;color:#713f12;border-radius:2px}
+
 </style><link href="/favicon.svg" rel="icon" type="image/svg+xml"/><script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -808,8 +840,10 @@ a{
 </div>
 <div class="search-box">
 <span class="search-icon">🔎</span>
-<input autocomplete="off" id="subjectSearch" placeholder="विषय खोजें... जैसे History, Economy, Polity" type="search"/>
+<input autocomplete="off" id="subjectSearch" placeholder="पूरी वेबसाइट खोजें: प्रश्न, शब्द, विषय..." aria-label="पूरी वेबसाइट खोजें" type="search"/>
 </div>
+<div id="siteSearchStatus" class="site-search-status" aria-live="polite"></div>
+<div id="siteSearchResults" class="site-search-results"></div>
 <div class="subject-grid" id="subjectGrid">
 <a class="subject-tile" href="/history/">
 <div class="subject-icon">📜</div>
@@ -1192,31 +1226,41 @@ themeToggle.addEventListener("click",function(){
 
 /* ================= SUBJECT SEARCH ================= */
 
-const searchInput =
-    document.getElementById("subjectSearch");
+const searchInput=document.getElementById('subjectSearch');
+const subjectCards=document.querySelectorAll('.subject-tile');
+const status=document.getElementById('siteSearchStatus');
+const results=document.getElementById('siteSearchResults');
+let searchIndexPromise=null,activeQuery='';
+const norm=s=>(s||'').normalize('NFC').toLocaleLowerCase('hi').replace(/[\u200b\ufeff]/g,'').replace(/\s+/g,' ').trim();
+async function loadSearchIndex(){if(!searchIndexPromise)searchIndexPromise=fetch('/search-index.json.gz',{cache:'no-cache'}).then(async r=>{if(!r.ok)throw Error('index');const buf=await r.arrayBuffer();if(!('DecompressionStream' in window))throw Error('gzip');const stream=new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));const d=JSON.parse(await new Response(stream).text());if(!Array.isArray(d.docs)||!d.terms)throw Error('format');return d}).catch(e=>{searchIndexPromise=null;throw e});return searchIndexPromise;}
+function highlightSearchLine(line,terms){let out=String(line||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));for(const term of terms){const safe=term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');try{out=out.replace(new RegExp('('+safe+')','giu'),'<mark>$1</mark>')}catch(e){}}return out;}
+async function findSearchLine(item,terms){try{const response=await fetch(item.url,{cache:'force-cache'});if(!response.ok)return '';const html=await response.text();const doc=new DOMParser().parseFromString(html,'text/html');const found=[];for(const el of doc.querySelectorAll('h1,h2,h3,h4,p,li,td,th,blockquote,summary,div,span')){if(el.children.length>4)continue;const line=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(line.length<12||line.length>450)continue;const n=norm(line),hits=terms.filter(t=>n.includes(t)).length;if(hits)found.push({line,score:hits*100-Math.min(line.length,300)/20+(el.matches('p,li,td,th,h1,h2,h3,h4')?10:0)});}found.sort((a,b)=>b.score-a.score);if(found.length)return found[0].line;return ''; }catch(e){return '';}}
+async function runFullSearch(q){activeQuery=q;results.replaceChildren();if(!q){status.textContent='';return;}status.textContent='पूरी वेबसाइट में खोज रहे हैं…';try{const data=await loadSearchIndex();if(activeQuery!==q)return;const terms=[...new Set(norm(q).split(/[^\p{L}\p{M}\p{N}]+/u).filter(Boolean))].slice(0,8);if(!terms.length)return;const lists=terms.map(t=>data.terms[t]||[]),counts=new Map();lists.forEach((entries,i)=>entries.forEach(entry=>{const id=Array.isArray(entry)?entry[0]:entry;counts.set(id,(counts.get(id)||0)+1)}));let ids=[...counts.keys()].filter(id=>counts.get(id)===terms.length);if(!ids.length)ids=[...counts.keys()].filter(id=>counts.get(id)>=Math.max(1,terms.length-1));const score=id=>terms.reduce((n,t)=>n+(norm(data.docs[id].title).includes(t)?6:0)+(norm(data.docs[id].url).includes(t)?3:0),0)+counts.get(id)*4;ids.sort((a,b)=>score(b)-score(a)||data.docs[a].title.localeCompare(data.docs[b].title,'hi'));const shown=ids.slice(0,10);if(!shown.length){status.textContent='“'+q+'” के लिए कोई परिणाम नहीं मिला।';return;}status.textContent=ids.length.toLocaleString('en-IN')+' संबंधित पेज · पहले '+shown.length+' परिणाम';const frag=document.createDocumentFragment();for(const id of shown){const item=data.docs[id],a=document.createElement('a');a.className='site-search-result';a.href=item.url;const title=document.createElement('span');title.className='site-search-result-title';title.textContent=item.title||item.url;const url=document.createElement('span');url.className='site-search-result-url';url.textContent=item.url;const snip=document.createElement('span');snip.className='site-search-snippet';snip.textContent='इस पेज की संबंधित लाइन खोज रहे हैं…';a.append(title,url,snip);frag.appendChild(a);findSearchLine(item,terms).then(line=>{if(activeQuery===q&&line)snip.innerHTML=highlightSearchLine(line.slice(0,300),terms);else if(activeQuery===q&&!line)snip.textContent='इस पेज में संबंधित सामग्री देखें।';});}results.appendChild(frag);}catch(e){status.textContent='सर्च इंडेक्स उपलब्ध नहीं है। index फ़ाइल और पेज refresh जाँचें।';}}
+let searchTimer;searchInput.addEventListener('input',function(){const q=this.value.trim();const normalized=norm(q);subjectCards.forEach(card=>{card.style.display=!normalized||norm(card.innerText).includes(normalized)?'':'none'});clearTimeout(searchTimer);if(q.length>=2)searchTimer=setTimeout(()=>runFullSearch(q),350);else{activeQuery='';results.replaceChildren();status.textContent='';}});
+searchInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&this.value.trim().length>=1){e.preventDefault();clearTimeout(searchTimer);runFullSearch(this.value.trim());}});
+</script>
+<script>
+(function(){
+ const form=document.getElementById('siteSearchForm'),input=document.getElementById('siteSearchInput'),status=document.getElementById('siteSearchStatus'),results=document.getElementById('siteSearchResults');
+ if(!form||!input||!status||!results)return;
+ let indexPromise=null,activeQuery='';
+ const norm=s=>(s||'').normalize('NFC').toLocaleLowerCase('hi').replace(/[\u200b\ufeff]/g,'').replace(/\s+/g,' ').trim();
+ async function loadIndex(){if(!indexPromise)indexPromise=fetch('/search-index.json.gz',{cache:'no-cache'}).then(async r=>{if(!r.ok)throw Error('index');const buf=await r.arrayBuffer();if(!('DecompressionStream' in window))throw Error('compression unsupported');const stream=new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));const d=JSON.parse(await new Response(stream).text());if(!Array.isArray(d.docs)||!d.terms)throw Error('index format');return d}).catch(()=>{indexPromise=null;throw Error('index')});return indexPromise;}
+ function esc(s){return String(s).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
+ function highlight(line,terms){let out=esc(line);for(const term of terms){const safe=term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');try{out=out.replace(new RegExp('('+safe+')','giu'),'<mark>$1</mark>')}catch(e){}}return out;}
+ async function getMatchingLine(item,terms){
+  try{const response=await fetch(item.url,{cache:'force-cache'});if(!response.ok)return item.preview||'';const html=await response.text();const doc=new DOMParser().parseFromString(html,'text/html');
+   const candidates=[];for(const el of doc.querySelectorAll('h1,h2,h3,h4,p,li,td,th,blockquote,summary,div,span')){if(el.children.length>4)continue;const t=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(t.length<12||t.length>450)continue;const n=norm(t),hits=terms.filter(term=>n.includes(term)).length;if(hits)candidates.push({t,hits,score:hits*100-Math.min(t.length,300)/20+(el.matches('p,li,td,th,h1,h2,h3,h4')?10:0)});}
+   candidates.sort((a,b)=>b.score-a.score);if(candidates.length)return candidates[0].t;
+   // Many quiz pages keep questions in allQuestionsData JavaScript data, so extract matching string-containing source lines too.
+   const lines=html.split(/\n+/).map(x=>x.replace(/<[^>]+>/g,' ').replace(/\\"/g,'"').replace(/\s+/g,' ').trim()).filter(x=>x.length>10&&x.length<650&&terms.some(t=>norm(x).includes(t)));
+   return lines[0]||item.preview||'';
+  }catch(e){return item.preview||'';}
+ }
+ async function search(){const q=input.value.trim();activeQuery=q;results.replaceChildren();if(!q){status.textContent='खोजने के लिए कोई शब्द लिखें।';return;}status.textContent='पूरी वेबसाइट में खोज रहे हैं…';try{const data=await loadIndex();if(activeQuery!==q)return;const terms=[...new Set(norm(q).split(/[^\p{L}\p{M}\p{N}]+/u).filter(Boolean))].slice(0,8);if(!terms.length)return;const lists=terms.map(t=>data.terms[t]||[]);const count=new Map();lists.forEach((entries,i)=>entries.forEach(entry=>{const id=Array.isArray(entry)?entry[0]:entry;count.set(id,(count.get(id)||0)+1)}));let ids=[...count.keys()].filter(id=>count.get(id)===terms.length);if(!ids.length)ids=[...count.keys()].filter(id=>count.get(id)>=Math.max(1,terms.length-1));const score=id=>{const d=data.docs[id];return terms.reduce((n,t)=>n+(norm(d.title).includes(t)?6:0)+(norm(d.url).includes(t)?3:0),0)+count.get(id)*4};ids.sort((a,b)=>score(b)-score(a)||data.docs[a].title.localeCompare(data.docs[b].title,'hi'));const shown=ids.slice(0,12);if(!shown.length){status.textContent='“'+q+'” के लिए कोई परिणाम नहीं मिला। दूसरे शब्दों से खोजें।';return;}status.textContent=ids.length.toLocaleString('en-IN')+' संबंधित पेज मिले · शीर्ष '+shown.length+' परिणाम खोज रहे हैं…';const frag=document.createDocumentFragment();for(const id of shown){const item=data.docs[id],a=document.createElement('a');a.className='site-search-result';a.href=item.url;const t=document.createElement('span');t.className='site-search-result-title';t.textContent=item.title||item.url;const u=document.createElement('span');u.className='site-search-result-url';u.textContent=item.url;const s=document.createElement('span');s.className='site-search-snippet';s.textContent='इस पेज की मिलती-जुलती लाइन खोज रहे हैं…';a.append(t,u,s);frag.appendChild(a);getMatchingLine(item,terms).then(line=>{if(activeQuery===q)s.innerHTML=highlight(line.slice(0,300),terms)});}results.appendChild(frag);status.textContent=ids.length.toLocaleString('en-IN')+' संबंधित पेज मिले · पहले '+shown.length+' दिखाए जा रहे हैं।';}catch(e){status.textContent='सर्च इंडेक्स लोड नहीं हो सका। कृपया index फ़ाइल जाँचें और पेज refresh करें।';}}
+ form.addEventListener('submit',e=>{e.preventDefault();search()});let timer;input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(()=>{if(input.value.trim().length>=2)search();else{results.replaceChildren();status.textContent='खोजने के लिए कम-से-कम 2 अक्षर लिखें।'}},300)});
+})();
+</script>
 
-const subjectCards =
-    document.querySelectorAll(".subject-tile");
-
-searchInput.addEventListener("input",function(){
-
-    const query =
-        this.value.toLowerCase().trim();
-
-    subjectCards.forEach(card => {
-
-        const text =
-            card.innerText.toLowerCase();
-
-        if(text.includes(query)){
-            card.style.display = "";
-        }else{
-            card.style.display = "none";
-        }
-
-    });
-
-});
-
-</script></body>
+</body>
 </html>
