@@ -22,4 +22,5 @@ Reports for each page sit next to this README. They record question count and wh
 
 A clean structural validator does not establish that every English phrase is a faithful translation or that every source fact is correct. Person names, place names, legal provisions, historical claims, dates, options and explanations still require a careful question-by-question review before publishing.
 
-Tests 10–11 are not included in this review folder yet.
+Tests 10–11 are not included as complete previews yet.
+- **Test 10 — in progress:** 90/150 questions manually translated in GitHub batches; 60 remain. No completed HTML preview yet. See [progress report](test-10-progress.json).
