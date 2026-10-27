@@ -984,6 +984,11 @@ a{
             महत्वपूर्ण current affairs questions के साथ अभ्यास करें।
         </p>
 </a>
+<a class="quick-card" href="/my-revision/">
+<div class="quick-icon">❤️</div>
+<h3>My Revision</h3>
+<p><strong id="homeRevisionCount">0</strong> Favourite प्रश्न एक जगह पढ़ें, उत्तर देखें और जल्दी Revision करें।</p>
+</a>
 </div>
 </section><!-- FEATURED QUIZZES --><section class="section" id="featured"><div class="section-heading">
 <h2>⭐ Featured Quizzes</h2>
@@ -1259,6 +1264,15 @@ searchInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&this.valu
  }
  async function search(){const q=input.value.trim();activeQuery=q;results.replaceChildren();if(!q){status.textContent='खोजने के लिए कोई शब्द लिखें।';return;}status.textContent='पूरी वेबसाइट में खोज रहे हैं…';try{const data=await loadIndex();if(activeQuery!==q)return;const terms=[...new Set(norm(q).split(/[^\p{L}\p{M}\p{N}]+/u).filter(Boolean))].slice(0,8);if(!terms.length)return;const lists=terms.map(t=>data.terms[t]||[]);const count=new Map();lists.forEach((entries,i)=>entries.forEach(entry=>{const id=Array.isArray(entry)?entry[0]:entry;count.set(id,(count.get(id)||0)+1)}));let ids=[...count.keys()].filter(id=>count.get(id)===terms.length);if(!ids.length)ids=[...count.keys()].filter(id=>count.get(id)>=Math.max(1,terms.length-1));const score=id=>{const d=data.docs[id];return terms.reduce((n,t)=>n+(norm(d.title).includes(t)?6:0)+(norm(d.url).includes(t)?3:0),0)+count.get(id)*4};ids.sort((a,b)=>score(b)-score(a)||data.docs[a].title.localeCompare(data.docs[b].title,'hi'));const shown=ids.slice(0,12);if(!shown.length){status.textContent='“'+q+'” के लिए कोई परिणाम नहीं मिला। दूसरे शब्दों से खोजें।';return;}status.textContent=ids.length.toLocaleString('en-IN')+' संबंधित पेज मिले · शीर्ष '+shown.length+' परिणाम खोज रहे हैं…';const frag=document.createDocumentFragment();for(const id of shown){const item=data.docs[id],a=document.createElement('a');a.className='site-search-result';a.href=item.url;const t=document.createElement('span');t.className='site-search-result-title';t.textContent=item.title||item.url;const u=document.createElement('span');u.className='site-search-result-url';u.textContent=item.url;const s=document.createElement('span');s.className='site-search-snippet';s.textContent='इस पेज की मिलती-जुलती लाइन खोज रहे हैं…';a.append(t,u,s);frag.appendChild(a);getMatchingLine(item,terms).then(line=>{if(activeQuery===q)s.innerHTML=highlight(line.slice(0,300),terms)});}results.appendChild(frag);status.textContent=ids.length.toLocaleString('en-IN')+' संबंधित पेज मिले · पहले '+shown.length+' दिखाए जा रहे हैं।';}catch(e){status.textContent='सर्च इंडेक्स लोड नहीं हो सका। कृपया index फ़ाइल जाँचें और पेज refresh करें।';}}
  form.addEventListener('submit',e=>{e.preventDefault();search()});let timer;input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(()=>{if(input.value.trim().length>=2)search();else{results.replaceChildren();status.textContent='खोजने के लिए कम-से-कम 2 अक्षर लिखें।'}},300)});
+})();
+</script>
+
+
+<script>
+(function updateHomeRevisionCount(){
+  const out=document.getElementById('homeRevisionCount');if(!out)return;let count=0;
+  try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(!key||!key.startsWith('quiz_favorites_v1:'))continue;try{const ids=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(ids))count+=new Set(ids.map(String)).size;}catch(e){}}}catch(e){}
+  out.textContent=String(count);
 })();
 </script>
 
