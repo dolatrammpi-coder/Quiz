@@ -11,6 +11,7 @@ These files are review copies in the repository-root `Quiz/` folder. They are **
 - [Test 5](test-5/index.html) — 150 questions; structural checks passed; manual translation review still required.
 - [Test 6](test-6/index.html) — 150 questions; structural checks passed; manual translation review still required.
 - [Test 7](test-7/index.html) — 150 questions; answer indexes compared with the source ledger; questions 121–150 manually translated. Factual review is still required for time-sensitive claims listed in its report.
+- [Test 8](test-8/index.html) — 150 questions; all 150 answer indexes compared with the source ledger; questions 1–150 manually translated in 15-question batches. Factual review remains required for the items listed in its QA report.
 
 ## QA status reports
 
@@ -20,4 +21,4 @@ Reports for each page sit next to this README. They record question count and wh
 
 A clean structural validator does not establish that every English phrase is a faithful translation or that every source fact is correct. Person names, place names, legal provisions, historical claims, dates, options and explanations still require a careful question-by-question review before publishing.
 
-Tests 8–11 are not included in this review folder yet.
+Tests 9–11 are not included in this review folder yet.
