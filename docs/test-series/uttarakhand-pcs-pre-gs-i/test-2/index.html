@@ -6317,60 +6317,79 @@
     }
 
     function formatRichQuestionText(rawStr) {
-      // Normalize literal escaped newlines found in some English translation records.
-      // This lets numbered lists and pipe-delimited tables render as structured content.
+      // Normalize escaped newlines and render both proper and loosely formatted matching tables.
       const normalized = String(rawStr || "")
         .replace(/\\r\\n/g, "\n")
         .replace(/\\n/g, "\n")
         .replace(/\\r/g, "\n");
       const lines = normalized.split("\n");
-      let out = [];
+      const out = [];
       let inTable = false;
       let tableRows = [];
 
+      function parseTableRow(rawLine) {
+        let core = String(rawLine || "").trim();
+        if (core.startsWith("|")) core = core.slice(1).trim();
+        if (core.endsWith("|")) core = core.slice(0, -1).trim();
+        if (!core) return [];
+        if (core.includes("|")) return core.split("|").map(c => c.trim()).filter(Boolean);
+
+        // Some English translations omit the separator between the two list columns.
+        const header = core.match(/^(.*?)\s+(List-II\b.*)$/i);
+        if (header && /\bList-I\b/i.test(core)) return [header[1].trim(), header[2].trim()];
+
+        // Handle rows like "| A. Vitasta 1. Chenab" that have no closing pipe.
+        const pair = core.match(/^([A-Z][.)]\s*.+?)\s+(\d+[.)]\s*.+)$/);
+        if (pair) return [pair[1].trim(), pair[2].trim()];
+        return [core];
+      }
+
+      function isSeparatorRow(cells) {
+        return cells.length > 0 && cells.every(c => /^:?-+:?$/.test(c.replace(/\s/g, "")));
+      }
+
       function flushTable() {
         if (!tableRows.length) return;
-        let tHtml = '<div class="my-3 overflow-x-auto rounded-xl border border-slate-200"><table class="w-full text-left border-collapse text-xs sm:text-sm">';
-        let headerWritten = false;
-        tableRows.forEach((r) => {
-          const cells = r.split("|").slice(1, -1).map(c => c.trim());
-          if (!cells.length || cells.every(c => /^:?-+:?$/.test(c))) return;
-          if (!headerWritten) {
-            tHtml += '<thead class="bg-slate-100 text-slate-800 border-b border-slate-200"><tr>' +
-              cells.map(c => `<th class="py-2 px-3 font-bold">${escapeHtml(c)}</th>`).join("") +
-              '</tr></thead><tbody class="divide-y divide-slate-200 bg-white">';
-            headerWritten = true;
-          } else {
-            tHtml += '<tr>' +
-              cells.map(c => `<td class="py-2 px-3 text-slate-700 align-top">${escapeHtml(c)}</td>`).join("") +
-              '</tr>';
+        const rows = tableRows.map(parseTableRow).filter(cells => cells.length && !isSeparatorRow(cells));
+        if (rows.length) {
+          let html = '<div class="my-3 overflow-x-auto rounded-xl border border-slate-200"><table class="w-full text-left border-collapse text-xs sm:text-sm">';
+          html += '<thead class="bg-slate-100 text-slate-800 border-b border-slate-200"><tr>';
+          html += rows[0].map(c => '<th class="py-2 px-3 font-bold">' + escapeHtml(c) + '</th>').join("");
+          html += '</tr></thead>';
+          if (rows.length > 1) {
+            html += '<tbody class="divide-y divide-slate-200 bg-white">';
+            rows.slice(1).forEach(row => {
+              html += '<tr>' + row.map(c => '<td class="py-2 px-3 text-slate-700 align-top">' + escapeHtml(c) + '</td>').join("") + '</tr>';
+            });
+            html += '</tbody>';
           }
-        });
-        if (headerWritten) tHtml += '</tbody>';
-        tHtml += '</table></div>';
-        out.push(tHtml);
+          html += '</table></div>';
+          out.push(html);
+        }
         tableRows = [];
         inTable = false;
       }
 
       for (const line of lines) {
         const trimmed = line.trim();
-        if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+        if (trimmed.startsWith("|")) {
           inTable = true;
           tableRows.push(trimmed);
         } else {
           if (inTable) flushTable();
           if (!trimmed) continue;
-          if (/^\\d+[.)]\\s+/.test(trimmed)) {
-            out.push(`<div class="mt-2">${escapeHtml(trimmed)}</div>`);
+          if (/^\d+[.)]\s+/.test(trimmed)) {
+            out.push('<div class="mt-2">' + escapeHtml(trimmed) + '</div>');
           } else {
-            out.push(`<div class="${out.length ? 'mt-1.5' : ''}">${escapeHtml(line)}</div>`);
+            out.push('<div class="' + (out.length ? 'mt-1.5' : '') + '">' + escapeHtml(line) + '</div>');
           }
         }
       }
       if (inTable) flushTable();
       return out.join("");
     }
+
+    
 
     function escapeHtml(str) {
       return String(str)
