@@ -6319,7 +6319,11 @@
      */
     
     function formatRichQuestionText(rawStr) {
-      const lines = String(rawStr || "").split("\n");
+      // Normalize imported literal line-break escapes at render time only.
+      const normalized = String(rawStr || "")
+        .replace(/\\\\n/g, "\n")
+        .replace(/\\n/g, "\n");
+      const lines = normalized.split("\n");
       let out = [];
       let inTable = false;
       let tableRows = [];
@@ -6348,9 +6352,23 @@
 
       for (const line of lines) {
         const trimmed = line.trim();
+        const isMatchListRow = /^\\|\\s*[A-D]\\.?\\s+/.test(trimmed) &&
+          !trimmed.endsWith("|") && /\\b[1-4]\\.\\s*/.test(trimmed);
         if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
           inTable = true;
           tableRows.push(trimmed);
+        } else if (isMatchListRow) {
+          if (inTable) flushTable();
+          const row = trimmed.replace(/^\\|\\s*/, "");
+          const match = row.match(/^([A-D]\\.?\\s*.*?)(?:\\s+)([1-4]\\.\\s*.*)$/);
+          if (match) {
+            out.push('<div class="my-1 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm sm:text-base">');
+            out.push(`<div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"><span class="font-bold text-slate-800">${escapeHtml(match[1].trim())}</span></div>`);
+            out.push(`<div class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2"><span class="font-semibold text-slate-800">${escapeHtml(match[2].trim())}</span></div>`);
+            out.push('</div>');
+          } else {
+            out.push(`<span class="block mt-1.5">${escapeHtml(row)}</span>`);
+          }
         } else {
           if (inTable) flushTable();
           out.push(`<span class="block ${out.length > 0 ? 'mt-1.5' : ''}">${escapeHtml(line)}</span>`);
