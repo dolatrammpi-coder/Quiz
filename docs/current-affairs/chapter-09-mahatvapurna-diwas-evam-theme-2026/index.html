@@ -1196,7 +1196,29 @@ function initQuiz() {
 
         function nextQuestion() { if(currentIndex < questions.length - 1) { currentIndex++; renderQuestion(); } }
         function prevQuestion() { if(currentIndex > 0) { currentIndex--; renderQuestion(); } }
-        function shuffleQuiz() { questions.sort(() => Math.random() - 0.5); currentIndex = 0; userAnswers = {}; renderQuestion(); renderPalette(); }
+        function shuffleQuiz() {
+            // Shuffle each question's options and keep the correct-answer index in sync.
+            questions.forEach(q => {
+                const correctOption = q.options[q.correct];
+                for (let i = q.options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+                }
+                q.correct = q.options.indexOf(correctOption);
+            });
+
+            // Also shuffle the order of questions.
+            for (let i = questions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questions[i], questions[j]] = [questions[j], questions[i]];
+            }
+
+            currentIndex = 0;
+            userAnswers = {};
+            cancelAutoNextAdvance();
+            renderQuestion();
+            renderPalette();
+        }
 
         function checkSubmission() {
             cancelAutoNextAdvance();
