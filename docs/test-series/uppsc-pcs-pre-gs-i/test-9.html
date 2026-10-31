@@ -111,6 +111,14 @@
       font-weight: 700;
     }
 
+    /* Matching options: show A-2, B-1, C-2, D-4 style pairs. */
+    #optionsContainer.matching-options .matching-option-pair {
+      font-weight: 800;
+      font-size: 1.1rem;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
     /* Option Card Transitions */
     .option-row {
       transition: all 0.15s ease-in-out;
@@ -3575,11 +3583,11 @@
       els.questionText.innerHTML = formatRichQuestionText(qObj.question);
       document.getElementById('questionTypeLabel').textContent = qObj.subject || TEST_CONFIG.questionTypeLabel;
 
-      // Align A/B/C/D labels with the corresponding matching-code option text.
-      els.optionsContainer.classList.toggle(
-        "matching-options",
-        /matching|सूची मिलान|कूट\s*\(/i.test(String(qObj.questionType || "") + " " + String(qObj.question || ""))
+      // Detect matching questions once; reused while rendering their four pair mappings.
+      const isMatchingQuestion = /match|सूची मिलान|कूट\s*\(/i.test(
+        String(qObj.questionType || "") + " " + String(qObj.question || "")
       );
+      els.optionsContainer.classList.toggle("matching-options", isMatchingQuestion);
       // Render 4 MCQ Options
       els.optionsContainer.innerHTML = "";
       qObj.options.forEach((optText, optIdx) => {
@@ -3605,7 +3613,7 @@
           <span class="text-sm sm:text-base font-medium ${
             isSelected ? "text-slate-900 font-semibold" : "text-slate-800"
           } flex-1 leading-snug">
-            ${escapeHtml(optText)}
+            ${isMatchingQuestion && (String(optText).match(/\d+/g) || []).length === 4 ? (String(optText).match(/\d+/g) || []).map((value, index) => ["A", "B", "C", "D"][index] + "-" + value).join(", ") : escapeHtml(optText)}
           </span>
           ${
             isSelected
