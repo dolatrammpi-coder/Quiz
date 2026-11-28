@@ -777,7 +777,7 @@
         <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
           <span class="text-xs font-semibold text-slate-500 block mb-1">Attempted</span>
           <div id="resAttemptedRatio" class="text-xl sm:text-2xl font-extrabold text-slate-800">0 / 4</div>
-          <span class="text-[11px] text-slate-500 mt-0.5 block">Questions Answered</span>
+          <span id="resAttemptedSubLabel" class="text-[11px] text-slate-500 mt-0.5 block">Questions Answered</span>
         </div>
       </div>
 
@@ -999,6 +999,88 @@
         .replace(/"/g, "&quot;");
     }
 
+    function applyInlineFormatting(text) {
+      if (!text) return "";
+      let out = text;
+      out = out.replace(/(^|[\s(\[«"'])(नहीं)(?=[\s)\]»"',।?:;!]|$)/g, "$1**$2**");
+      out = out.replace(/(अभिकथन\s*\([Aअ]\)|कथन\s*\([Aअ]\)|कारण\s*\([Rर]\)|कथन\s*[12I]+\s*:|कथन\s*:|अभिकथन\s*:|कारण\s*:|कूट\s*:|Code\s*:)/g, "**$1**");
+      out = out.replace(/\*{4,}/g, "**");
+      out = out.replace(/\*\*(.+?)\*\*/g, '<strong class="font-extrabold text-slate-950">$1</strong>');
+      return out;
+    }
+
+    function formatRichQuestionText(rawStr) {
+      if (!rawStr) return "";
+      const safeStr = escapeHtml(rawStr);
+      const lines = safeStr.split("\n");
+      let html = "";
+      let inTable = false;
+      let tableRows = [];
+
+      function flushTable() {
+        if (tableRows.length > 0) {
+          html += `<div class="my-3 w-full overflow-x-auto rounded-xl border border-slate-300 shadow-2xs bg-white"><table class="w-full text-left border-collapse text-xs sm:text-sm">${tableRows.join("")}</table></div>`;
+          tableRows = [];
+        }
+        inTable = false;
+      }
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          if (inTable) {
+            tableRows.push("</tbody>");
+            flushTable();
+          }
+          html += '<div class="h-1.5"></div>';
+          continue;
+        }
+
+        if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+          const cells = trimmed.slice(1, -1).split("|").map(c => c.trim());
+          if (cells.every(c => /^:?-+:?$/.test(c))) {
+            continue;
+          }
+          if (!inTable) {
+            inTable = true;
+            const ths = cells.map(c => `<th class="py-2 px-2.5 sm:px-3 bg-indigo-50/90 font-extrabold text-slate-950 border-b border-r last:border-r-0 border-slate-300 text-left align-top leading-snug">${applyInlineFormatting(c)}</th>`).join("");
+            tableRows.push(`<thead><tr>${ths}</tr></thead><tbody>`);
+          } else {
+            const tds = cells.map((c, idx) => `<td class="py-2 px-2.5 sm:px-3 border-b border-r last:border-r-0 border-slate-200 text-slate-800 align-top leading-snug ${idx === 0 ? "font-semibold bg-slate-50/60" : ""}">${applyInlineFormatting(c)}</td>`).join("");
+            tableRows.push(`<tr class="even:bg-slate-50/40 hover:bg-indigo-50/20">${tds}</tr>`);
+          }
+          continue;
+        } else if (inTable) {
+          tableRows.push("</tbody>");
+          flushTable();
+        }
+
+        const arMatch = trimmed.match(/^(\*\*)?(अभिकथन\s*\([Aअ]\)|कथन\s*\([Aअ]\)|कारण\s*\([Rर]\)|कथन\s*[12I]+|अभिकथन|कारण|Assertion\s*\(A\)|Reason\s*\(R\))(\*\*)?\s*[:：-]\s*(.+)$/);
+        if (arMatch) {
+          const label = arMatch[2];
+          const content = arMatch[4];
+          html += `<div class="flex items-start gap-2 my-2 p-2.5 rounded-lg bg-slate-50 border-l-4 border-indigo-500 text-left"><span class="font-extrabold text-slate-950 shrink-0">${label} :</span><span class="text-slate-800 flex-1 text-left leading-relaxed">${applyInlineFormatting(content)}</span></div>`;
+          continue;
+        }
+
+        const stmtMatch = trimmed.match(/^(\(\d+\)|\d+\.|\([ivxIVX]+\)|[ivxIVX]+\.|\([a-dA-D]\)|[A-D]\.)\s+(.+)$/);
+        if (stmtMatch) {
+          const num = stmtMatch[1];
+          const content = stmtMatch[2];
+          html += `<div class="flex items-start gap-2.5 my-1.5 pl-1 text-left"><span class="font-extrabold text-indigo-950 min-w-[1.9rem] shrink-0 text-left">${num}</span><span class="text-slate-800 flex-1 text-left leading-relaxed">${applyInlineFormatting(content)}</span></div>`;
+          continue;
+        }
+
+        html += `<div class="my-1 text-left leading-relaxed">${applyInlineFormatting(trimmed)}</div>`;
+      }
+
+      if (inTable) {
+        tableRows.push("</tbody>");
+        flushTable();
+      }
+      return html;
+    }
+
     function getQuestionStatus(idx) {
       const resp = state.responses[idx];
       const hasAnswer = resp.selectedOption !== null;
@@ -1184,8 +1266,8 @@
       const showHi = state.lang === "both" || state.lang === "hi";
       const showEn = state.lang === "both" || state.lang === "en";
       let qHtml = "";
-      if (showHi) qHtml += `<div style="white-space:pre-line" class="text-slate-900">${escapeHtml(q.hi_q)}</div>`;
-      if (showEn) qHtml += `<div style="white-space:pre-line" class="${showHi ? "text-slate-600 text-sm sm:text-base mt-2.5 pt-2.5 border-t border-slate-100" : "text-slate-900"}">${escapeHtml(q.en_q)}</div>`;
+      if (showHi) qHtml += `<div class="text-slate-900">${formatRichQuestionText(q.hi_q)}</div>`;
+      if (showEn) qHtml += `<div class="${showHi ? "text-slate-600 text-sm sm:text-base mt-2.5 pt-2.5 border-t border-slate-100" : "text-slate-900"}">${formatRichQuestionText(q.en_q)}</div>`;
       els.questionText.innerHTML = qHtml;
 
       els.questionMediaContainer.innerHTML = renderMediaBlock(q);
@@ -1531,8 +1613,8 @@
             </div>
             ${statusBadge}
           </div>
-          <div style="white-space:pre-line" class="text-sm sm:text-base font-semibold text-slate-900 mb-2 leading-relaxed">${escapeHtml(q.hi_q)}</div>
-          <div style="white-space:pre-line" class="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">${escapeHtml(q.en_q)}</div>
+          <div class="text-sm sm:text-base font-semibold text-slate-900 mb-2 leading-relaxed">${formatRichQuestionText(q.hi_q)}</div>
+          <div class="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">${formatRichQuestionText(q.en_q)}</div>
           ${renderMediaBlock(q) ? `<div class="mb-4">${renderMediaBlock(q)}</div>` : ""}
           <div class="space-y-2 mb-4">${optionsHtml}</div>
           <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3.5 sm:p-4">
