@@ -342,7 +342,7 @@
           <div id="optionsContainer" class="space-y-3" role="radiogroup" aria-label="Question Options">
             <!-- Dynamically populated via JS -->
           </div>
-          <div id="instantAnswerBanner" class="hidden mt-4"></div>
+
           <!-- Clear the selected answer by tapping it again. -->
           
           <!-- Inline question navigation: Previous | Submit | Next -->
@@ -921,7 +921,7 @@
   <script src="./data-5.js"></script>
 
   <!-- ========================================================= -->
-  <!-- JAVASCRIPT QUIZ ENGINE (Lagale Standard + Instant Reveal) -->
+  <!-- JAVASCRIPT QUIZ ENGINE (Lagale Standard Exam Mode) -->
   <!-- ========================================================= -->
   <script>
     const TEST_CONFIG = {
@@ -958,9 +958,9 @@
         correctIndex: cIdx,
         marks: isDeleted ? 0 : 1,
         negativeMarks: isDeleted ? 0 : 0.25,
-        explanation: isDeleted
+        explanation: q.explanation || (isDeleted
           ? "यह प्रश्न UKPSC की संशोधित उत्तर कुंजी (Amended Answer Key - Series A) में निरस्त (# = DELETE) कर दिया गया है, इसलिए इसके अंक नहीं जोड़े या घटाए जाते हैं।"
-          : `UKPSC की आधिकारिक संशोधित उत्तर कुंजी (Series A) के अनुसार इस प्रश्न का सही उत्तर विकल्प ${q.ans} है।`
+          : `UKPSC की आधिकारिक संशोधित उत्तर कुंजी (Series A) के अनुसार इस प्रश्न का सही उत्तर विकल्प ${q.ans} है।`)
       };
     });
 
@@ -1035,7 +1035,6 @@
       questionText: document.getElementById("questionText"),
       questionMediaContainer: document.getElementById("questionMediaContainer"),
       optionsContainer: document.getElementById("optionsContainer"),
-      instantAnswerBanner: document.getElementById("instantAnswerBanner"),
       markForReviewBtn: document.getElementById("markForReviewBtn"),
       markBtnSvg: document.getElementById("markBtnSvg"),
       markBtnText: document.getElementById("markBtnText"),
@@ -1191,35 +1190,17 @@
 
       els.questionMediaContainer.innerHTML = renderMediaBlock(q);
 
-      const isAnswered = resp.selectedOption !== null;
       els.optionsContainer.innerHTML = "";
 
       OPT_KEYS.forEach((optKey, optIdx) => {
         const isSelected = resp.selectedOption === optIdx;
-        const isCorrectOpt = !q.isDeleted && q.correctIndex === optIdx;
-
-        let cardCls = "border-slate-200 bg-white";
-        let badgeCls = "border-slate-300 bg-slate-50 text-slate-600";
+        let cardCls = isSelected
+          ? "border-brand-600 bg-blue-50/80 ring-1 ring-brand-600"
+          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60";
+        let badgeCls = isSelected
+          ? "bg-brand-600 border-brand-600 text-white"
+          : "border-slate-300 bg-slate-50 text-slate-600";
         let trailingIcon = "";
-
-        if (isAnswered) {
-          if (q.isDeleted) {
-            if (isSelected) {
-              cardCls = "border-amber-400 bg-amber-50 ring-1 ring-amber-300";
-              badgeCls = "bg-amber-500 border-amber-500 text-white";
-            }
-          } else if (isCorrectOpt) {
-            cardCls = "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-300";
-            badgeCls = "bg-emerald-600 border-emerald-600 text-white";
-            trailingIcon = `<span class="ml-auto text-emerald-700 font-extrabold text-sm shrink-0">&#10003;</span>`;
-          } else if (isSelected) {
-            cardCls = "border-red-500 bg-red-50 ring-1 ring-red-300";
-            badgeCls = "bg-red-600 border-red-600 text-white";
-            trailingIcon = `<span class="ml-auto text-red-700 font-extrabold text-sm shrink-0">&#10007;</span>`;
-          } else {
-            cardCls = "border-slate-200 bg-slate-50/50 opacity-80";
-          }
-        }
 
         let optBodyHtml = "";
         if (q.opt_imgs && q.opt_imgs[optKey] && DIAGRAMS[q.opt_imgs[optKey]]) {
@@ -1253,27 +1234,7 @@
         els.optionsContainer.appendChild(btn);
       });
 
-      if (isAnswered) {
-        els.instantAnswerBanner.classList.remove("hidden");
-        if (q.isDeleted) {
-          els.instantAnswerBanner.className = "mt-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-xs sm:text-sm text-amber-900 flex flex-wrap items-center justify-between gap-2";
-          els.instantAnswerBanner.innerHTML = `<span><strong>Official Key: # (DELETED)</strong> — यह प्रश्न UKPSC की संशोधित उत्तर कुंजी (Series A) में निरस्त किया गया है।</span><button type="button" id="clearThisRespBtn" class="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 font-semibold text-xs">Clear</button>`;
-        } else if (resp.selectedOption === q.correctIndex) {
-          els.instantAnswerBanner.className = "mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm text-emerald-900 flex flex-wrap items-center justify-between gap-2";
-          els.instantAnswerBanner.innerHTML = `<span><strong>&#10003; सही उत्तर (Correct)!</strong> Official Answer Key (Series A): <strong>Option ${q.ans}</strong></span><button type="button" id="clearThisRespBtn" class="px-2.5 py-1 rounded-lg bg-white border border-emerald-300 text-emerald-800 font-semibold text-xs">Clear</button>`;
-        } else {
-          const chosenKey = OPTION_LABELS[resp.selectedOption];
-          els.instantAnswerBanner.className = "mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-900 flex flex-wrap items-center justify-between gap-2";
-          els.instantAnswerBanner.innerHTML = `<span><strong>&#10007; गलत उत्तर (Incorrect)!</strong> आपने <strong>${chosenKey}</strong> चुना &bull; सही उत्तर: <strong class="text-emerald-700">Option ${q.ans}</strong></span><button type="button" id="clearThisRespBtn" class="px-2.5 py-1 rounded-lg bg-white border border-red-300 text-red-800 font-semibold text-xs">Clear</button>`;
-        }
-        document.getElementById("clearThisRespBtn").addEventListener("click", () => {
-          state.responses[idx].selectedOption = null;
-          renderActiveQuestion();
-        });
-      } else {
-        els.instantAnswerBanner.classList.add("hidden");
-        els.instantAnswerBanner.innerHTML = "";
-      }
+
 
       const isFirst = idx === 0;
       const isLast = idx === total - 1;
@@ -1505,6 +1466,7 @@
       els.barIncorrect.style.width = `${(results.incorrectCount / activeTotal) * 100}%`;
       els.barSkipped.style.width = `${(results.skippedCount / activeTotal) * 100}%`;
 
+      // Update filter button counts so Correct / Incorrect / Skipped counts are visible immediately
       document.querySelector('[data-filter="all"]').textContent = `All Questions (${results.totalQuestions})`;
       document.querySelector('[data-filter="correct"]').textContent = `Correct (${results.correctCount})`;
       document.querySelector('[data-filter="incorrect"]').textContent = `Incorrect (${results.incorrectCount})`;
@@ -1574,7 +1536,7 @@
           ${renderMediaBlock(q) ? `<div class="mb-4">${renderMediaBlock(q)}</div>` : ""}
           <div class="space-y-2 mb-4">${optionsHtml}</div>
           <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3.5 sm:p-4">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-brand-800 mb-1">Official Answer Key</h4>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-brand-800 mb-1">Official Answer Key &amp; Explanation</h4>
             <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">${escapeHtml(q.explanation)}</p>
           </div>
         `;
